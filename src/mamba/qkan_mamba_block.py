@@ -1,4 +1,7 @@
 """QKAN-Mamba Block: QKAN-gated Mamba for long-range sequence modeling."""
+import sys
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 
@@ -8,8 +11,7 @@ try:
 except ImportError:
     MAMBA_AVAILABLE = False
 
-import sys
-sys.path.insert(0, '..')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from qkan.qkan_gate import QKANGate
 
 

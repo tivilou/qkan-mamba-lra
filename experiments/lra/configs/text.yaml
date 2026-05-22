@@ -1,0 +1,23 @@
+task: text
+seed: 42
+
+model:
+  name: qkan_mamba
+  params:
+    d_model: 128
+    n_layers: 6
+    qkan_latent_dim: 32
+    qkan_reps: 4
+    mamba_d_state: 16
+    mamba_d_conv: 4
+    mamba_expand: 2
+    pooling: mean
+
+training:
+  batch_size: 16
+  lr: 0.001
+  weight_decay: 0.01
+  epochs: 50
+  num_workers: 4
+
+results_dir: results/text
