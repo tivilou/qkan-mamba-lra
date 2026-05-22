@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+*.egg-info/
+data/
+results/*.json
+*.pt
+*.pth
+.DS_Store
