@@ -27,20 +27,37 @@ pip install mamba-ssm causal-conv1d
 
 ### Data Preparation
 
-**Step 1**: Download the raw LRA dataset from [Google Research LRA repo](https://github.com/google-research/long-range-arena).
-
-**Step 2**: Run the preprocessing script to convert raw data to `.npz` format:
+**推荐方式：从 MEGA 项目下载（包含全部 5 个任务）**
 
 ```bash
-python scripts/prepare_lra_data.py --raw_dir /path/to/lra_release --out_dir data/lra
+# 下载（约 1.4GB）
+wget https://dl.fbaipublicfiles.com/mega/data/lra.zip
+
+# 解压
+unzip lra.zip
+
+# 转换为训练脚本需要的 .npz 格式
+python scripts/convert_mega_lra.py --mega_dir ./lra --out_dir data/lra
 ```
 
-This will process all 5 tasks and output to `data/lra/`. The script handles:
-- ListOps: tokenizes TSV expressions into integer sequences (length 2048)
-- Text: character-level encoding of IMDB reviews (length 4096)
-- Retrieval: character-level encoding of document pairs (length 4000)
-- Image: flattens CIFAR-10 grayscale images to 1D (length 1024)
-- Pathfinder: flattens path images to 1D (length 1024)
+转换完成后的数据结构：
+
+| 任务 | 训练集 | 验证集 | 测试集 | 序列长度 |
+|------|--------|--------|--------|---------|
+| ListOps | 96,000 | 2,000 | 2,000 | 2048 |
+| Text (IMDB) | 25,000 | 25,000 | 25,000 | 4000 |
+| Retrieval (AAN) | 147,086 | 18,090 | 17,437 | 2000×2 |
+| Image (CIFAR-10) | 45,000 | 5,000 | 10,000 | 1024 |
+| Pathfinder | 160,000 | 20,000 | 20,000 | 1024 |
+
+**备选方式：从 HuggingFace 分别下载（不需要翻墙）**
+
+```bash
+pip install datasets torchvision
+python scripts/download_lra.py --out_dir data/lra
+```
+
+注意：备选方式中 Pathfinder 和 Retrieval 使用占位数据，仅用于调试。
 
 **Output structure**:
 
