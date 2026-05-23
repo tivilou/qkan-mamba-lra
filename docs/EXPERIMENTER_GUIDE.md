@@ -27,7 +27,22 @@ pip install mamba-ssm causal-conv1d
 
 ### Data Preparation
 
-Download the LRA dataset and place it under `data/lra/`:
+**Step 1**: Download the raw LRA dataset from [Google Research LRA repo](https://github.com/google-research/long-range-arena).
+
+**Step 2**: Run the preprocessing script to convert raw data to `.npz` format:
+
+```bash
+python scripts/prepare_lra_data.py --raw_dir /path/to/lra_release --out_dir data/lra
+```
+
+This will process all 5 tasks and output to `data/lra/`. The script handles:
+- ListOps: tokenizes TSV expressions into integer sequences (length 2048)
+- Text: character-level encoding of IMDB reviews (length 4096)
+- Retrieval: character-level encoding of document pairs (length 4000)
+- Image: flattens CIFAR-10 grayscale images to 1D (length 1024)
+- Pathfinder: flattens path images to 1D (length 1024)
+
+**Output structure**:
 
 ```
 data/lra/
@@ -38,12 +53,12 @@ data/lra/
   pathfinder/ train.npz, val.npz, test.npz
 ```
 
-Each `.npz` file should contain:
+Each `.npz` file contains:
 - `inputs`: numpy array of shape `(N, seq_len)` or `(N, seq_len, d_input)`
 - `labels`: numpy array of shape `(N,)`
 - For retrieval: `inputs1`, `inputs2`, `labels`
 
-You can set a custom path via environment variable:
+You can set a custom data path via environment variable:
 ```bash
 export LRA_DATA_DIR=/path/to/your/lra/data
 ```
