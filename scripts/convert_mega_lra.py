@@ -65,6 +65,10 @@ def convert_fairseq_task(mega_dir: Path, out_dir: Path, task_name: str,
         inputs = read_fairseq_bin(src_dir, mega_split, max_len)
         label_inputs = read_fairseq_bin(label_dir, mega_split, max_len=1)
         labels = label_inputs[:, 0].astype(np.int64)
+        # fairseq special tokens offset: pad=0, eos=1, unk=2, bos=3
+        # actual labels start at index 4
+        if labels.min() >= 4:
+            labels = labels - 4
 
         np.savez(out_dir / f"{our_split}.npz", inputs=inputs, labels=labels)
         print(f"  {our_split}: {len(labels)} samples, seq_len={inputs.shape[1]}")
@@ -91,6 +95,8 @@ def convert_retrieval_task(mega_dir: Path, out_dir: Path, max_len: int = 4000):
         inputs2 = read_fairseq_bin(src1_dir, mega_split, half_len)
         label_inputs = read_fairseq_bin(label_dir, mega_split, max_len=1)
         labels = label_inputs[:, 0].astype(np.int64)
+        if labels.min() >= 4:
+            labels = labels - 4
 
         np.savez(out_dir / f"{our_split}.npz",
                  inputs1=inputs1, inputs2=inputs2, labels=labels)
