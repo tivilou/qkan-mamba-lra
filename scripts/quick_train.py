@@ -12,7 +12,10 @@ import os
 import sys
 import time
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+# Add project root to path
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _project_root)
+sys.path.insert(0, os.path.join(_project_root, "src"))
 
 import torch
 import torch.nn as nn
@@ -66,8 +69,14 @@ def main():
         t0 = time.time()
         model.train()
         total_loss, correct, total = 0.0, 0, 0
-        for x, y in train_loader:
-            x, y = x.to(device), y.to(device)
+        for batch in train_loader:
+            if len(batch) == 3:
+                x1, x2, y = batch
+                x = torch.cat([x1, x2], dim=1).to(device)
+            else:
+                x, y = batch
+                x = x.to(device)
+            y = y.to(device)
             optimizer.zero_grad()
             logits = model(x)
             loss = criterion(logits, y)
@@ -82,8 +91,14 @@ def main():
         model.eval()
         val_correct, val_total = 0, 0
         with torch.no_grad():
-            for x, y in val_loader:
-                x, y = x.to(device), y.to(device)
+            for batch in val_loader:
+                if len(batch) == 3:
+                    x1, x2, y = batch
+                    x = torch.cat([x1, x2], dim=1).to(device)
+                else:
+                    x, y = batch
+                    x = x.to(device)
+                y = y.to(device)
                 logits = model(x)
                 val_correct += (logits.argmax(-1) == y).sum().item()
                 val_total += y.size(0)
@@ -96,8 +111,14 @@ def main():
     model.eval()
     test_correct, test_total = 0, 0
     with torch.no_grad():
-        for x, y in test_loader:
-            x, y = x.to(device), y.to(device)
+        for batch in test_loader:
+            if len(batch) == 3:
+                x1, x2, y = batch
+                x = torch.cat([x1, x2], dim=1).to(device)
+            else:
+                x, y = batch
+                x = x.to(device)
+            y = y.to(device)
             logits = model(x)
             test_correct += (logits.argmax(-1) == y).sum().item()
             test_total += y.size(0)
