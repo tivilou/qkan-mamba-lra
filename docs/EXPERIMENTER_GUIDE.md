@@ -82,11 +82,67 @@ export LRA_DATA_DIR=/path/to/your/lra/data
 
 ## Running Experiments
 
-### Single Task
+### Quick Test (single task, command line args)
+
+适合快速验证某个任务是否能跑通、loss 是否下降。
 
 ```bash
-python experiments/lra/train.py --config experiments/lra/configs/listops.yaml
+python scripts/quick_train.py --task <task> --data_dir data/lra [options]
 ```
+
+参数说明：
+- `--task`: listops / text / retrieval / image / pathfinder
+- `--data_dir`: 数据目录（默认 data/lra）
+- `--epochs`: 训练轮数（默认 10）
+- `--batch_size`: 批大小（默认 32）
+- `--lr`: 学习率（默认 0.001）
+- `--d_model`: 模型维度（默认 128）
+- `--n_layers`: 层数（默认 4）
+- `--seed`: 随机种子（默认 42）
+
+各任务推荐配置：
+
+```bash
+# Image (收敛最快，适合验证环境)
+python scripts/quick_train.py --task image --data_dir data/lra --epochs 15 --batch_size 64
+
+# ListOps
+python scripts/quick_train.py --task listops --data_dir data/lra --epochs 15 --batch_size 64
+
+# Text (收敛慢，需要更多 epoch)
+python scripts/quick_train.py --task text --data_dir data/lra --epochs 50 --batch_size 32
+
+# Pathfinder (收敛慢)
+python scripts/quick_train.py --task pathfinder --data_dir data/lra --epochs 50 --batch_size 128
+
+# Retrieval (数据量大，序列最长，batch_size 要小)
+python scripts/quick_train.py --task retrieval --data_dir data/lra --epochs 30 --batch_size 16
+```
+
+### Single Task (YAML config)
+
+正式实验使用 YAML 配置文件，结果自动保存为 JSON。
+
+```bash
+python experiments/lra/train.py --config experiments/lra/configs/text_mamba_only.yaml
+```
+
+配置文件中修改 `task` 字段即可切换任务，修改 `model.name` 切换模型。
+
+各任务 × 模型的推荐配置：
+
+| 任务 | model.name | batch_size | epochs | lr | 备注 |
+|------|-----------|-----------|--------|------|------|
+| listops | mamba_only | 64 | 50 | 0.001 | 10 分类 |
+| listops | qkan_mamba | 32 | 50 | 0.001 | |
+| text | mamba_only | 32 | 50 | 0.001 | 收敛慢 |
+| text | qkan_mamba | 16 | 50 | 0.001 | 序列长 4096 |
+| retrieval | mamba_only | 16 | 30 | 0.001 | 序列 4096×2 |
+| retrieval | qkan_mamba | 8 | 30 | 0.001 | 显存占用大 |
+| image | mamba_only | 64 | 50 | 0.001 | 收敛快 |
+| image | qkan_mamba | 32 | 50 | 0.001 | |
+| pathfinder | mamba_only | 128 | 50 | 0.001 | 收敛慢 |
+| pathfinder | qkan_mamba | 64 | 50 | 0.001 | |
 
 ### Override Seed
 
