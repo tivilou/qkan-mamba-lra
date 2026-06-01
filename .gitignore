@@ -7,3 +7,4 @@ results/*.json
 *.pt
 *.pth
 .DS_Store
+LRA/
