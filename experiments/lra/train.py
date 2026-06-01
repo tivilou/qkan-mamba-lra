@@ -11,7 +11,9 @@ import torch.nn as nn
 import torch.optim as optim
 import yaml
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from mamba.model import QKANMambaModel
 from baselines.transformer import TransformerModel
@@ -25,6 +27,42 @@ MODEL_REGISTRY = {
     "transformer": TransformerModel,
     "s4": S4Model,
     "mamba_only": MambaOnlyModel,
+}
+
+MODEL_DEFAULT_PARAMS = {
+    "qkan_mamba": {
+        "d_model": 128,
+        "n_layers": 6,
+        "qkan_latent_dim": 32,
+        "qkan_reps": 4,
+        "mamba_d_state": 16,
+        "mamba_d_conv": 4,
+        "mamba_expand": 2,
+        "pooling": "mean",
+    },
+    "transformer": {
+        "d_model": 128,
+        "n_layers": 4,
+        "n_heads": 4,
+        "d_ff": 256,
+        "dropout": 0.1,
+        "pooling": "mean",
+    },
+    "s4": {
+        "d_model": 128,
+        "n_layers": 6,
+        "d_state": 64,
+        "dropout": 0.1,
+        "pooling": "mean",
+    },
+    "mamba_only": {
+        "d_model": 128,
+        "n_layers": 6,
+        "d_state": 16,
+        "d_conv": 4,
+        "expand": 2,
+        "pooling": "mean",
+    },
 }
 
 
@@ -85,8 +123,11 @@ def evaluate(model, loader, criterion, device):
     return total_loss / total, correct / total
 
 
-def run(config: dict):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def run(config: dict, device_override: str = None):
+    if device_override is not None:
+        device = torch.device(device_override)
+    else:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     seed = config.get("seed", 42)
     torch.manual_seed(seed)
 
@@ -97,8 +138,11 @@ def run(config: dict):
     )
 
     model = build_model(config).to(device)
+    task = config["task"]
+    model_name = config["model"]["name"]
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Model: {config['model']['name']} | Params: {n_params:,}")
+    print(f"Task: {task} | Model: {model_name} | Seed: {seed} | Device: {device}")
+    print(f"Params: {n_params:,}")
 
     optimizer = optim.AdamW(
         model.parameters(),
@@ -110,8 +154,10 @@ def run(config: dict):
     )
     criterion = nn.CrossEntropyLoss()
 
-    results_dir = Path(config.get("results_dir", "results"))
-    results_dir.mkdir(parents=True, exist_ok=True)
+    base_results_dir = Path(config.get("results_dir", "results"))
+    results_dir = base_results_dir / model_name
+    checkpoint_dir = results_dir / f"s{seed}"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     best_val_acc = 0.0
     history = []
@@ -141,21 +187,22 @@ def run(config: dict):
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
-            torch.save(model.state_dict(), results_dir / "best_model.pt")
+            torch.save(model.state_dict(), checkpoint_dir / "best_model.pt")
 
     test_loss, test_acc = evaluate(model, test_loader, criterion, device)
     print(f"\nTest accuracy: {test_acc:.4f}")
 
     summary = {
-        "task": config["task"],
-        "model": config["model"]["name"],
+        "task": task,
+        "model": model_name,
         "seed": seed,
         "n_params": n_params,
         "best_val_acc": best_val_acc,
         "test_acc": test_acc,
+        "checkpoint": str(checkpoint_dir / "best_model.pt"),
         "history": history,
     }
-    out_path = results_dir / f"{config['task']}_{config['model']['name']}_s{seed}.json"
+    out_path = results_dir / f"{task}_{model_name}_s{seed}.json"
     with open(out_path, "w") as f:
         json.dump(summary, f, indent=2)
     print(f"Results saved to {out_path}")
@@ -166,6 +213,13 @@ def main():
     parser = argparse.ArgumentParser(description="Train on LRA benchmark")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config")
     parser.add_argument("--seed", type=int, default=None, help="Override seed")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        choices=sorted(MODEL_REGISTRY),
+        help="Override model name and use default params for that model",
+    )
     parser.add_argument("--device", type=str, default=None, help="Override device")
     args = parser.parse_args()
 
@@ -174,7 +228,10 @@ def main():
 
     if args.seed is not None:
         config["seed"] = args.seed
-    run(config)
+    if args.model is not None:
+        config["model"]["name"] = args.model
+        config["model"]["params"] = MODEL_DEFAULT_PARAMS[args.model].copy()
+    run(config, device_override=args.device)
 
 
 if __name__ == "__main__":
