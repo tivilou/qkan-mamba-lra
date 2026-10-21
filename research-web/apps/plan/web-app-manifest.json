@@ -1,0 +1,17 @@
+{
+  "schema_version": "research-web.web-app-manifest.v1",
+  "id": "plan",
+  "skill_id": "workflow-plan-manager",
+  "instance_id": "qkan-mamba-plan",
+  "title": "计划与进度",
+  "summary": "稳定步骤、完成条件、证据和单一下一步",
+  "entry": "/apps/plan/",
+  "mode": "static",
+  "status": "ready",
+  "updated_at": "2026-10-21",
+  "design_system": "research-web-design-system",
+  "theme": "research-editorial-v1",
+  "components": [
+    "research-web-table.v1"
+  ]
+}

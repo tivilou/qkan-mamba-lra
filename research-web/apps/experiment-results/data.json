@@ -1,0 +1,184 @@
+{
+  "schema_version": "experiment-results-workbench.data.v1",
+  "generated_at": "2026-10-21",
+  "datasets": [
+    {
+      "id": "listops",
+      "name": "ListOps",
+      "status": "qualification_pending",
+      "description": "任务选定；历史数据文件曾存在，替代服务器尚未恢复；正式协议待冻结",
+      "rows": []
+    },
+    {
+      "id": "text",
+      "name": "Text / IMDB",
+      "status": "qualification_pending",
+      "description": "任务选定；历史数据文件曾存在，替代服务器尚未恢复；正式协议待冻结",
+      "rows": []
+    },
+    {
+      "id": "image",
+      "name": "Image / CIFAR-10",
+      "status": "qualification_pending",
+      "description": "任务选定；历史数据文件曾存在，替代服务器尚未恢复；正式协议待冻结",
+      "rows": []
+    },
+    {
+      "id": "pathfinder",
+      "name": "Pathfinder",
+      "status": "qualification_pending",
+      "description": "任务选定；历史数据文件曾存在，替代服务器尚未恢复；正式协议待冻结",
+      "rows": []
+    },
+    {
+      "id": "retrieval",
+      "name": "Retrieval",
+      "status": "qualification_pending",
+      "description": "任务选定；历史数据文件曾存在，替代服务器尚未恢复；正式协议待冻结",
+      "rows": []
+    }
+  ],
+  "baselines": [
+    {
+      "id": "historical-mamba-listops",
+      "order": 1,
+      "model": "Mamba-only",
+      "family": "classical",
+      "dataset_id": "listops",
+      "split": "test",
+      "objective": "sequence_classification",
+      "status": "historical",
+      "metrics": {
+        "test_accuracy": "37.45%"
+      },
+      "seed_protocol": "15 epochs；仅报告，seed未提供",
+      "configuration": "4 layers / d_model=128；执行版本未独立固定",
+      "evidence_tier": "historical_report_only",
+      "claim_ceiling": "仅历史初测；不建立正式复现、机制归因或量子优势结论",
+      "provenance": {
+        "source_ref": "docs/text_task_pilot_results.md",
+        "source_sha256": "69891de712baacc7499c360dc327f480639d958e925f3e87ec3a16f2185e0673",
+        "source_revision": "74acc3d7f389ff4930d03d06c0118a1e5dce3aff",
+        "executed_revision": null,
+        "artifact_status": "report_available_original_run_not_recovered",
+        "hash_scope": "exact Git report bytes, LF line endings"
+      }
+    },
+    {
+      "id": "historical-mamba-text",
+      "order": 2,
+      "model": "Mamba-only",
+      "family": "classical",
+      "dataset_id": "text",
+      "split": "test",
+      "objective": "sequence_classification",
+      "status": "historical",
+      "metrics": {
+        "test_accuracy": "51.62%"
+      },
+      "seed_protocol": "20 epochs；报告数值；精确JSON原件待找回",
+      "configuration": "4 layers / d_model=128；执行版本未独立固定",
+      "evidence_tier": "historical_report_only",
+      "claim_ceiling": "仅历史初测；不建立正式复现、机制归因或量子优势结论",
+      "provenance": {
+        "source_ref": "docs/text_task_pilot_results.md",
+        "source_sha256": "69891de712baacc7499c360dc327f480639d958e925f3e87ec3a16f2185e0673",
+        "source_revision": "74acc3d7f389ff4930d03d06c0118a1e5dce3aff",
+        "executed_revision": null,
+        "artifact_status": "report_available_original_run_not_recovered",
+        "hash_scope": "exact Git report bytes, LF line endings"
+      }
+    },
+    {
+      "id": "historical-mamba-image",
+      "order": 3,
+      "model": "Mamba-only",
+      "family": "classical",
+      "dataset_id": "image",
+      "split": "test",
+      "objective": "sequence_classification",
+      "status": "historical",
+      "metrics": {
+        "test_accuracy": "63.41%"
+      },
+      "seed_protocol": "15 epochs；仅报告，seed未提供",
+      "configuration": "4 layers / d_model=128；执行版本未独立固定",
+      "evidence_tier": "historical_report_only",
+      "claim_ceiling": "仅历史初测；不建立正式复现、机制归因或量子优势结论",
+      "provenance": {
+        "source_ref": "docs/text_task_pilot_results.md",
+        "source_sha256": "69891de712baacc7499c360dc327f480639d958e925f3e87ec3a16f2185e0673",
+        "source_revision": "74acc3d7f389ff4930d03d06c0118a1e5dce3aff",
+        "executed_revision": null,
+        "artifact_status": "report_available_original_run_not_recovered",
+        "hash_scope": "exact Git report bytes, LF line endings"
+      }
+    },
+    {
+      "id": "historical-mamba-pathfinder",
+      "order": 4,
+      "model": "Mamba-only",
+      "family": "classical",
+      "dataset_id": "pathfinder",
+      "split": "test",
+      "objective": "sequence_classification",
+      "status": "historical",
+      "metrics": {
+        "test_accuracy": "49.75%"
+      },
+      "seed_protocol": "15 epochs；仅报告，seed未提供",
+      "configuration": "4 layers / d_model=128；执行版本未独立固定",
+      "evidence_tier": "historical_report_only",
+      "claim_ceiling": "仅历史初测；不建立正式复现、机制归因或量子优势结论",
+      "provenance": {
+        "source_ref": "docs/text_task_pilot_results.md",
+        "source_sha256": "69891de712baacc7499c360dc327f480639d958e925f3e87ec3a16f2185e0673",
+        "source_revision": "74acc3d7f389ff4930d03d06c0118a1e5dce3aff",
+        "executed_revision": null,
+        "artifact_status": "report_available_original_run_not_recovered",
+        "hash_scope": "exact Git report bytes, LF line endings"
+      }
+    },
+    {
+      "id": "historical-mamba-retrieval",
+      "order": 5,
+      "model": "Mamba-only",
+      "family": "classical",
+      "dataset_id": "retrieval",
+      "split": "test",
+      "objective": "sequence_classification",
+      "status": "not_completed",
+      "metrics": {
+        "test_accuracy": null
+      },
+      "seed_protocol": "报告注明未完成",
+      "configuration": "4 layers / d_model=128；执行版本未独立固定",
+      "evidence_tier": "historical_report_only",
+      "claim_ceiling": "仅历史初测；不建立正式复现、机制归因或量子优势结论",
+      "provenance": {
+        "source_ref": "docs/text_task_pilot_results.md",
+        "source_sha256": "69891de712baacc7499c360dc327f480639d958e925f3e87ec3a16f2185e0673",
+        "source_revision": "74acc3d7f389ff4930d03d06c0118a1e5dce3aff",
+        "executed_revision": null,
+        "artifact_status": "report_available_original_run_not_recovered",
+        "hash_scope": "exact Git report bytes, LF line endings"
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "id": "case-study",
+      "title": "Case Study",
+      "kind": "sample-trace",
+      "status": "unavailable",
+      "source_ref": "docs/case-study-plan.md",
+      "data": {
+        "reason_codes": [
+          "trace_incomplete",
+          "provenance_incomplete"
+        ],
+        "reason": "历史运行没有保存可取得的原样本、预测、内部表示与执行身份；不重建虚构轨迹。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "research-web.web-app-manifest.v1",
+  "id": "research-notes",
+  "skill_id": "author-facing-research-log",
+  "instance_id": "qkan-mamba-research-notes",
+  "title": "研究记录与解释",
+  "summary": "历史现场核查、经验与下一方向；没有编造已完成Idea",
+  "entry": "/apps/research-notes/",
+  "mode": "static",
+  "status": "ready",
+  "updated_at": "2026-10-21",
+  "design_system": "research-web-design-system",
+  "theme": "research-editorial-v1",
+  "components": [
+    "research-web-table.v1"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": 2,
+  "project": {
+    "name": "QKAN-Mamba",
+    "created_at": "2026-10-21T06:59:09Z"
+  },
+  "workstreams": [
+    {
+      "id": "foundation",
+      "title": "研究恢复、协作交付与科研门户",
+      "status": "active",
+      "path": "workstreams/foundation",
+      "tags": [
+        "qkan",
+        "collaboration"
+      ],
+      "scope": [
+        "docs/**",
+        "scripts/**",
+        "research-web/**",
+        "tests/**",
+        ".ai-progress/**",
+        "tools/**",
+        "README.md",
+        "AGENTS.md",
+        "CLAUDE.md",
+        ".gitignore",
+        ".gitattributes"
+      ],
+      "aliases": [],
+      "related": [],
+      "created_at": "2026-10-21T07:00:21Z"
+    }
+  ]
+}

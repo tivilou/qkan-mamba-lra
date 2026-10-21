@@ -1,0 +1,129 @@
+/* research-editorial-v1: shared tokens and neutral primitives.
+   Domain workbenches may add layout rules, but should not fork these tokens. */
+:root {
+  --rw-paper: #f5f3ee;
+  --rw-paper-2: #ebe9e3;
+  --rw-ink: #20221f;
+  --rw-muted: #6e716b;
+  --rw-line: #d4d3cc;
+  --rw-line-dark: #b9b8b0;
+  --rw-rust: #a34932;
+  --rw-rust-soft: #ecd9d1;
+  --rw-blue: #1c6474;
+  --rw-blue-soft: #d7e8eb;
+  --rw-sage: #5f715e;
+  --rw-sage-soft: #dfe8dc;
+  --rw-yellow: #b68727;
+  --rw-yellow-soft: #f0e4bd;
+  --rw-shadow: 0 18px 50px rgba(32, 34, 31, .13);
+  --rw-font-body: 'Plus Jakarta Sans', 'Microsoft YaHei', sans-serif;
+  --rw-font-display: 'Newsreader', 'Microsoft YaHei', serif;
+  --rw-font-mono: 'DM Mono', 'Cascadia Mono', Consolas, monospace;
+
+  /* Compatibility aliases used by the reference workbench. */
+  --paper: var(--rw-paper);
+  --paper-2: var(--rw-paper-2);
+  --ink: var(--rw-ink);
+  --muted: var(--rw-muted);
+  --line: var(--rw-line);
+  --line-dark: var(--rw-line-dark);
+  --rust: var(--rw-rust);
+  --rust-soft: var(--rw-rust-soft);
+  --blue: var(--rw-blue);
+  --blue-soft: var(--rw-blue-soft);
+  --sage: var(--rw-sage);
+  --sage-soft: var(--rw-sage-soft);
+  --yellow: var(--rw-yellow);
+  --yellow-soft: var(--rw-yellow-soft);
+  --shadow: var(--rw-shadow);
+  font-family: var(--rw-font-body);
+  color: var(--rw-ink);
+  background: var(--rw-paper);
+}
+
+.rw-theme {
+  color: var(--rw-ink);
+  background: var(--rw-paper);
+  font-family: var(--rw-font-body);
+}
+
+.rw-eyebrow {
+  margin: 0;
+  color: var(--rw-muted);
+  font: 500 10px var(--rw-font-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.rw-display {
+  font-family: var(--rw-font-display);
+}
+
+.rw-mono {
+  font-family: var(--rw-font-mono);
+}
+
+.rw-surface {
+  border: 1px solid var(--rw-line);
+  background: rgba(255, 255, 255, .16);
+}
+
+.rw-button {
+  min-height: 32px;
+  border: 1px solid var(--rw-line-dark);
+  background: transparent;
+  color: var(--rw-ink);
+  padding: 0 11px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rw-button:hover,
+.rw-button:focus-visible {
+  border-color: var(--rw-blue);
+}
+
+.rw-button-primary {
+  border-color: var(--rw-ink);
+  background: var(--rw-ink);
+  color: var(--rw-paper);
+}
+
+.rw-button:focus-visible,
+.rw-input:focus-visible {
+  outline: 2px solid var(--rw-blue-soft);
+  outline-offset: 1px;
+}
+
+.rw-state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  border: 1px solid var(--rw-line-dark);
+  padding: 3px 6px;
+  color: var(--rw-muted);
+  font: 10px var(--rw-font-mono);
+}
+
+.rw-state-positive {
+  border-color: #a6ba9e;
+  background: var(--rw-sage-soft);
+  color: var(--rw-sage);
+}
+
+.rw-state-info {
+  border-color: #86afb7;
+  background: var(--rw-blue-soft);
+  color: var(--rw-blue);
+}
+
+.rw-state-pending {
+  border-color: #d3bc79;
+  background: var(--rw-yellow-soft);
+  color: var(--rw-yellow);
+}
+
+.rw-state-unknown {
+  background: #e2e1dc;
+  color: var(--rw-muted);
+}
