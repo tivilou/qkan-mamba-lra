@@ -9,11 +9,12 @@
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
 - Historical report preserved; original data/JSON/checkpoint not recovered. No formal model training launched.
+- Foundation branch pushed and restored at /home/qkan-mamba-lra/ on the explicitly selected replacement; draft PR: https://github.com/tivilou/qkan-mamba-lra/pull/1 .
 
 ## In Progress
 
 - D01: restore and qualify five-task data. Find collaborator backups or legitimate upstream sources before declaring any task qualified.
-- Foundation publication: commit reviewed compact sources and sync the collaboration branch; formal experiment package remains pending.
+- Formal experiment package remains pending data qualification and baseline selection.
 
 ## Next Actions
 
@@ -25,7 +26,8 @@
 
 ## Validation
 
-- Seven local artifact exchange tests pass; six live HTTPS exchange checks pass.
+- The same seven artifact exchange tests pass on Windows and replacement-server Linux; six live HTTPS exchange checks pass.
+- Linux rebuild of the portal from committed sources produces no diff; LF source hashes agree across platforms.
 - Six portal routes healthy; 57 Playwright assertions pass at 1280px/390px. Registry, plan and JavaScript syntax checks pass.
 - Service runtime: independent supervisor qkan-mamba-exchange; app/storage under /srv/qkan-mamba-exchange/. Secrets remain outside Git and portal.
 - Local portal runs at loopback port 4191 via scripts/serve_portal.py; restart command is in research-web/README.md.

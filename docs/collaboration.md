@@ -2,6 +2,8 @@
 
 仓库：`tivilou/qkan-mamba-lra`。当前正式模型实验包尚未发布；旧训练命令仅用于历史开发参考，数据资格与基线协议完成后再发放正式运行命令。
 
+基础协作分支：`research/collaboration-foundation`，已提交 [草稿 PR #1](https://github.com/tivilou/qkan-mamba-lra/pull/1)。`sigmoidpp` 的邀请已接受，当前有 write 权限。PR 用于审查基础工具和记录，不能当作正式实验运行通知。
+
 ## 一次实验的交接
 
 1. 我们交付固定 Git 提交、配置、数据哈希、环境、启动命令、预算、恢复说明和返回文件清单。
