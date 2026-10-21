@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "plan_id": "research-cycle",
+  "plan_version": 1,
+  "workstream": "foundation",
+  "status": "active",
+  "objective": "建立可审计的开发测试—合作者实验—文件回传—分析与门户—Idea迭代流程",
+  "focus_step_id": "D01",
+  "next_action": "定位合作者备份或合法原始来源，恢复五任务数据并登记来源、划分和哈希",
+  "blocker": null,
+  "user_confirmation_needed": false,
+  "change_log": [
+    {
+      "date": "2026-10-21",
+      "reason": "用户授权执行既定协作计划；旧实例释放，明确替代恢复目标"
+    }
+  ],
+  "steps": [
+    {
+      "id": "F01",
+      "title": "恢复代码与历史证据",
+      "status": "done",
+      "objective": "恢复代码与历史证据",
+      "inputs": [],
+      "outputs": [
+        "docs/audits/recovery-20261021.md"
+      ],
+      "depends_on": [],
+      "acceptance_checks": [
+        "上游代码差异已核对",
+        "历史结果来源与缺失原件明确"
+      ],
+      "evidence_paths": [
+        "docs/audits/recovery-20261021.md"
+      ],
+      "owner": "我们",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "F02",
+      "title": "合作者交付与文件服务",
+      "status": "done",
+      "objective": "合作者交付与文件服务",
+      "inputs": [
+        "F01"
+      ],
+      "outputs": [
+        "docs/collaboration.md",
+        "scripts/exchange_artifacts.py",
+        "tests/test_exchange.py"
+      ],
+      "depends_on": [
+        "F01"
+      ],
+      "acceptance_checks": [
+        "本地传输安全测试通过",
+        "服务认证、隔离、哈希、冲突和真实客户端回传通过"
+      ],
+      "evidence_paths": [
+        "docs/collaboration.md",
+        "scripts/exchange_artifacts.py",
+        "tests/test_exchange.py",
+        "docs/evidence/exchange-acceptance-20261021.json"
+      ],
+      "owner": "我们",
+      "blocker": null,
+      "notes": "\n7项本地测试与6项真实HTTPS服务检查通过；sigmoidpp已具有write权限",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "F03",
+      "title": "科研门户与可恢复进度",
+      "status": "done",
+      "objective": "科研门户与可恢复进度",
+      "inputs": [
+        "F01"
+      ],
+      "outputs": [
+        "research-web/registry.json",
+        "docs/research-plan.md"
+      ],
+      "depends_on": [
+        "F01"
+      ],
+      "acceptance_checks": [
+        "注册校验通过",
+        "所有入口及桌面/390px检查通过",
+        "历史结果和缺失Case Study明确"
+      ],
+      "evidence_paths": [
+        "research-web/registry.json",
+        "docs/research-plan.md",
+        "docs/evidence/portal-acceptance-20261021.json"
+      ],
+      "owner": "我们",
+      "blocker": null,
+      "notes": "\n注册与6入口健康检查通过；1280px和390px共57项浏览器断言通过",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "D01",
+      "title": "恢复并资格核验五任务数据",
+      "status": "active",
+      "objective": "恢复并资格核验五任务数据",
+      "inputs": [
+        "F02"
+      ],
+      "outputs": [
+        "恢复并资格核验五任务数据的证据记录"
+      ],
+      "depends_on": [
+        "F02"
+      ],
+      "acceptance_checks": [
+        "来源版本许可明确",
+        "标签、长度、独立划分、泄漏与转换核验通过",
+        "qualified记录与哈希齐全"
+      ],
+      "evidence_paths": [],
+      "owner": "我们＋合作者",
+      "blocker": null,
+      "notes": "恢复前不假定历史数据仍可用",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "R01",
+      "title": "相关工作调研与基线队列",
+      "status": "todo",
+      "objective": "相关工作调研与基线队列",
+      "inputs": [
+        "F01"
+      ],
+      "outputs": [
+        "相关工作调研与基线队列的证据记录"
+      ],
+      "depends_on": [
+        "F01"
+      ],
+      "acceptance_checks": [
+        "任务匹配的近期强方法和经典参考有一手证据",
+        "纳入排除原因和协议可比性明确"
+      ],
+      "evidence_paths": [],
+      "owner": "我们",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "B01",
+      "title": "基线实现与交付测试",
+      "status": "todo",
+      "objective": "基线实现与交付测试",
+      "inputs": [
+        "D01",
+        "R01"
+      ],
+      "outputs": [
+        "基线实现与交付测试的证据记录"
+      ],
+      "depends_on": [
+        "D01",
+        "R01"
+      ],
+      "acceptance_checks": [
+        "固定源码/依赖与适配边界",
+        "前向梯度更新与最佳模型测试通过",
+        "恢复与sample-trace.v2预检通过"
+      ],
+      "evidence_paths": [],
+      "owner": "我们",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "B02",
+      "title": "合作者运行并返回基线",
+      "status": "todo",
+      "objective": "合作者运行并返回基线",
+      "inputs": [
+        "B01",
+        "F02"
+      ],
+      "outputs": [
+        "合作者运行并返回基线的证据记录"
+      ],
+      "depends_on": [
+        "B01",
+        "F02"
+      ],
+      "acceptance_checks": [
+        "冻结协议的完整数据运行完成",
+        "所有必需文件回执与运行身份核验通过"
+      ],
+      "evidence_paths": [],
+      "owner": "合作者",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "I01",
+      "title": "基于证据设计Idea与匹配对照",
+      "status": "todo",
+      "objective": "基于证据设计Idea与匹配对照",
+      "inputs": [
+        "B02"
+      ],
+      "outputs": [
+        "基于证据设计Idea与匹配对照的证据记录"
+      ],
+      "depends_on": [
+        "B02"
+      ],
+      "acceptance_checks": [
+        "基线不足与可证伪假设关联",
+        "理论到实现复核通过",
+        "正确性、轨迹与交付预检通过"
+      ],
+      "evidence_paths": [],
+      "owner": "我们",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "I02",
+      "title": "合作者运行Idea与复制实验",
+      "status": "todo",
+      "objective": "合作者运行Idea与复制实验",
+      "inputs": [
+        "I01"
+      ],
+      "outputs": [
+        "合作者运行Idea与复制实验的证据记录"
+      ],
+      "depends_on": [
+        "I01"
+      ],
+      "acceptance_checks": [
+        "完整数据单种子证据",
+        "按预定决策门槛进入多种子",
+        "文件交付通过"
+      ],
+      "evidence_paths": [],
+      "owner": "合作者",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "A01",
+      "title": "分析Case Study并闭环迭代",
+      "status": "todo",
+      "objective": "分析Case Study并闭环迭代",
+      "inputs": [
+        "I02"
+      ],
+      "outputs": [
+        "分析Case Study并闭环迭代的证据记录"
+      ],
+      "depends_on": [
+        "I02"
+      ],
+      "acceptance_checks": [
+        "总体结果和固定样本分开分析",
+        "结果、解释、日志、门户及经验关联",
+        "保留负结果并选择一个下一方向"
+      ],
+      "evidence_paths": [],
+      "owner": "我们",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    }
+  ],
+  "updated_at": "2026-10-21"
+}

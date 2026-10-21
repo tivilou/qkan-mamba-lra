@@ -1,0 +1,17 @@
+{
+  "schema_version": "research-web.web-app-manifest.v1",
+  "id": "collaboration",
+  "skill_id": "collaborator-artifact-exchange",
+  "instance_id": "qkan-mamba-collaboration",
+  "title": "协作与交付",
+  "summary": "代码测试—合作者实验—认证回传—验收分析的操作契约",
+  "entry": "/apps/collaboration/",
+  "mode": "static",
+  "status": "ready",
+  "updated_at": "2026-10-21",
+  "design_system": "research-web-design-system",
+  "theme": "research-editorial-v1",
+  "components": [
+    "research-web-table.v1"
+  ]
+}

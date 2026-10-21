@@ -1,0 +1,108 @@
+{
+  "schema_version": "research-web.portal-registry.v1",
+  "project": {
+    "id": "qkan-mamba",
+    "name": "QKAN–Mamba",
+    "privacy": "127.0.0.1 only",
+    "subtitle": "长序列分类 · 研究证据与协作工作台"
+  },
+  "apps": [
+    {
+      "id": "overview",
+      "skill_id": "research-system-orchestrator",
+      "instance_id": "qkan-mamba-overview",
+      "title": "研究总览",
+      "summary": "当前研究问题、已知证据与优先下一步",
+      "entry": "/apps/overview/",
+      "mode": "static",
+      "status": "ready",
+      "updated_at": "2026-10-21",
+      "design_system": "research-web-design-system",
+      "theme": "research-editorial-v1",
+      "components": [
+        "research-web-table.v1"
+      ]
+    },
+    {
+      "id": "plan",
+      "skill_id": "workflow-plan-manager",
+      "instance_id": "qkan-mamba-plan",
+      "title": "计划与进度",
+      "summary": "稳定步骤、完成条件、证据和单一下一步",
+      "entry": "/apps/plan/",
+      "mode": "static",
+      "status": "ready",
+      "updated_at": "2026-10-21",
+      "design_system": "research-web-design-system",
+      "theme": "research-editorial-v1",
+      "components": [
+        "research-web-table.v1"
+      ]
+    },
+    {
+      "id": "qualification",
+      "skill_id": "benchmark-dataset-qualification",
+      "instance_id": "qkan-mamba-qualification",
+      "title": "数据与相关工作",
+      "summary": "五任务恢复与核验状态、调研范围和基线复现门槛",
+      "entry": "/apps/qualification/",
+      "mode": "static",
+      "status": "ready",
+      "updated_at": "2026-10-21",
+      "design_system": "research-web-design-system",
+      "theme": "research-editorial-v1",
+      "components": [
+        "research-web-table.v1"
+      ]
+    },
+    {
+      "id": "experiment-results",
+      "skill_id": "experiment-results-workbench",
+      "instance_id": "qkan-mamba-experiment-results",
+      "title": "实验结果",
+      "summary": "Idea、跨数据集 Baseline 与 Case Study；明确历史证据边界",
+      "entry": "/apps/experiment-results/",
+      "mode": "static",
+      "status": "ready",
+      "updated_at": "2026-10-21",
+      "design_system": "research-web-design-system",
+      "theme": "research-editorial-v1",
+      "components": [
+        "experiment-results-workbench.v1",
+        "research-web-table.v1"
+      ]
+    },
+    {
+      "id": "research-notes",
+      "skill_id": "author-facing-research-log",
+      "instance_id": "qkan-mamba-research-notes",
+      "title": "研究记录与解释",
+      "summary": "历史现场核查、经验与下一方向；没有编造已完成Idea",
+      "entry": "/apps/research-notes/",
+      "mode": "static",
+      "status": "ready",
+      "updated_at": "2026-10-21",
+      "design_system": "research-web-design-system",
+      "theme": "research-editorial-v1",
+      "components": [
+        "research-web-table.v1"
+      ]
+    },
+    {
+      "id": "collaboration",
+      "skill_id": "collaborator-artifact-exchange",
+      "instance_id": "qkan-mamba-collaboration",
+      "title": "协作与交付",
+      "summary": "代码测试—合作者实验—认证回传—验收分析的操作契约",
+      "entry": "/apps/collaboration/",
+      "mode": "static",
+      "status": "ready",
+      "updated_at": "2026-10-21",
+      "design_system": "research-web-design-system",
+      "theme": "research-editorial-v1",
+      "components": [
+        "research-web-table.v1"
+      ]
+    }
+  ]
+}

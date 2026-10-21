@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QORE 文件交换</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/lucide.min.js" defer></script>
+  <script src="/assets/app.js" defer></script>
+</head>
+<body class="manager-page">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">Q</span>
+      <div class="brand-copy">
+        <h1>QORE 文件交换</h1>
+        <span>上传与查看</span>
+      </div>
+    </div>
+    <form method="post" action="/logout">
+      <button class="icon-button" type="submit" title="退出" aria-label="退出">
+        <i data-lucide="log-out" aria-hidden="true"></i>
+      </button>
+    </form>
+  </header>
+
+  <nav class="toolbar" aria-label="文件导航">
+    <div class="nav-buttons">
+      <button id="toggle-sidebar" class="icon-button sidebar-toggle" type="button" title="目录" aria-label="显示或隐藏目录">
+        <i data-lucide="panel-left" aria-hidden="true"></i>
+      </button>
+      <button id="nav-back" class="icon-button" type="button" title="后退" aria-label="后退" disabled>
+        <i data-lucide="arrow-left" aria-hidden="true"></i>
+      </button>
+      <button id="nav-forward" class="icon-button" type="button" title="前进" aria-label="前进" disabled>
+        <i data-lucide="arrow-right" aria-hidden="true"></i>
+      </button>
+      <button id="nav-up" class="icon-button" type="button" title="上一级" aria-label="上一级">
+        <i data-lucide="arrow-up" aria-hidden="true"></i>
+      </button>
+      <button id="refresh-directory" class="icon-button" type="button" title="刷新" aria-label="刷新">
+        <i data-lucide="refresh-cw" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div id="breadcrumbs" class="breadcrumbs" aria-label="当前路径"></div>
+
+    <div class="toolbar-actions">
+      <label class="search-field" for="file-filter">
+        <i data-lucide="search" aria-hidden="true"></i>
+        <span class="visually-hidden">搜索当前目录</span>
+        <input id="file-filter" type="search" placeholder="搜索当前目录" spellcheck="false">
+      </label>
+      <button id="upload-button" class="primary-button" type="button">
+        <i data-lucide="upload" aria-hidden="true"></i>
+        <span>上传</span>
+      </button>
+      <input id="artifact-file" type="file" multiple hidden>
+    </div>
+  </nav>
+
+  <main id="workspace" class="workspace">
+    <aside id="directory-pane" class="directory-pane" aria-label="目录树">
+      <div class="pane-heading">
+        <span>目录</span>
+      </div>
+      <div id="tree-root" class="tree" role="tree" aria-label="five_ideas"></div>
+    </aside>
+
+    <section id="file-pane" class="file-pane" aria-label="当前目录文件">
+      <div id="drop-overlay" class="drop-overlay" hidden>
+        <i data-lucide="upload-cloud" aria-hidden="true"></i>
+        <strong id="drop-target">上传到当前目录</strong>
+      </div>
+      <div class="table-scroll">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th scope="col">名称</th>
+              <th scope="col">类型</th>
+              <th scope="col">大小</th>
+              <th scope="col">修改时间</th>
+              <th scope="col">SHA-256</th>
+              <th scope="col"><span class="visually-hidden">操作</span></th>
+            </tr>
+          </thead>
+          <tbody id="item-list">
+            <tr><td class="empty-state" colspan="6">正在读取目录...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside id="preview-pane" class="preview-pane" aria-label="文件预览" hidden>
+      <div class="preview-toolbar">
+        <span>预览</span>
+        <div class="preview-actions">
+          <a id="preview-download" class="icon-button" title="下载" aria-label="下载">
+            <i data-lucide="download" aria-hidden="true"></i>
+          </a>
+          <button id="close-preview" class="icon-button" type="button" title="关闭预览" aria-label="关闭预览">
+            <i data-lucide="x" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="preview-details">
+        <div id="preview-icon" class="preview-icon" aria-hidden="true">
+          <i data-lucide="file-text"></i>
+        </div>
+        <h2 id="preview-title">文件</h2>
+        <p id="preview-meta"></p>
+      </div>
+      <pre id="preview-content"></pre>
+    </aside>
+  </main>
+
+  <footer class="statusbar">
+    <div class="status-location">
+      <i data-lucide="folder-open" aria-hidden="true"></i>
+      <span id="status-path">five_ideas</span>
+    </div>
+    <div id="upload-feedback" class="upload-feedback" hidden>
+      <progress id="upload-progress" max="100" value="0"></progress>
+      <span id="upload-status">准备上传</span>
+    </div>
+    <span id="item-count">0 项</span>
+  </footer>
+</body>
+</html>

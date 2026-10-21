@@ -8,3 +8,20 @@ results/*.json
 *.pth
 .DS_Store
 LRA/
+
+# Machine-local skills, credentials, staging, and runtime artifacts.
+.agents/
+.claude/
+.skill-scope*.json
+.research-system/
+.bootstrap/
+.runtime/
+.playwright-cli/
+node_modules/
+.env.*
+!.env.example
+artifacts/
+runs/
+*.bundle
+*.tar
+*.zip
