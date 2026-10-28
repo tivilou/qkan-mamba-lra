@@ -10,7 +10,7 @@
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
 - MEGA author-linked LRA archive is pinned and rebuilt into five adapted tasks on the replacement server; original source bytes and previous output remain preserved.
 - Data pipeline revision `ac8e0d4` adds safe reconstruction, full-array diagnostics, conservative Retrieval pair curation and 13 passing tests. No formal model training launched.
-- The server has the exact revision via a verified temporary Git bundle; GitHub publication of `ac8e0d4` remains pending because both HTTPS and SSH GitHub paths were unreachable.
+- GitHub publication through `6947b0e` is verified using the authorized replacement server as relay. The worker checkout stays clean at pinned `ac8e0d4`; transferring later Git objects for publication does not advance its working tree.
 
 ## In Progress
 
@@ -21,7 +21,7 @@
 ## Next Actions
 
 - 等待统一调度器在资源恢复后自动执行 `d18c07ab...`；收回四个紧凑输出并核验哈希、更新资格状态与门户
-- GitHub 网络恢复后推送 `ac8e0d4`，再开展逐任务许可边界与 Retrieval 关系单元审计
+- 经已授权替代服务器同步 GitHub；继续逐任务许可边界与 Retrieval 关系单元审计
 
 ## Blockers
 
