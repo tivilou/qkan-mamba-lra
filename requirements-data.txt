@@ -1,0 +1,2 @@
+# CPU-only data reconstruction and qualification diagnostics (Python 3.10+).
+numpy==2.2.6
