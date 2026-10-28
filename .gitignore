@@ -26,6 +26,8 @@ node_modules/
 artifacts/
 runs/
 .venv-data/
+.venv-baselines/
+.venv-baseline-tests/
 *.bundle
 *.tar
 *.zip

@@ -2,6 +2,8 @@
 
 仓库：`tivilou/qkan-mamba-lra`。当前正式模型实验包尚未发布；旧训练命令仅用于历史开发参考，数据资格与基线协议完成后再发放正式运行命令。
 
+新的自动准备、GPU 预检、恢复和结果回传入口见 [协作者一键运行说明](baselines/one-click.md)。当前属于待验收的工程候选，正式放行开关保持关闭。
+
 基础协作分支：`research/collaboration-foundation`，已提交 [草稿 PR #1](https://github.com/tivilou/qkan-mamba-lra/pull/1)。`sigmoidpp` 的邀请已接受，当前有 write 权限。PR 用于审查基础工具和记录，不能当作正式实验运行通知。
 
 ## 一次实验的交接

@@ -54,7 +54,7 @@ def main():
     docs = {"overview": ["docs/audits/recovery-20261021.md", "docs/research-plan.md"],
             "qualification": ["docs/data-and-literature-readiness.md", "docs/dataset-qualification-v3.md", "docs/baselines/candidate-inventory.md", "docs/baselines/recent-screen.md", "docs/data-use-boundaries.md", "docs/case-study-plan.md", "docs/pathfinder-source-audit.md"],
             "research-notes": ["docs/research-log/README.md", "docs/research-log/20261021-date-only-foundation-audit.md"],
-            "collaboration": ["docs/collaboration.md", "docs/baselines/delivery-contract.md"]}
+            "collaboration": ["docs/collaboration.md", "docs/baselines/delivery-contract.md", "docs/baselines/one-click.md"]}
     for app_id, paths in docs.items():
         write(f"apps/{app_id}/data.json", {"documents": [{"title": (ROOT / path).read_text(encoding="utf-8").splitlines()[0].lstrip("# "), "source": path, "text": (ROOT / path).read_text(encoding="utf-8")} for path in paths]})
     source = ROOT / "docs/text_task_pilot_results.md"
