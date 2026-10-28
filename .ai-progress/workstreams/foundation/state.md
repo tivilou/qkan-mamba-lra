@@ -9,7 +9,7 @@
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
 - MEGA author-linked LRA archive is pinned and rebuilt into five adapted tasks on the replacement server; original source bytes and previous output remain preserved.
-- Worker checkout is clean at `52257f2`: 31 scheduler-run tests pass; exhaustive Image/Pathfinder source-equivalence audit complete. Prior GitHub checkpoint `19b7d8e` is verified; this continuation's publication is pending.
+- Worker checkout is clean at `52257f2`: 31 scheduler-run tests pass; exhaustive Image/Pathfinder source-equivalence audit complete. GitHub publication through `2600b4a` is verified via separate delivery refs, and draft PR #1 description reflects the current scope.
 - New relation and train/validation-only pilots completed on the registered CPU node; no formal model training launched.
 
 ## In Progress
@@ -21,6 +21,7 @@
 - `mega-document-disjoint-v3` is built and audited: Retrieval counts 117790/1804/1724; zero exact shared documents or discovered near-duplicate cross-split edges; other four task NPZ hashes unchanged from v2. All six output hashes match terminal receipt.
 - Pilot finds signal for Text/Image/v3 Retrieval (58.20% versus 48.34% majority/null); ListOps input-only parser has 0/1024 mismatches. Diagnostics remain outside the formal baseline table.
 - Current assessment: docs/evidence/mega-document-v3-qualification.json, status insufficient; formal_baseline_allowed=false.
+- Orchestrator tracked run `.research-radar/research-system/2026-10-28-e2fe05c74d66` is blocked on the same use-evidence gate; prior user authorization was reused, with no new confirmation request. Baseline release stage remains pending.
 - Formal experiment package remains pending data qualification and baseline selection.
 
 ## Next Actions
