@@ -39,6 +39,14 @@ Text原包valid和test的输入二进制逐字节相同，原方案不能用作�
 
 这是独立验证的**适配协议**，不能将原LRA/MEGA论文数字或历史项目初测直接放进同协议比较。
 
+## 2026-10-28：独立清洗版本 mega-independent-pairclean-v2
+
+统一调度器在 `owner-recovery-3080ti` 成功执行固定 `ac8e0d4` 的 CPU-only 清洗审计任务。`curate_lra_pairs.py` 先核验 v1 文件哈希，在新的同级版本中复制四个未修改任务，仅重建 Retrieval：按截断后编码文档的无序对分组，剔除全部93个标签冲突组（按有序对计算为48组），余下组按 test→val→train 优先级保留一个来源行。选择规则不使用模型预测或性能，但数据构建审计访问了各划分标签；不能声称保留了完全未动的官方测试集。
+
+Retrieval 保留 train 146731、val 18068、test 17419；分别剔除154/19/13条冲突组记录和201/3/5条重复或重叠记录。输出来源行号清单可从 v2 回溯到 v1，再回溯到原包。四个其他任务文件哈希不变。完整结构审计确认五任务所有跨划分编码级重叠和输入标签冲突均为0；共享单文档、近重复、数据用途与可学习性仍需单独证据。
+
+服务器输出为 `/home/qkan-mamba-lra/data/versions/mega-independent-pairclean-v2`。紧凑清单、审计和资格记录在 `docs/evidence/mega-independent-pairclean-v2-*.json`，完成与哈希验收回执在 `docs/evidence/scheduler-completion-20261028.json`。这是适配后的研究数据候选版本，资格为 `insufficient`，未解锁正式比较。
+
 ## 资格门槛与交付
 
 `audit_lra_data.py` 遍历声明范围的全部NPZ数组，检查成员/shape/dtype/标签/有限值、样本数与类别分布、长度一致性、文件哈希、跨划分完全重复和冲突标签。不同数值dtype与(N,L,1)/(N,L)用统一输入身份比对；Retrieval文档交换也计作同一对。临时SQLite记录输入哈希，汇总后销毁；不公开样本或逐样本哈希。

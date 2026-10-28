@@ -7,8 +7,8 @@
     "status": "active",
     "objective": "建立可审计的开发测试—合作者实验—文件回传—分析与门户—Idea迭代流程",
     "focus_step_id": "D01",
-    "next_action": "等待统一调度任务 d18c07ab 自动入场，收回资格输出并完成 D01 门槛判定",
-    "blocker": "owner-recovery-3080ti 工作 cgroup 当前无 128 MB admission 余量；任务安全排队，未绕过调度",
+    "next_action": "完成逐任务许可/用途边界、Retrieval 共享文档/近重复审计及冻结变换下的小规模可学习性证据",
+    "blocker": null,
     "user_confirmation_needed": false,
     "change_log": [
       {
@@ -18,6 +18,10 @@
       {
         "date": "2026-10-28",
         "reason": "固定 MEGA 来源并重建五任务；注册 CPU-only 资格审计配方，按统一调度安全排队"
+      },
+      {
+        "date": "2026-10-28",
+        "reason": "调度任务完成，pairclean-v2 五任务全量结构审计通过；剩余三项资格证据未完成，D01 保持 active"
       }
     ],
     "steps": [
@@ -132,11 +136,16 @@
           "docs/evidence/mega-download-20261021.json",
           "docs/evidence/mega-independent-v1-build.json",
           "docs/evidence/mega-independent-v1-diagnostics.json",
-          "docs/evidence/scheduler-dispatch-20261028.json"
+          "docs/evidence/scheduler-dispatch-20261028.json",
+          "docs/evidence/scheduler-completion-20261028.json",
+          "docs/evidence/mega-independent-pairclean-v2-build.json",
+          "docs/evidence/mega-independent-pairclean-v2-curation.json",
+          "docs/evidence/mega-independent-pairclean-v2-diagnostics.json",
+          "docs/evidence/mega-independent-pairclean-v2-qualification.json"
         ],
         "owner": "我们＋合作者",
-        "blocker": "统一调度任务 d18c07ab 等待 owner-recovery-3080ti 恢复 128 MB worker headroom",
-        "notes": "MEGA 来源与五任务重建已固定；初始全量审计为 revise。formal baseline 仍禁止。",
+        "blocker": null,
+        "notes": "任务 d18c07ab complete；pairclean-v2 五任务结构失败、编码级跨划分重叠和标签冲突均为0。资格为 insufficient，许可/关系单元/可学习性三门槛待完成；formal baseline 仍禁止。",
         "supersedes": [],
         "superseded_by": []
       },

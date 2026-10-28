@@ -1,0 +1,32 @@
+{
+  "schema_version": "qkan-dataset-qualification.v1",
+  "profile": "mega-independent-pairclean-v2",
+  "status": "insufficient",
+  "formal_baseline_allowed": false,
+  "release_gate": "stop",
+  "scope": [
+    "listops",
+    "text",
+    "retrieval",
+    "image",
+    "pathfinder"
+  ],
+  "evidence": {
+    "build_manifest_sha256": "d7dbda4c80510609e84a8b0f763767635e601bc8eafc6ba480a9989e1068cff0",
+    "pair_curation_sha256": "7b9f3329126ee63172c972abfa2192555c58374172e6c92b9ad1b002248d2e03"
+  },
+  "gates": {
+    "five_task_files_and_hashes": true,
+    "numeric_schema_and_label_range": true,
+    "exact_encoded_cross_split_independence": true,
+    "per_task_data_license_and_use_boundary": false,
+    "retrieval_shared_document_and_near_duplicate_boundary": false,
+    "frozen_transform_learnability_evidence": false
+  },
+  "claim_boundary": "This is an adapted, structurally audited five-task population. It is not yet qualified for formal baseline comparison and is not directly comparable with historical LRA/MEGA scores.",
+  "next_actions": [
+    "Resolve per-task data license and permitted redistribution/use boundaries.",
+    "Audit Retrieval shared-document and near-duplicate groups with source identities when available.",
+    "Freeze transforms and obtain a bounded learnability check without using test outcomes for selection."
+  ]
+}

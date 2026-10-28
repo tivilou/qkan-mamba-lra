@@ -1,0 +1,121 @@
+{
+  "schema_version": "qkan-pair-curation.v1",
+  "profile": "mega-independent-pairclean-v2",
+  "status": "curated_not_qualified",
+  "source_build_sha256": "e4d8ce1d5b5dcbb6a922edc30f5d1a64a9050fdd75b58e42c4340d656bf1b70f",
+  "code_sha256": "8547dddff836190d685c938a09a066cdaa762b8f1c9886e0cbe5541f99a268bf",
+  "scope": "Conservative population of unambiguous unordered encoded document pairs; not an unchanged official AAN benchmark.",
+  "policy": [
+    "Exclude every pair group with conflicting labels across any split.",
+    "For remaining pair identities preserve test before validation before train.",
+    "Keep only first source row for duplicate identities within a split.",
+    "No model predictions or performance used; source data and previous outputs retained."
+  ],
+  "splits": {
+    "train": {
+      "original_rows": 147086,
+      "kept_rows": 146731,
+      "excluded_ambiguous_rows": 154,
+      "excluded_duplicate_or_overlap_rows": 201,
+      "output": {
+        "file": "train.npz",
+        "sha256": "b218253ca5b6bcdf74859140850bcf0883d3d19b9e4929adc39b0958fd554faa",
+        "size_bytes": 485938647,
+        "arrays": {
+          "inputs1": {
+            "shape": [
+              146731,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "inputs2": {
+            "shape": [
+              146731,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "labels": {
+            "shape": [
+              146731
+            ],
+            "dtype": "int64"
+          }
+        }
+      }
+    },
+    "val": {
+      "original_rows": 18090,
+      "kept_rows": 18068,
+      "excluded_ambiguous_rows": 19,
+      "excluded_duplicate_or_overlap_rows": 3,
+      "output": {
+        "file": "val.npz",
+        "sha256": "9156ade27567258a880597dc41119391157e87cba5e376db5a754651022da09c",
+        "size_bytes": 59803073,
+        "arrays": {
+          "inputs1": {
+            "shape": [
+              18068,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "inputs2": {
+            "shape": [
+              18068,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "labels": {
+            "shape": [
+              18068
+            ],
+            "dtype": "int64"
+          }
+        }
+      }
+    },
+    "test": {
+      "original_rows": 17437,
+      "kept_rows": 17419,
+      "excluded_ambiguous_rows": 13,
+      "excluded_duplicate_or_overlap_rows": 5,
+      "output": {
+        "file": "test.npz",
+        "sha256": "698f59c0041b0599bae377a1c8b9f2ddf4f9d00bf1a4a1929e7ecc8ba817c7e1",
+        "size_bytes": 57981240,
+        "arrays": {
+          "inputs1": {
+            "shape": [
+              17419,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "inputs2": {
+            "shape": [
+              17419,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "labels": {
+            "shape": [
+              17419
+            ],
+            "dtype": "int64"
+          }
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Curating labels is dataset construction, not model selection; formal test remains unused by model fitting.",
+    "Shared single documents and near duplicates require separate claim boundaries."
+  ],
+  "ordered_conflicting_groups": 48,
+  "unordered_conflicting_groups": 93
+}
