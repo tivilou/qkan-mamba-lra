@@ -14,6 +14,8 @@
 
 ## In Progress
 
+- Current bounded continuation adds exhaustive Image/Pathfinder pixel+label comparison with the pinned author archive and all-256-value reversible transform checks. Source audit discovered MEGA Pathfinder scales the common transform by 2; this is an explicit adapter difference, not a matched training recipe. New audit code is pending scheduler preflight and source-equivalence execution.
+- Retrieved MEGA paper, pixel loader, LRA generators and Pathfinder generator terms; IMDb author-page recovery remains unavailable. No qualification promotion or formal model training yet.
 - D01: scheduler task `d18c07ab...` completed at pinned `ac8e0d4` on `owner-recovery-3080ti`. The new `mega-independent-pairclean-v2` has all five tasks; full-array diagnostics show zero exact encoded cross-split overlaps, label conflicts or structural failures.
 - Follow-up relations audit found 9958 train/val and 9684 train/test shared encoded documents; every validation/test pair includes a document seen in training. v2 requires revision for unseen-document claims despite zero pair overlap.
 - `mega-document-disjoint-v3` is built and audited: Retrieval counts 117790/1804/1724; zero exact shared documents or discovered near-duplicate cross-split edges; other four task NPZ hashes unchanged from v2. All six output hashes match terminal receipt.

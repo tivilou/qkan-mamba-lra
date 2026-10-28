@@ -16,7 +16,7 @@ def main():
         parser.error("Require an empty scheduler output directory")
     root=Path(__file__).resolve().parents[1]
     results=[]
-    for pattern in ("test_data_pipeline.py","test_qualification.py","test_exchange.py"):
+    for pattern in ("test_data_pipeline.py","test_qualification.py","test_pixel_source.py","test_exchange.py"):
         command=[sys.executable,"-B","-m","unittest","discover","-s","tests","-p",pattern,"-v"]
         result=subprocess.run(command,cwd=root,capture_output=True,text=True)
         (args.output_dir/(pattern+".log")).write_text(result.stdout+result.stderr,encoding="utf-8")

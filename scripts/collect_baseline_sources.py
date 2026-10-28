@@ -89,12 +89,14 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--supplement", action="store_true", help="Bounded recent-paper search and missing dataset-source recovery")
     parser.add_argument("--recent-details", action="store_true", help="Follow six task-relevant primary papers and the next search page")
+    parser.add_argument("--qualification-sources", action="store_true", help="Bounded missing dataset-use and Pathfinder source audit")
+    parser.add_argument("--targets", type=Path, help="Reviewed public URL map, at most 20 requests; no repository discovery")
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Refuse to overwrite a source receipt")
     collector = Collector(args.cache)
     pins = {}
-    repositories = {} if (args.supplement or args.recent_details) else REPOSITORIES
+    repositories = {} if (args.supplement or args.recent_details or args.qualification_sources or args.targets) else REPOSITORIES
     pages = {
         "lra-recent-api": "https://export.arxiv.org/api/query?search_query=all%3A%22long%20range%20arena%22&start=0&max_results=30&sortBy=submittedDate&sortOrder=descending",
         "lra-recent-search": "https://arxiv.org/search/?query=%22long+range+arena%22&searchtype=all&abstracts=show&order=-announced_date_first&size=50",
@@ -113,6 +115,32 @@ def main():
             "flare-plus-plus": "https://arxiv.org/html/2608.11519v1",
             "naju": "https://arxiv.org/html/2607.21000v1",
         }
+    if args.qualification_sources:
+        mega = "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/"
+        lra = "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/"
+        pages = {
+            "imdb-use-recovery": "https://ai.stanford.edu/~amaas/data/sentiment/",
+            "cifar-author-use": "https://www.cs.toronto.edu/~kriz/cifar.html",
+            "lra-source-use": lra + "README.md",
+            "lra-listops-generator": lra + "lra_benchmarks/data/listops.py",
+            "lra-pathfinder-builder": lra + "lra_benchmarks/data/pathfinder.py",
+            "mega-pixel-loader": mega + "fairseq/data/pixel_sequence_dataset.py",
+            "mega-lra-task": mega + "fairseq/tasks/long_range_arena.py",
+            "mega-pixel-conversion": mega + "examples/mega/lra/data_process.py",
+            "mega-lra-recipe": mega + "examples/mega/README.lra.md",
+            "mega-learnability-paper": "https://arxiv.org/html/2209.10655v2",
+            "lra-reference-paper": "https://arxiv.org/html/2011.04006v2",
+            "pathfinder-generator-identity": "https://api.github.com/repos/drewlinsley/pathfinder/commits?per_page=1",
+            "pathfinder-generator-use": "https://api.github.com/repos/drewlinsley/pathfinder/license",
+        }
+    if args.targets:
+        pages = json.loads(args.targets.read_text(encoding="utf8"))
+        if not isinstance(pages, dict) or not 1 <= len(pages) <= 20:
+            parser.error("Targets must be a nonempty map with at most 20 entries")
+        for name, url in pages.items():
+            parts = urllib.parse.urlsplit(url)
+            if not isinstance(name, str) or parts.scheme not in ("http", "https") or not parts.hostname or parts.username or parts.password:
+                parser.error("Require named public HTTP URLs without credentials")
     for name, repo in repositories.items():
         body = collector.get(name + "-commit", f"https://api.github.com/repos/{repo}/commits?per_page=1")
         if body is None:
@@ -127,7 +155,7 @@ def main():
     for name, url in pages.items():
         collector.get(name, url)
     result = {"schema": "qkan-primary-source-receipt.v1", "pins": pins,
-              "policy": {"requests_max": 7 if args.recent_details else (6 if args.supplement else 22), "retries": 0, "per_origin_concurrency": 1,
+              "policy": {"requests_max": len(pages) + 2 * len(repositories) + (2 if repositories else 0), "retries": 0, "per_origin_concurrency": 1,
                          "minimum_delay_seconds": 1.5, "freshness": "retrieval time or explicitly unvalidated cache age",
                          "purpose": "baseline candidates, upstream protocol, dataset use terms",
                          "allowed_fields": ["public paper metadata", "README", "commit", "public use and license terms"]},
