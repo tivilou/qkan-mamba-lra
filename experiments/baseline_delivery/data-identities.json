@@ -5,6 +5,6 @@
   "dictionaries":{
     "listops":{"path":"metadata/source-v1/listops-dictionary.json","size_bytes":367,"sha256":"8cd7d84e817b6563f0b5eef03c79a0ed8dcd3365a6f16a1b78c702c2a1fad364"},
     "text":{"path":"metadata/source-v1/text-dictionary.json","size_bytes":1305,"sha256":"aa704c47a38bde6201f54a6c63370049aec8788ad8da3ce7e371de773ecda2cd"},
-    "retrieval":{"path":"metadata/source-v1/retrieval-dictionary.json","size_bytes":826,"sha256":"884d6f209c590e6f082996f5c0adfacbc709d11c6f115a122e66ba525b507ab8a"}
+    "retrieval":{"path":"metadata/source-v1/retrieval-dictionary.json","size_bytes":826,"sha256":"884d6f209c590e6f082996f5c0adfacbc709d11c6f15a122e66ba525b507ab8a"}
   }
 }
