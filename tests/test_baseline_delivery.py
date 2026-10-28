@@ -17,7 +17,7 @@ import torch
 from experiments.baseline_delivery.common import ROOT, atomic_json, child_spec, dictionary_path, digest, read
 from experiments.baseline_delivery.data import Split
 from experiments.baseline_delivery.models import Classifier, load_s4d, optimizer
-from experiments.baseline_delivery.runner import check_release, discover_gpus, return_files
+from experiments.baseline_delivery.runner import check_release, deliver, discover_gpus, return_files
 from experiments.baseline_delivery.sync import download
 from experiments.baseline_delivery.worker import save_checkpoint, load_checkpoint
 
@@ -140,6 +140,62 @@ class InputAdapterTests(unittest.TestCase):
         model.eval()
         with torch.no_grad():
             torch.testing.assert_close(model(batch),model({'inputs1':batch['inputs2'],'inputs2':batch['inputs1']}))
+
+    def test_trace_dtype_structure_values_and_corruption(self):
+        from experiments.baseline_delivery.trace import capture,semantic_validate
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'image').mkdir()
+            np.savez(root/'image/val.npz',inputs=np.zeros((2,1024),dtype=np.uint8),labels=np.array([0,1]))
+            split=Split(root,'image','val',root/'cache')
+            cfg={**config(model='s4d_minimal'),'source_revision':'unit-fixture'}
+            model=Classifier(cfg,CACHE);out=root/'result';out.mkdir()
+            capture(model,split,out,cfg,'0'*64)
+            self.assertTrue(read(out/'trace-validation.json')['passed'])
+            artifact=next((out/'trace-values').glob('*.npy'));artifact.write_bytes(b'corrupt')
+            with self.assertRaises((ValueError,OSError)): semantic_validate(out/'sample-trace.json')
+
+
+class SuiteReturnTests(unittest.TestCase):
+    def test_real_http_return_retry_preserves_snapshot_and_excludes_private(self):
+        from test_exchange import service
+        from scripts import exchange_artifacts as client
+        (ROOT/'runs').mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=ROOT/'runs') as tmp:
+            root=Path(tmp);suite=root/'suite';job=suite/'jobs/image-transformer-s42';(job/'checkpoints').mkdir(parents=True)
+            atomic_json(suite/'suite.json',{'source_revision':'fixture','jobs':[{'id':job.name}]})
+            atomic_json(suite/'status.json',{'job':{'state':'computed'}})
+            atomic_json(suite/'compute-complete.json',{'state':'computed','jobs':1})
+            for name,value in [('config.json',{}),('environment.json',{}),('summary.json',{'formal':True}),('trace-validation.json',{'passed':True})]:
+                atomic_json(job/name,value)
+            (job/'best-model.pt').write_bytes(b'weights');(job/'checkpoints/state.pt').write_bytes(b'full state')
+            atomic_json(job/'checkpoints/latest.json',{'file':'state.pt'})
+            (job/'sample-trace.json').write_text('PRIVATE TEXT MUST STAY LOCAL')
+            storage=root/'remote';storage.mkdir()
+            server=service.UploadServer(('127.0.0.1',0),service.UploadHandler,root=storage,
+                web_root=ROOT/'tools/exchange/web',token='test-only-token',max_bytes=1024*1024,namespace='qkan-mamba')
+            thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+            try:
+                transport=client.Transport('http://127.0.0.1:'+str(server.server_port),'test-only-token',allow_http=True)
+                original=transport.request;failed=[False]
+                def fail_one(method,route,body=None,size=0):
+                    if method=='PUT' and not failed[0]:
+                        failed[0]=True;raise OSError('simulated lost upload')
+                    return original(method,route,body,size)
+                transport.request=fail_one
+                with patch.object(client,'Transport',return_value=transport):
+                    with self.assertRaises(OSError): deliver(suite)
+                    self.assertFalse((suite/'delivery-complete.json').exists())
+                    atomic_json(suite/'status.json',{'changed_after_first_upload':True})
+                    deliver(suite);deliver(suite)
+                remote=storage/'qkan-mamba/baseline-suite/suite'
+                self.assertEqual(read(remote/'return-status.json'),{'job':{'state':'computed'}})
+                self.assertFalse(list(remote.rglob('sample-trace.json')))
+                self.assertEqual(read(suite/'delivery-complete.json')['state'],'delivered')
+                manifest=read(suite/'delivery.json')
+                self.assertEqual(manifest['source_revision'],'fixture')
+                self.assertTrue(all(r['status']=='verified' for r in manifest['files']))
+            finally:
+                server.shutdown();server.server_close();thread.join()
 
 
 class PinnedS4DTests(unittest.TestCase):

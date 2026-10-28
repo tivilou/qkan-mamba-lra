@@ -97,7 +97,7 @@ def capture(model,split,output,config,checkpoint):
         expected=np.concatenate((np.abs(encoded[0]-encoded[1]),encoded[0]*encoded[1])) if len(encoded)==2 else encoded[0]
         np.testing.assert_allclose(expected,lookup['pooled'],rtol=1e-5,atol=1e-6)
         with torch.no_grad():
-            replay=model.head(torch.tensor(expected,device=device)).cpu().numpy()
+            replay=model.head(torch.tensor(expected,device=device,dtype=model.head.weight.dtype)).cpu().numpy()
         np.testing.assert_allclose(replay,lookup['logits'],rtol=1e-5,atol=1e-6)
     atomic_json(output/'trace-validation.json',{'schema':'qkan-trace-readiness.v1','passed':True,
         'semantic':'decoded full arrays and coordinate reader','replay':'pooled encoder -> pair head -> logits',
