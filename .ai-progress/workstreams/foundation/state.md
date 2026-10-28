@@ -9,34 +9,35 @@
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
 - MEGA author-linked LRA archive is pinned and rebuilt into five adapted tasks on the replacement server; original source bytes and previous output remain preserved.
-- Revision `f149439` passed 26 scheduler-run synthetic tests and is published on GitHub through the authorized server relay. The worker checkout is clean at that revision.
+- Revision `6fd9392` passed 27 scheduler-run synthetic tests and completed the v3 data repair/audit; worker checkout is clean at that pinned revision. GitHub is verified through `f149439`; closeout publication is pending.
 - New relation and train/validation-only pilots completed on the registered CPU node; no formal model training launched.
 
 ## In Progress
 
 - D01: scheduler task `d18c07ab...` completed at pinned `ac8e0d4` on `owner-recovery-3080ti`. The new `mega-independent-pairclean-v2` has all five tasks; full-array diagnostics show zero exact encoded cross-split overlaps, label conflicts or structural failures.
 - Follow-up relations audit found 9958 train/val and 9684 train/test shared encoded documents; every validation/test pair includes a document seen in training. v2 requires revision for unseen-document claims despite zero pair overlap.
-- Preparing separate `mega-document-disjoint-v3`: deterministic document/verified-near-duplicate group split, cross-partition pairs discarded, all parent bytes and row provenance preserved. Not built or verified yet.
-- Pilot finds signal for Text/Image; ListOps input-only parser has 0/1024 mismatches. Weak linear references for Retrieval/Pathfinder are inconclusive; they do not reject task learnability.
+- `mega-document-disjoint-v3` is built and audited: Retrieval counts 117790/1804/1724; zero exact shared documents or discovered near-duplicate cross-split edges; other four task NPZ hashes unchanged from v2. All six output hashes match terminal receipt.
+- Pilot finds signal for Text/Image/v3 Retrieval (58.20% versus 48.34% majority/null); ListOps input-only parser has 0/1024 mismatches. Weak Pathfinder reference is inconclusive and does not reject task learnability.
+- Current assessment: docs/evidence/mega-document-v3-qualification.json, status insufficient; formal_baseline_allowed=false.
 - Formal experiment package remains pending data qualification and baseline selection.
 
 ## Next Actions
 
-- 经统一调度验证文档组隔离版本的构建、类分布与关系审计
+- 补足 Pathfinder 的适当参考或严格源等价证据，并闭合逐任务用途记录后审定 v3 资格
 
 ## Blockers
 
-- D01 remains gated by document isolation, appropriate learnability evidence and per-task use boundaries. LRA explicitly disallows redistributing AAN text; do not upload AAN-derived arrays to the exchange.
+- D01 remains gated by adequate Pathfinder evidence and per-task use records. LRA explicitly disallows redistributing AAN text; do not upload AAN-derived arrays to the exchange. Approximate deduplication does not certify author independence.
 - Dataset qualification remains insufficient; historical Text JSON/checkpoint is still unavailable and is not synthesized.
 
 ## Validation
 
-- At `f149439`, 26/26 tests pass through the shared scheduler (13 data + 6 qualification + 7 exchange). v3 edits remain pending another registered preflight.
+- At `6fd9392`, 27/27 tests pass through the shared scheduler (13 data + 7 qualification + 7 exchange). v3 task `87b98cf7...` complete, returncode 0, quiescent; six report hashes verified.
 - MEGA archive SHA-256 `b141aacd...fee13`; five-task source build is 794 MiB with full build and diagnostic manifests in `docs/evidence/`.
 - Scheduler task is complete with returncode 0 and quiescent receipt; 15 split hashes and all four compact output hashes verified. Receipt: `docs/evidence/scheduler-completion-20261028.json`.
 - The same seven artifact exchange tests pass on Windows and replacement-server Linux; six live HTTPS exchange checks pass.
 - Linux rebuild of the portal from committed sources produces no diff; LF source hashes agree across platforms.
-- Six portal routes healthy; 57 Playwright assertions pass at 1280px/390px. Registry, plan and JavaScript syntax checks pass.
+- Six portal routes healthy; 65 Playwright checks pass at 1280px/390px, including new v3, recent-paper and delivery projections. Registry and plan/state reconciliation pass; existing portal process retained.
 - Service runtime: independent supervisor qkan-mamba-exchange; app/storage under /srv/qkan-mamba-exchange/. Secrets remain outside Git and portal.
 - Local portal runs at loopback port 4191 via scripts/serve_portal.py; restart command is in research-web/README.md.
 
@@ -52,6 +53,6 @@
 - Focus Step: D01
 - Focus Status: active
 - Completed Steps: F01, F02, F03
-- Next Action: 完成三项剩余资格证据；基线正式比较尚未解锁
-- Blocker: None; qualification evidence remains to be completed
+- Next Action: 补足 Pathfinder 的适当参考或严格源等价证据，并闭合逐任务用途记录后审定 v3 资格
+- Blocker: None; v3 qualification remains insufficient
 - Last Checkpoint: 2026-10-28

@@ -21,3 +21,5 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -B scripts/qualification_pilot.p
 ```
 
 预检只使用合成数据；关系审计读取五任务版本中的 Retrieval 全部三划分但不训练；pilot 只取 train≤4096、validation≤1024，每任务固定 12 epoch 线性参考和 shuffled-label control，不打开 test。每个报告都保留 `formal_baseline_allowed=false`；弱参考没有信号只表示诊断不充分，不能否定长程序列任务可学习性。
+
+v2 的关系审计已证实大规模跨划分文档共享，不能发放其正式任务。v3 在原始行号可追溯的前提下重新划分文档组。pilot 的 Wilson 阈值只作描述性筛查；Retrieval 的同一划分内部仍可能共享文档，不把文档对当作独立样本报告正式置信区间，后续分析须按文档／关系组处理依赖性。AAN 文本与派生 token 数组不进入我们的共享服务，见 `docs/data-use-boundaries.md`。

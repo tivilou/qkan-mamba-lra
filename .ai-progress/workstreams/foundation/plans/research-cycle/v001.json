@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "建立可审计的开发测试—合作者实验—文件回传—分析与门户—Idea迭代流程",
   "focus_step_id": "D01",
-  "next_action": "经统一调度验证文档组隔离版本的构建、类分布与关系审计",
+  "next_action": "补足 Pathfinder 的适当参考或严格源等价证据，并闭合逐任务用途记录后审定 v3 资格",
   "blocker": null,
   "user_confirmation_needed": false,
   "change_log": [
@@ -143,18 +143,20 @@
         "docs/evidence/mega-independent-pairclean-v2-qualification.json",
         "docs/evidence/mega-pairclean-v2-relations-20261028.json",
         "docs/evidence/mega-pairclean-v2-pilot-20261028.json",
-        "docs/evidence/qualification-preflight-20261028.json"
+        "docs/evidence/qualification-preflight-20261028.json",
+        "docs/evidence/mega-document-v3-qualification.json",
+        "docs/evidence/document-v3-scheduler-completion-20261028.json"
       ],
       "owner": "我们＋合作者",
       "blocker": null,
-      "notes": "任务 d18c07ab complete；pairclean-v2 五任务结构失败、编码级跨划分重叠和标签冲突均为0。资格为 insufficient，许可/关系单元/可学习性三门槛待完成；formal baseline 仍禁止。\nv2 pair-level audit passed but all validation/test rows share training documents; preserve v2 and repair with document-group-disjoint v3. No formal baseline release.",
+      "notes": "任务 d18c07ab complete；pairclean-v2 五任务结构失败、编码级跨划分重叠和标签冲突均为0。资格为 insufficient，许可/关系单元/可学习性三门槛待完成；formal baseline 仍禁止。\nv2 pair-level audit passed but all validation/test rows share training documents; preserve v2 and repair with document-group-disjoint v3. No formal baseline release.\nv3 complete: 117790/1804/1724 Retrieval rows; exact shared docs and discovered cross-split near-duplicate edges zero; 27 synthetic tests passed. Formal gate still insufficient.",
       "supersedes": [],
       "superseded_by": []
     },
     {
       "id": "R01",
       "title": "相关工作调研与基线队列",
-      "status": "todo",
+      "status": "active",
       "objective": "相关工作调研与基线队列",
       "inputs": [
         "F01"
@@ -169,10 +171,13 @@
         "任务匹配的近期强方法和经典参考有一手证据",
         "纳入排除原因和协议可比性明确"
       ],
-      "evidence_paths": [],
+      "evidence_paths": [
+        "docs/baselines/candidate-inventory.md",
+        "docs/baselines/recent-screen.md"
+      ],
       "owner": "我们",
       "blocker": null,
-      "notes": "",
+      "notes": "\nSupporting step: pinned six source repositories, screened two recent search pages and six task-matched papers; cohort not frozen.",
       "supersedes": [],
       "superseded_by": []
     },

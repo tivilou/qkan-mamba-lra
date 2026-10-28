@@ -1,0 +1,11 @@
+{
+  "checks": {
+    "source_preserved": true,
+    "all_numeric_arrays_and_exact_pairs": true,
+    "document_disjoint": true,
+    "verified_near_duplicate_disjoint": true,
+    "both_retrieval_classes": true
+  },
+  "formal_baseline_allowed": false,
+  "status": "insufficient"
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "qkan-dataset-qualification.v1",
+  "profile": "mega-document-disjoint-v3",
+  "status": "insufficient",
+  "formal_baseline_allowed": false,
+  "release_gate": "stop",
+  "scope": ["listops", "text", "retrieval", "image", "pathfinder"],
+  "assessment_kind": "evidence-linked research assessment; not an automatic structural-pass promotion",
+  "evidence": {
+    "build_manifest_sha256": "1877ae821926f0da2322fb2b7ace9277836e4b2afb418abd8688770ff1446d2f",
+    "retrieval_relations_sha256": "aa521f30d8c4a822d154267c61b0ff0c19eb2a3b34422f1a23230b04fdac0436",
+    "retrieval_pilot_sha256": "8e405ee16abc85a6288867017778ffa1323f8c81ec7c19c21991f43ed29bde5e",
+    "scheduler_receipt": "docs/evidence/document-v3-scheduler-completion-20261028.json",
+    "task_contract": "docs/dataset-qualification-v3.md",
+    "use_boundary": "docs/data-use-boundaries.md"
+  },
+  "gates": {
+    "five_task_files_and_hashes": true,
+    "numeric_schema_and_label_range": true,
+    "exact_encoded_cross_split_independence": true,
+    "retrieval_exact_document_disjointness": true,
+    "verified_near_duplicate_edges_grouped": true,
+    "all_near_duplicates_exhaustively_excluded": false,
+    "frozen_input_and_evaluation_contract_documented": true,
+    "text_image_and_adapted_retrieval_reference_signals": true,
+    "listops_input_only_label_alignment": true,
+    "adequate_pathfinder_learnability_evidence_under_frozen_transform": false,
+    "per_task_data_license_and_use_boundary_closed": false
+  },
+  "near_duplicate_scope": "Approximate 32-minhash/8-band search; all discovered cross-split near-duplicate edges are absent in v3. Do not claim exhaustive semantic deduplication or author independence.",
+  "claim_boundary": "Adapted five-task long-sequence classification; Retrieval holds out encoded document groups. No direct comparison with original/historical LRA or MEGA scores; no method success or quantum advantage is established.",
+  "next_actions": [
+    "Use an appropriate bounded Pathfinder reference or verified source-equivalence plus authoritative learnability evidence; weak linear failure is inconclusive.",
+    "Close per-task source/use records and collaborator acquisition boundaries; do not redistribute AAN text or derived token arrays.",
+    "After qualification, freeze the evidence-grounded baseline cohort and certify source fidelity, recovery, trace and hardware gates before collaborator full runs."
+  ]
+}

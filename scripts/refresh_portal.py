@@ -40,7 +40,7 @@ def main():
     registry = {"schema_version": "research-web.portal-registry.v1", "project": {"id": "qkan-mamba", "name": "QKAN–Mamba", "privacy": "127.0.0.1 only", "subtitle": "长序列分类 · 研究证据与协作工作台"}, "apps": []}
     for app_id, skill, title, summary in apps:
         app = {"id": app_id, "skill_id": skill, "instance_id": "qkan-mamba-" + app_id, "title": title, "summary": summary,
-               "entry": "/apps/" + app_id + "/", "mode": "static", "status": "ready", "updated_at": "2026-10-21",
+               "entry": "/apps/" + app_id + "/", "mode": "static", "status": "ready", "updated_at": "2026-10-28",
                "design_system": "research-web-design-system", "theme": "research-editorial-v1", "components": ["research-web-table.v1"]}
         if app_id == "experiment-results":
             app["components"].insert(0, "experiment-results-workbench.v1")
@@ -52,9 +52,9 @@ def main():
     write("apps/plan/data.json", {"plan": plan, "source": PLAN})
     write("apps/experiment-results/data.json", results)
     docs = {"overview": ["docs/audits/recovery-20261021.md", "docs/research-plan.md"],
-            "qualification": ["docs/data-and-literature-readiness.md", "docs/case-study-plan.md"],
+            "qualification": ["docs/data-and-literature-readiness.md", "docs/dataset-qualification-v3.md", "docs/baselines/candidate-inventory.md", "docs/baselines/recent-screen.md", "docs/data-use-boundaries.md", "docs/case-study-plan.md"],
             "research-notes": ["docs/research-log/README.md", "docs/research-log/20261021-date-only-foundation-audit.md"],
-            "collaboration": ["docs/collaboration.md"]}
+            "collaboration": ["docs/collaboration.md", "docs/baselines/delivery-contract.md"]}
     for app_id, paths in docs.items():
         write(f"apps/{app_id}/data.json", {"documents": [{"title": (ROOT / path).read_text(encoding="utf-8").splitlines()[0].lstrip("# "), "source": path, "text": (ROOT / path).read_text(encoding="utf-8")} for path in paths]})
     source = ROOT / "docs/text_task_pilot_results.md"

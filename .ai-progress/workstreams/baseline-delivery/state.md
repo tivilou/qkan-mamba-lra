@@ -26,7 +26,7 @@
 ## Validation
 
 - Official source commits and README/paper metadata retrieved through the authorized server; compact source receipt committed with this stage.
-- At f149439, 26 qualification/data/exchange tests passed through the shared scheduler. These tests do not certify baseline fidelity; no baseline performance is claimed.
+- At 6fd9392, 27 qualification/data/exchange tests passed through the shared scheduler; v3 document isolation checks passed. These tests do not certify baseline fidelity; no baseline performance is claimed.
 
 ## Relevant Decisions
 
