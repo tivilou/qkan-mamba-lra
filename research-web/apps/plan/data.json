@@ -7,13 +7,17 @@
     "status": "active",
     "objective": "建立可审计的开发测试—合作者实验—文件回传—分析与门户—Idea迭代流程",
     "focus_step_id": "D01",
-    "next_action": "定位合作者备份或合法原始来源，恢复五任务数据并登记来源、划分和哈希",
-    "blocker": null,
+    "next_action": "等待统一调度任务 d18c07ab 自动入场，收回资格输出并完成 D01 门槛判定",
+    "blocker": "owner-recovery-3080ti 工作 cgroup 当前无 128 MB admission 余量；任务安全排队，未绕过调度",
     "user_confirmation_needed": false,
     "change_log": [
       {
         "date": "2026-10-21",
         "reason": "用户授权执行既定协作计划；旧实例释放，明确替代恢复目标"
+      },
+      {
+        "date": "2026-10-28",
+        "reason": "固定 MEGA 来源并重建五任务；注册 CPU-only 资格审计配方，按统一调度安全排队"
       }
     ],
     "steps": [
@@ -122,10 +126,17 @@
           "标签、长度、独立划分、泄漏与转换核验通过",
           "qualified记录与哈希齐全"
         ],
-        "evidence_paths": [],
+        "evidence_paths": [
+          "docs/data-rebuild-protocol.md",
+          "docs/evidence/data-source-investigation-20261021.json",
+          "docs/evidence/mega-download-20261021.json",
+          "docs/evidence/mega-independent-v1-build.json",
+          "docs/evidence/mega-independent-v1-diagnostics.json",
+          "docs/evidence/scheduler-dispatch-20261028.json"
+        ],
         "owner": "我们＋合作者",
-        "blocker": null,
-        "notes": "恢复前不假定历史数据仍可用",
+        "blocker": "统一调度任务 d18c07ab 等待 owner-recovery-3080ti 恢复 128 MB worker headroom",
+        "notes": "MEGA 来源与五任务重建已固定；初始全量审计为 revise。formal baseline 仍禁止。",
         "supersedes": [],
         "superseded_by": []
       },
@@ -288,7 +299,7 @@
         "superseded_by": []
       }
     ],
-    "updated_at": "2026-10-21"
+    "updated_at": "2026-10-28"
   },
   "source": ".ai-progress/workstreams/foundation/plans/research-cycle/v001.json"
 }

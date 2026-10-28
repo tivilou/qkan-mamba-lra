@@ -1,6 +1,6 @@
 # QKAN-Mamba 研究与协作计划
 
-状态日期：2026-10-21。机器可读计划由 `.ai-progress/workstreams/foundation/plans/research-cycle/v001.json` 管理。
+状态日期：2026-10-28。机器可读计划由 `.ai-progress/workstreams/foundation/plans/research-cycle/v001.json` 管理。
 
 ## 工作方式
 
@@ -29,3 +29,5 @@
 ## 基础设施变更
 
 原 3080Ti 实例已在服务器登记中标记释放。替代实例作为明确选定的恢复目标；首次核查有 GPU，但没有本项目目录和 LRA 数据。先恢复代码、证据和协作能力，数据来源重新核实，不能假定 `/tmp/lra_fixed` 仍存在。
+
+2026-10-28 更新：替代实例已恢复项目目录并保存固定 MEGA 原始包与五任务重建。统一调度系统中 QKAN-Mamba 只授权 `owner-recovery-3080ti`；该节点当前未向调度器暴露 GPU，适合本轮 CPU 流式审计。Titan 离线且未授权，P4 属于其他项目。资格审计任务已排队，未绕过资源门槛；正式训练仍由合作者执行。

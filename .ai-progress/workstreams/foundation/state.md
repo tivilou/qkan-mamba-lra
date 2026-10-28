@@ -8,24 +8,31 @@
 
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
-- Historical report preserved; original data/JSON/checkpoint not recovered. No formal model training launched.
-- Foundation branch pushed and restored at /home/qkan-mamba-lra/ on the explicitly selected replacement; draft PR: https://github.com/tivilou/qkan-mamba-lra/pull/1 .
+- MEGA author-linked LRA archive is pinned and rebuilt into five adapted tasks on the replacement server; original source bytes and previous output remain preserved.
+- Data pipeline revision `ac8e0d4` adds safe reconstruction, full-array diagnostics, conservative Retrieval pair curation and 13 passing tests. No formal model training launched.
+- The server has the exact revision via a verified temporary Git bundle; GitHub publication of `ac8e0d4` remains pending because both HTTPS and SSH GitHub paths were unreachable.
 
 ## In Progress
 
-- D01: restore and qualify five-task data. Find collaborator backups or legitimate upstream sources before declaring any task qualified.
+- D01: the unified scheduler registered `lra-pair-qualification-v1` on the only authorized node, `owner-recovery-3080ti`. Task `d18c07ab...` is queued with no attempt while shared cgroup memory pressure blocks admission.
+- Current data status is `revise` for the source build and never auto-qualified; formal baseline release remains stopped pending clean curation output, per-task license/use boundaries, Retrieval relation-unit audit and frozen-transform learnability evidence.
 - Formal experiment package remains pending data qualification and baseline selection.
 
 ## Next Actions
 
-- 定位合作者备份或合法原始来源，恢复五任务数据并登记来源、划分和哈希
+- 等待统一调度器在资源恢复后自动执行 `d18c07ab...`；收回四个紧凑输出并核验哈希、更新资格状态与门户
+- GitHub 网络恢复后推送 `ac8e0d4`，再开展逐任务许可边界与 Retrieval 关系单元审计
 
 ## Blockers
 
-- Historical LRA data and Text JSON/checkpoint are not presently available. Dataset qualification remains insufficient.
+- Scheduler admission currently reports 0 MB worker headroom because the shared 1 GiB cgroup is under concurrent file-cache/service pressure; resource budgets were not weakened and unrelated processes were not interrupted.
+- Dataset qualification remains insufficient; historical Text JSON/checkpoint is still unavailable and is not synthesized.
 
 ## Validation
 
+- Data pipeline: 13/13 unit tests pass under conda `QT` (Python 3.11); server data environment is Python 3.10.12 with NumPy 2.2.6.
+- MEGA archive SHA-256 `b141aacd...fee13`; five-task source build is 794 MiB with full build and diagnostic manifests in `docs/evidence/`.
+- Scheduler controller is online; qkan recipe/control-node definitions match exactly, server checkout is clean at `ac8e0d4`, and queued task has no partial attempt or output.
 - The same seven artifact exchange tests pass on Windows and replacement-server Linux; six live HTTPS exchange checks pass.
 - Linux rebuild of the portal from committed sources produces no diff; LF source hashes agree across platforms.
 - Six portal routes healthy; 57 Playwright assertions pass at 1280px/390px. Registry, plan and JavaScript syntax checks pass.
@@ -44,6 +51,6 @@
 - Focus Step: D01
 - Focus Status: active
 - Completed Steps: F01, F02, F03
-- Next Action: 定位合作者备份或合法原始来源，恢复五任务数据并登记来源、划分和哈希
-- Blocker: None
-- Last Checkpoint: 2026-10-21
+- Next Action: 等待任务 d18c07ab 自动入场，收回资格输出并完成 D01 门槛判定
+- Blocker: owner-recovery-3080ti worker headroom 0 MB; task safely queued
+- Last Checkpoint: 2026-10-28

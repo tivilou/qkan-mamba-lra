@@ -1,14 +1,16 @@
 # 数据与相关工作准备状态
 
-当前结论：任务已选择 LRA 的 ListOps、Text/IMDB、Image/CIFAR-10、Pathfinder、Retrieval；数据资格状态为 **insufficient**，尚未解锁正式基线比较。
+当前结论（2026-10-28）：任务已选择 LRA 的 ListOps、Text/IMDB、Image/CIFAR-10、Pathfinder、Retrieval。五任务已从固定 MEGA 公开包重建，但资格状态仍为 **insufficient/revise**，尚未解锁正式基线比较。
 
 ## 数据
 
-此前五任务 train/val/test 文件在旧实例上存在；旧实例现已释放。替代实例本轮未发现这些目录，当前不能宣称文件可用或已经恢复。先询查合作者已有副本、核对历史来源，再决定是否重新获取。
+旧实例已释放且无合作者副本。用户提供的 MEGA 作者链接已在替代服务器下载并固定：1,447,223,076 bytes，观测 SHA-256 `b141aacd5537ad6108862117597c41d9d2a67d6420c54f74c76df615073fee13`。Kaggle version 1 只用于文件清单与来源交叉核对，没有下载其 22.28 GB pickle。原始包和重建输出均不覆盖。
 
-资格核验必须记录：权威来源、许可、原始版本/转换代码、样本数/长度/类别分布、独立划分、跨划分重复、标签映射、padding/mask、输入表示、评估规则、哈希和必要可学习性检查。文件齐全不能替代核验。
+`mega-independent-v1` 已生成五任务 train/val/test、来源行号、字典、shape/dtype、类别分布和文件哈希。Text 原 valid 与 test 输入完全相同，因此改为仅从原 train 按编码身份和类别构造新验证集，保留原 test；长度固定为 4000，这与旧项目 4096 协议不可混用。Retrieval 每篇文档长度为 4000，不使用旧转换器的 2000×2。
 
-报告与代码中的 Text 4000/4096、Retrieval 2000×2/4096×2 等描述不一致；不得混合后宣称同协议。Text 验证与测试是否独立还需直接证据。
+首轮完整数组审计发现 ListOps、Text、Image、Pathfinder 没有编码级跨划分重复或冲突；Retrieval 有 train/val 35、train/test 46、val/test 1 个无序文档对重叠，以及 93 个无序文档对冲突标签组，因此源构建状态为 `revise`。`lra-pair-qualification-v1` 将在独立版本中剔除冲突组并按 test→val→train 保留唯一对；统一调度任务 `d18c07ab...` 已安全排队，尚未产生 attempt 或结果。
+
+即使该结构审计通过，程序也只会给出 `insufficient`，不会自动签发 qualified。仍需逐任务数据许可/用途边界、Retrieval 共享单文档与近重复边界、冻结输入变换和必要可学习性证据。MEGA/LRA 代码许可或 Kaggle 页面 CC0 标签不能代替这些数据级证明。
 
 ## 相关工作范围（尚未完成调研）
 
@@ -24,4 +26,4 @@
 
 当前上游 Mamba-only 初测尚未形成正式忠实性证书；S4 为简化自写实现；Transformer 已有代码但无已恢复结果。正式队列尚未选定。历史文档中的平均准确率和 >83% 目标未附核实来源，不能作正式比较依据。
 
-下一步：恢复一个可核验的数据副本，收集权威协议证据；相关工作调研可以并行。数据 qualified、队列与协议冻结、实现忠实性和运行预检通过后，才发放正式基线任务。
+下一步：等待统一调度任务在 128 MB worker headroom 恢复后自动执行，收回 build、pair-curation、diagnostics、qualification 四个紧凑记录并核验哈希；同时完成数据许可与 Retrieval 关系单元审计。相关工作调研可以并行。数据 qualified、队列与协议冻结、实现忠实性和运行预检通过后，才发放正式基线任务。
