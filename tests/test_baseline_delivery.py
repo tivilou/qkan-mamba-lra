@@ -83,6 +83,7 @@ class RunnerTests(unittest.TestCase):
                 with self.assertRaises(ValueError): discover_gpus(value)
     def test_streamed_chunk_reassembly(self):
         # The remote parent directory preserves each local part basename.
+        (ROOT/'runs').mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=ROOT/'runs') as tmp:
             path=Path(tmp)/'weights.pt';path.write_bytes(bytes(range(255))*17)
             mappings=return_files(path,'checkpoints/weights.pt',part_size=1024)
