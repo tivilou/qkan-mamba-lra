@@ -9,7 +9,7 @@
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
 - MEGA author-linked LRA archive is pinned and rebuilt into five adapted tasks on the replacement server; original source bytes and previous output remain preserved.
-- Revision `6fd9392` passed 27 scheduler-run synthetic tests and completed the v3 data repair/audit; worker checkout is clean at that pinned revision. GitHub is verified through `f149439`; closeout publication is pending.
+- Revision `6fd9392` passed 27 scheduler-run synthetic tests and completed the v3 data repair/audit; worker checkout is clean at that pinned revision. GitHub publication through `32bc988` is verified using separate delivery refs; worker HEAD is unchanged.
 - New relation and train/validation-only pilots completed on the registered CPU node; no formal model training launched.
 
 ## In Progress
@@ -33,6 +33,7 @@
 ## Validation
 
 - At `6fd9392`, 27/27 tests pass through the shared scheduler (13 data + 7 qualification + 7 exchange). v3 task `87b98cf7...` complete, returncode 0, quiescent; six report hashes verified.
+- All QKAN queue tasks are terminal; no running or unknown attempt remains. Existing qattn-cfra Python 3.10 environment has torch-2.7.1 package metadata, but it has not been imported/accepted for QKAN diagnostics; data jobs used the unchanged NumPy data environment.
 - MEGA archive SHA-256 `b141aacd...fee13`; five-task source build is 794 MiB with full build and diagnostic manifests in `docs/evidence/`.
 - Scheduler task is complete with returncode 0 and quiescent receipt; 15 split hashes and all four compact output hashes verified. Receipt: `docs/evidence/scheduler-completion-20261028.json`.
 - The same seven artifact exchange tests pass on Windows and replacement-server Linux; six live HTTPS exchange checks pass.
