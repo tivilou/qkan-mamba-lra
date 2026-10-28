@@ -17,6 +17,14 @@ def read(path):
     return json.loads(Path(path).read_text(encoding='utf8'))
 
 
+def dictionary_path(root,task):
+    root=Path(root)
+    if (root/'synthetic-canary.json').is_file():
+        return root/'metadata'/(task+'-dictionary.json')
+    entry=read(ROOT/'experiments/baseline_delivery/data-identities.json')['dictionaries'][task]
+    return root/entry['path']
+
+
 def digest(path):
     value = hashlib.sha256()
     with Path(path).open('rb') as handle:

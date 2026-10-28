@@ -102,10 +102,11 @@ def verify_data(data):
             if not path.is_file() or path.is_symlink() or path.stat().st_size != item['size_bytes'] or digest(path) != item['sha256']:
                 raise ValueError('Dataset verification failed: '+task['task']+'/'+split)
             records.append({'task':task['task'],'split':split,'sha256':item['sha256']})
-    for task in ('listops','text','retrieval'):
-        dictionary = data/'metadata'/(task+'-dictionary.json')
-        if dictionary.is_symlink() or not dictionary.is_file():
-            raise ValueError('Missing token dictionary: '+task)
+    for task,entry in read(ROOT/'experiments/baseline_delivery/data-identities.json')['dictionaries'].items():
+        dictionary=data/entry['path']
+        if (dictionary.is_symlink() or not dictionary.is_file() or dictionary.stat().st_size!=entry['size_bytes']
+                or digest(dictionary)!=entry['sha256']):
+            raise ValueError('Missing/changed frozen token dictionary: '+task)
     return records
 
 

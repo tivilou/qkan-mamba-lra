@@ -14,7 +14,7 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
-from experiments.baseline_delivery.common import ROOT, atomic_json, child_spec, digest, read
+from experiments.baseline_delivery.common import ROOT, atomic_json, child_spec, dictionary_path, digest, read
 from experiments.baseline_delivery.data import Split
 from experiments.baseline_delivery.models import Classifier, load_s4d, optimizer
 from experiments.baseline_delivery.runner import check_release, discover_gpus, return_files
@@ -106,6 +106,9 @@ class RunnerTests(unittest.TestCase):
 
 
 class InputAdapterTests(unittest.TestCase):
+    def test_curated_dictionary_preserves_nested_source_identity(self):
+        path=dictionary_path('/dataset/v3','text')
+        self.assertEqual(path,Path('/dataset/v3/metadata/source-v1/text-dictionary.json'))
     def test_integer_inputs_separate_documents_and_mask(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'retrieval').mkdir()

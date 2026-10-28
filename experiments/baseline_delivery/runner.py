@@ -13,7 +13,7 @@ import sys
 import time
 import uuid
 
-from .common import ROOT, atomic_json, child_spec, digest, fingerprint, lock, read, revision, run_child, spawn, stop_child
+from .common import ROOT, atomic_json, child_spec, dictionary_path, digest, fingerprint, lock, read, revision, run_child, spawn, stop_child
 from .sync import prepare, verify_data
 
 
@@ -41,7 +41,8 @@ def check_release(config=None):
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
     paths += [ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
-              ROOT/'experiments/baseline_delivery/assets.json',ROOT/'tools/sample_trace_contract/validate.py']
+              ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
+              ROOT/'tools/sample_trace_contract/validate.py']
     return fingerprint({p.relative_to(ROOT).as_posix():digest(p) for p in paths})
 
 
@@ -68,7 +69,7 @@ def config_for(task,model,seed,data,source):
     config={**protocol['training'],**protocol['model_defaults'][model],
             'task':task,'model':model,'seed':seed,'source_revision':source,
             'protocol_sha256':digest(ROOT/'experiments/baseline_delivery/protocol.json')}
-    config['vocabulary']=(len(read(Path(data)/'metadata'/(task+'-dictionary.json'))['input_symbols'])
+    config['vocabulary']=(len(read(dictionary_path(data,task))['input_symbols'])
                           if task not in ('image','pathfinder') else None)
     expected=read(ROOT/'docs/evidence/mega-document-v3-build.json')
     item=next(t for t in expected['tasks'] if t['task']==task)
@@ -116,7 +117,7 @@ def canary(config,data,cache,output,device='cpu'):
     if config['vocabulary']:
         import shutil
         (small/'metadata').mkdir()
-        shutil.copyfile(Path(data)/'metadata'/(task+'-dictionary.json'),small/'metadata'/(task+'-dictionary.json'))
+        shutil.copyfile(dictionary_path(data,task),small/'metadata'/(task+'-dictionary.json'))
     atomic_json(small/'synthetic-canary.json',{'bounded':True,'source_task':task,'test_included':False})
     probe={**config,'epochs':2,'data_hashes':{},'checkpoint_steps':1}
     cfg=folder/'config.json';atomic_json(cfg,probe)

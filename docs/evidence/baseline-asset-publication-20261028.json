@@ -1,0 +1,29 @@
+{
+  "schema": "qkan-baseline-asset-publication.v1",
+  "passed": true,
+  "namespace": "qkan-mamba",
+  "asset_id": "s4d-e757cef57d89",
+  "transport": "HTTPS with CA and hostname verification",
+  "checks": [
+    "upload_receipt",
+    "idempotent_upload",
+    "real_asset_sync_download",
+    "cache_reuse",
+    "member_hashes"
+  ],
+  "receipts": [
+    {
+      "path": "qkan-mamba/baseline-assets/s4d-e757cef57d89/source.zip",
+      "sha256": "8bd3515d8fc5d5a6662521a84497885a298a573c82635ea7b0903e0a7c4d39fa",
+      "size_bytes": 7685
+    },
+    {
+      "path": "qkan-mamba/baseline-assets/s4d-e757cef57d89/source.zip",
+      "sha256": "8bd3515d8fc5d5a6662521a84497885a298a573c82635ea7b0903e0a7c4d39fa",
+      "size_bytes": 7685
+    }
+  ],
+  "datasets_published": false,
+  "license": "Apache-2.0",
+  "credentials": "not included"
+}

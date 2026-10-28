@@ -9,7 +9,7 @@ import zipfile
 import numpy as np
 import torch
 
-from .common import atomic_json, digest, fingerprint, lock, read
+from .common import atomic_json, dictionary_path, digest, fingerprint, lock, read
 
 TASKS = {'listops':(2048,10), 'text':(4000,2), 'retrieval':(4000,2),
          'image':(1024,10), 'pathfinder':(1024,2)}
@@ -71,5 +71,5 @@ class Split:
 def vocabulary(root,task):
     if task in ('image','pathfinder'):
         return None,None
-    path=Path(root)/'metadata'/(task+'-dictionary.json')
+    path=dictionary_path(root,task)
     return len(read(path)['input_symbols']),digest(path)
