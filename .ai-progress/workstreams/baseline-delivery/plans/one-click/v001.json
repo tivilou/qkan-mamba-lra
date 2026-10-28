@@ -5,9 +5,9 @@
   "workstream": "baseline-delivery",
   "status": "active",
   "objective": "实现并验证自动准备、隔离运行、完整恢复及文件回传入口；保持正式比较的资格与复现门槛",
-  "focus_step_id": "H01",
-  "next_action": "发布测试证据与合作者交接版本",
-  "blocker": "原授权节点 SSH 间歇 connection_closed，正在恢复稳定连接",
+  "focus_step_id": "F01",
+  "next_action": "合作者在实际 GPU 节点执行 preflight 并回传收据；研究方继续完成数据资格、cohort 与逐模型 fidelity",
+  "blocker": "正式运行仍被数据用途资格、cohort 冻结、逐模型 fidelity 及合作者 GPU 预检阻止",
   "user_confirmation_needed": false,
   "steps": [
     {
@@ -97,7 +97,7 @@
     {
       "id": "H01",
       "title": "发布测试证据与合作者交接版本",
-      "status": "active",
+      "status": "done",
       "objective": "发布测试证据与合作者交接版本",
       "inputs": [
         "V01",
@@ -114,11 +114,12 @@
         "代码经授权服务器推到GitHub；明确CPU/GPU/正式放行三种证据状态"
       ],
       "evidence_paths": [
+        "docs/baselines/one-click.md",
         "docs/baselines/one-click.md"
       ],
       "owner": "我们；GPU 验收由合作者执行",
-      "blocker": null,
-      "notes": "",
+      "blocker": "正式运行仍被数据用途资格、cohort 冻结、逐模型 fidelity 及合作者 GPU 预检阻止",
+      "notes": "\nfac5ae5 已经由 3080Ti 推送到 GitHub research/collaboration-foundation；CPU/GPU/formal 三层证据边界已写入交接文档",
       "supersedes": [],
       "superseded_by": []
     },
