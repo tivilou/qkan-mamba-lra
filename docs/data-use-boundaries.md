@@ -8,7 +8,7 @@
 | MEGA 处理包 | [作者配置页与下载链接](https://github.com/facebookresearch/mega/blob/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/README.lra.md) | 下载源已固定并重建；没有找到覆盖全部数据的单一授权声明。 |
 | ListOps | LRA 源码与原始任务文献 | 合成任务；仍需核对生成器来源和生成数据的声明，不能仅从主仓库 LICENSE 推断。 |
 | IMDb | Stanford Large Movie Review Dataset 作者页 | 本次服务器请求 connection refused，未得到用途正文；记录失败，继续核实正式条款。 |
-| AAN Retrieval | LRA／MEGA 提供的 AAN 派生任务 | 尚未取得与这个历史 AAN 版本严格对应的版权和再分发声明；ACL Anthology 通用版权页请求 404，即使取到通用许可也不能直接替代 AAN 版本证据。 |
+| AAN Retrieval | LRA／MEGA 提供的 AAN 派生任务 | LRA 固定 README 明确表示不能再分发此数据，仅发布文档对 ID。禁止将 AAN 文本或派生 token 数组上传我们的共享服务。后续取得了 [ACL FAQ](https://aclanthology.org/faq/#what-is-the-copyright-for-materials-in-the-acl-anthology) 与 [AAN 作者页](https://clair.eecs.umich.edu/aan/index.php)，但通用 ACL 许可不直接替代这个历史 AAN 版本的声明。向合作者交付来源、重建代码和哈希，独立核对其获取条件。 |
 | CIFAR-10 灰度序列 | [CIFAR 作者页](https://www.cs.toronto.edu/~kriz/cifar.html) | 作者公开下载并要求引用技术报告；页面未提供足以覆盖本项目再分发的统一许可，保留引用和数据来源。 |
 | Pathfinder32 | LRA／MEGA 提供的图像和标签 | 需核对生成器、原始任务来源及发布声明；不将代码许可自动外推到图像。 |
 

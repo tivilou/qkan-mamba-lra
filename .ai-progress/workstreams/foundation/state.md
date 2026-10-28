@@ -9,28 +9,29 @@
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
 - MEGA author-linked LRA archive is pinned and rebuilt into five adapted tasks on the replacement server; original source bytes and previous output remain preserved.
-- Data pipeline revision `ac8e0d4` adds safe reconstruction, full-array diagnostics, conservative Retrieval pair curation and 13 passing tests. No formal model training launched.
-- GitHub publication through `6947b0e` is verified using the authorized replacement server as relay. The worker checkout stays clean at pinned `ac8e0d4`; transferring later Git objects for publication does not advance its working tree.
+- Revision `f149439` passed 26 scheduler-run synthetic tests and is published on GitHub through the authorized server relay. The worker checkout is clean at that revision.
+- New relation and train/validation-only pilots completed on the registered CPU node; no formal model training launched.
 
 ## In Progress
 
 - D01: scheduler task `d18c07ab...` completed at pinned `ac8e0d4` on `owner-recovery-3080ti`. The new `mega-independent-pairclean-v2` has all five tasks; full-array diagnostics show zero exact encoded cross-split overlaps, label conflicts or structural failures.
-- All four output hashes match the worker receipt; untouched tasks match source v1. Qualification remains `insufficient` pending per-task license/use boundaries, Retrieval relation-unit audit and frozen-transform learnability evidence.
+- Follow-up relations audit found 9958 train/val and 9684 train/test shared encoded documents; every validation/test pair includes a document seen in training. v2 requires revision for unseen-document claims despite zero pair overlap.
+- Preparing separate `mega-document-disjoint-v3`: deterministic document/verified-near-duplicate group split, cross-partition pairs discarded, all parent bytes and row provenance preserved. Not built or verified yet.
+- Pilot finds signal for Text/Image; ListOps input-only parser has 0/1024 mismatches. Weak linear references for Retrieval/Pathfinder are inconclusive; they do not reject task learnability.
 - Formal experiment package remains pending data qualification and baseline selection.
 
 ## Next Actions
 
-- 完成逐任务许可/用途边界与 Retrieval 共享文档/近重复审计；冻结变换并准备经调度执行的小规模可学习性检查
-- 经已授权替代服务器同步 GitHub；继续逐任务许可边界与 Retrieval 关系单元审计
+- 经统一调度验证文档组隔离版本的构建、类分布与关系审计
 
 ## Blockers
 
-- The prior scheduler admission block resolved automatically; no active data job remains. D01 still lacks three qualification evidence gates listed in `docs/evidence/mega-independent-pairclean-v2-qualification.json`.
+- D01 remains gated by document isolation, appropriate learnability evidence and per-task use boundaries. LRA explicitly disallows redistributing AAN text; do not upload AAN-derived arrays to the exchange.
 - Dataset qualification remains insufficient; historical Text JSON/checkpoint is still unavailable and is not synthesized.
 
 ## Validation
 
-- Data pipeline: 13/13 unit tests pass under conda `QT` (Python 3.11); server data environment is Python 3.10.12 with NumPy 2.2.6.
+- At `f149439`, 26/26 tests pass through the shared scheduler (13 data + 6 qualification + 7 exchange). v3 edits remain pending another registered preflight.
 - MEGA archive SHA-256 `b141aacd...fee13`; five-task source build is 794 MiB with full build and diagnostic manifests in `docs/evidence/`.
 - Scheduler task is complete with returncode 0 and quiescent receipt; 15 split hashes and all four compact output hashes verified. Receipt: `docs/evidence/scheduler-completion-20261028.json`.
 - The same seven artifact exchange tests pass on Windows and replacement-server Linux; six live HTTPS exchange checks pass.

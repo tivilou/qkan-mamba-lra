@@ -12,11 +12,12 @@
 
 ## In Progress
 
-- Supporting R01 literature inventory and baseline delivery requirements; no model implementation or formal run has been certified.
+- Supporting R01: two pages of recent primary-paper search and six detailed papers screened; B2S6/strong Transformer recipes and newer gates must be considered. See docs/baselines/recent-screen.md.
+- No model implementation or formal run has been certified.
 
 ## Next Actions
 
-- Complete the 2024–2026 task-matched survey and freeze the cohort after D01 qualifies.
+- Audit priority recent candidates' source/protocols and freeze the cohort after D01 qualifies.
 
 ## Blockers
 
@@ -25,7 +26,7 @@
 ## Validation
 
 - Official source commits and README/paper metadata retrieved through the authorized server; compact source receipt committed with this stage.
-- Qualification code tests are pending a shared scheduler recipe; no baseline performance is claimed.
+- At f149439, 26 qualification/data/exchange tests passed through the shared scheduler. These tests do not certify baseline fidelity; no baseline performance is claimed.
 
 ## Relevant Decisions
 

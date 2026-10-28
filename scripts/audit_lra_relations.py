@@ -56,7 +56,7 @@ def similarity(left, right):
     return common / (len(left) + len(right) - common)
 
 
-def audit_relations(root: Path, scratch: Path, candidate_limit=200000):
+def audit_relations(root: Path, scratch: Path, candidate_limit=200000, return_groups=False):
     connection = sqlite3.connect(scratch / "relations.sqlite")
     connection.executescript("""
         PRAGMA cache_size=-8192;
@@ -110,6 +110,14 @@ def audit_relations(root: Path, scratch: Path, candidate_limit=200000):
     connection.commit()
     # SQL deduplication is disk-backed. The explicit limit bounds verification work.
     cursor = connection.execute("SELECT DISTINCT a.doc,b.doc FROM bands a JOIN bands b ON a.band=b.band AND a.key=b.key AND a.doc<b.doc ORDER BY a.doc,b.doc LIMIT ?", (candidate_limit+1,))
+    parents = {doc_id:doc_id for doc_id, in connection.execute("SELECT id FROM docs")}
+
+    def representative(item):
+        while parents[item] != item:
+            parents[item] = parents[parents[item]]
+            item = parents[item]
+        return item
+
     verified = near_pairs = 0
     near_cross = {f"{a}:{b}": 0 for a,b in itertools.combinations(SPLITS,2)}
     truncated = False
@@ -123,13 +131,22 @@ def audit_relations(root: Path, scratch: Path, candidate_limit=200000):
         verified += 1
         if score >= 0.90:
             near_pairs += 1
+            left_root,right_root = representative(left_id),representative(right_id)
+            parents[max(left_root,right_root)] = min(left_root,right_root)
             for i,j in itertools.combinations(range(3),2):
                 if ((lmask & (1 << i) and rmask & (1 << j)) or
                         (lmask & (1 << j) and rmask & (1 << i))):
                     near_cross[f"{SPLITS[i]}:{SPLITS[j]}"] += 1
     unique = connection.execute("SELECT COUNT(*) FROM docs").fetchone()[0]
+    groups = {}
+    minimum = {}
+    for doc_id,digest in connection.execute("SELECT id,digest FROM docs"):
+        key = representative(doc_id)
+        minimum[key] = min(minimum.get(key,digest),digest)
+    for doc_id,digest in connection.execute("SELECT id,digest FROM docs"):
+        groups[digest.hex()] = minimum[representative(doc_id)].hex()
     connection.close()
-    return {"schema": "qkan-retrieval-relations.v1", "profile": "mega-independent-pairclean-v2",
+    report = {"schema": "qkan-retrieval-relations.v1", "profile": json.loads((root/"build-manifest.json").read_text()).get("profile", "unspecified"),
             "build_manifest_sha256": sha256_file(root / "build-manifest.json"), "splits": totals,
             "unit": "encoded document after 4000-token truncation; EOS retained; right padding removed",
             "unique_documents": unique, "exact_shared_documents": shared,
@@ -141,6 +158,7 @@ def audit_relations(root: Path, scratch: Path, candidate_limit=200000):
             "source_document_and_author_ids_available": False,
             "formal_baseline_allowed": False,
             "claim_boundary": "Pair disjointness does not establish unseen-document or unseen-author generalization. Do not certify document/author independence from encoded pairs."}
+    return (report,groups) if return_groups else report
 
 
 def main():

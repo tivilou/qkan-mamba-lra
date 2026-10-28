@@ -119,7 +119,7 @@ def evaluate_expression(tokens, symbols):
     return answer
 
 
-def pilot(root, train_limit=4096, val_limit=1024):
+def pilot(root, train_limit=4096, val_limit=1024, tasks=None):
     report = {"schema": "qkan-qualification-pilot.v1", "formal_baseline_allowed": False,
               "build_manifest_sha256": sha256_file(root/"build-manifest.json"),
               "contract": {"seed": 20261028, "train_limit": train_limit, "val_limit": val_limit,
@@ -127,7 +127,8 @@ def pilot(root, train_limit=4096, val_limit=1024):
                            "reference": "fixed linear softmax SGD; paired token bags or fixed grayscale pixels",
                            "selection": "none; fixed final epoch", "signal_gate": "Wilson 95% lower accuracy > validation accuracy of training-majority predictor + 0.02",
                            "null": "same training features, deterministically shuffled training labels"}, "tasks": []}
-    for task,classes in TASKS.items():
+    for task in (TASKS if tasks is None else tasks):
+        classes = TASKS[task]
         train,tproof = sample_split(root,task,"train",train_limit,20261028)
         val,vproof = sample_split(root,task,"val",val_limit,20261029)
         x,vx = features(task,train),features(task,val)

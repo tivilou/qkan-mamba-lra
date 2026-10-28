@@ -87,12 +87,33 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--supplement", action="store_true", help="Bounded recent-paper search and missing dataset-source recovery")
+    parser.add_argument("--recent-details", action="store_true", help="Follow six task-relevant primary papers and the next search page")
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Refuse to overwrite a source receipt")
     collector = Collector(args.cache)
     pins = {}
-    for name, repo in REPOSITORIES.items():
+    repositories = {} if (args.supplement or args.recent_details) else REPOSITORIES
+    pages = {
+        "lra-recent-api": "https://export.arxiv.org/api/query?search_query=all%3A%22long%20range%20arena%22&start=0&max_results=30&sortBy=submittedDate&sortOrder=descending",
+        "lra-recent-search": "https://arxiv.org/search/?query=%22long+range+arena%22&searchtype=all&abstracts=show&order=-announced_date_first&size=50",
+        "acl-copyright-recovery": "https://aclanthology.org/faq/#what-is-the-copyright-for-materials-in-the-acl-anthology",
+        "lra-listops-source": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/listops/data_processing.py",
+        "lra-pathfinder-source": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/image/input_pipeline.py",
+        "aan-author-source": "https://clair.eecs.umich.edu/aan/index.php",
+    } if args.supplement else PAGES
+    if args.recent_details:
+        pages = {
+            "lra-search-page2": "https://arxiv.org/search/?query=%22long+range+arena%22&searchtype=all&abstracts=show&order=-announced_date_first&size=50&start=50",
+            "block-biased-mamba": "https://arxiv.org/html/2505.09022v1",
+            "serpent": "https://arxiv.org/html/2501.11729v1",
+            "s7": "https://arxiv.org/html/2410.03464v1",
+            "locality-bias": "https://arxiv.org/html/2501.14850v1",
+            "flare-plus-plus": "https://arxiv.org/html/2608.11519v1",
+            "naju": "https://arxiv.org/html/2607.21000v1",
+        }
+    for name, repo in repositories.items():
         body = collector.get(name + "-commit", f"https://api.github.com/repos/{repo}/commits?per_page=1")
         if body is None:
             continue
@@ -103,10 +124,10 @@ def main():
             collector.get("mega-lra-protocol", f"https://raw.githubusercontent.com/{repo}/{commit}/examples/mega/README.lra.md")
         if name == "lra":
             collector.get("lra-license", f"https://raw.githubusercontent.com/{repo}/{commit}/LICENSE")
-    for name, url in PAGES.items():
+    for name, url in pages.items():
         collector.get(name, url)
     result = {"schema": "qkan-primary-source-receipt.v1", "pins": pins,
-              "policy": {"requests_max": 22, "retries": 0, "per_origin_concurrency": 1,
+              "policy": {"requests_max": 7 if args.recent_details else (6 if args.supplement else 22), "retries": 0, "per_origin_concurrency": 1,
                          "minimum_delay_seconds": 1.5, "freshness": "retrieval time or explicitly unvalidated cache age",
                          "purpose": "baseline candidates, upstream protocol, dataset use terms",
                          "allowed_fields": ["public paper metadata", "README", "commit", "public use and license terms"]},

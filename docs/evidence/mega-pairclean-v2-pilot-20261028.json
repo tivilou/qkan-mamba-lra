@@ -1,0 +1,137 @@
+{
+  "schema": "qkan-qualification-pilot.v1",
+  "formal_baseline_allowed": false,
+  "build_manifest_sha256": "d7dbda4c80510609e84a8b0f763767635e601bc8eafc6ba480a9989e1068cff0",
+  "contract": {
+    "seed": 20261028,
+    "train_limit": 4096,
+    "val_limit": 1024,
+    "test_access": false,
+    "epochs": 12,
+    "batch_size": 64,
+    "reference": "fixed linear softmax SGD; paired token bags or fixed grayscale pixels",
+    "selection": "none; fixed final epoch",
+    "signal_gate": "Wilson 95% lower accuracy > validation accuracy of training-majority predictor + 0.02",
+    "null": "same training features, deterministically shuffled training labels"
+  },
+  "tasks": [
+    {
+      "task": "listops",
+      "train": {
+        "split": "train",
+        "samples": 4096,
+        "population": 96000,
+        "row_ids_sha256": "01bd7eb1a984391c16172acf1ffe97c2268198540eb5de825e632c4cca509b69",
+        "npz_sha256": "b3a27129a126f7d85fca66fa145862808506c0b8bae90fc6254a5956d066b315"
+      },
+      "validation": {
+        "split": "val",
+        "samples": 1024,
+        "population": 2000,
+        "row_ids_sha256": "859bed99fac7824dc0ae9867f39c535815c77f33740f6910fd8825bae78a1755",
+        "npz_sha256": "f1b0026bbf38964853151fa3df9b07b004c291ee823971b0f652586a15712870"
+      },
+      "accuracy": 0.16796875,
+      "majority_accuracy": 0.1689453125,
+      "shuffled_label_accuracy": 0.1689453125,
+      "wilson_lower": 0.14632128374492817,
+      "signal_detected": false,
+      "input_only_reference": {
+        "samples": 1024,
+        "mismatches": 0,
+        "invalid_expressions": 0,
+        "role": "symbol/label alignment; deterministic parser is not a learned model"
+      }
+    },
+    {
+      "task": "text",
+      "train": {
+        "split": "train",
+        "samples": 4096,
+        "population": 19877,
+        "row_ids_sha256": "2867358fe73911290329315c6cc86e50e7dfa6e75f79fb1a0c674d44e5caf467",
+        "npz_sha256": "4f6dddc0612182e47e8027e60c238fef9da787271e1546294760eeb89a21e325"
+      },
+      "validation": {
+        "split": "val",
+        "samples": 1024,
+        "population": 5000,
+        "row_ids_sha256": "388840f98e66363f2d784afe2b77547f277ccdb964b13db7f6b0964896053806",
+        "npz_sha256": "4a3df1d3051b136a2e3e5bb7641b4b93e2365762bd9bb036d0307ea811c15dea"
+      },
+      "accuracy": 0.5869140625,
+      "majority_accuracy": 0.5068359375,
+      "shuffled_label_accuracy": 0.5341796875,
+      "wilson_lower": 0.5564851123033876,
+      "signal_detected": true
+    },
+    {
+      "task": "retrieval",
+      "train": {
+        "split": "train",
+        "samples": 4096,
+        "population": 146731,
+        "row_ids_sha256": "849809f7a34fd7eec9cb009def11a873a7729cd87e9034697fc67b60d712d09c",
+        "npz_sha256": "b218253ca5b6bcdf74859140850bcf0883d3d19b9e4929adc39b0958fd554faa"
+      },
+      "validation": {
+        "split": "val",
+        "samples": 1024,
+        "population": 18068,
+        "row_ids_sha256": "02e79cbb9e301f04f58e827ab2ed11ca950a88f3b7719301ce423a31a8d3016c",
+        "npz_sha256": "9156ade27567258a880597dc41119391157e87cba5e376db5a754651022da09c"
+      },
+      "accuracy": 0.5029296875,
+      "majority_accuracy": 0.4951171875,
+      "shuffled_label_accuracy": 0.486328125,
+      "wilson_lower": 0.4723515451168898,
+      "signal_detected": false
+    },
+    {
+      "task": "image",
+      "train": {
+        "split": "train",
+        "samples": 4096,
+        "population": 45000,
+        "row_ids_sha256": "4dd91acb618df3c6ae3c32d35205bca7c80bfdb9fd9db24fc854f1c698ec02f6",
+        "npz_sha256": "94c933d6a6e4c1bc89c7655d3540fe832b8e0565bca7f2437ea9124ce2dbe886"
+      },
+      "validation": {
+        "split": "val",
+        "samples": 1024,
+        "population": 5000,
+        "row_ids_sha256": "388840f98e66363f2d784afe2b77547f277ccdb964b13db7f6b0964896053806",
+        "npz_sha256": "e219d64014640eaf3068219ef7d5bbf6d8a712f12e1b6ada1fa1d3438279f3ce"
+      },
+      "accuracy": 0.23046875,
+      "majority_accuracy": 0.0888671875,
+      "shuffled_label_accuracy": 0.0986328125,
+      "wilson_lower": 0.20571029317870163,
+      "signal_detected": true
+    },
+    {
+      "task": "pathfinder",
+      "train": {
+        "split": "train",
+        "samples": 4096,
+        "population": 160000,
+        "row_ids_sha256": "5900b8af9ceee3b2d9ca273a7ba68cebd0456f96da7ac8640a9cb21e3274675d",
+        "npz_sha256": "142392969b85b94de420b13da2dcd6e1bc14b3d253e86df33996e030f76a8028"
+      },
+      "validation": {
+        "split": "val",
+        "samples": 1024,
+        "population": 20000,
+        "row_ids_sha256": "e127f98ae7c26b650fee06af0f8bbaf87cc0521aa17ce11f6849d46fec0ef213",
+        "npz_sha256": "b9a8ceaf79cf3e2747b10e2828ebfd8ee0941946b1fcac6c6a8c24aa31e6d66e"
+      },
+      "accuracy": 0.4658203125,
+      "majority_accuracy": 0.53515625,
+      "shuffled_label_accuracy": 0.46484375,
+      "wilson_lower": 0.43545158274865203,
+      "signal_detected": false
+    }
+  ],
+  "status": "diagnostic_only",
+  "limitations": "A negative weak-reference pilot is inconclusive for a difficult sequence task. It cannot reject learnability or certify neural-model correctness. Sampled row outcomes are not formal method results."
+}

@@ -13,7 +13,7 @@
 | Mamba-only | QKAN 的直接骨干对照 | [作者源码固定版本](https://github.com/state-spaces/mamba/tree/e9594ce1c732d97440f0332fdc43170a2294dbfa)；仓库同时有 Mamba、Mamba2、Mamba3，必须明确架构。历史项目用 Mamba1，不能自动换版本 | 必需的骨干对照；不因语言建模成绩宣称 LRA SOTA |
 | Identity／参数量匹配 MLP／Fourier 或 KAN gate | 以后分析 QKAN 增益来自哪里 | 同骨干、同 head、同训练预算；identity 应与 Mamba-only 数值等价；参数量和计算量分别报告 | 方法实验阶段的必要控制，当前不执行 |
 
-正式冻结前还要完成：2024–2026 年任务匹配方法的补充检索，按预先声明的性能、代码可验证性与任务覆盖标准选出强方法 top-x，记录每个排除原因。此处列出 MEGA/S5 不代表已证明它们是当前前 x 名。近邻任务、彩色 CIFAR、Path-X 和本项目五任务均值不可混写。
+2024–2026 年补充初筛见 `recent-screen.md`：已取得两页 arXiv 精确短语搜索和六篇任务相关论文，B₂S₆、强 Transformer 配方及近期门控模型进入源码追踪。正式冻结前仍须完成条件比较和代码审计，按预先声明的性能、代码可验证性与任务覆盖标准选出强方法 top-x，记录每个排除原因。此处列出 MEGA/S5 不代表已证明它们是当前前 x 名。近邻任务、彩色 CIFAR、Path-X 和本项目五任务均值不可混写。
 
 取得的源码 pin：LRA `cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8`；MEGA `aeaa4b44592cd1d60a9a34554e359eda2a62b03b`；S4 `e757cef57d89e448c413de7325ed5601aceaac13`；S5 `3c18fdb6b06414da35e77b94b9cd855f6a95ef17`；Mamba `e9594ce1c732d97440f0332fdc43170a2294dbfa`。固定 commit 只证明来源身份，不证明运行保真。
 
