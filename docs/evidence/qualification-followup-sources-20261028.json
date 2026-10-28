@@ -1,0 +1,57 @@
+{
+  "schema": "qkan-primary-source-receipt.v1",
+  "pins": {},
+  "policy": {
+    "requests_max": 3,
+    "retries": 0,
+    "per_origin_concurrency": 1,
+    "minimum_delay_seconds": 1.5,
+    "freshness": "retrieval time or explicitly unvalidated cache age",
+    "purpose": "baseline candidates, upstream protocol, dataset use terms",
+    "allowed_fields": [
+      "public paper metadata",
+      "README",
+      "commit",
+      "public use and license terms"
+    ]
+  },
+  "sources": [
+    {
+      "id": "imdb-author-http",
+      "method": "GET",
+      "url": "http://ai.stanford.edu/~amaas/data/sentiment/",
+      "retrieved_at": "2026-10-28T10:40:56.126204+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "id": "pathfinder-generator-readme-pinned",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/drewlinsley/pathfinder/7b538865667dfe16f949ed3b7c8dc6a65ca87099/README.md",
+      "retrieved_at": "2026-10-28T10:40:57.536915+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": 404,
+      "failure_reason": "HTTP Error 404: Not Found"
+    },
+    {
+      "id": "pathfinder-generator-license-pinned",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/drewlinsley/pathfinder/7b538865667dfe16f949ed3b7c8dc6a65ca87099/LICENSE",
+      "retrieved_at": "2026-10-28T10:40:57.949125+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/drewlinsley/pathfinder/7b538865667dfe16f949ed3b7c8dc6a65ca87099/LICENSE",
+      "cache_state": "miss",
+      "sha256": "374bfe16ea16584784a585e103cd7391a0a8184f5719717a63d906a6e9bf27e2",
+      "size_bytes": 1069,
+      "response_classification": "public_primary_source"
+    }
+  ]
+}

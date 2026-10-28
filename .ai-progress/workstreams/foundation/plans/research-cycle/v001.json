@@ -6,8 +6,8 @@
   "status": "active",
   "objective": "建立可审计的开发测试—合作者实验—文件回传—分析与门户—Idea迭代流程",
   "focus_step_id": "D01",
-  "next_action": "补足 Pathfinder 的适当参考或严格源等价证据，并闭合逐任务用途记录后审定 v3 资格",
-  "blocker": null,
+  "next_action": "取得逐任务权威用途与获取声明，闭合剩余数据资格门槛",
+  "blocker": "逐任务权威用途与获取证据未闭合，见 docs/data-use-boundaries.md",
   "user_confirmation_needed": false,
   "change_log": [
     {
@@ -113,7 +113,7 @@
     {
       "id": "D01",
       "title": "恢复并资格核验五任务数据",
-      "status": "active",
+      "status": "blocked",
       "objective": "恢复并资格核验五任务数据",
       "inputs": [
         "F02"
@@ -145,11 +145,15 @@
         "docs/evidence/mega-pairclean-v2-pilot-20261028.json",
         "docs/evidence/qualification-preflight-20261028.json",
         "docs/evidence/mega-document-v3-qualification.json",
-        "docs/evidence/document-v3-scheduler-completion-20261028.json"
+        "docs/evidence/document-v3-scheduler-completion-20261028.json",
+        "docs/pathfinder-source-audit.md",
+        "docs/evidence/mega-document-v3-pixel-source.json",
+        "docs/evidence/pixel-source-scheduler-completion-20261028.json",
+        "docs/evidence/qualification-author-sources-20261028.json"
       ],
       "owner": "我们＋合作者",
-      "blocker": null,
-      "notes": "任务 d18c07ab complete；pairclean-v2 五任务结构失败、编码级跨划分重叠和标签冲突均为0。资格为 insufficient，许可/关系单元/可学习性三门槛待完成；formal baseline 仍禁止。\nv2 pair-level audit passed but all validation/test rows share training documents; preserve v2 and repair with document-group-disjoint v3. No formal baseline release.\nv3 complete: 117790/1804/1724 Retrieval rows; exact shared docs and discovered cross-split near-duplicate edges zero; 27 synthetic tests passed. Formal gate still insufficient.",
+      "blocker": "逐任务用途证据未闭合；IMDb 作者页不可获取且发布卡没有许可说明，AAN 获取与再分发边界需任务级证据",
+      "notes": "任务 d18c07ab complete；pairclean-v2 五任务结构失败、编码级跨划分重叠和标签冲突均为0。资格为 insufficient，许可/关系单元/可学习性三门槛待完成；formal baseline 仍禁止。\nv2 pair-level audit passed but all validation/test rows share training documents; preserve v2 and repair with document-group-disjoint v3. No formal baseline release.\nv3 complete: 117790/1804/1724 Retrieval rows; exact shared docs and discovered cross-split near-duplicate edges zero; 27 synthetic tests passed. Formal gate still insufficient.\nPathfinder source-equivalence gate passed: 260000 Image/Pathfinder rows identical to pinned source, reversible transform verified, 31 scheduler tests passed. Remaining gate is per-task use evidence; no formal baseline release.",
       "supersedes": [],
       "superseded_by": []
     },

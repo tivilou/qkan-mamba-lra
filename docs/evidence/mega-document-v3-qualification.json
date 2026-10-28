@@ -12,7 +12,15 @@
     "retrieval_pilot_sha256": "8e405ee16abc85a6288867017778ffa1323f8c81ec7c19c21991f43ed29bde5e",
     "scheduler_receipt": "docs/evidence/document-v3-scheduler-completion-20261028.json",
     "task_contract": "docs/dataset-qualification-v3.md",
-    "use_boundary": "docs/data-use-boundaries.md"
+    "use_boundary": "docs/data-use-boundaries.md",
+    "pixel_source_audit": "docs/evidence/mega-document-v3-pixel-source.json",
+    "pixel_scheduler_receipt": "docs/evidence/pixel-source-scheduler-completion-20261028.json",
+    "pathfinder_external_reference_and_adaptation": "docs/pathfinder-source-audit.md",
+    "source_use_evidence": [
+      "docs/evidence/qualification-sources-20261028.json",
+      "docs/evidence/qualification-followup-sources-20261028.json",
+      "docs/evidence/qualification-author-sources-20261028.json"
+    ]
   },
   "gates": {
     "five_task_files_and_hashes": true,
@@ -24,14 +32,19 @@
     "frozen_input_and_evaluation_contract_documented": true,
     "text_image_and_adapted_retrieval_reference_signals": true,
     "listops_input_only_label_alignment": true,
-    "adequate_pathfinder_learnability_evidence_under_frozen_transform": false,
+    "adequate_pathfinder_learnability_evidence_under_frozen_transform": true,
     "per_task_data_license_and_use_boundary_closed": false
   },
   "near_duplicate_scope": "Approximate 32-minhash/8-band search; all discovered cross-split near-duplicate edges are absent in v3. Do not claim exhaustive semantic deduplication or author independence.",
   "claim_boundary": "Adapted five-task long-sequence classification; Retrieval holds out encoded document groups. No direct comparison with original/historical LRA or MEGA scores; no method success or quantum advantage is established.",
+  "pathfinder_evidence_kind": "Exhaustive exact author-package pixels/labels plus invertible all-256-value transform audit and primary-paper learnability report; no local trained Pathfinder score or equal-optimization claim.",
+  "remaining_blockers": [
+    "Per-task use evidence remains incomplete: IMDb author page is unavailable and publisher card does not supply license terms; source/generator code licenses do not establish blanket data redistribution rights.",
+    "AAN text and derived token arrays remain excluded from collaborator exchange; collaborator acquisition conditions must be supported by task-specific source records."
+  ],
   "next_actions": [
-    "Use an appropriate bounded Pathfinder reference or verified source-equivalence plus authoritative learnability evidence; weak linear failure is inconclusive.",
-    "Close per-task source/use records and collaborator acquisition boundaries; do not redistribute AAN text or derived token arrays.",
+    "Recover authoritative task-specific use/acquisition statements or submit a documented data-scope revision; do not infer a unified data license from code or host metadata.",
+    "Do not redistribute AAN text or derived token arrays; preserve the current dataset and source receipts.",
     "After qualification, freeze the evidence-grounded baseline cohort and certify source fidelity, recovery, trace and hardware gates before collaborator full runs."
   ]
 }

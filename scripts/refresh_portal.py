@@ -52,7 +52,7 @@ def main():
     write("apps/plan/data.json", {"plan": plan, "source": PLAN})
     write("apps/experiment-results/data.json", results)
     docs = {"overview": ["docs/audits/recovery-20261021.md", "docs/research-plan.md"],
-            "qualification": ["docs/data-and-literature-readiness.md", "docs/dataset-qualification-v3.md", "docs/baselines/candidate-inventory.md", "docs/baselines/recent-screen.md", "docs/data-use-boundaries.md", "docs/case-study-plan.md"],
+            "qualification": ["docs/data-and-literature-readiness.md", "docs/dataset-qualification-v3.md", "docs/baselines/candidate-inventory.md", "docs/baselines/recent-screen.md", "docs/data-use-boundaries.md", "docs/case-study-plan.md", "docs/pathfinder-source-audit.md"],
             "research-notes": ["docs/research-log/README.md", "docs/research-log/20261021-date-only-foundation-audit.md"],
             "collaboration": ["docs/collaboration.md", "docs/baselines/delivery-contract.md"]}
     for app_id, paths in docs.items():

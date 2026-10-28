@@ -21,12 +21,12 @@
 
 ## Blockers
 
-- Dataset qualification is insufficient. All candidate fidelity statuses are not_verifiable; no formal launch package exists yet.
+- Dataset qualification is insufficient solely on the remaining source/use evidence category; Pathfinder source/learnability gate is closed. All candidate fidelity statuses are not_verifiable; no formal launch package exists yet.
 
 ## Validation
 
 - Official source commits and README/paper metadata retrieved through the authorized server; compact source receipt committed with this stage.
-- At 6fd9392, 27 qualification/data/exchange tests passed through the shared scheduler; v3 document isolation checks passed. These tests do not certify baseline fidelity; no baseline performance is claimed.
+- At 52257f2, 31 qualification/data/pixel-source/exchange tests passed through the shared scheduler; all Image/Pathfinder pixels and labels exactly match pinned source. These tests do not certify baseline fidelity; no baseline performance is claimed.
 
 ## Relevant Decisions
 

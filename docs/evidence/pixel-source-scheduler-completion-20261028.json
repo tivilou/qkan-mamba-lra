@@ -1,0 +1,62 @@
+{
+  "schema": "qkan-pixel-source-scheduler-closeout.v1",
+  "receipts": [
+    {
+      "schema": "research.receipt.v1",
+      "task": "913b7ae85dc846bc9933c0b160eb92b8",
+      "attempt": "1e74ffa113e2442cab73042f8891da9a",
+      "node": "owner-recovery-3080ti",
+      "state": "complete",
+      "returncode": 0,
+      "quiescent": true,
+      "revision": "52257f298ed591983a2345dfeedc9f5f0b2f11a1",
+      "outputs": {
+        "preflight.json": {
+          "bytes": 1102,
+          "sha256": "95ecd54c6c589ea7fda822683752e125b6367c43d0bf7a1b36c66c1ef379c48d"
+        },
+        "test_data_pipeline.py.log": {
+          "bytes": 1287,
+          "sha256": "0643cb6056df2d665e947627d69de2283ca31de7c4cc7b1399c69359c2ad2ba6"
+        },
+        "test_exchange.py.log": {
+          "bytes": 2425,
+          "sha256": "1170fa4a9b5e8aa9d004a60ed0292ce60b094ec4d072f23fc526a5335cdf0dd1"
+        },
+        "test_pixel_source.py.log": {
+          "bytes": 473,
+          "sha256": "3865bc017b24cbdf5edcfa519f756011960e1f8cc7840c6cd6a2185cd4ca1ef0"
+        },
+        "test_qualification.py.log": {
+          "bytes": 1332,
+          "sha256": "4aceccbdc10d1578427de77407353fb3933b190616ad9859cdfaa344cd4a64b1"
+        }
+      }
+    },
+    {
+      "schema": "research.receipt.v1",
+      "task": "cc37d99eae4146629545830ede9ec554",
+      "attempt": "c1ed905b9f7a4c3e99c767fccff37110",
+      "node": "owner-recovery-3080ti",
+      "state": "complete",
+      "returncode": 0,
+      "quiescent": true,
+      "revision": "52257f298ed591983a2345dfeedc9f5f0b2f11a1",
+      "outputs": {
+        "pixel-source.json": {
+          "bytes": 4029,
+          "sha256": "49da0f44d2e4956d698dabe2b4a4b263b5a3090628e403025064583e970a3191"
+        }
+      }
+    }
+  ],
+  "downloaded_report_hashes_verified": true,
+  "tests": {
+    "total": 31,
+    "data": 13,
+    "qualification": 7,
+    "pixel_source": 4,
+    "exchange": 7
+  },
+  "scope": "Registered CPU diagnostics only; no formal model training or COS recovery claim."
+}

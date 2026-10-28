@@ -4,7 +4,7 @@
 
 | 候选 | 在本研究中的作用 | 一手依据与适配问题 | 当前结论 |
 |---|---|---|---|
-| Majority／固定线性参考 | 空模型、数据诊断下限 | 不承担长程机制建模；只用于资格诊断 | 诊断代码已写，等待调度测试 |
+| Majority／固定线性参考 | 空模型、数据诊断下限 | 不承担长程机制建模；只用于资格诊断 | 已通过调度测试并完成诊断；不计正式 baseline |
 | Transformer | 经典注意力参照 | LRA 原始论文和源码；必须冻结位置编码、padding、文档配对方式以及长序列资源预算 | 待机制清单与适配验证 |
 | S4／S4D | 经典状态空间参照 | [作者仓库](https://github.com/state-spaces/s4/tree/e757cef57d89e448c413de7325ed5601aceaac13)含独立模块；SSM 参数专用学习率/weight decay 规则需保留。S4 与 S4D 是两个不同方法 | 优先审计官方模块；禁止用现有简化 `s4.py` 冒充 |
 | MEGA | 与当前数据来源直接匹配的强注意力参照 | [作者 LRA 配置](https://github.com/facebookresearch/mega/blob/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/README.lra.md)；fairseq 环境、EMA/gated attention、chunk 模式与任务协议需分别核对 | 第一批强候选；尚未运行 |

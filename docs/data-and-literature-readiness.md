@@ -20,7 +20,7 @@
 
 当前目录：`/home/qkan-mamba-lra/data/versions/mega-document-disjoint-v3`。v2 后续关系审计发现 train/val 共享 9,958 篇编码文档，train/test 共享 9,684 篇，所有验证／测试行都至少含一篇训练中出现的文档。v3 将精确文档及已发现近重复边先分组、再独立哈希分桶，只保留两篇文档同属一个划分的样本；原包与 v1/v2 保留。四个未改动任务哈希与 v2 相同；六个输出已与终止回执核验，见 `docs/evidence/document-v3-scheduler-completion-20261028.json`。
 
-固定 train/validation 诊断中，Text/Image/v3 Retrieval 检测到参考信号，ListOps 输入解析 1,024 条全部对齐标签；Pathfinder 的弱线性参考不充分。仍需适当 Pathfinder 参考或严格源等价证明，并闭合逐任务用途记录；AAN 不上传共享文件服务。近重复搜索是近似检索，不宣称穷举去重或作者独立。当前划分与原 LRA/MEGA 或历史分数不可直接比较。
+固定 train/validation 诊断中，Text/Image/v3 Retrieval 检测到参考信号，ListOps 输入解析 1,024 条全部对齐标签。Pathfinder 已补齐严格源等价与作者已报告可学习性证据：Image/Pathfinder 共 260,000 条像素和标签全部与固定作者包一致，公共缩放保留全部像素信息，见 `docs/pathfinder-source-audit.md`。31 项调度测试通过。MEGA 的 Pathfinder 输入为公共输入的 2 倍，训练配方适配仍需单独验证。当前剩余门槛是逐任务用途证据；IMDb 作者页不可获取，数据卡未提供许可，AAN 不上传共享文件服务。近重复搜索是近似检索，不宣称穷举去重或作者独立。当前划分与原 LRA/MEGA 或历史分数不可直接比较。
 
 ## 相关工作范围（已初筛，未冻结队列）
 
@@ -38,4 +38,4 @@
 
 当前上游 Mamba-only 初测尚未形成正式忠实性证书；S4 为简化自写实现；Transformer 已有代码但无已恢复结果。正式队列尚未选定。历史文档中的平均准确率和 >83% 目标未附核实来源，不能作正式比较依据。
 
-下一步：补足 Pathfinder 的适当资格证据并闭合用途边界，审定 v3 资格记录。相关工作与源码审计可以并行。数据 qualified、队列与协议冻结、实现忠实性和运行预检通过后，才发放正式基线任务。
+下一步：取得逐任务权威用途／获取声明，或提出有证据的数据范围调整，再审定 v3 资格。相关工作与源码审计可以并行。数据 qualified、队列与协议冻结、实现忠实性和运行预检通过后，才发放正式基线任务。

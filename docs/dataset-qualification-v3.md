@@ -1,6 +1,6 @@
 # 五任务 v3 资格记录
 
-当前状态：**insufficient；不发放正式 baseline 全量任务**。这次完成了数据泄漏修复、全量结构检查和有边界的参考诊断；完整资格仍缺 Pathfinder 的适当可学习性证据以及逐任务用途归档。机器记录为 `docs/evidence/mega-document-v3-qualification.json`。
+当前状态：**insufficient；不发放正式 baseline 全量任务**。数据泄漏修复、全量结构检查、参考诊断和 Pathfinder 严格源等价核验已完成；剩余门槛为逐任务用途证据。机器记录为 `docs/evidence/mega-document-v3-qualification.json`。
 
 ## 任务与模型输入
 
@@ -32,8 +32,10 @@ Retrieval train 类别计数 57,875/59,915，val 为 904/900，test 为 878/846�
 
 固定抽样：train≤4096、val≤1024；固定 12 epoch、batch=64 的线性 softmax 参考和 shuffled-label 对照；没有读取 test 做模型选择。Text validation 为 58.69%，Image 为 23.05%，均检测到参考信号。v3 Retrieval 为 58.20%，训练多数类预测器为 48.34%，打乱训练标签为 48.34%。ListOps 的输入解析参考在 1024 条验证样本中无错误或无效表达式。
 
-Pathfinder 的线性参考没有检测到信号；这是弱参考的证据不足，不能据此否定任务可学习性。需适当参考的有边界验证，或核实与作者已报告可学习数据及变换的严格等价证据。Wilson 规则只作描述性筛查，不作为相关文档对的正式置信区间。以上数值均为数据诊断，不能登记为本研究正式 baseline 结果。
+Pathfinder 的线性参考没有检测到信号。后续已完成全部 200,000 条像素／标签与固定作者包的逐行等价核验，并核实公共变换完整保留全部 256 个像素值；结合 MEGA 论文 Table 2 的作者报告，补齐该任务的来源／可学习性门槛。作者 Pathfinder 输入是公共输入的 2 倍，Image 配方的 mean/std 也不同；正式复现必须声明并测试这类适配，不能据数据等价宣称训练等价。完整来源、推论边界和调度验收见 `docs/pathfinder-source-audit.md`。Wilson 规则只作描述性筛查，不作为相关文档对的正式置信区间。以上诊断和外部文献数字均不能登记为本研究正式 baseline 结果。
 
 正式评价将使用每任务 accuracy，五任务均值采用等权宏平均，另报参数、训练／推理时间和峰值显存。超参数和最优 checkpoint 仅由 validation 选择，test 只在冻结后评估选定 checkpoint。新版本与历史 LRA/MEGA、Path-X 六任务均值不可直接比较。当前只测这些任务的效用，不据此宣称通用长程记忆或量子优势；长度外推和顺序干预属于后续单独协议。
 
 验收回执固定代码为 `6fd939241d8d1167188d9576a25aaa9c114019a3`，调度任务 `87b98cf78b1b4fd3b2bc94b45e970251`；27 项合成测试通过，6 个产物哈希与终止回执一致。资格、来源／用途、实现保真、GPU 预检和正式结果是不同验收项。
+
+后续来源核验固定代码为 `52257f298ed591983a2345dfeedc9f5f0b2f11a1`；31 项调度测试通过，Image/Pathfinder 共 260,000 条像素和标签与源包完全一致，终止回执与下载哈希均通过。源包与全部数据版本保持原字节。用途补证的成功与失败均保留在 `qualification-*-sources-20261028.json`；IMDb 作者页仍不可获取，Stanford 命名空间数据卡的许可字段为 `other`、许可说明待补，不能据此推断开放授权。
