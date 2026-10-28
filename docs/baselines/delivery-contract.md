@@ -1,6 +1,6 @@
 # 复现与合作者交付验收
 
-我们负责源码、测试、协议和结果分析；师弟负责正式全量实验。[一键入口已实现](one-click.md)，正进行工程验证；**还没有可以启动全量 baseline 的已验收版本**。准备与诊断可以先行，正式比较须通过数据资格、冻结队列，并逐模型通过以下验收。
+我们负责源码、测试、协议和结果分析；师弟负责正式全量实验。[一键入口已实现](one-click.md)，研究方 CPU 工程验证与非 Git 上游资产往返验证已经通过；**还没有可以启动全量 baseline 的已验收版本**。合作者可先准备数据并执行实际 GPU 预检；正式比较仍须通过数据资格、冻结 cohort，并逐模型通过以下验收。CPU 诊断收据见 [`docs/evidence/baseline-runner-diagnostics-20261029.json`](../evidence/baseline-runner-diagnostics-20261029.json)。
 
 1. **来源与机制**：每个模型固定 commit、依赖和文件哈希；提供 `baseline-manifest.json`、`mechanism-contract.md`、`adaptation-diff.md`，运行官方模块与 adapter 的前向、loss、梯度和一次更新比较。不能只检查 shape、import 或参数数目。
 2. **输入协议**：ListOps/字符文本保留原始 token IDs，使用 embedding、padding mask 和声明的 EOS/pooling；图像固定 `float32(x)/255-0.5` 的逐像素 row-major 序列，不用训练/测试联合统计；Retrieval 两篇文档共享 encoder，pair head 与顺序对称性另行冻结。资格检查使用的 bag 特征不是正式序列模型输入。

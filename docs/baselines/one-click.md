@@ -2,11 +2,13 @@
 
 入口：`bash scripts/run_baselines.sh`。Linux + Python 3.10/3.11；GPU 阶段需要 NVIDIA 驱动，Mamba1 还需要与 PyTorch cu126 对应的 CUDA 工具链和 `nvcc`。首次安装和作者数据下载需要网络。脚本创建项目内 `.venv-baselines`，固定 PyTorch 2.7.1、NumPy 2.2.6、einops 0.8.1；不改系统 Python。
 
-**当前交付状态：实现及工程验证阶段，尚未获准正式比较。** `release.json` 明确记录未冻结 cohort、未认证的模型；数据资格也仍是 `insufficient`。现在可以准备数据、执行 GPU 诊断，`--mode run` 会说明原因并拒绝正式训练。此文档不是“baseline 已复现成功”的证明。
+**当前交付状态：研究方 CPU 工程验证已通过，合作者 GPU 预检待执行，尚未获准正式比较。** 2026-10-29 在 3080Ti 调度节点通过统一队列完成了单测、Transformer/S4D minimal 新进程精确恢复、trace 语义与重放，以及 `mega-document-disjoint-v3` 的 15 个 NPZ split、3 份字典身份和 15 份配置构建检查。可审计收据见 [`docs/evidence/baseline-runner-diagnostics-20261029.json`](../evidence/baseline-runner-diagnostics-20261029.json)。这些检查全部标记 `formal=false`，不是 LRA 性能结果，也不能替代实际 GPU 预检。
+
+`release.json` 仍明确记录未冻结 cohort、未认证的模型；数据资格也仍是 `insufficient`。现在可以准备数据、执行 GPU 诊断，`--mode run` 会说明原因并拒绝正式训练。此文档不是“baseline 已复现成功”的证明。
 
 ## 1. 获取代码和私有配置
 
-从 GitHub 的 `research/collaboration-foundation` 分支取得双方确认的干净 commit；记录 `git rev-parse HEAD`。同一 suite 恢复必须使用相同 commit 和协议。
+从 GitHub 的 `research/collaboration-foundation` 分支取得双方确认的干净 commit；运行 `git pull --ff-only origin research/collaboration-foundation`，再记录 `git rev-parse HEAD`。同一 suite 恢复必须使用相同 commit 和协议。
 
 通过私下提供的渠道取得交换服务地址、token 和 CA 文件，在 shell 中设置：
 
@@ -39,7 +41,7 @@ bash scripts/run_baselines.sh --mode preflight --cache /data/qkan-cache \
   --tasks listops,text,retrieval,image,pathfinder --seeds 42
 ```
 
-这会在指定的每块 GPU 上，对每个任务/模型/种子执行有界的真数据诊断：仅训练集前三个逻辑 batch、验证集前两行、两轮，不读取测试集。比较不中断与“新进程中断后再用另一个新进程恢复”的完整状态，并验证所选验证样本的 `sample-trace.v2` 结构、完整数值和分类头重放。诊断分数不进入正式结果页。失败必须保留日志排查；尤其 Mamba CUDA 算子及确定性支持尚不能由 CPU 测试代替。
+这会在指定的每块 GPU 上，对每个任务/模型/种子执行有界的真数据诊断：仅训练集前三个逻辑 batch、验证集前两行、两轮，不读取测试集。比较不中断与“新进程中断后再用另一个新进程恢复”的完整状态，并验证所选验证样本的 `sample-trace.v2` 结构、完整数值和分类头重放。诊断分数不进入正式结果页。研究方 CPU 诊断已通过，但失败仍必须保留日志排查；尤其 Mamba CUDA 算子及确定性支持尚不能由 CPU 测试代替。
 
 `s4d_minimal` 是作者明确标为教学用途的 minimal S4D 模块加本项目分类适配层，绝不等同于完整 S4/S4D benchmark 复现。当前三个实现是工程候选；MEGA、S5 等未交付，正式 cohort 需另行冻结。
 

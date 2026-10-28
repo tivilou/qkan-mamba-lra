@@ -16,7 +16,7 @@
       "entry": "/apps/overview/",
       "mode": "static",
       "status": "ready",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "design_system": "research-web-design-system",
       "theme": "research-editorial-v1",
       "components": [
@@ -32,7 +32,7 @@
       "entry": "/apps/plan/",
       "mode": "static",
       "status": "ready",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "design_system": "research-web-design-system",
       "theme": "research-editorial-v1",
       "components": [
@@ -48,7 +48,7 @@
       "entry": "/apps/qualification/",
       "mode": "static",
       "status": "ready",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "design_system": "research-web-design-system",
       "theme": "research-editorial-v1",
       "components": [
@@ -64,7 +64,7 @@
       "entry": "/apps/experiment-results/",
       "mode": "static",
       "status": "ready",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "design_system": "research-web-design-system",
       "theme": "research-editorial-v1",
       "components": [
@@ -81,7 +81,7 @@
       "entry": "/apps/research-notes/",
       "mode": "static",
       "status": "ready",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "design_system": "research-web-design-system",
       "theme": "research-editorial-v1",
       "components": [
@@ -97,7 +97,7 @@
       "entry": "/apps/collaboration/",
       "mode": "static",
       "status": "ready",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "design_system": "research-web-design-system",
       "theme": "research-editorial-v1",
       "components": [

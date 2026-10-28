@@ -5,8 +5,8 @@
   "workstream": "baseline-delivery",
   "status": "active",
   "objective": "实现并验证自动准备、隔离运行、完整恢复及文件回传入口；保持正式比较的资格与复现门槛",
-  "focus_step_id": "V01",
-  "next_action": "在原授权节点注册并执行有界 CPU 测试",
+  "focus_step_id": "H01",
+  "next_action": "发布测试证据与合作者交接版本",
   "blocker": "原授权节点 SSH 间歇 connection_closed，正在恢复稳定连接",
   "user_confirmation_needed": false,
   "steps": [
@@ -41,7 +41,7 @@
     {
       "id": "V01",
       "title": "通过工程正确性与新进程恢复诊断",
-      "status": "active",
+      "status": "done",
       "objective": "通过工程正确性与新进程恢复诊断",
       "inputs": [
         "I01"
@@ -58,18 +58,19 @@
       ],
       "evidence_paths": [
         "tests/test_baseline_delivery.py",
-        "scripts/baseline_diagnostic.py"
+        "scripts/baseline_diagnostic.py",
+        "docs/evidence/baseline-runner-diagnostics-20261029.json"
       ],
       "owner": "我们；GPU 验收由合作者执行",
       "blocker": null,
-      "notes": "",
+      "notes": "\n3080Ti 统一队列完成 exact-source CPU 单测、Transformer/S4D minimal 新进程精确恢复及 trace 结构语义与重放",
       "supersedes": [],
       "superseded_by": []
     },
     {
       "id": "X01",
       "title": "发布并回读非Git上游代码资产",
-      "status": "todo",
+      "status": "done",
       "objective": "发布并回读非Git上游代码资产",
       "inputs": [
         "I01"
@@ -84,18 +85,19 @@
         "真实 HTTPS 上传、幂等重试及自动下载哈希校验通过；不发布受限数据"
       ],
       "evidence_paths": [
-        "experiments/baseline_delivery/assets.json"
+        "experiments/baseline_delivery/assets.json",
+        "docs/evidence/baseline-asset-publication-20261028.json"
       ],
       "owner": "我们；GPU 验收由合作者执行",
       "blocker": null,
-      "notes": "",
+      "notes": "\n真实 HTTPS 上传、幂等重试、自动下载哈希核验及缓存复用通过；未发布数据集",
       "supersedes": [],
       "superseded_by": []
     },
     {
       "id": "H01",
       "title": "发布测试证据与合作者交接版本",
-      "status": "todo",
+      "status": "active",
       "objective": "发布测试证据与合作者交接版本",
       "inputs": [
         "V01",
@@ -152,5 +154,6 @@
       "date": "2026-10-28",
       "reason": "用户明确要求实现一键正式baseline运行及自动同步；作为D01的支持工程工作，不推进资格闸门"
     }
-  ]
+  ],
+  "updated_at": "2026-10-29"
 }
