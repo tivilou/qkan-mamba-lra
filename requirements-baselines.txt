@@ -1,0 +1,4 @@
+# Tested CPU diagnostic stack; CUDA wheel channel selected by bootstrap.
+torch==2.7.1
+numpy==2.2.6
+einops==0.8.1

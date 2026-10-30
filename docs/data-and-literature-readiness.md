@@ -1,0 +1,41 @@
+# 数据与相关工作准备状态
+
+当前结论（2026-10-28）：五任务已重建到 `mega-document-disjoint-v3`，修复了 Retrieval 跨划分共享文档的问题。所有任务结构检查通过；Retrieval 精确共享文档和已发现的近重复跨划分边均为0。资格状态仍为 **insufficient**，尚未解锁正式基线比较。完整契约见 `docs/dataset-qualification-v3.md`。
+
+## 数据
+
+旧实例已释放且无合作者副本。用户提供的 MEGA 作者链接已在替代服务器下载并固定：1,447,223,076 bytes，观测 SHA-256 `b141aacd5537ad6108862117597c41d9d2a67d6420c54f74c76df615073fee13`。Kaggle version 1 只用于文件清单与来源交叉核对，没有下载其 22.28 GB pickle。原始包和重建输出均不覆盖。
+
+`mega-independent-v1` 已生成五任务 train/val/test、来源行号、字典、shape/dtype、类别分布和文件哈希。Text 原 valid 与 test 输入完全相同，因此改为仅从原 train 按编码身份和类别构造新验证集，保留原 test；长度固定为 4000，这与旧项目 4096 协议不可混用。Retrieval 每篇文档长度为 4000，不使用旧转换器的 2000×2。
+
+首轮完整数组审计发现 ListOps、Text、Image、Pathfinder 没有编码级跨划分重复或冲突；Retrieval 有 train/val 35、train/test 46、val/test 1 个无序文档对重叠，以及 93 个无序文档对冲突标签组，因此源构建状态为 `revise`。统一调度任务 `d18c07ab...` 已成功执行 `lra-pair-qualification-v1`：在独立版本中剔除所有冲突组，按 test→val→train 保留唯一对。原始包与 v1 保留。清洗后的完整数组审计没有发现编码级跨划分重叠或冲突标签。
+
+| 任务 | train | val | test | 清洗后完整数组审计 |
+|---|---:|---:|---:|---|
+| ListOps | 96,000 | 2,000 | 2,000 | 结构检查通过 |
+| Text | 19,877 | 5,000 | 25,000 | 结构检查通过 |
+| Retrieval | 117,790 | 1,804 | 1,724 | v3 文档组隔离、结构检查通过 |
+| Image | 45,000 | 5,000 | 10,000 | 结构检查通过 |
+| Pathfinder32 | 160,000 | 20,000 | 20,000 | 结构检查通过 |
+
+当前目录：`/home/qkan-mamba-lra/data/versions/mega-document-disjoint-v3`。v2 后续关系审计发现 train/val 共享 9,958 篇编码文档，train/test 共享 9,684 篇，所有验证／测试行都至少含一篇训练中出现的文档。v3 将精确文档及已发现近重复边先分组、再独立哈希分桶，只保留两篇文档同属一个划分的样本；原包与 v1/v2 保留。四个未改动任务哈希与 v2 相同；六个输出已与终止回执核验，见 `docs/evidence/document-v3-scheduler-completion-20261028.json`。
+
+固定 train/validation 诊断中，Text/Image/v3 Retrieval 检测到参考信号，ListOps 输入解析 1,024 条全部对齐标签。Pathfinder 已补齐严格源等价与作者已报告可学习性证据：Image/Pathfinder 共 260,000 条像素和标签全部与固定作者包一致，公共缩放保留全部像素信息，见 `docs/pathfinder-source-audit.md`。31 项调度测试通过。MEGA 的 Pathfinder 输入为公共输入的 2 倍，训练配方适配仍需单独验证。当前剩余门槛是逐任务用途证据；IMDb 作者页不可获取，数据卡未提供许可，AAN 不上传共享文件服务。近重复搜索是近似检索，不宣称穷举去重或作者独立。当前划分与原 LRA/MEGA 或历史分数不可直接比较。
+
+## 相关工作范围（已初筛，未冻结队列）
+
+1. LRA 官方任务、数据处理与评估协议，以及后续复用中的差异。
+2. 长序列分类的状态空间方法：S4/S4D、Mamba，以及任务匹配的近期强方法。
+3. Transformer 与简单经典参考，输入表示、长序列训练、参数和计算预算。
+4. KAN、三角/Fourier 非线性、门控与参数匹配对照。
+5. 与同类任务相关的量子门控/量子机器学习方法；区分模拟器与硬件、独立单比特与纠缠、任务收益与量子优势。
+
+文献清单需包含论文/官方代码、版本、任务/划分、指标、计算预算、复现条件及可比性。没有核实的近期排名不写为 SOTA。不是把所有论文都跑一遍，而是据证据冻结可辩护的队列。
+
+已固定 S4/S5/MEGA/Mamba 源码并标注 LRU 所获实现为非官方；完成两页近期 arXiv 检索和六篇一手论文初筛。B₂S₆、采用强训练配方的 Transformer 及近期门控方法进入来源追踪，详见 `docs/baselines/candidate-inventory.md`、`docs/baselines/recent-screen.md`。
+
+## 基线状态
+
+当前上游 Mamba-only 初测尚未形成正式忠实性证书；S4 为简化自写实现；Transformer 已有代码但无已恢复结果。正式队列尚未选定。历史文档中的平均准确率和 >83% 目标未附核实来源，不能作正式比较依据。
+
+下一步：取得逐任务权威用途／获取声明，或提出有证据的数据范围调整，再审定 v3 资格。相关工作与源码审计可以并行。数据 qualified、队列与协议冻结、实现忠实性和运行预检通过后，才发放正式基线任务。

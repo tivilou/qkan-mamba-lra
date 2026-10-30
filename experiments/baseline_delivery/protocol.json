@@ -1,0 +1,18 @@
+{
+  "schema":"qkan-baseline-common-protocol.v1",
+  "status":"implementation_candidate_not_frozen_cohort",
+  "data_profile":"mega-document-disjoint-v3",
+  "tasks":["listops","text","retrieval","image","pathfinder"],
+  "training":{"epochs":100,"batch_size":32,"micro_batch":4,"lr":0.001,"weight_decay":0.01,
+              "dropout":0.1,"warmup_steps":1000,"checkpoint_steps":100,"clip_norm":1.0},
+  "model_defaults":{
+    "transformer":{"width":128,"layers":4,"heads":4,"state_size":64},
+    "s4d_minimal":{"width":128,"layers":6,"heads":4,"state_size":64},
+    "mamba1":{"width":128,"layers":6,"heads":4,"state_size":16}
+  },
+  "input":"integer token embedding, pad=1; float32 pixels x/255-.5; no fitted preprocessing",
+  "pair_head":"shared independent document encoder; concatenate abs(a-b) and a*b; one linear head",
+  "selection":"maximum validation accuracy; earliest tie; evaluate only selected weights on test",
+  "budget":"100 full-data epochs; no tuning on test; report per-task accuracy, params, time, memory",
+  "scope":"Engineering candidates only. Minimal official S4D is explicitly pedagogical; this is not a S4/S5/MEGA reproduction or a justified top-x cohort."
+}

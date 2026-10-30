@@ -1,1 +1,9 @@
 *.sh text eol=lf
+docs/text_task_pilot_results.md text eol=lf
+tools/exchange/** text eol=lf
+research-web/** text eol=lf
+scripts/*.py text eol=lf
+experiments/baseline_delivery/** text eol=lf
+tools/sample_trace_contract/** text eol=lf
+tests/*.py text eol=lf
+.ai-progress/** text eol=lf

@@ -1,0 +1,13 @@
+{
+  "schema_version": "qkan-source-download.v1",
+  "url": "https://dl.fbaipublicfiles.com/mega/data/lra.zip",
+  "version_identity": {
+    "etag": "\"060665a1a941c74cfaae5254c65eab20-173\"",
+    "size_bytes": 1447223076
+  },
+  "started_at": "2026-10-21T08:01:39.662514+00:00",
+  "completed_at": "2026-10-21T08:03:41.935857+00:00",
+  "sha256": "b141aacd5537ad6108862117597c41d9d2a67d6420c54f74c76df615073fee13",
+  "status": "downloaded_not_qualified",
+  "warning": "Observed SHA-256 pins these bytes; no publisher SHA-256 was provided."
+}

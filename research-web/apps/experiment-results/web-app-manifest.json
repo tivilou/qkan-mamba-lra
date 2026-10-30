@@ -1,0 +1,18 @@
+{
+  "schema_version": "research-web.web-app-manifest.v1",
+  "id": "experiment-results",
+  "skill_id": "experiment-results-workbench",
+  "instance_id": "qkan-mamba-experiment-results",
+  "title": "实验结果",
+  "summary": "Idea、跨数据集 Baseline 与 Case Study；明确历史证据边界",
+  "entry": "/apps/experiment-results/",
+  "mode": "static",
+  "status": "ready",
+  "updated_at": "2026-10-29",
+  "design_system": "research-web-design-system",
+  "theme": "research-editorial-v1",
+  "components": [
+    "experiment-results-workbench.v1",
+    "research-web-table.v1"
+  ]
+}

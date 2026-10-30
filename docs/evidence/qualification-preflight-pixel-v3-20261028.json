@@ -1,0 +1,64 @@
+{
+  "schema": "qkan-qualification-preflight.v1",
+  "passed": true,
+  "cpu_only": true,
+  "synthetic": true,
+  "tests": [
+    {
+      "pattern": "test_data_pipeline.py",
+      "returncode": 0,
+      "argv": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_data_pipeline.py",
+        "-v"
+      ]
+    },
+    {
+      "pattern": "test_qualification.py",
+      "returncode": 0,
+      "argv": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_qualification.py",
+        "-v"
+      ]
+    },
+    {
+      "pattern": "test_pixel_source.py",
+      "returncode": 0,
+      "argv": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_pixel_source.py",
+        "-v"
+      ]
+    },
+    {
+      "pattern": "test_exchange.py",
+      "returncode": 0,
+      "argv": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_exchange.py",
+        "-v"
+      ]
+    }
+  ]
+}

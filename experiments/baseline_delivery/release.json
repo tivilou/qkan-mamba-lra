@@ -1,0 +1,10 @@
+{
+  "schema":"qkan-baseline-release.v1",
+  "status":"not_released",
+  "cohort_frozen":false,
+  "certificates":{},
+  "blocked_by":["dataset qualification is insufficient on task-specific use/acquisition evidence",
+                "formal evidence-grounded cohort and per-model fidelity certificates are not complete"],
+  "available_operations":["prepare","preflight","upload"],
+  "formal_run_allowed":false
+}

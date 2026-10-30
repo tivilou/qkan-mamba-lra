@@ -1,0 +1,22 @@
+{
+  "schema_version": "qkan-github-relay-publication.v1",
+  "observed_at": "2026-10-28T08:06:22Z",
+  "repository": "https://github.com/tivilou/qkan-mamba-lra",
+  "branch": "research/collaboration-foundation",
+  "relay_server_id": "3080Ti-recovery-20261021",
+  "status": "published_and_remote_ref_verified",
+  "published_revision": "6947b0ebea753adb8c36c6ceb54852026636040a",
+  "previous_remote_revision": "0bb245b5021c1b057ccd06ccd17d5e44d60a79a6",
+  "worker_revision_after_publication": "ac8e0d40d428b6e131905516e11a7a309995d170",
+  "worker_worktree_clean": true,
+  "method": "Verified Git bundle transferred over authorized SSH; imported to a separate ref and pushed to the existing GitHub branch without updating the pinned worker checkout.",
+  "dataset_observation": {
+    "present_version": "mega-independent-v1",
+    "task_files": "All five tasks have train/val/test files and a build manifest.",
+    "curated_version_present": false,
+    "qualification_task_state": "queued",
+    "qualification_task_active_attempt": null,
+    "formal_baseline_allowed": false
+  },
+  "supersedes_observation": "The pending GitHub publication status in scheduler-dispatch-20261028.json is historical and resolved by this receipt."
+}

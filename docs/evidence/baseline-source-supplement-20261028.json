@@ -1,0 +1,98 @@
+{
+  "schema": "qkan-primary-source-receipt.v1",
+  "pins": {},
+  "policy": {
+    "requests_max": 6,
+    "retries": 0,
+    "per_origin_concurrency": 1,
+    "minimum_delay_seconds": 1.5,
+    "freshness": "retrieval time or explicitly unvalidated cache age",
+    "purpose": "baseline candidates, upstream protocol, dataset use terms",
+    "allowed_fields": [
+      "public paper metadata",
+      "README",
+      "commit",
+      "public use and license terms"
+    ]
+  },
+  "sources": [
+    {
+      "id": "lra-recent-api",
+      "method": "GET",
+      "url": "https://export.arxiv.org/api/query?search_query=all%3A%22long%20range%20arena%22&start=0&max_results=30&sortBy=submittedDate&sortOrder=descending",
+      "retrieved_at": "2026-10-28T09:14:41.558359+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "<urlopen error [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。>"
+    },
+    {
+      "id": "lra-recent-search",
+      "method": "GET",
+      "url": "https://arxiv.org/search/?query=%22long+range+arena%22&searchtype=all&abstracts=show&order=-announced_date_first&size=50",
+      "retrieved_at": "2026-10-28T09:15:03.721528+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://arxiv.org/search/?query=%22long+range+arena%22&searchtype=all&abstracts=show&order=-announced_date_first&size=50",
+      "cache_state": "miss",
+      "sha256": "69d1211b16c53007c1ef6f5a394ac4851e79766c30bb7609bb31d3576908ef34",
+      "size_bytes": 250751,
+      "response_classification": "public_primary_source"
+    },
+    {
+      "id": "acl-copyright-recovery",
+      "method": "GET",
+      "url": "https://aclanthology.org/faq/#what-is-the-copyright-for-materials-in-the-acl-anthology",
+      "retrieved_at": "2026-10-28T09:15:15.802080+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://aclanthology.org/faq/#what-is-the-copyright-for-materials-in-the-acl-anthology",
+      "cache_state": "miss",
+      "sha256": "e612eba7dfb4712ec5bea51869937a8c87713bfc103e7c0bce15d719b6148db5",
+      "size_bytes": 26234,
+      "response_classification": "public_primary_source"
+    },
+    {
+      "id": "lra-listops-source",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/listops/data_processing.py",
+      "retrieved_at": "2026-10-28T09:15:17.362309+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": 404,
+      "failure_reason": "HTTP Error 404: Not Found"
+    },
+    {
+      "id": "lra-pathfinder-source",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/image/input_pipeline.py",
+      "retrieved_at": "2026-10-28T09:15:18.066616+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "The read operation timed out"
+    },
+    {
+      "id": "aan-author-source",
+      "method": "GET",
+      "url": "https://clair.eecs.umich.edu/aan/index.php",
+      "retrieved_at": "2026-10-28T09:16:11.029079+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://clair.eecs.umich.edu/aan/index.php",
+      "cache_state": "miss",
+      "sha256": "1804d50885d5701f38c39f199734ebd7a81cc338ba46658db7e2124af1af13fc",
+      "size_bytes": 8133,
+      "response_classification": "public_primary_source"
+    }
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "schema": "qkan-document-curation.v1",
+  "profile": "mega-document-disjoint-v3",
+  "status": "curated_not_qualified",
+  "parent_build_sha256": "d7dbda4c80510609e84a8b0f763767635e601bc8eafc6ba480a9989e1068cff0",
+  "code_sha256": "1831d4cc139f5808e5baef5ade07e17fec20898d71d09c59ebfa16ce0f393efe",
+  "source_relations": {
+    "schema": "qkan-retrieval-relations.v1",
+    "profile": "mega-independent-pairclean-v2",
+    "build_manifest_sha256": "d7dbda4c80510609e84a8b0f763767635e601bc8eafc6ba480a9989e1068cff0",
+    "splits": {
+      "train": {
+        "rows": 146731,
+        "input_sha256": "b218253ca5b6bcdf74859140850bcf0883d3d19b9e4929adc39b0958fd554faa"
+      },
+      "val": {
+        "rows": 18068,
+        "input_sha256": "9156ade27567258a880597dc41119391157e87cba5e376db5a754651022da09c"
+      },
+      "test": {
+        "rows": 17419,
+        "input_sha256": "698f59c0041b0599bae377a1c8b9f2ddf4f9d00bf1a4a1929e7ecc8ba817c7e1"
+      }
+    },
+    "unit": "encoded document after 4000-token truncation; EOS retained; right padding removed",
+    "unique_documents": 16965,
+    "exact_shared_documents": {
+      "train:val": {
+        "shared_unique_documents": 9958,
+        "affected_rows": {
+          "train": 129429,
+          "val": 18068
+        }
+      },
+      "train:test": {
+        "shared_unique_documents": 9684,
+        "affected_rows": {
+          "train": 127916,
+          "test": 17419
+        }
+      },
+      "val:test": {
+        "shared_unique_documents": 6027,
+        "affected_rows": {
+          "val": 15715,
+          "test": 15280
+        }
+      }
+    },
+    "near_duplicate_search": {
+      "method": "32 deterministic affine uint64 minhashes; 8 bands of 4; exact 5-token shingle Jaccard verification",
+      "threshold": 0.9,
+      "candidate_limit": 200000,
+      "candidates_verified": 21763,
+      "truncated": false,
+      "verified_near_duplicate_pairs": 8,
+      "cross_split_near_duplicate_pairs": {
+        "train:val": 6,
+        "train:test": 8,
+        "val:test": 4
+      },
+      "exhaustive": false,
+      "limitations": "Approximate candidates can miss pairs; repeated encoded documents are counted separately above. Hash collisions and repetitive text can affect shingle identity."
+    },
+    "source_document_and_author_ids_available": false,
+    "formal_baseline_allowed": false,
+    "claim_boundary": "Pair disjointness does not establish unseen-document or unseen-author generalization. Do not certify document/author independence from encoded pairs."
+  },
+  "policy": {
+    "sampling_unit": "connected component of exact encoded documents and verified near-duplicate edges",
+    "seed_salt": "qkan-document-split-20261028-v1:",
+    "document_group_ratios": [
+      0.8,
+      0.1,
+      0.1
+    ],
+    "label_stratification": false,
+    "rule": "hash groups before examining labels; keep pairs only when both groups select the same partition",
+    "original_partitions": "pooled parent pairs; original test is no longer this version's test; provenance retained"
+  },
+  "excluded_cross_partition_pairs": 60900,
+  "splits": {
+    "train": {
+      "kept_rows": 117790,
+      "class_counts": [
+        57875,
+        59915
+      ],
+      "output": {
+        "file": "train.npz",
+        "sha256": "5dc6a7331aadbf956f639a32f1a03331109fec7b6376677ab9d2257c5d0c2e2b",
+        "size_bytes": 389807050,
+        "arrays": {
+          "inputs1": {
+            "shape": [
+              117790,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "inputs2": {
+            "shape": [
+              117790,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "labels": {
+            "shape": [
+              117790
+            ],
+            "dtype": "int64"
+          }
+        }
+      }
+    },
+    "val": {
+      "kept_rows": 1804,
+      "class_counts": [
+        904,
+        900
+      ],
+      "output": {
+        "file": "val.npz",
+        "sha256": "e859f704ef4590d9773d45a1106a5d5e2c9ff258907b5eab746d577a0acf7a58",
+        "size_bytes": 5860275,
+        "arrays": {
+          "inputs1": {
+            "shape": [
+              1804,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "inputs2": {
+            "shape": [
+              1804,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "labels": {
+            "shape": [
+              1804
+            ],
+            "dtype": "int64"
+          }
+        }
+      }
+    },
+    "test": {
+      "kept_rows": 1724,
+      "class_counts": [
+        878,
+        846
+      ],
+      "output": {
+        "file": "test.npz",
+        "sha256": "e8d9a56470222ee0b9c4b6456163f3ddfc0a3b44b8aa31165d91e49243ee05c4",
+        "size_bytes": 5612183,
+        "arrays": {
+          "inputs1": {
+            "shape": [
+              1724,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "inputs2": {
+            "shape": [
+              1724,
+              4000
+            ],
+            "dtype": "uint16"
+          },
+          "labels": {
+            "shape": [
+              1724
+            ],
+            "dtype": "int64"
+          }
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Encoded-document holdout, not author holdout; source IDs unavailable.",
+    "Near-duplicate search is approximate; all verified edges are grouped, undiscovered similarities may remain.",
+    "This is a new adapted evaluation population, not directly comparable with official/historical LRA scores."
+  ]
+}
