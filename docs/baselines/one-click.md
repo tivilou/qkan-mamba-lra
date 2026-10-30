@@ -1,5 +1,7 @@
 # 协作者一键运行入口
 
+[从新服务器开始的中文操作步骤](collaborator-beginner-guide.zh-CN.md)。
+
 入口：`bash scripts/run_baselines.sh`。Linux + Python 3.10/3.11；GPU 阶段需要 NVIDIA 驱动，Mamba1 还需要与 PyTorch cu126 对应的 CUDA 工具链和 `nvcc`。首次安装和作者数据下载需要网络。脚本创建项目内 `.venv-baselines`，固定 PyTorch 2.7.1、NumPy 2.2.6、einops 0.8.1；不改系统 Python。
 
 **当前交付状态：研究方 CPU 工程验证已通过，合作者 GPU 预检待执行，尚未获准正式比较。** 2026-10-29 在 3080Ti 调度节点通过统一队列完成了单测、Transformer/S4D minimal 新进程精确恢复、trace 语义与重放，以及 `mega-document-disjoint-v3` 的 15 个 NPZ split、3 份字典身份和 15 份配置构建检查。可审计收据见 [`docs/evidence/baseline-runner-diagnostics-20261029.json`](../evidence/baseline-runner-diagnostics-20261029.json)。这些检查全部标记 `formal=false`，不是 LRA 性能结果，也不能替代实际 GPU 预检。

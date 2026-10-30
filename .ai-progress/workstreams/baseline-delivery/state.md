@@ -7,6 +7,7 @@
 ## Current State
 
 - One-command candidate implemented: `scripts/run_baselines.sh`, `experiments/baseline_delivery/`, handoff `docs/baselines/one-click.md`. Preparation, independent GPU jobs, full-state resume and immutable chunked return are implemented; formal baseline is not yet certified.
+- Collaborator setup guide: `docs/baselines/collaborator-beginner-guide.zh-CN.md`, linked from README and one-click handoff. It gives direct Chinese steps from server setup through automatic data preparation and formal result upload; keep introductions, audit prose and troubleshooting out of this guide. Mamba CUDA extension opt-in is set in the environment steps.
 - Engineering candidates: Transformer, explicitly pedagogical minimal upstream S4D, pinned Mamba1. Formal comparisons remain gated by foundation D01, cohort freeze and per-model fidelity.
 - Primary-source inventory pins S4/S5/MEGA/Mamba and one explicitly unofficial LRU implementation. Candidate shortlist is provisional, not a current top-x claim.
 - Legacy runner defects and per-model fidelity/recovery/trace delivery gates are documented in docs/baselines/delivery-contract.md.
