@@ -8,6 +8,8 @@
 
 `release.json` 仍明确记录未冻结 cohort、未认证的模型；数据资格也仍是 `insufficient`。现在可以准备数据、执行 GPU 诊断，`--mode run` 会说明原因并拒绝正式训练。此文档不是“baseline 已复现成功”的证明。
 
+安装入口于 2026-11-03 修正：Mamba1 使用作者 v2.2.4 commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9`；每次 pip 安装均传递固定约束，禁止依赖解析升级 Torch。启动时先检查交换服务配置，安装后检查 cu126、版本、源码身份及 `selective_scan_cuda` 导入。`MAMBA_FORCE_BUILD=TRUE` 可跳过上游预编译 wheel 下载；源码构建仍需匹配的工具链。CPU 回归检查不能替代合作者 GPU 安装与运行预检。
+
 ## 1. 获取代码和私有配置
 
 从 GitHub 的 `research/collaboration-foundation` 分支取得双方确认的干净 commit；运行 `git pull --ff-only origin research/collaboration-foundation`，再记录 `git rev-parse HEAD`。同一 suite 恢复必须使用相同 commit 和协议。

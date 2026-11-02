@@ -17,4 +17,6 @@
 
 取得的源码 pin：LRA `cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8`；MEGA `aeaa4b44592cd1d60a9a34554e359eda2a62b03b`；S4 `e757cef57d89e448c413de7325ed5601aceaac13`；S5 `3c18fdb6b06414da35e77b94b9cd855f6a95ef17`；Mamba `e9594ce1c732d97440f0332fdc43170a2294dbfa`。固定 commit 只证明来源身份，不证明运行保真。
 
+2026-11-03 安装修正：上述 `e9594ce...` 保留为调查时的源码身份；当前运行入口改为作者 v2.2.4 对应 commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9`，仍调用 `mamba_simple.Mamba`（Mamba1）。原 pin 引入 Mamba3 的 Triton/TileLang/quack 依赖链，与固定 Torch 2.7.1 的依赖冲突。新 pin 的 `setup.py` 不含这些新依赖；安装全程使用 `requirements-baseline-install.txt` 约束。已安装的 2.3.2 wheel 不复用为新 pin，GPU 保真与恢复仍需重新验证。原始源码收集收据保持不变。
+
 当前所有模型的 fidelity 状态均为 `not_verifiable`。尚无新的正式 baseline 分数，门户不得把数据诊断计入模型结果。

@@ -18,10 +18,20 @@ def main():
     parser.add_argument('--cache',type=Path,required=True)
     parser.add_argument('--canary',choices=('transformer','s4d_minimal'))
     parser.add_argument('--data-check',type=Path)
+    parser.add_argument('--bootstrap-only',action='store_true')
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     from experiments.baseline_delivery.common import atomic_json, revision
     source=revision();os.environ.update(OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1',QKAN_TEST_CACHE=str(args.cache))
-    if args.data_check:
+    if args.bootstrap_only:
+        target=args.output/'bootstrap-tests.log'
+        with target.open('w') as log:
+            for command in (['bash','-n','scripts/run_baselines.sh'],
+                            [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_bootstrap.py','-v']):
+                result=subprocess.run(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
+                if result.returncode: raise RuntimeError('Bootstrap regression failed; see '+str(target))
+        atomic_json(args.output/'diagnostic.json',{'passed':True,'source_revision':source,'formal':False,
+            'kind':'bootstrap_regression','gpu_install_verified':False,'log':target.name})
+    elif args.data_check:
         from experiments.baseline_delivery.sync import verify_data
         from experiments.baseline_delivery.runner import config_for
         records=verify_data(args.data_check)

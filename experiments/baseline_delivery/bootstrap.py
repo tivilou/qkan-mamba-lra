@@ -1,0 +1,54 @@
+"""Installation identity checks; no training or environment changes."""
+import argparse
+import importlib
+import importlib.metadata as metadata
+import json
+import os
+from pathlib import Path
+
+MAMBA_COMMIT = '95d8aba8a8c75aedcaa6143713b11e745e7cd0d9'
+
+
+def check_exchange():
+    for key in ('PROJECT_EXCHANGE_URL', 'PROJECT_EXCHANGE_TOKEN', 'PROJECT_EXCHANGE_CA_FILE'):
+        if not os.environ.get(key):
+            raise ValueError(f'Set {key} in this terminal before starting installation')
+    if not os.environ['PROJECT_EXCHANGE_URL'].startswith('https://'):
+        raise ValueError('PROJECT_EXCHANGE_URL must use HTTPS')
+    if not Path(os.environ['PROJECT_EXCHANGE_CA_FILE']).is_file():
+        raise ValueError('PROJECT_EXCHANGE_CA_FILE does not point to a certificate file')
+
+
+def check_core():
+    torch = importlib.import_module('torch')
+    if torch.__version__ != '2.7.1+cu126' or torch.version.cuda != '12.6':
+        raise ValueError('Expected torch 2.7.1+cu126 with CUDA 12.6')
+    for name, version in (('numpy', '2.2.6'), ('einops', '0.8.1'), ('triton', '3.3.1')):
+        if metadata.version(name) != version:
+            raise ValueError(f'Expected {name}=={version}')
+
+
+def check_mamba():
+    check_core()
+    dist = metadata.distribution('mamba-ssm')
+    source = json.loads(dist.read_text('direct_url.json') or '{}')
+    if dist.version != '2.2.4' or source.get('vcs_info', {}).get('commit_id') != MAMBA_COMMIT:
+        raise ValueError('Mamba package does not match the pinned upstream commit')
+    if source.get('url', '').removesuffix('.git') != 'https://github.com/state-spaces/mamba':
+        raise ValueError('Unexpected Mamba upstream repository')
+    importlib.import_module('selective_scan_cuda')
+    importlib.import_module('mamba_ssm.modules.mamba_simple').Mamba
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('stage', choices=('exchange', 'core', 'mamba'))
+    args = parser.parse_args()
+    try:
+        {'exchange': check_exchange, 'core': check_core, 'mamba': check_mamba}[args.stage]()
+    except Exception as error:
+        parser.exit(2, f'Bootstrap check failed ({args.stage}): {type(error).__name__}: {error}\n')
+
+
+if __name__ == '__main__':
+    main()
