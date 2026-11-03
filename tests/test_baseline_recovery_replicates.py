@@ -1,6 +1,7 @@
 """Repeated diagnostic controls and real bounded parent-to-child route."""
 import copy
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -83,7 +84,9 @@ class ReplicateTests(unittest.TestCase):
                 np.savez(data/'image'/(split+'.npz'), inputs=np.arange(n*1024, dtype=np.uint8).reshape(n, 1024),
                          labels=np.arange(n) % 2)
             atomic_json(data/'synthetic-canary.json', dict(bounded=True, test_included=False))
-            config = dict(task='image', model='transformer', width=8, layers=1, heads=2,
+            # Use the already pinned S4D asset for a real, low-memory CPU route;
+            # Transformer attention at 1024 tokens can exceed this node's 1 GiB cgroup.
+            config = dict(task='image', model='s4d_minimal', width=8, layers=1, heads=2,
                           state_size=4, dropout=0., batch_size=2, micro_batch=1, epochs=2,
                           lr=.001, weight_decay=0., seed=42, classes=2, vocabulary=None,
                           warmup_steps=2, clip_norm=1., protocol_sha256='0'*64,
@@ -91,7 +94,7 @@ class ReplicateTests(unittest.TestCase):
             atomic_json(folder/'config.json', config)
             output = folder/'audit'; output.mkdir()
             try:
-                audit.execute(folder, folder/'cache', 'cpu', 3, output, revision())
+                audit.execute(folder, Path(os.environ['QKAN_TEST_CACHE']), 'cpu', 3, output, revision())
             except ValueError as error:
                 self.fail(str(error)+'\n'+'\n'.join(log.read_text()[-6000:] for log in output.glob('*.log')))
             report = read(output/'report.json')
