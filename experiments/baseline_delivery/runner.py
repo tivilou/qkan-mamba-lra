@@ -43,6 +43,7 @@ def implementation_hash():
     paths += [ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
+              ROOT/'experiments/baseline_delivery/data-content-identities.json',
               ROOT/'tools/sample_trace_contract/validate.py']
     return fingerprint({p.relative_to(ROOT).as_posix():digest(p) for p in paths})
 
@@ -74,7 +75,9 @@ def config_for(task,model,seed,data,source):
                           if task not in ('image','pathfinder') else None)
     expected=read(ROOT/'docs/evidence/mega-document-v3-build.json')
     item=next(t for t in expected['tasks'] if t['task']==task)
-    config['data_hashes']={key:value['sha256'] for key,value in item['splits'].items()}
+    # prepare() has already certified exact reference array content. Bind workers
+    # and resume to the actual local container bytes rather than another ZIP encoding.
+    config['data_hashes']={key:digest(Path(data)/task/(key+'.npz')) for key in item['splits']}
     return config
 
 

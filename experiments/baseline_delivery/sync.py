@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from contextlib import ExitStack
 import http.client
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -93,15 +94,49 @@ def asset_sync(cache):
     return manifest
 
 
+def verify_npz_content(path, members):
+    """Bind exact NPY headers and array bytes, independently of ZIP encoding."""
+    with zipfile.ZipFile(path) as archive:
+        infos = archive.infolist()
+        if len(infos) != len(members) or {i.filename for i in infos} != set(members):
+            raise ValueError('NPZ member names/count differ from frozen reference')
+        for info in infos:
+            expected = members[info.filename]
+            if info.file_size != expected['size_bytes']:
+                raise ValueError('NPY size differs: '+info.filename)
+            h = hashlib.sha256()
+            with archive.open(info) as source:
+                for block in iter(lambda: source.read(1024*1024), b''):
+                    h.update(block)
+            if h.hexdigest() != expected['sha256']:
+                raise ValueError('NPY content differs: '+info.filename)
+
+
 def verify_data(data):
+    data = Path(data)
     expected = read(ROOT/'docs/evidence/mega-document-v3-build.json')
+    content = read(ROOT/'experiments/baseline_delivery/data-content-identities.json')
+    if content['source_archive_sha256'] != expected['archive_sha256'] or content['profile'] != expected['profile']:
+        raise ValueError('Content reference source/profile mismatch')
     records = []
     for task in expected['tasks']:
         for split, item in task['splits'].items():
             path = data/task['task']/(split+'.npz')
-            if not path.is_file() or path.is_symlink() or path.stat().st_size != item['size_bytes'] or digest(path) != item['sha256']:
+            if not path.is_file() or path.is_symlink():
                 raise ValueError('Dataset verification failed: '+task['task']+'/'+split)
-            records.append({'task':task['task'],'split':split,'sha256':item['sha256']})
+            actual = digest(path)
+            identity = content['splits'][task['task']+'/'+split]
+            if identity['reference_npz_sha256'] != item['sha256']:
+                raise ValueError('Content reference does not bind frozen NPZ')
+            if actual != item['sha256']:
+                try:
+                    verify_npz_content(path, identity['members'])
+                except (ValueError, zipfile.BadZipFile, EOFError) as error:
+                    raise ValueError('Dataset verification failed: '+task['task']+'/'+split+
+                                     '; expected NPZ='+item['sha256']+' actual='+actual+'; '+str(error)) from error
+                print('Verified identical array content despite ZIP encoding difference: '+task['task']+'/'+split, flush=True)
+            records.append({'task':task['task'],'split':split,'sha256':actual,
+                            'reference_npz_sha256':item['sha256']})
     for task,entry in read(ROOT/'experiments/baseline_delivery/data-identities.json')['dictionaries'].items():
         dictionary=data/entry['path']
         if (dictionary.is_symlink() or not dictionary.is_file() or dictionary.stat().st_size!=entry['size_bytes']
