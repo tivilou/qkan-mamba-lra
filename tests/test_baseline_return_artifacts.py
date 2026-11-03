@@ -1,5 +1,6 @@
 """Exercise real delivery manifests/receipts with an isolated transport."""
 import tempfile
+from types import SimpleNamespace
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -26,6 +27,8 @@ class ReturnTests(unittest.TestCase):
                                 sha256='bad' if self.bad_receipt else sha)
         self.client=Client()
         self.patches=[patch.object(returns,'ROOT',self.root),patch.object(returns,'check_exchange'),
+                      patch('scripts.exchange_artifacts.subprocess.run',
+                            return_value=SimpleNamespace(stdout='fixture-revision\n')),
                       patch.object(returns,'Transport',return_value=self.client),
                       patch.object(returns.time,'sleep'),
                       patch.dict(returns.os.environ,PROJECT_EXCHANGE_URL='https://example.invalid',
