@@ -20,6 +20,8 @@ Put rationale and chronology in decisions/*.md instead.
 - Keep source provenance, reproduction fidelity, common-protocol performance and scientific claims separate; never certify a baseline from its name or import alone.
 - Public Git holds code/configuration and reviewed compact evidence. Data, weights, raw traces and credentials remain outside Git and use the authenticated project exchange when shared.
 
+- User instruction (2026-11-03): future collaborator scripts must automatically return explicitly needed runtime artifacts to the designated project exchange directory, with verified receipts and retryable local retention; reuse existing authenticated return tooling.
+
 ## Decision Index
 
 <!-- Add one bullet per decision: `- [STATUS] Short title -> [detail](relative/path.md)`. -->
