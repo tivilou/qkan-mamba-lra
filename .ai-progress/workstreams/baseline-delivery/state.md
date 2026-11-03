@@ -6,6 +6,10 @@
 
 ## Current State
 
+- Repeated recovery diagnostic delivered at a31cac4 (GitHub ref verified): experiments.baseline_delivery.recovery_replicates defaults to 5 identical-seed pairs, each full six-update run plus update-2 interruption/fresh-process resume. Reports per-field differences and dependent full/full comparisons; automatically returns report.json/summary.json to qkan-mamba/recovery-replicates/<audit-id>. No tolerance or formal gate changed.
+- User instructed stopping tests and handing directly to collaborator. Latest scheduler attempt 04a5fdbe548841b9b516e4388cbb8001 cancellation requested; final full regression is not certified. Earlier real Transformer CPU 3-pair run passed once but repeat hit exit -9 under 1 GiB cgroup; final fixture uses pinned S4D. Five return tests had a missing Git revision fixture, now isolated; final rerun incomplete.
+
+
 - One-command candidate implemented: `scripts/run_baselines.sh`, `experiments/baseline_delivery/`, handoff `docs/baselines/one-click.md`. Preparation, independent GPU jobs, full-state resume and immutable chunked return are implemented; formal baseline is not yet certified.
 - Latest blocker: after CUDA repair, collaborator Conv1d forward/backward passed and suite advanced to Mamba1/ListOps recovery. Both runs finish 6 updates with equal CPU/CUDA RNG; three displayed parameters differ by up to 5.96e-8. Full audit now shows model/optimizer/history/trajectory differences, also present in an uninterrupted repeat; equivalence remains unestablished. Pinned Mamba backward uses atomic adds; nondeterminism is a supported hypothesis, not sole-cause proof.
 - Authorized diagnostic at `0102d38`: `python -m experiments.baseline_delivery.recovery_audit --canary <existing failed folder> --cache <cache> --device cuda:0` adds one uninterrupted repeat, verifies scientific source/environment equality, and records full model/optimizer/scheduler/RNG/order/trajectory differences in three pairwise reports. It never writes a pass receipt or changes tolerances. Collaborator GPU report received: repeat/original max_abs=6.18e-7, resumed/original=4.77e-7; all three pairs finite with exact control state and equal environment records. This supports execution nondeterminism but does not certify recovery or establish a noise bound. See docs/evidence/baseline-collaborator-recovery-review-20261103.json.
@@ -28,6 +32,9 @@
 - Automatic report return implemented at a0e9444: recovery audit uploads report.json/summary.json to qkan-mamba/recovery-audit/<run-id>, verifies SHA-256 receipts, and retains local retry inventory on failure. User confirms this pattern for future collaborator scripts.
 
 ## Next Actions
+
+- Collaborator pulls research/collaboration-foundation, runs recovery_replicates against existing mamba1-listops canary with --repeats 5 and existing exchange configuration; review automatically returned reports before defining numerical recovery acceptance.
+
 
 - Hand the branch to the collaborator; they run actual GPU preflight and return receipts. In parallel, finish dataset-use qualification, cohort freeze, and per-model fidelity certification before any formal launch.
 - Collaborator updates the branch and reruns preflight with exchange variables set; the installer restores Torch 2.7.1+cu126 and replaces the previously built Mamba 2.3.2 package. Do not reuse that old wheel as the new pin. CPU checks do not certify GPU execution.
