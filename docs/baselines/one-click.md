@@ -55,6 +55,16 @@ bash scripts/run_baselines.sh --mode preflight --cache /data/qkan-cache \
 
 `s4d_minimal` 是作者明确标为教学用途的 minimal S4D 模块加本项目分类适配层，绝不等同于完整 S4/S4D benchmark 复现。当前三个实现是工程候选；MEGA、S5 等未交付，正式 cohort 需另行冻结。
 
+若 Mamba 的恢复检查仅出现微小浮点差异，可先单独运行对照诊断，保持原来的逐位一致验收标准不变：
+
+```bash
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.recovery_audit \
+  --canary /absolute/path/to/suite/preflight/GPU-ID/mamba1-listops-s42 \
+  --cache "$QKAN_CACHE" --device cuda:0
+```
+
+工具检查原科学源码和环境记录未变，保留原检查点，额外执行一次相同的有界不中断运行。它逐项记录模型、优化器、调度器、RNG、样本顺序与训练轨迹的差异，输出 `report.json` 和 `summary.json`。报告只作诊断，不写 `canary.json`，不设置数值容差、不放行正式实验。一次重复运行可揭示非确定性，但不足以建立统计噪声界或认证数值恢复。
+
 ## 4. 正式放行后的一键实验
 
 研究方补齐数据资格、固定 cohort/协议并提交逐模型复现证书后，更新 `release.json`。合作者更新到该发布 commit，再执行：
