@@ -2,7 +2,7 @@
 
 [从新服务器开始的中文操作步骤](collaborator-beginner-guide.zh-CN.md)。
 
-入口：`bash scripts/run_baselines.sh`。Linux + Python 3.10/3.11；GPU 阶段需要 NVIDIA 驱动，Mamba1 还需要与 PyTorch cu126 对应的 CUDA 工具链和 `nvcc`。首次安装和作者数据下载需要网络。脚本创建项目内 `.venv-baselines`，固定 PyTorch 2.7.1、NumPy 2.2.6、einops 0.8.1；不改系统 Python。
+入口：`bash scripts/run_baselines.sh`。安装镜像支持 Linux x86_64 + Python 3.11；GPU 阶段需要 NVIDIA 驱动，Mamba1 还需要与 PyTorch cu126 对应的 CUDA 工具链和 `nvcc`。首次安装和作者数据下载需要网络。脚本创建项目内 `.venv-baselines`，固定 PyTorch 2.7.1、NumPy 2.2.6、einops 0.8.1；不改系统 Python。
 
 **当前交付状态：研究方 CPU 工程验证已通过，合作者 GPU 预检待执行，尚未获准正式比较。** 2026-10-29 在 3080Ti 调度节点通过统一队列完成了单测、Transformer/S4D minimal 新进程精确恢复、trace 语义与重放，以及 `mega-document-disjoint-v3` 的 15 个 NPZ split、3 份字典身份和 15 份配置构建检查。可审计收据见 [`docs/evidence/baseline-runner-diagnostics-20261029.json`](../evidence/baseline-runner-diagnostics-20261029.json)。这些检查全部标记 `formal=false`，不是 LRA 性能结果，也不能替代实际 GPU 预检。
 
@@ -40,6 +40,8 @@ bash scripts/run_baselines.sh --mode prepare --cache /data/qkan-cache
 原 LRA 对 AAN 文本的转发有限制，**我们的服务不发布该文本或整个数据压缩包**。各任务的用途证据和正式比较资格详见 `docs/data-use-boundaries.md`。作者下载失败时保留缓存；脚本不会自动切换为未审查的第三方数据集。
 
 ## 3. 合作者实际 GPU 预检
+
+数据校验保留参考 NPZ 文件哈希；若 ZIP 编码不同，则逐个核对内部 NPY 的完整头部及数组字节 SHA-256、长度与成员集合。只有内部内容与固定参考完全一致时才接受，后续任务与恢复绑定本机实际 NPZ 哈希。此前因压缩包哈希不同而停止的数据无需删除或重建，更新代码后重跑即可。
 
 ```bash
 bash scripts/run_baselines.sh --mode preflight --cache /data/qkan-cache \
