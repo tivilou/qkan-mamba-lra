@@ -16,6 +16,30 @@ def display(label,ref):
             'visualizations':[]}
 
 
+def replay_classifier(model, lookups, task, device):
+    """Replay decoded arrays as one batch using the producer's dtype/device.
+
+    NumPy CPU reductions and a GPU FP32 reduction need not round alike over
+    4000 tokens. Keeping the original batch shape also avoids comparing a
+    single-row GEMV against the producer's batched classification GEMM.
+    """
+    encoded=[]
+    for side in range(2 if task=='retrieval' else 1):
+        h=np.stack([row['encoder'+str(side)] for row in lookups])
+        mask=np.stack([row['mask'+str(side)] for row in lookups])
+        if mask.dtype!=np.bool_ or np.any(mask.sum(1)==0):
+            raise ValueError('Invalid replay padding mask')
+        if np.any(h[~mask]!=0):
+            raise ValueError('Captured encoder has nonzero padding')
+        tensor=torch.from_numpy(h).to(device)
+        counts=torch.from_numpy(mask).to(device).sum(1).unsqueeze(-1)
+        encoded.append(tensor.sum(1)/counts)
+    pooled=torch.cat(((encoded[0]-encoded[1]).abs(),encoded[0]*encoded[1]),dim=-1) if len(encoded)==2 else encoded[0]
+    with torch.no_grad():
+        logits=model.head(pooled)
+    return pooled.cpu().numpy(),logits.cpu().numpy()
+
+
 def capture(model,split,output,config,checkpoint):
     output=Path(output); folder=output/'trace-values';folder.mkdir(exist_ok=True)
     model.eval();model.capture=True;model.captured=[]
@@ -88,20 +112,16 @@ def capture(model,split,output,config,checkpoint):
     semantic_validate(output/'sample-trace.json')
     # Decode complete captured encoder values and independently reconstruct the
     # classifier input/head. This compares replay with the producer's logits.
-    for sample in samples:
-        lookup={rep['id']:np.load(output/rep['artifact_refs'][0]['path'],allow_pickle=False) for rep in sample['representations']}
-        encoded=[]
-        for side in range(2 if config['task']=='retrieval' else 1):
-            h,mask=lookup['encoder'+str(side)],lookup['mask'+str(side)]
-            encoded.append((h*mask[:,None]).sum(0)/mask.sum())
-        expected=np.concatenate((np.abs(encoded[0]-encoded[1]),encoded[0]*encoded[1])) if len(encoded)==2 else encoded[0]
-        np.testing.assert_allclose(expected,lookup['pooled'],rtol=1e-5,atol=1e-6)
-        with torch.no_grad():
-            replay=model.head(torch.tensor(expected,device=device,dtype=model.head.weight.dtype)).cpu().numpy()
-        np.testing.assert_allclose(replay,lookup['logits'],rtol=1e-5,atol=1e-6)
+    lookups=[{rep['id']:np.load(output/rep['artifact_refs'][0]['path'],allow_pickle=False)
+              for rep in sample['representations']} for sample in samples]
+    expected,replay=replay_classifier(model,lookups,config['task'],device)
+    np.testing.assert_allclose(expected,np.stack([r['pooled'] for r in lookups]),rtol=1e-5,atol=1e-6)
+    np.testing.assert_allclose(replay,np.stack([r['logits'] for r in lookups]),rtol=1e-5,atol=1e-6)
     atomic_json(output/'trace-validation.json',{'schema':'qkan-trace-readiness.v1','passed':True,
         'semantic':'decoded full arrays and coordinate reader','replay':'pooled encoder -> pair head -> logits',
         'structural':'shared sample-trace.v2 validator require_complete; zero warnings',
+        'replay_backend':'torch; producer device, captured dtype and original selected-sample batch shape',
+        'replay_rtol':1e-5,'replay_atol':1e-6,
         'checkpoint_sha256':checkpoint,'samples':len(samples),'privacy':'private; not automatically uploaded'})
 
 
