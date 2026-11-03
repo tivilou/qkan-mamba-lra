@@ -7,6 +7,7 @@
 ## Current State
 
 - One-command candidate implemented: `scripts/run_baselines.sh`, `experiments/baseline_delivery/`, handoff `docs/baselines/one-click.md`. Preparation, independent GPU jobs, full-state resume and immutable chunked return are implemented; formal baseline is not yet certified.
+- Dependency mirror at `f1adc22`: 44 official-source dependency artifacts (3,036,418,350 bytes), including cu126 Torch/CUDA wheels and pinned Mamba source, published to authenticated exchange in 64 MiB chunks. Complete HTTPS readback hashes pass. Installer now uses only this manifest and `pip --no-index`; Mamba source identity is certified by the pinned archive hash. Linux x86_64 / Python 3.11 supported; collaborator confirms 3.11.11. Data still comes directly from the author.
 - Installer repair at `410b28c`: constrained cu126 Torch/NumPy/einops/Triton/Transformers/setuptools; active Mamba source changed to author v2.2.4 commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9`, still Mamba1. Original surveyed pin remains historical evidence. Exchange configuration is checked before installation; final stack/source/extension imports are checked before data work. GPU installation remains unverified.
 - Collaborator setup guide: `docs/baselines/collaborator-beginner-guide.zh-CN.md`, linked from README and one-click handoff. It gives direct Chinese steps from server setup through automatic data preparation and formal result upload; keep introductions, audit prose and troubleshooting out of this guide. Mamba CUDA extension opt-in is set in the environment steps.
 - Engineering candidates: Transformer, explicitly pedagogical minimal upstream S4D, pinned Mamba1. Formal comparisons remain gated by foundation D01, cohort freeze and per-model fidelity.
@@ -33,6 +34,7 @@
 ## Validation
 
 - Official source commits and README/paper metadata retrieved through the authorized server; compact source receipt committed with this stage.
+- Mirror receipt: `docs/evidence/baseline-install-mirror-20261103.json`; all 44 objects readback-verified, shell syntax and 8 regressions pass via scheduler task `dc5229a54f5541ccb009af023e1efa78`. No actual GPU installation/compilation is certified.
 - Installer shell syntax and four regression tests pass through shared queue task `b7c32cc747614dafad2c3f55fc12b624` at `410b28c`; evidence `docs/evidence/baseline-bootstrap-20261103.json`. Session: sessions/2026-11/20261103-bootstrap-repair.md.
 - Owner-side CPU engineering validation passed; it is not GPU or performance evidence. Non-Git upstream asset publication and idempotent round-trip passed; datasets remain unpublished.
 - At 52257f2, 31 qualification/data/pixel-source/exchange tests passed through the shared scheduler; all Image/Pathfinder pixels and labels exactly match pinned source. These tests do not certify baseline fidelity; no baseline performance is claimed.
