@@ -133,6 +133,13 @@ def main():
     print(json.dumps(summary,ensure_ascii=False,indent=2),flush=True)
     print('Report: '+str(audit/'report.json'),flush=True)
     print('Recovery gate unchanged; this diagnostic does not authorize formal training.',flush=True)
+    from .return_artifacts import upload_declared
+    try:
+        upload_declared(audit,'recovery-audit',['report.json','summary.json'])
+    except Exception as error:
+        raise SystemExit('Report upload failed ('+type(error).__name__+
+                         '); report retained at '+str(audit)+
+                         '. Retry: python -m experiments.baseline_delivery.return_artifacts --directory '+str(audit))
 
 
 if __name__=='__main__': main()

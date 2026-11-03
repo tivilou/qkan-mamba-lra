@@ -81,10 +81,12 @@ class AuditTests(unittest.TestCase):
             with patch.object(audit,'check_source',return_value={}), \
                  patch.object(audit,'revision',return_value='audit'), \
                  patch.object(audit,'run_child',side_effect=child) as launch, \
+                 patch('experiments.baseline_delivery.return_artifacts.upload_declared') as upload, \
                  patch('experiments.baseline_delivery.worker.load_checkpoint',return_value=state()), \
                  patch('sys.argv',['audit','--canary',str(folder),'--cache',str(folder/'cache'),'--device','cpu']):
                 audit.main()
             self.assertEqual(launch.call_count,1)
+            self.assertEqual(upload.call_args.args[1:],('recovery-audit',['report.json','summary.json']))
             report=json.loads(next(folder.glob('recovery-audit-*/report.json')).read_text())
             self.assertEqual(report['status'],'diagnostic_only')
             self.assertFalse(report['recovery_gate_changed'])

@@ -30,7 +30,8 @@ def main():
                             [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_install_mirror.py','-v'],
                             [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_data_identity.py','-v'],
                             [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_trace_replay.py','-v'],
-                            [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_recovery_audit.py','-v']):
+                            [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_recovery_audit.py','-v'],
+                            [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_return_artifacts.py','-v']):
                 result=subprocess.run(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
                 if result.returncode: raise RuntimeError('Bootstrap regression failed; see '+str(target))
         atomic_json(args.output/'diagnostic.json',{'passed':True,'source_revision':source,'formal':False,
