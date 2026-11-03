@@ -65,6 +65,27 @@ bash scripts/run_baselines.sh --mode preflight --cache /data/qkan-cache \
 
 工具检查原科学源码和环境记录未变，保留原检查点，额外执行一次相同的有界不中断运行。它逐项记录模型、优化器、调度器、RNG、样本顺序与训练轨迹的差异，输出 `report.json` 和 `summary.json`。报告只作诊断，不写 `canary.json`，不设置数值容差、不放行正式实验。一次重复运行可揭示非确定性，但不足以建立统计噪声界或认证数值恢复。
 
+### 多次重复与恢复诊断
+
+单次噪声审计后，使用原失败 canary 中的配置和有界数据运行 5 组诊断：
+
+```bash
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.recovery_replicates \
+  --canary /absolute/path/to/suite/preflight/GPU-ID/mamba1-listops-s42 \
+  --cache "$QKAN_CACHE" --device cuda:0 --repeats 5
+```
+
+每组保持相同 seed、配置、数据和设备：不中断运行 6 次更新，另一路在第 2 次更新后退出，再由新进程恢复到第 6 次更新。默认共启动 15 个顺序子进程；不会修改原运行。`--repeats` 可设为 3–10。报告包含每组恢复对照，以及所有不中断运行之间的比较，分模型、优化器、调度器、RNG、样本顺序、选择结果和损失轨迹记录差异。样本行号、步数、随机数状态和调度器保持严格比较。
+
+完成后自动将 `report.json`、`summary.json` 上传至 `qkan-mamba/recovery-replicates/<audit-id>/` 并核验收据；使用已有 exchange 环境变量，缺配置时在计算前停止。诊断异常也会尝试回传失败摘要，原始日志、权重留在本地。上传失败时按终端打印的命令单独补传，不重跑诊断：
+
+```bash
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.return_artifacts \
+  --directory /absolute/path/to/recovery-replicates-ID --experiment recovery-replicates
+```
+
+这些是相同种子的执行重复，不是独立训练种子；两两比较共享运行，不应当作独立统计样本。最大差异仅为本次观测，不构成噪声上界或验收容差。脚本不写通过收据，不放行正式实验；拿到报告后再决定验收方案。
+
 ## 4. 正式放行后的一键实验
 
 研究方补齐数据资格、固定 cohort/协议并提交逐模型复现证书后，更新 `release.json`。合作者更新到该发布 commit，再执行：
