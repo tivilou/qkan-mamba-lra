@@ -84,7 +84,7 @@ class ReplicateTests(unittest.TestCase):
                          labels=np.arange(n) % 2)
             atomic_json(data/'synthetic-canary.json', dict(bounded=True, test_included=False))
             config = dict(task='image', model='transformer', width=8, layers=1, heads=2,
-                          state_size=4, dropout=0., batch_size=2, micro_batch=2, epochs=2,
+                          state_size=4, dropout=0., batch_size=2, micro_batch=1, epochs=2,
                           lr=.001, weight_decay=0., seed=42, classes=2, vocabulary=None,
                           warmup_steps=2, clip_norm=1., protocol_sha256='0'*64,
                           checkpoint_steps=1, source_revision=revision(), data_hashes={})
@@ -92,8 +92,8 @@ class ReplicateTests(unittest.TestCase):
             output = folder/'audit'; output.mkdir()
             try:
                 audit.execute(folder, folder/'cache', 'cpu', 3, output, revision())
-            except ValueError:
-                self.fail('\n'.join(log.read_text()[-6000:] for log in output.glob('*.log')))
+            except ValueError as error:
+                self.fail(str(error)+'\n'+'\n'.join(log.read_text()[-6000:] for log in output.glob('*.log')))
             report = read(output/'report.json')
             self.assertTrue(all(c['exact'] for c in report['comparisons'].values()))
             self.assertEqual(len(list(output.glob('*.command.json'))), 9)

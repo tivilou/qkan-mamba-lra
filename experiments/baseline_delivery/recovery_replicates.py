@@ -66,8 +66,11 @@ def execute(folder, cache, device, repeats, audit, audit_revision):
             stage = key + ('-resume' if extra == ['--resume'] else '')
             atomic_json(audit/'progress.json', dict(pair=index+1, pairs=repeats, stage=stage))
             print(f'Pair {index+1}/{repeats}: {stage}', flush=True)
-            if run_child(spec, audit/(stage+'.log'), env) != expected:
-                raise ValueError('Diagnostic child failed: '+stage)
+            actual = run_child(spec, audit/(stage+'.log'), env)
+            atomic_json(audit/'progress.json', dict(pair=index+1, pairs=repeats, stage=stage,
+                                                   returncode=actual, expected_returncode=expected))
+            if actual != expected:
+                raise ValueError(f'Diagnostic child failed: {stage}, exit {actual}, expected {expected}')
             paths[key] = output
     # Import torch only after all training subprocesses have exited.
     from .worker import load_checkpoint
