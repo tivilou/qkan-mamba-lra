@@ -6,6 +6,9 @@
 
 ## Current State
 
+- Formal-launch closeout now routed by docs/baselines/formal-launch-closeout.md. Leaf review covers 1311 state leaves; 60 exceed their own observed uninterrupted-repeat maximum (model 14, optimizer 33, best_weights 11, history 1, update_trace 1). This is not a failure proof or a calibrated acceptance threshold. No additional owner tests or collaborator rerun requested. Next: close source/use evidence and cohort, prepare paired upstream/adapter fidelity checks and a scoped numerical recovery policy before a single consolidated collaborator acceptance handoff. Evidence: docs/evidence/baseline-recovery-leaf-review-20261103.json.
+
+
 - Collaborator 5-pair GPU diagnostic received at 2026-11-03 22:31 Singapore time under qkan-mamba/recovery-replicates/recovery-replicates-f19b2bf61722. Both files downloaded and SHA-256/size verified against service receipts. All 5 paired recovery and 10 dependent uninterrupted comparisons have exact controls and finite numbers. Model maxima: uninterrupted 7.23e-7, recovery 5.74e-7; optimizer both 3.73e-9; update loss both 8.94e-8. Evidence: docs/evidence/baseline-recovery-replicates-received-20261103.json. Next: inspect per-leaf evidence before defining numerical recovery acceptance; no gate promotion.
 
 
