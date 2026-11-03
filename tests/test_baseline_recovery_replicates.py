@@ -80,7 +80,7 @@ class ReplicateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             folder = Path(tmp); data = folder/'data'; (data/'image').mkdir(parents=True)
             for split, n in (('train', 6), ('val', 2)):
-                np.savez(data/'image'/(split+'.npz'), inputs=np.arange(n*8, dtype=np.uint8).reshape(n, 8),
+                np.savez(data/'image'/(split+'.npz'), inputs=np.arange(n*1024, dtype=np.uint8).reshape(n, 1024),
                          labels=np.arange(n) % 2)
             atomic_json(data/'synthetic-canary.json', dict(bounded=True, test_included=False))
             config = dict(task='image', model='transformer', width=8, layers=1, heads=2,
@@ -90,7 +90,10 @@ class ReplicateTests(unittest.TestCase):
                           checkpoint_steps=1, source_revision=revision(), data_hashes={})
             atomic_json(folder/'config.json', config)
             output = folder/'audit'; output.mkdir()
-            audit.execute(folder, folder/'cache', 'cpu', 3, output, revision())
+            try:
+                audit.execute(folder, folder/'cache', 'cpu', 3, output, revision())
+            except ValueError:
+                self.fail('\n'.join(log.read_text()[-6000:] for log in output.glob('*.log')))
             report = read(output/'report.json')
             self.assertTrue(all(c['exact'] for c in report['comparisons'].values()))
             self.assertEqual(len(list(output.glob('*.command.json'))), 9)
