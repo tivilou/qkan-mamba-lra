@@ -6,6 +6,11 @@
 
 ## Current State
 
+- Consolidated collaborator acceptance implemented: experiments.baseline_delivery.acceptance; exact suite command in docs/baselines/consolidated-acceptance.md. Three independent task-adapter composition probes compare forward/loss/gradients/one AdamW update; no paper-level fidelity certificate is inferred. Then fresh Mamba/ListOps and Transformer/Retrieval recovery+trace canaries run from original bounded inputs. Reports and declared diagnostic logs automatically return to qkan-mamba/acceptance/<id>. Only AST syntax parsing/code inspection performed; no owner model tests or training.
+- Mamba1 CUDA FP32 bounded canary now uses recovery_contract.py: symmetric per-element rtol=1e-5/atol=1e-6 matching existing trace budget, exact controls/selection/discrete fields, with explicit policy receipt. CPU/other models remain exact. This is an engineering tolerance, not a statistical noise bound or long-horizon guarantee; collaborator execution pending. Formal release remains blocked.
+- Author-source followup: IMDb Stanford author endpoint timed out; CIFAR author page accessible and requests technical-report citation. No blanket permission or dataset qualification promotion inferred.
+
+
 - Formal-launch closeout now routed by docs/baselines/formal-launch-closeout.md. Leaf review covers 1311 state leaves; 60 exceed their own observed uninterrupted-repeat maximum (model 14, optimizer 33, best_weights 11, history 1, update_trace 1). This is not a failure proof or a calibrated acceptance threshold. No additional owner tests or collaborator rerun requested. Next: close source/use evidence and cohort, prepare paired upstream/adapter fidelity checks and a scoped numerical recovery policy before a single consolidated collaborator acceptance handoff. Evidence: docs/evidence/baseline-recovery-leaf-review-20261103.json.
 
 

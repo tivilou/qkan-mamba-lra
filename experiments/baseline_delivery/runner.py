@@ -137,14 +137,27 @@ def canary(config,data,cache,output,device='cpu'):
     for name in ('uninterrupted','interrupted'):
         pointer=read(folder/name/'checkpoints/latest.json')
         states.append(load_checkpoint(folder/name,pointer['contract']))
-    for key in ('model','optimizer','scheduler','rng','permutation','cursor','step','epoch',
-                'best_weights','best_accuracy','best_epoch','history','update_trace'):
-        compare_states(states[0][key],states[1][key])
+    agreement='exact'
+    if config['model']=='mamba1' and device.startswith('cuda'):
+        import torch
+        from .recovery_contract import validate
+        if any(value.is_floating_point() and value.dtype!=torch.float32
+               for state in states for value in state['model'].values()):
+            raise ValueError('Numerical recovery policy requires float32 model state')
+        recovery=validate(states[0],states[1])
+        atomic_json(folder/'recovery-validation.json',recovery)
+        if not recovery['passed']:
+            raise ValueError('Numerical recovery contract failed; inspect recovery-validation.json')
+        agreement='mamba1-cuda-fp32-v1'
+    else:
+        for key in ('model','optimizer','scheduler','rng','permutation','cursor','step','epoch',
+                    'best_weights','best_accuracy','best_epoch','history','update_trace'):
+            compare_states(states[0][key],states[1][key])
     for name in ('uninterrupted','interrupted'):
         if not read(folder/name/'trace-validation.json')['passed']:
             raise ValueError('Trace semantic/replay gate failed')
     report={'schema':'qkan-baseline-recovery-canary.v1','passed':True,'device':device,'model':config['model'],
-            'task':task,'fresh_process':True,'updates':states[0]['step'],'agreement':'exact',
+            'task':task,'fresh_process':True,'updates':states[0]['step'],'agreement':agreement,
             'config_sha256':fingerprint(config),'source_revision':config['source_revision'],
             'trace_semantic_and_replay':True,'test_access':False,
             'training_seconds':states[0]['training_seconds']}
