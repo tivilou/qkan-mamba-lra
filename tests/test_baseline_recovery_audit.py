@@ -1,5 +1,6 @@
 """Recovery diagnostics quantify noise without accepting approximate recovery."""
 import copy
+import json
 import tempfile
 from pathlib import Path
 import unittest
@@ -62,3 +63,31 @@ class AuditTests(unittest.TestCase):
             with patch.object(audit,'ROOT',root),patch.object(audit.subprocess,'check_output',return_value=b'pinned'):
                 with self.assertRaisesRegex(ValueError,'Original scientific source changed'):
                     audit.check_source({'source_revision':'old'})
+
+    def test_audit_launches_only_one_repeat_and_never_writes_pass_receipt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp);(folder/'data').mkdir()
+            (folder/'data/synthetic-canary.json').write_text('{}')
+            config={'epochs':2,'model':'mamba1','task':'listops','source_revision':'producer'}
+            (folder/'config.json').write_text(json.dumps(config))
+            def records(path):
+                (path/'checkpoints').mkdir(parents=True)
+                (path/'checkpoints/latest.json').write_text(json.dumps({'contract':'contract','sha256':'hash'}))
+                (path/'trace-validation.json').write_text('{"passed":true}')
+                (path/'environment.json').write_text('{"torch":"pinned"}')
+            for name in ('uninterrupted','interrupted'): records(folder/name)
+            def child(spec,log,env):
+                args=spec['argv']; records(Path(args[args.index('--output')+1]));return 0
+            with patch.object(audit,'check_source',return_value={}), \
+                 patch.object(audit,'revision',return_value='audit'), \
+                 patch.object(audit,'run_child',side_effect=child) as launch, \
+                 patch('experiments.baseline_delivery.worker.load_checkpoint',return_value=state()), \
+                 patch('sys.argv',['audit','--canary',str(folder),'--cache',str(folder/'cache'),'--device','cpu']):
+                audit.main()
+            self.assertEqual(launch.call_count,1)
+            report=json.loads(next(folder.glob('recovery-audit-*/report.json')).read_text())
+            self.assertEqual(report['status'],'diagnostic_only')
+            self.assertFalse(report['recovery_gate_changed'])
+            self.assertIsNone(report['numerical_acceptance_criterion'])
+            self.assertNotIn('passed',report)
+            self.assertFalse((folder/'canary.json').exists())
