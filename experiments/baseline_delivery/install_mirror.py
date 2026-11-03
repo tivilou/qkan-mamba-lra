@@ -72,6 +72,15 @@ def main():
                 'mamba': ['packaging', 'ninja', 'setuptools==80.9.0', 'wheel', 'transformers==4.51.3']}[args.stage]
     pip = [sys.executable, '-m', 'pip', 'install', '--no-index', '--find-links', str(cache),
            '-c', str(ROOT / 'requirements-baseline-install.txt')]
+    if args.stage == 'core':
+        # Old CUDA 13 packages may have overwritten files in the same nvidia/*
+        # namespace while CUDA 12 dist-info still reports the expected version.
+        # Rewrite all pinned CUDA libraries, not just their metadata dependencies.
+        cuda_wheels = [str(cache / item['filename']) for item in manifest['objects']
+                       if item['filename'].startswith('nvidia_') and item['filename'].endswith('.whl')]
+        if not cuda_wheels:
+            raise ValueError('Mirror contains no pinned NVIDIA runtime wheels')
+        subprocess.run(pip + ['--force-reinstall', '--no-deps'] + cuda_wheels, env=env, check=True)
     subprocess.run(pip + packages, env=env, check=True)
     if args.stage == 'mamba':
         subprocess.run(pip + ['--no-build-isolation', '--no-deps',

@@ -30,8 +30,10 @@ class BootstrapTests(unittest.TestCase):
                         b.check_exchange()
 
     def test_core_stack_and_drift(self):
-        versions = {'numpy': '2.2.6', 'einops': '0.8.1', 'triton': '3.3.1'}
-        torch = SimpleNamespace(__version__='2.7.1+cu126', version=SimpleNamespace(cuda='12.6'))
+        versions = {'numpy': '2.2.6', 'einops': '0.8.1', 'triton': '3.3.1', 'nvidia-cudnn-cu12':'9.5.1.17'}
+        runtime = SimpleNamespace(getRuntimeVersion=lambda:(9,5,1))
+        torch = SimpleNamespace(__version__='2.7.1+cu126', version=SimpleNamespace(cuda='12.6'),
+                                _C=SimpleNamespace(_cudnn=runtime))
         with patch.object(b.importlib, 'import_module', return_value=torch), \
              patch.object(b.metadata, 'version', side_effect=versions.__getitem__):
             b.check_core()
@@ -50,6 +52,9 @@ class BootstrapTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, name):
                     b.check_core()
                 versions[name] = original
+            runtime.getRuntimeVersion=lambda:(9,26,0)
+            with self.assertRaisesRegex(ValueError, 'library files'):
+                b.check_core()
 
     def test_mamba_identity_and_abi(self):
         source = {'url': 'https://github.com/state-spaces/mamba.git',

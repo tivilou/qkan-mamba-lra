@@ -288,6 +288,9 @@ def main():
     if args.mode=='prepare':
         print('Preparation verified: '+str(data));return 0
     gpus,inventory=discover_gpus(args.gpus)
+    for gpu in gpus:
+        subprocess.run([sys.executable,'-B','-m','experiments.baseline_delivery.bootstrap','cuda'],
+                       cwd=ROOT,env={**os.environ,'CUDA_VISIBLE_DEVICES':gpu},check=True)
     if args.resume:
         suite=args.resume.resolve()
         existing=read(suite/'suite.json')

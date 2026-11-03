@@ -23,9 +23,23 @@ def check_core():
     torch = importlib.import_module('torch')
     if torch.__version__ != '2.7.1+cu126' or torch.version.cuda != '12.6':
         raise ValueError('Expected torch 2.7.1+cu126 with CUDA 12.6')
-    for name, version in (('numpy', '2.2.6'), ('einops', '0.8.1'), ('triton', '3.3.1')):
+    for name, version in (('numpy', '2.2.6'), ('einops', '0.8.1'), ('triton', '3.3.1'),
+                          ('nvidia-cudnn-cu12', '9.5.1.17')):
         if metadata.version(name) != version:
             raise ValueError(f'Expected {name}=={version}')
+    runtime = tuple(torch._C._cudnn.getRuntimeVersion())
+    if runtime != (9, 5, 1):
+        raise ValueError(f'cuDNN library files do not match pinned 9.5.1: loaded {runtime}. Restore core mirror wheels; package metadata alone is insufficient.')
+
+
+def check_cuda():
+    check_core()
+    torch = importlib.import_module('torch')
+    x = torch.randn(2, 128, 2048, device='cuda:0', requires_grad=True)
+    layer = torch.nn.Conv1d(128, 128, 1).to('cuda:0')
+    layer(x).square().mean().backward()
+    torch.cuda.synchronize()
+    print('CUDA/cuDNN Conv1d forward/backward preflight passed', flush=True)
 
 
 def check_mamba():
@@ -50,10 +64,10 @@ def check_mamba():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('stage', choices=('exchange', 'core', 'mamba'))
+    parser.add_argument('stage', choices=('exchange', 'core', 'mamba', 'cuda'))
     args = parser.parse_args()
     try:
-        {'exchange': check_exchange, 'core': check_core, 'mamba': check_mamba}[args.stage]()
+        {'exchange': check_exchange, 'core': check_core, 'mamba': check_mamba, 'cuda': check_cuda}[args.stage]()
     except Exception as error:
         parser.exit(2, f'Bootstrap check failed ({args.stage}): {type(error).__name__}: {error}\n')
 

@@ -62,6 +62,23 @@ class MirrorTests(unittest.TestCase):
                 self.assertFalse(any('https://' in part or 'git+' in part for part in call.args[0]))
             self.assertIn('--no-deps', run.call_args.args[0])
 
+    def test_core_rewrites_all_cuda_files_even_when_metadata_satisfied(self):
+        names=['nvidia_cudnn_cu12-pinned.whl','nvidia_cublas_cu12-pinned.whl','torch-pinned.whl']
+        manifest={'objects':[{'filename':name} for name in names]}
+        with patch.object(mirror,'read',return_value=manifest), \
+             patch.object(mirror,'fetch',return_value=Path('/cache')), \
+             patch.object(mirror.sys,'argv',['mirror','--cache','/cache','--stage','core']), \
+             patch.object(mirror.subprocess,'run') as run:
+            mirror.main()
+            restore=run.call_args_list[0].args[0]
+            self.assertIn('--force-reinstall',restore)
+            self.assertIn('--no-deps',restore)
+            self.assertIn(str(Path('/cache')/names[0]),restore)
+            self.assertIn(str(Path('/cache')/names[1]),restore)
+            self.assertNotIn(str(Path('/cache')/names[2]),restore)
+            self.assertIn('--no-index',restore)
+            self.assertEqual(run.call_count,2)
+
 
 if __name__ == '__main__':
     unittest.main()
