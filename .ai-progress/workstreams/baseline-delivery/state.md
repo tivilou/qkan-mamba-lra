@@ -6,6 +6,9 @@
 
 ## Current State
 
+- Collaborator 5-pair GPU diagnostic received at 2026-11-03 22:31 Singapore time under qkan-mamba/recovery-replicates/recovery-replicates-f19b2bf61722. Both files downloaded and SHA-256/size verified against service receipts. All 5 paired recovery and 10 dependent uninterrupted comparisons have exact controls and finite numbers. Model maxima: uninterrupted 7.23e-7, recovery 5.74e-7; optimizer both 3.73e-9; update loss both 8.94e-8. Evidence: docs/evidence/baseline-recovery-replicates-received-20261103.json. Next: inspect per-leaf evidence before defining numerical recovery acceptance; no gate promotion.
+
+
 - Repeated recovery diagnostic delivered at a31cac4 (GitHub ref verified): experiments.baseline_delivery.recovery_replicates defaults to 5 identical-seed pairs, each full six-update run plus update-2 interruption/fresh-process resume. Reports per-field differences and dependent full/full comparisons; automatically returns report.json/summary.json to qkan-mamba/recovery-replicates/<audit-id>. No tolerance or formal gate changed.
 - User instructed stopping tests and handing directly to collaborator. Latest scheduler attempt 04a5fdbe548841b9b516e4388cbb8001 cancellation requested; final full regression is not certified. Earlier real Transformer CPU 3-pair run passed once but repeat hit exit -9 under 1 GiB cgroup; final fixture uses pinned S4D. Five return tests had a missing Git revision fixture, now isolated; final rerun incomplete.
 
