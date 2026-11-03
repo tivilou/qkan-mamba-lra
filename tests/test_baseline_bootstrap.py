@@ -75,6 +75,19 @@ class BootstrapTests(unittest.TestCase):
             with self.assertRaisesRegex(ImportError, 'ABI'):
                 b.check_mamba()
 
+    def test_mirrored_source_hash_identity(self):
+        manifest = json.loads((Path(b.__file__).parent/'install-mirror.json').read_text())
+        source_hash = next(x['sha256'] for x in manifest['objects'] if x['filename']=='mamba-2.2.4.tar.gz')
+        source = {'url': 'file:///cache/mamba-2.2.4.tar.gz',
+                  'archive_info': {'hashes': {'sha256': source_hash}}}
+        dist = SimpleNamespace(version='2.2.4', read_text=lambda name: json.dumps(source))
+        with patch.object(b, 'check_core'), patch.object(b.metadata, 'distribution', return_value=dist), \
+             patch.object(b.importlib, 'import_module', return_value=SimpleNamespace(Mamba=object)):
+            b.check_mamba()
+            source['archive_info']['hashes']['sha256'] = '0'*64
+            with self.assertRaisesRegex(ValueError, 'commit'):
+                b.check_mamba()
+
     @unittest.skipUnless(sys.platform == 'linux', 'Linux shell entry')
     def test_missing_exchange_exits_before_install(self):
         root = Path(__file__).resolve().parents[1]

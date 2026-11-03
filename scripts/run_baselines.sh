@@ -28,20 +28,19 @@ if [[ ! -x .venv-baselines/bin/python ]]; then
 fi
 QKAN_ENV="$QKAN_ROOT/.venv-baselines/bin/python"
 QKAN_CONSTRAINTS="$QKAN_ROOT/requirements-baseline-install.txt"
+QKAN_INSTALL_CACHE="${QKAN_INSTALL_CACHE:-$QKAN_ROOT/.bootstrap/install-mirror}"
 if [[ "$QKAN_MODE" != upload ]] && ! "$QKAN_ENV" -c 'import numpy; assert numpy.__version__=="2.2.6"' 2>/dev/null; then
-  "$QKAN_ENV" -m pip install -c "$QKAN_CONSTRAINTS" 'numpy==2.2.6'
+  "$QKAN_ENV" -B -m experiments.baseline_delivery.install_mirror --cache "$QKAN_INSTALL_CACHE" --stage numpy
 fi
 if [[ "$QKAN_MODE" == run || "$QKAN_MODE" == preflight ]] && ! "$QKAN_ENV" -B -m experiments.baseline_delivery.bootstrap core 2>/dev/null; then
-  "$QKAN_ENV" -m pip install -c "$QKAN_CONSTRAINTS" 'torch==2.7.1+cu126' --index-url https://download.pytorch.org/whl/cu126
-  "$QKAN_ENV" -m pip install -c "$QKAN_CONSTRAINTS" 'numpy==2.2.6' 'einops==0.8.1'
+  "$QKAN_ENV" -B -m experiments.baseline_delivery.install_mirror --cache "$QKAN_INSTALL_CACHE" --stage core
 fi
 # Mamba has a compiled CUDA extension and is installed only when selected.
 if [[ "$QKAN_MODE" == run || "$QKAN_MODE" == preflight ]] && [[ ",${QKAN_MODELS}," == *,mamba1,* ]]; then
   export MAMBA_KEEP_CUDA_BUILD=TRUE
   if ! "$QKAN_ENV" -B -m experiments.baseline_delivery.bootstrap mamba 2>/dev/null; then
     command -v nvcc >/dev/null || { echo 'Mamba1 requires the matching CUDA toolkit (nvcc); no fallback model is substituted.' >&2; exit 2; }
-    "$QKAN_ENV" -m pip install -c "$QKAN_CONSTRAINTS" packaging ninja 'setuptools==80.9.0' wheel
-    "$QKAN_ENV" -m pip install -c "$QKAN_CONSTRAINTS" --no-build-isolation 'git+https://github.com/state-spaces/mamba.git@95d8aba8a8c75aedcaa6143713b11e745e7cd0d9'
+    "$QKAN_ENV" -B -m experiments.baseline_delivery.install_mirror --cache "$QKAN_INSTALL_CACHE" --stage mamba
   fi
   "$QKAN_ENV" -B -m experiments.baseline_delivery.bootstrap mamba
 fi

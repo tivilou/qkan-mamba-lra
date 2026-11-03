@@ -32,9 +32,17 @@ def check_mamba():
     check_core()
     dist = metadata.distribution('mamba-ssm')
     source = json.loads(dist.read_text('direct_url.json') or '{}')
-    if dist.version != '2.2.4' or source.get('vcs_info', {}).get('commit_id') != MAMBA_COMMIT:
+    archive = source.get('archive_info', {}).get('hashes', {}).get('sha256')
+    mirrored = False
+    if archive:
+        manifest = json.loads((Path(__file__).parent / 'install-mirror.json').read_text())
+        mirrored = any(item['filename'] == 'mamba-2.2.4.tar.gz' and
+                       item['sha256'] == archive and item.get('upstream_commit') == MAMBA_COMMIT
+                       for item in manifest['objects'])
+    if dist.version != '2.2.4' or (not mirrored and source.get('vcs_info', {}).get('commit_id') != MAMBA_COMMIT):
         raise ValueError('Mamba package does not match the pinned upstream commit')
-    if source.get('url', '').removesuffix('.git') != 'https://github.com/state-spaces/mamba':
+    url = source.get('url', '')
+    if not mirrored and url.removesuffix('.git') != 'https://github.com/state-spaces/mamba':
         raise ValueError('Unexpected Mamba upstream repository')
     importlib.import_module('selective_scan_cuda')
     importlib.import_module('mamba_ssm.modules.mamba_simple').Mamba

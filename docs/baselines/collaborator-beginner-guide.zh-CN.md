@@ -56,7 +56,7 @@ export QKAN_PYTHON="$(command -v python)"
 export MAMBA_KEEP_CUDA_BUILD=TRUE
 ```
 
-项目脚本会创建 `.venv-baselines`，自动安装 PyTorch 2.7.1 + cu126、NumPy、einops 和作者 Mamba 2.2.4 固定源码版本（运行 Mamba1）。依赖安装全程约束 Torch 版本，并检查 CUDA 扩展能否导入。
+项目脚本会创建 `.venv-baselines`，从文件交换服务下载并校验固定依赖，离线安装 PyTorch 2.7.1 + cu126、NumPy、einops 和作者 Mamba 2.2.4 固定源码版本（运行 Mamba1）。安装阶段无需访问 PyTorch 官网、PyPI 或 GitHub；Mamba 在本机编译并检查 CUDA 扩展。镜像适用于 Python 3.11、Linux x86_64，首次下载约 4 GB，已校验的分块可以复用。
 
 ## 6. 从 GitHub 获取项目
 

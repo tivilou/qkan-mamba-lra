@@ -42,6 +42,7 @@ def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
     paths += [ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
+              ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'tools/sample_trace_contract/validate.py']
     return fingerprint({p.relative_to(ROOT).as_posix():digest(p) for p in paths})
 

@@ -12,6 +12,8 @@
 
 ## 1. 获取代码和私有配置
 
+安装依赖从认证交换服务的固定镜像获取，逐块及整包校验 SHA-256；pip 使用 `--no-index`，不访问公网安装源。镜像支持 Linux x86_64 / Python 3.11；Mamba 固定源码包本机编译。默认缓存为 `.bootstrap/install-mirror`，可用 `QKAN_INSTALL_CACHE` 指向持久化磁盘。中断后复用已完成的分块。
+
 从 GitHub 的 `research/collaboration-foundation` 分支取得双方确认的干净 commit；运行 `git pull --ff-only origin research/collaboration-foundation`，再记录 `git rev-parse HEAD`。同一 suite 恢复必须使用相同 commit 和协议。
 
 通过私下提供的渠道取得交换服务地址、token 和 CA 文件，在 shell 中设置：

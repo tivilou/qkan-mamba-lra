@@ -26,7 +26,8 @@ def main():
         target=args.output/'bootstrap-tests.log'
         with target.open('w') as log:
             for command in (['bash','-n','scripts/run_baselines.sh'],
-                            [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_bootstrap.py','-v']):
+                            [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_bootstrap.py','-v'],
+                            [sys.executable,'-B','-m','unittest','discover','-s','tests','-p','test_baseline_install_mirror.py','-v']):
                 result=subprocess.run(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
                 if result.returncode: raise RuntimeError('Bootstrap regression failed; see '+str(target))
         atomic_json(args.output/'diagnostic.json',{'passed':True,'source_revision':source,'formal':False,
