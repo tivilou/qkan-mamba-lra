@@ -112,6 +112,10 @@ def main():
         if not read(path/'trace-validation.json')['passed']: raise ValueError('Trace validation failed: '+name)
     if len({s['contract'] for s in states})!=1:
         raise ValueError('Repeat and existing checkpoints have different scientific contracts')
+    environments={name:read(path/'environment.json') for name,path in
+                  (('original',folder/'uninterrupted'),('resumed',folder/'interrupted'),('repeat',output))}
+    if environments['original']!=environments['repeat'] or environments['original']!=environments['resumed']:
+        raise ValueError('Environment records differ across runs; do not attribute differences to kernel noise')
     comparisons={'repeat_vs_original':compare(states[0],states[2]),
                  'resumed_vs_original':compare(states[0],states[1]),
                  'resumed_vs_repeat':compare(states[2],states[1])}
@@ -121,6 +125,7 @@ def main():
                 scientific_source_sha256=scientific_hashes,config_sha256=digest(folder/'config.json'),
                 model=config['model'],task=config['task'],device=args.device,
                 checkpoint_sha256=checkpoints,comparisons=comparisons,
+                environment_records_equal=True,
                 limitations='One independent repeat diagnoses baseline nondeterminism; it does not establish a statistical noise bound or certify numerical recovery.')
     atomic_json(audit/'report.json',report)
     summary={key:{k:v for k,v in value.items() if k!='leaves'} for key,value in comparisons.items()}
