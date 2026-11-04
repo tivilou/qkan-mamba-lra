@@ -7,7 +7,7 @@
   "objective": "实现并验证自动准备、隔离运行、完整恢复及文件回传入口；保持正式比较的资格与复现门槛",
   "focus_step_id": "F01",
   "next_action": "Collaborator executes the consolidated launch; all gates pass and return before automatic formal training",
-  "blocker": "Native delivery complete; actual-device source/recovery/trace evidence pending",
+  "blocker": "First setup failed on missing ensurepip; code repair delivered, actual-device confirmation pending",
   "user_confirmation_needed": false,
   "steps": [
     {
@@ -146,8 +146,8 @@
         "experiments/baseline_delivery/strong-source-registry.json"
       ],
       "owner": "我们；GPU 验收由合作者执行",
-      "blocker": "Native delivery complete; actual-device source/recovery/trace evidence pending",
-      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.\nNative workers and conditional all-gate launch delivered; current revision has static checks only.",
+      "blocker": "First setup failed on missing ensurepip; code repair delivered, actual-device confirmation pending",
+      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.\nNative workers and conditional all-gate launch delivered; current revision has static checks only.\nFirst launch failed before training on system Python3.10 missing ensurepip; isolated Conda fallback and incomplete environment recreation added.",
       "supersedes": [],
       "superseded_by": []
     }
@@ -158,5 +158,5 @@
       "reason": "用户明确要求实现一键正式baseline运行及自动同步；作为D01的支持工程工作，不推进资格闸门"
     }
   ],
-  "updated_at": "2026-11-04T10:05:45.849652Z"
+  "updated_at": "2026-11-04T11:42:06.742794Z"
 }

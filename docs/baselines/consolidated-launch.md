@@ -24,3 +24,14 @@ Admission returns `qkan-mamba/formal-readiness/<new suite ID>/gate-report.json` 
 Environment changes are explicit: MEGA uses Torch1.13.1-cu117/fairseq; S5 uses JAX0.4.23/Flax0.8.2 and pinned CUDA12.2/cuDNN8.9 libraries. Pip resolves residual dependencies and records an exact freeze, checked on reuse; these are reviewed installation recipes, not a claim of an already tested binary environment. Source Build/fixture incompatibility or a failed exact recovery gate stops the command and must be fixed; there is no promise that unexecuted code is bug-free.
 
 Verified here: Python AST, JSON/manifest/provenance and policy hashes, shell syntax when Git Bash is available, source/API inspection and package metadata. Per user instruction, no model import, package install, test/training or GPU run was executed on the owner machine.
+
+
+## Setup repair after first collaborator execution
+
+The first attempt `runs/formal-ready-20261104T112338Z-ddafd722` at dd4c1d2 stopped during MEGA environment creation: system /usr/bin/python3.10 lacked ensurepip. No model/training gate executed. The screenshot plus received failure-5f53160eebb4 receipt establish this cause; the original receipt only contained setup.log hashes.
+
+The updated installer probes actual Python3.10/pip/ensurepip availability. If incomplete, it bootstraps a separate Python3.10 prefix through existing Conda and conda-forge, without apt or changes to the active myconda/core environment. Existing incomplete generated environments are preserved under an ignored .incomplete identity and recreated, even if bin/python already exists. No source checkout is discarded.
+
+Pull the fix and run the same two launch commands above without --resume: the old suite belongs to the previous code revision and is not a valid resume identity. Existing complete assets/environments remain reusable. New failure receipts include allowlisted setup diagnostic signals, unresolved known package names and exception/exit types automatically; they exclude raw logs, URLs and credentials.
+
+This repair has static verification only, following the owner's instruction not to run model tests or installations. It fixes the evidenced ensurepip/partial-venv defect; later hardware/dependency gates still need actual collaborator execution.

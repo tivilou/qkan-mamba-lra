@@ -34,3 +34,5 @@ runs/
 
 .venv-mega/
 .venv-s5/
+.venv-mega.incomplete-*/
+.venv-s5.incomplete-*/

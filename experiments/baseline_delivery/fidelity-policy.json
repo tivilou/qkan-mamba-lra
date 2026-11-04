@@ -41,7 +41,7 @@
     "experiments/baseline_delivery/manifests/transformer/mechanism-contract.md": "2232014aeb5485a595fea796eefeefccea79c20514844bbb3d5037cde5b030c1",
     "experiments/baseline_delivery/models.py": "d79911952c63fc0de87d1387b412b9806b8193ed06a32c5beb528d689f58cc04",
     "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d",
-    "experiments/baseline_delivery/readiness.py": "729f90004fc9dc421c0e0c93fd20a000cd8873ec8c8ae1e5e22d1531834eb167",
+    "experiments/baseline_delivery/readiness.py": "3847f2208a872768c36a6a06e2ec22554bbbe2c5dd41abddedf8f79791bc782d",
     "experiments/baseline_delivery/recovery_audit.py": "a3a32111b04e3208cd213553eed490238a31a6eeb03c0d9b8a372abe0f7c98a5",
     "experiments/baseline_delivery/recovery_contract.py": "84903f8ca6d4f59c7f28a3516dea54462b0b0b5eff669093926190b45143a13c",
     "experiments/baseline_delivery/recovery_replicates.py": "1bbccd2bf88c0947e0415960842796322aa3083a58fdfa5af55b968b34fc5675",
@@ -49,7 +49,7 @@
     "experiments/baseline_delivery/runner.py": "7317a0028af83357ca83b29bfdff7e6aee12137aecd2b04a1e436a363d28f7fe",
     "experiments/baseline_delivery/s5_worker.py": "395900dc4c84856c51c8348a747c8fa3ec7ac6151aaf034bb302922da9925724",
     "experiments/baseline_delivery/strong-source-registry.json": "19e23bc05eb129205d684cbce42b14593094ec8ee8d74b2c96338684096679d8",
-    "experiments/baseline_delivery/strong_environments.py": "a82ba4fc04dbd008f82159d3848a55a9f500e913196aac3249f977763e07218c",
+    "experiments/baseline_delivery/strong_environments.py": "42a23044b439998bdc60a64f01d1294ca2623fdc999973862bcc70f3d9f9f174",
     "experiments/baseline_delivery/strong_probe.py": "f0ca9de7754a2a5f9066485133a9b46801df7a26ce2cbb328e239c886076386c",
     "experiments/baseline_delivery/strong_sources.py": "8454a8d5a663ed4ab61c92a4dbabdf40d43acc0cb08a43b47a43899cdd1a332b",
     "experiments/baseline_delivery/sync.py": "958254d37df7eded12fba47acc9aac078419532a27c40052e2e4d7a2f33c6e92",
@@ -57,7 +57,8 @@
     "experiments/baseline_delivery/worker.py": "975389fafbad807e2e9e170c9eea9ea1fe74eff7fe6d10419e3d22ed1dbe70e9",
     "requirements-mega.txt": "00f8a52aab563566c4783ba71e7cf9510a4c3b1f3b3ca8c5aed39d3ed8fe1928",
     "requirements-s5.txt": "2af0a1aeb92c53e01d16bfbca74addb90b94e1f3a3931d0b32090e000cb78877",
-    "scripts/run_formal_readiness.sh": "cf1bf18254132efc0e854cdb45ca535b233cbfba561a3899e5d58591d4cf3f43"
+    "scripts/run_formal_readiness.sh": "cf1bf18254132efc0e854cdb45ca535b233cbfba561a3899e5d58591d4cf3f43",
+    "experiments/baseline_delivery/setup_diagnostics.py": "b2fcb04dc21d20fd0016cc2bac549bee4e828056ca164c76381c180734756535"
   },
   "scope": "Source-faithful task-adapted mechanism under common protocol; minimal S4D auxiliary. No author benchmark score reproduction, global top-two/SOTA or quantum claim.",
   "required_gates": [
