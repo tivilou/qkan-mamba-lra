@@ -7,7 +7,6 @@ import shutil
 import zipfile
 
 import numpy as np
-import torch
 
 from .common import atomic_json, dictionary_path, digest, fingerprint, lock, read
 
@@ -55,17 +54,22 @@ class Split:
     def __len__(self):
         return len(self.arrays['labels'])
 
-    def batch(self, ids, device):
+    def numpy_batch(self, ids):
         values={}
         for key,array in self.arrays.items():
             copy=np.array(array[ids],copy=True)
             if key=='labels':
-                values[key]=torch.as_tensor(copy.astype(np.int64),device=device)
+                values[key]=copy.astype(np.int64)
             elif self.task in ('image','pathfinder'):
-                values[key]=torch.as_tensor(copy.astype(np.float32)/255.-.5,device=device)
+                values[key]=copy.astype(np.float32)/255.-.5
             else:
-                values[key]=torch.as_tensor(copy.astype(np.int64),device=device)
+                values[key]=copy.astype(np.int64)
         return values
+
+    def batch(self, ids, device):
+        import torch
+        return {key: torch.as_tensor(value, device=device)
+                for key, value in self.numpy_batch(ids).items()}
 
 
 def vocabulary(root,task):

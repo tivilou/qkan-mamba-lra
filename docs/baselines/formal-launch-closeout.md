@@ -27,3 +27,6 @@
 ## 目前不应执行
 
 不要直接运行旧 experiments/lra/train.py，不绕过 check_release，不伪造 canary.json 或 fidelity 证书，也不把已有候选默认标为已认证。
+
+
+Current handoff supersedes earlier commands: [consolidated launch](consolidated-launch.md). Native MEGA/S5 workers and conditional all-gates admission are delivered; no current runtime receipt is claimed.

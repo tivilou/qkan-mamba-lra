@@ -7,3 +7,6 @@ experiments/baseline_delivery/** text eol=lf
 tools/sample_trace_contract/** text eol=lf
 tests/*.py text eol=lf
 .ai-progress/** text eol=lf
+
+requirements*.txt text eol=lf
+docs/evidence/*.json text eol=lf

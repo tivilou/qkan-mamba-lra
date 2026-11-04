@@ -13,15 +13,15 @@
     "artifacts": [
       {
         "path": "experiments/baseline_delivery/strong_sources.py",
-        "sha256": "b6e67e5af85dba9a331ff50480f77355ca126651c0e9eba4d5dba14cd21491a8"
+        "sha256": "8454a8d5a663ed4ab61c92a4dbabdf40d43acc0cb08a43b47a43899cdd1a332b"
       },
       {
         "path": "experiments/baseline_delivery/strong-source-registry.json",
-        "sha256": "2b09d407727f6c1be2ccdea7dec0e1664d807c48e7ebde5ae460894d9208b6f1"
+        "sha256": "19e23bc05eb129205d684cbce42b14593094ec8ee8d74b2c96338684096679d8"
       },
       {
         "path": "experiments/baseline_delivery/cohort-review.json",
-        "sha256": "1d8704e7f91a711e807a24c9dc159cd625bb0af7168850b61d8e5aef08158c85"
+        "sha256": "36e9d423cc1d4ad62682e9974e2890e86adfe0048680df9d76f95d543f9a2086"
       }
     ]
   },
@@ -36,13 +36,10 @@
       "Constructor choices explicit; no fallback approximation"
     ],
     "assumptions": [
-      "Source factories only: no native training worker, full-state resume, common task-head/trace integration or runtime certification yet"
+      "Native task/training/checkpoint/trace adapters delivered; runtime validation delegated to collaborator; explicit common-protocol/environment adaptations listed in adaptation-diff.md"
     ],
     "unknowns": [
-      "Executable environment compatibility and complete pinned dependency mirror",
-      "Native task/head adapter, source forward/gradient/update comparison",
-      "Optimizer parameter groups and scheduler behavior under common protocol",
-      "Fresh-process full-state recovery and sample-trace.v2 semantic/replay evidence"
+      "Actual-device environment compatibility, direct-source gradient/update comparisons and fresh-process exact recovery/trace evidence pending"
     ]
   },
   "adaptation": {
@@ -60,7 +57,7 @@
   },
   "equivalence": {
     "status": "not_verifiable",
-    "scope": "Official source API factory written and static source identities pinned; end-to-end integration and every runtime gate pending."
+    "scope": "Native workers and all required gate commands delivered; no runtime receipt yet."
   },
   "validation": {
     "gates": {
@@ -76,7 +73,9 @@
       "checkpoint_checked": false,
       "no_postprocessing_rules": true
     },
-    "commands": [],
+    "commands": [
+      "bash scripts/run_formal_readiness.sh --cache \"$QKAN_CACHE\" --gpus 0"
+    ],
     "evidence_files": [
       "docs/evidence/strong-baseline-sources-20261104.json"
     ]

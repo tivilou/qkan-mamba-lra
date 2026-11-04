@@ -26,7 +26,7 @@
 - Pilot finds signal for Text/Image/v3 Retrieval (58.20% versus 48.34% majority/null); ListOps input-only parser has 0/1024 mismatches. Diagnostics remain outside the formal baseline table.
 - Current data assessment: docs/evidence/mega-document-v3-qualification.json is qualified, formal_baseline_allowed=true within documented scope. release.json still not_released; no formal training authorized by this data flag alone.
 - Historical orchestrator tracking is not promoted from its old blocked snapshot automatically; current project plan has moved D01 to done and R01 active. Baseline release remains pending.
-- Formal package remains pending native strong-baseline workers/environment/recovery/trace and fidelity certification; source-stage integration and fixed implementation roster are recorded in baseline-delivery.
+- Native MEGA/S5 workers/environment recipes/recovery/trace and a conditional one-command launch are delivered in baseline-delivery. Current-revision runtime evidence remains pending; the collaborator entry runs all gates before automatic formal admission.
 
 ## Next Actions
 
@@ -61,6 +61,6 @@
 - Focus Step: R01
 - Focus Status: active
 - Completed Steps: F01, F02, F03, D01
-- Next Action: Complete native MEGA/S5 training, recovery and trace adapters from verified source factories
-- Blocker: None for continued source integration; model release remains gated on implementation and runtime evidence.
+- Next Action: Collaborator executes consolidated launch; audit returned all-gate evidence and resulting formal suite
+- Blocker: Native delivery complete; actual-device source/recovery/trace receipts remain pending.
 - Last Checkpoint: 2026-11-04

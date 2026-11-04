@@ -1,0 +1,18 @@
+# Isolated CPython 3.10; original fairseq source, no framework replacement.
+torch==1.13.1+cu117
+torchaudio==0.13.1+cu117
+numpy==1.23.5
+scipy==1.10.1
+einops==0.6.1
+hydra-core==1.0.7
+omegaconf==2.0.6
+antlr4-python3-runtime==4.8
+bitarray==2.9.2
+cffi==1.16.0
+cython==0.29.37
+regex==2024.4.16
+sacrebleu==2.4.2
+tqdm==4.66.4
+typing_extensions==4.12.2
+PyYAML==6.0.1
+editdistance==0.8.1

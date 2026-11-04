@@ -21,3 +21,6 @@ git pull --ff-only origin research/collaboration-foundation
 adapter_equivalence_observed 是适配对照证据，不是正式 fidelity 证书。engineering_checks_complete 是该入口完成，不等于所有 task/model/GPU 都已预检，也不改变 formal_release_allowed=false。审阅通过后，才能将运行证据纳入逐模型证书；数据资格、cohort 冻结以及其余正式配置预检仍需完成。
 
 若原 suite 中找不到唯一匹配配置，入口会停止并上传失败摘要，禁止偷偷改用另一份运行。
+
+
+Current handoff supersedes earlier commands: [consolidated launch](consolidated-launch.md). Native MEGA/S5 workers and conditional all-gates admission are delivered; no current runtime receipt is claimed.

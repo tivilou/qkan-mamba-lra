@@ -4,14 +4,13 @@
   "cohort_frozen": false,
   "certificates": {},
   "blocked_by": [
-    "Data qualified within documented internal research scope; main model roster fixed for implementation but full protocol/certification release pending.",
-    "MEGA/S5 source entry factories written; native training adapters, environment certification, complete resume and trace are unavailable.",
-    "Candidate manifests remain not_verifiable; corrected Mamba no-decay grouping and source assertions have no runtime receipt."
+    "No runtime evidence exists for current implementation. Committed release remains closed; reviewed fidelity-policy.json permits a run-local release only after all source, all-task recovery and trace gates pass."
   ],
   "available_operations": [
     "prepare",
     "preflight",
-    "upload"
+    "upload",
+    "formal-readiness"
   ],
   "formal_run_allowed": false
 }

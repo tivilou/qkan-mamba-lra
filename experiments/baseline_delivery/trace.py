@@ -5,7 +5,6 @@ import math
 from pathlib import Path
 
 import numpy as np
-import torch
 
 from .common import atomic_json, digest, fingerprint, read
 
@@ -23,6 +22,7 @@ def replay_classifier(model, lookups, task, device):
     4000 tokens. Keeping the original batch shape also avoids comparing a
     single-row GEMV against the producer's batched classification GEMM.
     """
+    import torch
     encoded=[]
     for side in range(2 if task=='retrieval' else 1):
         h=np.stack([row['encoder'+str(side)] for row in lookups])
@@ -41,6 +41,7 @@ def replay_classifier(model, lookups, task, device):
 
 
 def capture(model,split,output,config,checkpoint):
+    import torch
     output=Path(output); folder=output/'trace-values';folder.mkdir(exist_ok=True)
     model.eval();model.capture=True;model.captured=[]
     ids=np.arange(min(2,len(split)))
@@ -53,6 +54,14 @@ def capture(model,split,output,config,checkpoint):
         for name,tensor in observed.items():
             values[name+str(side)]=tensor.numpy()
     model.capture=False;model.captured=[]
+    emit(values, batch['labels'].cpu().numpy(), ids, split, output, config, checkpoint,
+         lambda rows: replay_classifier(model, rows, config['task'], device), 'torch')
+
+
+def emit(values, labels, ids, split, output, config, checkpoint, replayer, backend):
+    """Framework-neutral private trace with independent pooling/head replay."""
+    output=Path(output); folder=output/'trace-values'; folder.mkdir(exist_ok=True)
+    logits=values['logits']
     reps=list(values)
     contract={'task_type':'long-sequence classification','required_roles':['target','prediction'],
               'required_representations':reps,'required_value_representations':reps,
@@ -75,7 +84,7 @@ def capture(model,split,output,config,checkpoint):
                     'reader_ref':'python -m experiments.baseline_delivery.trace --trace sample-trace.json --sample '+str(i)+' --representation '+name,
                     'source_sha256':[artifact['sha256']]}},'display':display(name,name)})
         samples.append({'sample_id':'val:'+str(row),'lane':'evaluation','split':'val','checkpoint':'best_validation',
-            'roles':{'target':int(batch['labels'][i]),'prediction':int(logits[i].argmax())},'representations':representations,
+            'roles':{'target':int(labels[i]),'prediction':int(logits[i].argmax())},'representations':representations,
             'stages':[{'stage_id':'data','stage':'data','canonical_stage':'data','lane':'evaluation','status':'observed',
                'purpose':'Select a validation row by frozen split identity and row index',
                'input_refs':['source:'+split.identity+':row:'+str(row)],'output_refs':['dataset_row'],
@@ -93,7 +102,7 @@ def capture(model,split,output,config,checkpoint):
               {'stage_id':'evaluation','stage':'evaluation','canonical_stage':'evaluation','lane':'evaluation','status':'observed',
                'purpose':'Compare prediction with held-out target after scoring',
                'input_refs':['logits','source:validation-label:'+str(row)],'output_refs':['correct'],
-               'outputs':{'correct':bool(logits[i].argmax()==batch['labels'][i])},
+               'outputs':{'correct':bool(logits[i].argmax()==labels[i])},
                'display':display('验证标签仅用于评估','correct')}]})
     trace={'schema_version':'sample-trace.v2','trace_id':output.name+'-best-val','trace_completeness':'complete',
        'experiment':{'run_id':output.name,'dataset':config['task'],'code_revision':config['source_revision'],
@@ -114,13 +123,13 @@ def capture(model,split,output,config,checkpoint):
     # classifier input/head. This compares replay with the producer's logits.
     lookups=[{rep['id']:np.load(output/rep['artifact_refs'][0]['path'],allow_pickle=False)
               for rep in sample['representations']} for sample in samples]
-    expected,replay=replay_classifier(model,lookups,config['task'],device)
+    expected,replay=replayer(lookups)
     np.testing.assert_allclose(expected,np.stack([r['pooled'] for r in lookups]),rtol=1e-5,atol=1e-6)
     np.testing.assert_allclose(replay,np.stack([r['logits'] for r in lookups]),rtol=1e-5,atol=1e-6)
     atomic_json(output/'trace-validation.json',{'schema':'qkan-trace-readiness.v1','passed':True,
         'semantic':'decoded full arrays and coordinate reader','replay':'pooled encoder -> pair head -> logits',
         'structural':'shared sample-trace.v2 validator require_complete; zero warnings',
-        'replay_backend':'torch; producer device, captured dtype and original selected-sample batch shape',
+        'replay_backend':backend,
         'replay_rtol':1e-5,'replay_atol':1e-6,
         'checkpoint_sha256':checkpoint,'samples':len(samples),'privacy':'private; not automatically uploaded'})
 

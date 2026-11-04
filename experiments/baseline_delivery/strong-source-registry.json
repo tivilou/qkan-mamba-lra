@@ -1,6 +1,6 @@
 {
   "schema": "qkan-strong-source-registry.v1",
-  "status": "source_factories_only_not_certified",
+  "status": "native_workers_delivered_runtime_pending",
   "formal_runner_available": false,
   "models": {
     "mega": {
@@ -40,7 +40,7 @@
       "runtime_import_verified": false,
       "full_state_resume_verified": false,
       "trace_verified": false,
-      "environment": "Separate fairseq-compatible Python/Torch environment; not yet certified"
+      "environment": "CPython 3.10; requirements-mega.txt; native official fairseq; build in copy, verified source import; not runtime-certified"
     },
     "s5": {
       "repository": "https://github.com/lindermanlab/S5",
@@ -96,7 +96,8 @@
       "runtime_import_verified": false,
       "full_state_resume_verified": false,
       "trace_verified": false,
-      "environment": "Separate JAX/Flax environment; upstream CPU requirements pin JAX/JAXlib 0.3.5 and Flax 0.5.2, GPU requirements contain unresolved jax[cuda]>=version placeholder; do not blindly install"
+      "environment": "CPython 3.10; requirements-s5.txt; JAX 0.4.23 CUDA12/Flax 0.8.2; DeviceArray type-annotation alias only; not runtime-certified"
     }
-  }
+  },
+  "native_runner_implemented": true
 }

@@ -31,3 +31,6 @@ runs/
 *.bundle
 *.tar
 *.zip
+
+.venv-mega/
+.venv-s5/

@@ -48,6 +48,14 @@ def official_source(model, checkout):
     previous = list(sys.path)
     sys.path.insert(0, str(checkout))
     try:
+        if model == 's5':
+            # Upstream uses DeviceArray only in evaluated type annotations.
+            # JAX >=0.4 exposes Array instead; this alias changes no operation,
+            # parameter, initializer, discretization or scan implementation.
+            import jax
+            import jax.numpy as jnp
+            if not hasattr(jnp, 'DeviceArray'):
+                jnp.DeviceArray = jax.Array
         modules = {name: importlib.import_module(path) for name, path in record['modules'].items()}
         for module in modules.values():
             if not Path(module.__file__).resolve().is_relative_to(checkout):

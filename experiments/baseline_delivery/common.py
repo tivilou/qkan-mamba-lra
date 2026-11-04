@@ -77,8 +77,14 @@ def lock(path):
 
 
 def child_spec(*args):
-    return {'target': WORKER, 'cwd': str(ROOT),
-            'argv': [sys.executable, '-B', '-m', WORKER, *map(str, args)]}
+    args=list(map(str,args)); target=WORKER; interpreter=sys.executable
+    if '--config' in args:
+        config=read(args[args.index('--config')+1]); model=config['model']
+        if model in ('mega','s5'):
+            interpreter=str(ROOT/('.venv-'+model)/'bin/python')
+            if model=='s5': target='experiments.baseline_delivery.s5_worker'
+    return {'target': target, 'cwd': str(ROOT),
+            'argv': [interpreter, '-B', '-m', target, *args]}
 
 
 def stop_child(child, grace=90):
@@ -100,6 +106,14 @@ def stop_child(child, grace=90):
 
 
 def spawn(spec, log, env=None):
+    if Path(spec['argv'][0]).absolute()==(ROOT/'.venv-s5/bin/python').absolute():
+        env=dict(os.environ if env is None else env)
+        site=ROOT/'.venv-s5/lib/python3.10/site-packages'
+        env['LD_LIBRARY_PATH']=os.pathsep.join(map(str,sorted((site/'nvidia').glob('*/lib'))))
+        nvcc=site/'nvidia/cuda_nvcc'
+        env['PATH']=str(nvcc/'bin')+os.pathsep+env.get('PATH','')
+        env['XLA_FLAGS']='--xla_gpu_cuda_data_dir='+str(nvcc)
+        env['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
     kwargs = {'start_new_session': True} if os.name != 'nt' else {'creationflags': subprocess.CREATE_NEW_PROCESS_GROUP}
     return subprocess.Popen(spec['argv'], cwd=spec['cwd'], env=env,
                             stdout=log, stderr=subprocess.STDOUT, **kwargs)

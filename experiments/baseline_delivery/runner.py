@@ -19,12 +19,15 @@ from .sync import prepare, verify_data
 
 def check_release(config=None):
     qualification=read(ROOT/'docs/evidence/mega-document-v3-qualification.json')
-    release=read(ROOT/'experiments/baseline_delivery/release.json')
+    release=read(Path(os.environ['QKAN_RUNTIME_RELEASE']) if os.environ.get('QKAN_RUNTIME_RELEASE') else ROOT/'experiments/baseline_delivery/release.json')
     if qualification.get('status')!='qualified' or qualification.get('formal_baseline_allowed') is not True:
         raise ValueError('Formal launch blocked: dataset qualification='+qualification.get('status','missing')+
                          '; see docs/data-use-boundaries.md. Preparation/preflight remain available.')
     if release.get('status')!='released' or release.get('cohort_frozen') is not True:
         raise ValueError('Formal launch blocked: comparison cohort and protocol are not released')
+    if os.environ.get('QKAN_RUNTIME_RELEASE'):
+        from .readiness import validate_runtime_release
+        validate_runtime_release(release,config)
     if config:
         certificate=release.get('certificates',{}).get(config['model'])
         if not certificate:
@@ -40,7 +43,7 @@ def check_release(config=None):
 
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
-    paths += [ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
+    paths += [ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',
@@ -135,7 +138,10 @@ def canary(config,data,cache,output,device='cpu'):
         if status!=expected: raise ValueError('Canary child failed; inspect '+str(folder))
     # The child owns the fingerprint. Validate the pointer and all checkpoint bytes
     # before deserializing either locally generated state.
-    from .worker import load_checkpoint
+    if config['model']=='s5':
+        from .s5_worker import load_checkpoint
+    else:
+        from .worker import load_checkpoint
     states=[]
     for name in ('uninterrupted','interrupted'):
         pointer=read(folder/name/'checkpoints/latest.json')
@@ -152,6 +158,11 @@ def canary(config,data,cache,output,device='cpu'):
         if not recovery['passed']:
             raise ValueError('Numerical recovery contract failed; inspect recovery-validation.json')
         agreement='mamba1-cuda-fp32-v1'
+    elif config['model']=='s5':
+        from .readiness import compare_numpy
+        for key in ('train_state','rng','sampler','permutation','cursor','step','epoch',
+                    'best_weights','best_accuracy','best_epoch','history','update_trace'):
+            compare_numpy(states[0][key],states[1][key])
     else:
         for key in ('model','optimizer','scheduler','rng','permutation','cursor','step','epoch',
                     'best_weights','best_accuracy','best_epoch','history','update_trace'):
@@ -211,7 +222,8 @@ def deliver(suite):
                 raise ValueError('Automatic formal return excludes diagnostic or invalid jobs')
             # Selected weights plus full latest state, metrics and compact trace
             # readiness. No raw/text-bearing Case Study capture is auto-shared.
-            for name in ('config.json','summary.json','environment.json','best-model.pt','trace-validation.json'):
+            weights='best-model.msgpack' if read(job/'config.json')['model']=='s5' else 'best-model.pt'
+            for name in ('config.json','summary.json','environment.json',weights,'trace-validation.json'):
                 path=job/name
                 if not path.is_file(): raise ValueError('Required return artifact missing: '+str(path))
                 files.extend(return_files(path,'jobs/'+job.name+'/'+name))

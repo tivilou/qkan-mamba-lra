@@ -13,7 +13,7 @@ from torch import nn
 from .common import ROOT, digest, read
 from .data import TASKS
 
-MODELS = ('transformer','s4d_minimal','mamba1')
+MODELS = ('transformer','s4d_minimal','mamba1','mega')
 
 
 def load_s4d(cache):
@@ -67,7 +67,22 @@ class Classifier(nn.Module):
             raise ValueError('Unknown baseline')
         width=config['width']; self.tokens=self.task not in ('image','pathfinder')
         self.embedding=nn.Embedding(config['vocabulary'],width,padding_idx=1) if self.tokens else nn.Linear(1,width)
-        if self.kind=='transformer':
+        if self.kind=='mega':
+            import os
+            from .strong_sources import official_source, mega_encoder
+            self._source_context=official_source('mega', os.environ['QKAN_MEGA_SOURCE'])
+            modules=self._source_context.__enter__()
+            self.encoder=mega_encoder(modules, dict(
+                padding_idx=1, vocab_size=config['vocabulary'] or 1,
+                embedding_type='sparse' if self.tokens else 'linear', embedding_dim=width,
+                num_encoder_layers=config['layers'], hidden_dim=width*2,
+                ffn_hidden_dim=width*2, z_dim=width, n_dim=config['state_size'],
+                norm_type='layernorm', normalize_before=True, chunk_size=-1,
+                max_seq_len=config.get('length',TASKS[self.task][0]), sen_rep_type='mp',
+                dropout=config['dropout'], attention_dropout=config['dropout'],
+                hidden_dropout=config['dropout']))
+            del self.embedding  # official encoder owns its input embedding
+        elif self.kind=='transformer':
             length=config.get('length',TASKS[self.task][0])
             pe=torch.zeros(length,width)
             angle=torch.arange(length).unsqueeze(1)*torch.exp(torch.arange(0,width,2)*(-math.log(10000.)/width))
@@ -78,13 +93,20 @@ class Classifier(nn.Module):
             self.encoder=nn.TransformerEncoder(layer,config['layers'],enable_nested_tensor=False)
         else:
             self.blocks=nn.ModuleList([Block(config,cache) for _ in range(config['layers'])])
-        self.norm=nn.LayerNorm(width)
+        self.norm=nn.Identity() if self.kind=='mega' else nn.LayerNorm(width)
         self.head=nn.Linear(width*(2 if self.task=='retrieval' else 1),TASKS[self.task][1])
 
     def encode(self,x):
         mask=x.ne(1) if self.tokens else torch.ones_like(x,dtype=torch.bool)
         if torch.any(mask.sum(1)==0):
             raise ValueError('Empty model input')
+        if self.kind=='mega':
+            states,pooled=self.encoder(x, mask.sum(1), last_state_only=True)
+            h=states[-1].transpose(0,1).masked_fill(~mask.unsqueeze(-1),0)
+            if getattr(self,'capture',False):
+                self.captured.append({'input':x.detach().cpu(),'mask':mask.detach().cpu(),
+                                      'encoder':h.detach().cpu()})
+            return pooled
         h=self.embedding(x if self.tokens else x.unsqueeze(-1))
         h=h.masked_fill(~mask.unsqueeze(-1),0)
         if self.kind=='transformer':
@@ -106,6 +128,17 @@ class Classifier(nn.Module):
             pooled=self.encode(batch['inputs'])
         logits=self.head(pooled)
         return (logits,pooled) if representations else logits
+
+    def load_state_dict(self, state_dict, strict=True):
+        result=super().load_state_dict(state_dict,strict=strict)
+        if self.kind=='mega':
+            # Official EMA caches are derived eval tensors, absent from state_dict.
+            # They must be invalidated when loading best or resumed parameters.
+            for module in self.encoder.modules():
+                if type(module).__name__=='MultiHeadEMA':
+                    module._kernel=None
+                    module._coeffs=None
+        return result
 
 
 def optimizer(model,config):

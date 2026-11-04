@@ -120,3 +120,6 @@ bash scripts/run_baselines.sh --mode upload --resume /absolute/path/to/runs/base
 计算完成后自动将配置、指标、最优权重、最新完整状态和 trace 校验摘要上传至 `qkan-mamba/baseline-suite/<suite-id>/`。超过 512 MiB 的文件分块，附原文件和各块的 SHA-256 清单；客户端按块上传、核对服务收据，失败可补传。
 
 `compute-complete.json` 和 `delivery-complete.json` 区分“已算完”与“已交付”。原始输入、完整 sample trace、原始日志不会自动发布；保留在合作者服务器，按后续具体 case study 的权限和需求单独交换。小型指标经研究方审查、合并多种子统计后同步 GitHub 与门户；诊断测试不当作正式性能。
+
+
+Current handoff supersedes earlier commands: [consolidated launch](consolidated-launch.md). Native MEGA/S5 workers and conditional all-gates admission are delivered; no current runtime receipt is claimed.

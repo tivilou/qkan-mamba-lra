@@ -14,7 +14,7 @@
     "artifacts": [
       {
         "path": "experiments/baseline_delivery/models.py",
-        "sha256": "af400faf647056ff510a754e1d30e4a9f59ec448304f49cd8596776795e6369a"
+        "sha256": "d79911952c63fc0de87d1387b412b9806b8193ed06a32c5beb528d689f58cc04"
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
@@ -22,7 +22,7 @@
       },
       {
         "path": "experiments/baseline_delivery/protocol.json",
-        "sha256": "086c9ff2767da84e82c38bfffea98aa16d968e3bc85b85b51469e53314109f90"
+        "sha256": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
       },
       {
         "path": "experiments/baseline_delivery/acceptance.py",
