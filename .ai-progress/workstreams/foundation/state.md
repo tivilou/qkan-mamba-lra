@@ -15,6 +15,7 @@
 
 ## In Progress
 
+- 2026-11-04: AAN author download/use page recovered, SHA-256 pinned in docs/evidence/qualification-closeout-sources-20261104.json. Research-only, no redistribution, citation/publication notice requirements now supported directly. No form submitted or registration receipt inferred. CIFAR author page re-fetched; IMDb current-author URL 404 and Stanford unavailable. Updated docs/data-use-boundaries.md; qualification remains insufficient, without requiring a blanket unified license. Session: sessions/2026-11/20261104-data-use-closeout.md.
 - D01 blocked on per-task use evidence. Pathfinder source/learnability gate now passes via exact author-package equivalence, all-256-value invertibility and the primary MEGA reference; no local trained Pathfinder result is claimed.
 - Source audit found MEGA Pathfinder scales the common input by 2; Image mean/std also differ. These require explicit baseline adapter/fidelity evidence, not silent preprocessing changes. See docs/pathfinder-source-audit.md.
 - Retrieved MEGA paper, pixel loader, LRA generators, Pathfinder MIT code license and Stanford IMDb dataset card. Author-page recovery failed; card says other/More Information Needed for licensing. No qualification promotion.

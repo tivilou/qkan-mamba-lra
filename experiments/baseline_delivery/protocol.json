@@ -13,6 +13,7 @@
   "input":"integer token embedding, pad=1; float32 pixels x/255-.5; no fitted preprocessing",
   "pair_head":"shared independent document encoder; concatenate abs(a-b) and a*b; one linear head",
   "selection":"maximum validation accuracy; earliest tie; evaluate only selected weights on test",
+  "optimizer":"AdamW; preserve S4D per-parameter _optim and Mamba _no_weight_decay flags; FP32, no AMP",
   "budget":"100 full-data epochs; no tuning on test; report per-task accuracy, params, time, memory",
   "scope":"Engineering candidates only. Minimal official S4D is explicitly pedagogical; this is not a S4/S5/MEGA reproduction or a justified top-x cohort."
 }

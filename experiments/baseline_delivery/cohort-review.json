@@ -1,0 +1,80 @@
+{
+  "schema": "qkan-cohort-review.v1",
+  "status": "proposal_pending_dataset_qualification",
+  "formal_cohort_frozen": false,
+  "scope": "Adapted five-task classification; common-protocol results only; no current global top-x claim",
+  "strong_reference_target_count": 2,
+  "candidates": [
+    {
+      "id": "mamba1",
+      "role": "required direct backbone control",
+      "disposition": "include_pending_fidelity",
+      "reason": "Identical backbone needed to attribute a future QKAN change"
+    },
+    {
+      "id": "transformer",
+      "role": "classic attention control",
+      "disposition": "include_pending_fidelity",
+      "reason": "Canonical non-SSM reference; report project recipe and resource limitations"
+    },
+    {
+      "id": "s4d_minimal",
+      "role": "minimal SSM mechanism control",
+      "disposition": "auxiliary_only_pending_fidelity",
+      "reason": "Official pedagogical module; cannot fill the strong S4/S5 baseline slot"
+    },
+    {
+      "id": "mega",
+      "role": "strong attention reference target",
+      "disposition": "required_integration_pending_qualification",
+      "reason": "Author five-task LRA recipe and same author data release; normalization/training adaptations must be explicit"
+    },
+    {
+      "id": "s5",
+      "role": "strong state-space reference target",
+      "disposition": "required_integration_pending_qualification",
+      "reason": "Official LRA recipe and distinct MIMO parallel-scan mechanism; separate JAX environment/recovery adapter needed"
+    },
+    {
+      "id": "b2s6",
+      "role": "direct modern Mamba near-neighbor",
+      "disposition": "unresolved_author_artifact",
+      "reason": "Must not be silently excluded; resolve executable author artifact and comparable task coverage"
+    },
+    {
+      "id": "lru",
+      "role": "linear recurrence alternative",
+      "disposition": "defer_unverified_source",
+      "reason": "Acquired minimal implementation explicitly unofficial and not validated on all project tasks"
+    },
+    {
+      "id": "s7",
+      "role": "recent selective SSM",
+      "disposition": "reserve",
+      "reason": "Retain task-level source review; current review does not establish overall dominance of selected strong references"
+    },
+    {
+      "id": "serpent",
+      "role": "selective compression alternative",
+      "disposition": "reserve",
+      "reason": "Task coverage, extra computation and author artifact unresolved"
+    },
+    {
+      "id": "flare++",
+      "role": "recent attention alternative",
+      "disposition": "reserve",
+      "reason": "Existing source screen alone does not establish best task-matched reference"
+    },
+    {
+      "id": "naju",
+      "role": "recent gating alternative",
+      "disposition": "reserve",
+      "reason": "Same-budget mechanism relevance; author artifact/state budget unresolved"
+    }
+  ],
+  "evidence": [
+    "docs/baselines/candidate-inventory.md",
+    "docs/baselines/recent-screen.md"
+  ],
+  "limitation": "This selection proposal is grounded in the existing bounded screen, not an exhaustive ranking or completed cohort freeze. Do not start MEGA/S5 implementation before dataset qualification."
+}

@@ -109,10 +109,12 @@ class Classifier(nn.Module):
 
 
 def optimizer(model,config):
-    # Preserve the pinned S4D parameter-specific lr and zero-decay metadata.
+    # Preserve S4D optimizer metadata and Mamba's explicit no-decay markers.
     groups={}
     for param in model.parameters():
         options={'lr':config['lr'],'weight_decay':config['weight_decay'],**getattr(param,'_optim',{})}
+        if getattr(param,'_no_weight_decay',False):
+            options['weight_decay']=0.0
         key=tuple(sorted(options.items()))
         groups.setdefault(key,{'params':[],**options})['params'].append(param)
     return torch.optim.AdamW(list(groups.values()),lr=config['lr'])

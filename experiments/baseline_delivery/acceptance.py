@@ -14,6 +14,16 @@ def fidelity(model_name, cache, device, output):
     from torch import nn
     from .models import Classifier, optimizer
     from .runner import implementation_hash
+    source_files = {}
+    if model_name == 'mamba1':
+        from .bootstrap import check_mamba
+        import mamba_ssm.modules.mamba_simple as upstream
+        check_mamba()
+        expected = 'a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3'
+        actual = digest(Path(upstream.__file__))
+        if actual != expected:
+            raise ValueError('Installed mamba_simple.py differs from pinned v2.2.4 source')
+        source_files['mamba_ssm/modules/mamba_simple.py'] = actual
     torch.manual_seed(42)
     config = dict(model=model_name, task='retrieval', vocabulary=32, width=16,
                   layers=2, heads=2, state_size=4, length=32, dropout=0.,
@@ -23,7 +33,8 @@ def fidelity(model_name, cache, device, output):
     # Parameter deepcopy does not promise to preserve custom optimizer metadata.
     for (name, x), (other, y) in zip(adapter.named_parameters(), reference.named_parameters()):
         if name != other: raise ValueError('Parameter structure mismatch')
-        if hasattr(x, '_optim'): y._optim = copy.deepcopy(x._optim)
+        for attribute in ('_optim', '_no_weight_decay', '_no_reinit'):
+            if hasattr(x, attribute): setattr(y, attribute, copy.deepcopy(getattr(x, attribute)))
     # Independent task adapter composition around the pinned upstream modules.
     # This checks the adapter boundary, not paper-level architecture equivalence.
     def encode(x):
@@ -61,7 +72,22 @@ def fidelity(model_name, cache, device, output):
         if name != other or (x.grad is None) != (y.grad is None):
             raise ValueError('Gradient structure mismatch')
         if x.grad is not None: check('gradient/'+name, x.grad, y.grad)
-    optimizer(adapter, config).step(); optimizer(reference, config).step()
+    adapter_opt, reference_opt = optimizer(adapter, config), optimizer(reference, config)
+    # Independent source-contract assertion: comparing two calls to our factory
+    # alone cannot detect a shared parameter-group error.
+    if model_name == 'mamba1':
+        marked = {name: p for name, p in adapter.named_parameters()
+                  if name.endswith(('.mixer.A_log', '.mixer.D'))}
+        if len(marked) != config['layers'] * 2:
+            raise ValueError('Pinned Mamba A_log/D parameter structure changed')
+        for name, param in marked.items():
+            if getattr(param, '_no_weight_decay', False) is not True:
+                raise ValueError('Missing upstream no-decay marker: '+name)
+            group = next(g for g in adapter_opt.param_groups if any(p is param for p in g['params']))
+            if group['weight_decay'] != 0:
+                raise ValueError('Mamba no-decay contract violated: '+name)
+            results['optimizer_no_decay/'+name] = True
+    adapter_opt.step(); reference_opt.step()
     for name, x in adapter.state_dict().items(): check('updated/'+name, x, reference.state_dict()[name])
     atomic_json(output, dict(schema='qkan-adapter-equivalence.v1', model=model_name,
                 status='adapter_equivalence_observed', formal=False, passed=True,
@@ -71,7 +97,8 @@ def fidelity(model_name, cache, device, output):
                 environment={'torch':torch.__version__, 'cuda':torch.version.cuda,
                              'gpu':torch.cuda.get_device_name() if device.startswith('cuda') else None},
                 checks=results, scope='Independent task adapter composition; not a fidelity certificate '
-                'or reproduction of upstream benchmark scores. Dropout=0 for paired mechanism isolation.'))
+                'or reproduction of upstream benchmark scores. Dropout=0 for paired mechanism isolation.',
+                upstream_file_sha256=source_files))
 
 
 def main():
@@ -112,7 +139,8 @@ def main():
         for job in ('mamba1-listops-s42', 'transformer-retrieval-s42'):
             configs = list(args.suite.glob('preflight/*/'+job+'/config.json'))
             if len(configs) != 1: raise ValueError('Expected one original canary config: '+job)
-            config = {**read(configs[0]), 'source_revision': source}
+            config = {**read(configs[0]), 'source_revision': source,
+                      'protocol_sha256': digest(ROOT/'experiments/baseline_delivery/protocol.json')}
             receipt = canary(config, configs[0].parent/'data', args.cache, target/job, args.device)
             name = job+'-canary.json'; atomic_json(target/name, receipt); files.append(name)
             if (target/job/'recovery-validation.json').exists():
