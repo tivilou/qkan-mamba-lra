@@ -49,7 +49,7 @@ def summarize(path):
 
 
 def redacted_tail(source, destination):
-    """Only setup output: no dataset/model logs. Store in private exchange."""
+    """Declared setup or synthetic source-probe output only; private exchange."""
     source=Path(source)
     if not source.is_file(): return False
     with source.open('rb') as handle:
@@ -69,5 +69,5 @@ def redacted_tail(source, destination):
     text=re.sub(r'https?://[^\s<>\"\']+',clean_url,text)
     text=re.sub(r'(?i)(\bBearer\s+)[A-Za-z0-9._~+/=-]+',r'\1[REDACTED]',text)
     text=re.sub(r'(?i)(\b(?:token|password|passwd|secret|api[_-]?key)\s*[:=]\s*)[^\s,;]+',r'\1[REDACTED]',text)
-    Path(destination).write_text('Bounded, redacted installation log; private exchange only.\n'+text,encoding='utf8')
+    Path(destination).write_text('Bounded, redacted diagnostic log; private exchange only.\n'+text,encoding='utf8')
     return True

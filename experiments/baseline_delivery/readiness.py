@@ -181,6 +181,13 @@ def main():
             files=['failure.json']
             if redacted_tail(suite/'setup.log',failure/'setup-redacted.log'):
                 files.append('setup-redacted.log')
+            # Source probes use fixed synthetic inputs, never dataset samples.
+            # Only these declared logs may accompany setup diagnostics; real
+            # task/recovery/training logs and traces remain local.
+            for model in MODELS:
+                name=model+'-source-probe-redacted.log'
+                if redacted_tail(suite/(model+'-source-probe.log'),failure/name):
+                    files.append(name)
             try: upload_declared(failure,'formal-readiness',files,run_id=failure.name)
             except Exception: print('Failure receipt retained locally: '+str(failure),flush=True)
             raise

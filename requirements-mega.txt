@@ -16,3 +16,7 @@ tqdm==4.66.4
 typing_extensions==4.12.2
 PyYAML==6.0.1
 editdistance==0.8.1
+# Imported eagerly by upstream fairseq.data.audio.speech_commands_dataset.
+scikit-learn==1.2.2
+joblib==1.3.2
+threadpoolctl==3.1.0

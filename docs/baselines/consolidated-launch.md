@@ -45,3 +45,9 @@ This delivery is verified by static inspection and asset publication checks only
 The 55c8abf collaborator run reached MEGA native compilation but system Python.h was missing. The mirror now also contains the complete unmodified CPython3.10 amd64 include closure extracted from the hash-verified Ubuntu libpython3.10-dev package. The installer verifies and stages all headers under .bootstrap/python310-headers and prepends project-local include flags to the MEGA build. No apt, public fallback, Python runtime replacement or system directory mutation is used. Cached dependency downloads are reused; pull and launch a fresh suite as above. Current repair has static/asset verification, not successful runtime confirmation.
 
 Owner mirror preparation: run scripts/prepare_python_headers.py after scripts/prepare_strong_offline_mirror.py to append the fixed development-header asset before binding policy hashes and handing off the manifest.
+
+## Eager MEGA import dependency repair
+
+33046c4 completed MEGA/S5 setup and data verification, then the synthetic MEGA probe stopped during upstream fairseq.data import: SpeechCommandsDataset unconditionally imports sklearn.model_selection, although upstream setup.py omits it. The offline mirror now also pins scikit-learn1.2.2, joblib1.3.2 and threadpoolctl3.1.0, with complete dependency resolution, receipts and HTTPS readback. Existing source, header, S5 and wheel objects are preserved. No upstream import, operator or task behavior was changed. Pull and use the same fresh-suite entry; cached assets and complete environments are reused.
+
+Failure return now includes bounded credential-redacted logs for the five explicitly declared synthetic source probes, in addition to setup diagnostics. Real dataset/training/recovery logs and raw traces remain local. No actual-device success is claimed for this repair.

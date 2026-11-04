@@ -7,7 +7,7 @@
   "objective": "实现并验证自动准备、隔离运行、完整恢复及文件回传入口；保持正式比较的资格与复现门槛",
   "focus_step_id": "F01",
   "next_action": "Collaborator pulls the complete offline delivery and runs the same consolidated command in a fresh suite; all runtime gates and receipt return precede automatic training",
-  "blocker": "Python.h missing at collaborator MEGA build; offline header supplement published, runtime confirmation pending",
+  "blocker": "MEGA source import missing sklearn; complete offline supplement delivered, actual probe/recovery/trace evidence pending",
   "user_confirmation_needed": false,
   "steps": [
     {
@@ -146,11 +146,12 @@
         "experiments/baseline_delivery/strong-source-registry.json",
         "experiments/baseline_delivery/strong-offline-mirror.json",
         "docs/evidence/strong-offline-publication-20261104.json",
-        "docs/evidence/python-headers-repair-20261104.json"
+        "docs/evidence/python-headers-repair-20261104.json",
+        "docs/evidence/mega-import-dependency-repair-20261104.json"
       ],
       "owner": "我们；GPU 验收由合作者执行",
-      "blocker": "Python.h missing at collaborator MEGA build; offline header supplement published, runtime confirmation pending",
-      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.\nNative workers and conditional all-gate launch delivered; current revision has static checks only.\nFirst launch failed before training on system Python3.10 missing ensurepip; isolated Conda fallback and incomplete environment recreation added.\nSecond bootstrap failure traced to Conda channel alias mapping conda-forge to Aliyun HTTP404; official full URL and child-only alias added. Private redacted setup tail now returns automatically.\nUser requires no external network. Interim online Conda repair superseded by local Python3.10 --without-pip, offline pip bootstrap, complete exchange wheel/source mirror, cache-only qualified data and private redacted failure return. Asset publication is not runtime certification.\n55c8abf reached MEGA compilation and failed on missing Python.h. Published complete project-local CPython3.10 amd64 headers with hash/readback; build include flags repaired. No formal experiment yet.",
+      "blocker": "MEGA source import missing sklearn; complete offline supplement delivered, actual probe/recovery/trace evidence pending",
+      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.\nNative workers and conditional all-gate launch delivered; current revision has static checks only.\nFirst launch failed before training on system Python3.10 missing ensurepip; isolated Conda fallback and incomplete environment recreation added.\nSecond bootstrap failure traced to Conda channel alias mapping conda-forge to Aliyun HTTP404; official full URL and child-only alias added. Private redacted setup tail now returns automatically.\nUser requires no external network. Interim online Conda repair superseded by local Python3.10 --without-pip, offline pip bootstrap, complete exchange wheel/source mirror, cache-only qualified data and private redacted failure return. Asset publication is not runtime certification.\n55c8abf reached MEGA compilation and failed on missing Python.h. Published complete project-local CPython3.10 amd64 headers with hash/readback; build include flags repaired. No formal experiment yet.\n33046c4 completed both isolated environments and data verification, then eager fairseq import required sklearn absent from upstream install_requires. Added pinned scikit-learn1.2.2/joblib1.3.2/threadpoolctl3.1.0 offline wheels; synthetic source-probe redacted logs now return automatically.",
       "supersedes": [],
       "superseded_by": []
     }

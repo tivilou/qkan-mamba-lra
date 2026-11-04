@@ -6,9 +6,9 @@
 
 ## Current State
 
-- Offline assets published: 65 wheels, exact MEGA/S5 source archives and CPython headers, 3,929,680,447 bytes. All upload receipts, stored chunks and reconstructed hashes verified; both source archives and pip bootstrap read back over authenticated HTTPS. See strong-offline-mirror.json and docs/evidence/strong-offline-publication-20261104.json.
+- Offline assets published: 68 wheels, exact MEGA/S5 source archives and CPython headers, 3,939,622,876 bytes. All upload receipts, stored chunks and reconstructed hashes verified; both source archives and pip bootstrap read back over authenticated HTTPS. See strong-offline-mirror.json and docs/evidence/strong-offline-publication-20261104.json.
 - User requires no external network on collaborator. Setup uses existing local Python3.10/stdlib venv --without-pip, verified local pip23.3.2 bootstrap, exchange-only wheel/source staging and --no-index installs/build. No Conda/apt/public pip/Git/author-data fallback. Qualified local task cache is reused and verified. S5 NVRTC is pinned to CUDA12.2 alongside its runtime.
-- Latest actual attempt at 33046c4, runs/formal-ready-20261104T125528Z-e67c68dd: all MEGA/S5 isolated setup completed (s5:verify, pip check clean), data content verification passed, execution stopped at MEGA source forward/gradient/update probe. Failure-6152ebac4e46 retrieved. The source-probe log is 3903 bytes, SHA256 0db0f9ceed2466cad9fc380d9da2f9fa6e929fc519fae0058ff22cf6b20488e9; only its hash was returned. Its traceback is needed before a mechanism/dependency fix; do not guess the cause or rerun training. Python.h repair is confirmed past compilation. Formal training has not started.
+- Latest actual attempt at 33046c4, runs/formal-ready-20261104T125528Z-e67c68dd: both isolated environments and data verification completed; MEGA source probe failed before forward execution because eager fairseq.data import requires sklearn, absent from upstream install_requires. Exchange failure-6152ebac4e46 and supplied traceback establish this cause. Published/read back pinned scikit-learn1.2.2/joblib1.3.2/threadpoolctl3.1.0 wheels after complete dependency resolution; module-scope AST audit performed without imports. Future failures return bounded credential-redacted fixed synthetic source-probe logs automatically. Runtime repair remains unverified; formal training has not started.
 - Native MEGA/S5 workers remain source-faithful task adapters. Main roster Transformer/Mamba1/MEGA/S5; minimal S4D auxiliary. Dataset qualified for documented internal noncommercial/no-data-redistribution scope. No author benchmark reproduction, SOTA/top-two or quantum claim.
 - One entry installs, runs source forward/loss/gradient/update probes, all five-model/five-task fresh-process recovery and trace gates, returns compact evidence, then automatically starts 25 full-data seed42 jobs only when every gate passes. Committed release stays not_released and all five manifests not_verifiable. Current GPU/runtime success is not established.
 
@@ -19,7 +19,7 @@
 
 ## Blockers
 
-- MEGA source probe failed; specific exception pending the existing mega-source-probe.log. Remaining source/recovery/trace gates have not passed. Next: inspect that existing log, fix the evidenced cause, and include bounded synthetic source-probe diagnostics in future automatic returns.
+- MEGA import dependency repair delivered; collaborator must run current source probes and remaining recovery/trace gates. No source/recovery/trace success is inferred from dependency resolution or asset publication.
 - No owner model imports/tests, dependency installation or experiment runs, per user instruction.
 
 ## Validation

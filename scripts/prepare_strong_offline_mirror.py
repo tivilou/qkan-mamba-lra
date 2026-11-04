@@ -51,6 +51,7 @@ def prepare(args):
         path=folder/artifact['filename'];download(artifact['url'],path,artifact['digests']['sha256']);build_tools.append(path)
     registry=json.loads((args.inputs/'strong-source-registry.json').read_text())
     for model,record in registry['models'].items():
+        if args.supplement_model and model!=args.supplement_model: continue
         wheels=folder/model;wheels.mkdir(exist_ok=True)
         env={k:v for k,v in os.environ.items() if not k.startswith('PIP_')}
         env.update(PYTHONPATH=str(pip),PIP_CONFIG_FILE=os.devnull,PIP_DISABLE_PIP_VERSION_CHECK='1')
@@ -91,8 +92,13 @@ def prepare(args):
     prefix=safe_path('qkan-mamba/install-dependencies/'+args.run_id)
     transport=Transport(os.environ['PROJECT_EXCHANGE_URL'],os.environ['PROJECT_EXCHANGE_TOKEN'],os.environ['PROJECT_EXCHANGE_CA_FILE'])
     body=json.dumps({'path':prefix}).encode();transport.request('POST','/api/directories',body,len(body))
+    previous=json.loads(args.manifest.read_text()) if args.supplement_model else None
+    reusable={x['sha256']:x for e in previous['models'].values() for x in [*e['wheels'],e['source']]} if previous else {}
     def publish(path):
         record=dict(filename=path.name,size_bytes=path.stat().st_size,sha256=sha(path),chunks=[])
+        old=reusable.get(record['sha256'])
+        if old and old['filename']==path.name and old['size_bytes']==record['size_bytes']:
+            return {key:old[key] for key in record}
         with path.open('rb') as source:
             while block:=source.read(64*1024*1024):
                 with tempfile.NamedTemporaryFile(dir=folder,delete=False) as f:f.write(block);part=Path(f.name)
@@ -104,8 +110,9 @@ def prepare(args):
                 finally: part.unlink()
         print('Receipt verified: '+path.name,flush=True)
         return record
-    manifest=dict(schema='qkan-strong-offline-mirror.v1',status='published',python_tag='cp310',platform='linux-x86_64',models={})
+    manifest=previous or dict(schema='qkan-strong-offline-mirror.v1',status='published',python_tag='cp310',platform='linux-x86_64',models={})
     for model,source in registry['models'].items():
+        if args.supplement_model and model!=args.supplement_model: continue
         wheel_records=[publish(p) for p in sorted((folder/model).glob('*.whl'))]
         manifest['models'][model]=dict(requirements_sha256=sha(args.inputs/('requirements-'+model+'.txt')),
             wheels=wheel_records,source=dict(**publish(folder/(model+'-source.zip')),revision=source['revision'],
@@ -118,4 +125,5 @@ if __name__=='__main__':
     p.add_argument('--directory',type=Path,required=True);p.add_argument('--inputs',type=Path,required=True)
     p.add_argument('--publish',action='store_true');p.add_argument('--project-root',type=Path,required=True)
     p.add_argument('--run-id',default='strong-cp310-20261104-v1');p.add_argument('--manifest',type=Path,required=True)
+    p.add_argument('--supplement-model',choices=('mega','s5'),help='Extend an existing published manifest; preserve other models and build headers')
     prepare(p.parse_args())
