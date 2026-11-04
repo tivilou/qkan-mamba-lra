@@ -3,6 +3,7 @@ import argparse
 import os
 from pathlib import Path
 import shutil
+import shlex
 import subprocess
 import uuid
 
@@ -89,6 +90,8 @@ def prepare():
         pip('install','--no-index','--find-links',wheelhouse,'-r',ROOT/('requirements-'+model+'.txt'))
         if model=='mega':
             print('QKAN_SETUP_STAGE mega:build',flush=True)
+            from .strong_offline import build_headers
+            headers=build_headers()
             # Cython generates .cpp beside .pyx: build in a disposable copy so
             # the audited checkout stays clean. Keep native extensions only.
             build=ROOT/'.bootstrap/mega-build'/record['revision']
@@ -99,6 +102,9 @@ def prepare():
             build_env={k:v for k,v in install_env.items() if k!='CUDA_HOME'}
             build_env['MAX_JOBS']='1'
             build_env['PYTHONDONTWRITEBYTECODE']='1'
+            includes=' '.join('-I'+shlex.quote(str(p)) for p in (headers/'python3.10',headers))
+            for key in ('CFLAGS','CPPFLAGS','CXXFLAGS'):
+                build_env[key]=includes+' '+build_env.get(key,'')
             subprocess.run([str(executable),'-m','pip','install','--no-deps',
                 '--no-build-isolation','--no-index','--find-links',str(wheelhouse),str(build)],cwd=ROOT,env=build_env,check=True)
             package=Path(subprocess.check_output([str(executable),'-c',

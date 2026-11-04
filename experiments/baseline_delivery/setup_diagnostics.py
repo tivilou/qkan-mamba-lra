@@ -24,6 +24,7 @@ def summarize(path):
         'dependency_conflict':('resolutionimpossible','conflicting dependencies'),
         'distribution_unavailable':('no matching distribution found','could not find a version that satisfies'),
         'compiler_failure':('failed building wheel','error compiling objects','command gcc failed'),
+        'python_headers_missing':('python.h: no such file or directory','pyconfig.h: no such file or directory'),
         'network_failure':('certificate_verify_failed','connection timed out','could not resolve host','temporary failure in name resolution'),
         'upstream_checkout_mismatch':('upstream checkout must be clean','upstream revision differs','upstream source hash differs'),
     }

@@ -72,3 +72,28 @@ def pip_environment(wheelhouse):
     env.update(PYTHONDONTWRITEBYTECODE='1',PIP_CONFIG_FILE=os.devnull,PIP_NO_INDEX='1',PIP_FIND_LINKS=str(wheelhouse),
         PIP_DISABLE_PIP_VERSION_CHECK='1',PIP_NO_BUILD_ISOLATION='1')
     return env
+
+
+def build_headers():
+    """Stage complete CPython3.10 headers locally; never mutate /usr/include."""
+    record=manifest()['build_headers']
+    cache=fetch(ROOT/'.bootstrap/strong-offline-cache/headers',
+        dict(python_tag='cp310',objects=[record]),target_python_tag='cp310')
+    destination=ROOT/'.bootstrap/python310-headers'/record['sha256']
+    if not destination.exists():
+        temporary=destination.with_name(destination.name+'.extracting-'+uuid.uuid4().hex[:8])
+        temporary.mkdir(parents=True)
+        with zipfile.ZipFile(cache/record['filename']) as archive:
+            if set(archive.namelist())!=set(record['members']): raise ValueError('Header inventory differs')
+            for info in archive.infolist():
+                name=info.filename
+                if Path(name).is_absolute() or '..' in Path(name).parts or '\\' in name or stat.S_ISLNK(info.external_attr>>16):
+                    raise ValueError('Unsafe header member')
+                path=temporary/name;path.parent.mkdir(parents=True,exist_ok=True)
+                with archive.open(info) as src,path.open('xb') as out: shutil.copyfileobj(src,out)
+        temporary.rename(destination)
+    for name,item in record['members'].items():
+        path=destination/name
+        if path.is_symlink() or not path.resolve().is_relative_to(destination.resolve()) or path.stat().st_size!=item['size_bytes'] or digest(path)!=item['sha256']:
+            raise ValueError('Offline CPython header changed: '+name)
+    return destination

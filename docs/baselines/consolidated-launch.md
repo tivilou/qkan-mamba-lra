@@ -39,3 +39,9 @@ Qualified task data must already exist in QKAN_CACHE, as on the collaborator mac
 First failure runs/formal-ready-20261104T112338Z-ddafd722 exposed missing ensurepip and a partial venv. Second failure runs/formal-ready-20261104T114512Z-0a205127 exposed Conda's inherited Aliyun channel mapping HTTP404. The offline path supersedes the interim online Conda workaround. Fresh suites are required after pulling these changes; never resume a suite from a previous revision.
 
 This delivery is verified by static inspection and asset publication checks only. It does not claim successful collaborator GPU execution. The same entry command proceeds to formal training automatically only when every actual-device gate and compact evidence return succeeds.
+
+## Offline CPython header supplement
+
+The 55c8abf collaborator run reached MEGA native compilation but system Python.h was missing. The mirror now also contains the complete unmodified CPython3.10 amd64 include closure extracted from the hash-verified Ubuntu libpython3.10-dev package. The installer verifies and stages all headers under .bootstrap/python310-headers and prepends project-local include flags to the MEGA build. No apt, public fallback, Python runtime replacement or system directory mutation is used. Cached dependency downloads are reused; pull and launch a fresh suite as above. Current repair has static/asset verification, not successful runtime confirmation.
+
+Owner mirror preparation: run scripts/prepare_python_headers.py after scripts/prepare_strong_offline_mirror.py to append the fixed development-header asset before binding policy hashes and handing off the manifest.

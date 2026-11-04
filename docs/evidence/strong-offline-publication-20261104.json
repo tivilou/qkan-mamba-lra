@@ -2,9 +2,9 @@
   "schema": "qkan-strong-offline-publication.v1",
   "date": "2026-11-04",
   "status": "published",
-  "mirror_sha256": "e559def99e6cecc829d084ea9e2b23101d676515babbaf7de88608f573ecda8b",
-  "objects": 67,
-  "total_bytes": 3929439551,
+  "mirror_sha256": "3f335d48536c482586149ba2c0aab8187c09d178b8aa31f6335d7f17309e2f53",
+  "objects": 68,
+  "total_bytes": 3929680447,
   "models": {
     "mega": {
       "wheels": 25,
@@ -21,14 +21,17 @@
   },
   "checks": [
     "All PUT size/SHA receipts verified",
-    "All stored chunks and reconstructed object hashes verified"
+    "All stored chunks and reconstructed object hashes verified",
+    "Header supplement: official Ubuntu package SHA verified; 164 unmodified headers extracted without installation, upload receipt and full HTTPS readback verified"
   ],
   "authenticated_https_readback": [
     "mega-source.zip",
     "s5-source.zip",
-    "pip-23.3.2-py3-none-any.whl"
+    "pip-23.3.2-py3-none-any.whl",
+    "python310-ubuntu-amd64-headers.zip"
   ],
   "runtime_validation": "pending collaborator; no owner model imports/tests/installation/training",
   "scope": "Dependencies and official source only; no restricted task data or credentials",
-  "prefix": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1"
+  "prefix": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1",
+  "prior_manifest_sha256": "e559def99e6cecc829d084ea9e2b23101d676515babbaf7de88608f573ecda8b"
 }
