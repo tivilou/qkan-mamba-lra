@@ -120,6 +120,9 @@ def main():
                 atomic_json(target/detail, read(target/job/'recovery-validation.json')); files.append(detail)
             results[job] = receipt['agreement']
     except Exception as error:
+        import traceback
+        (target/'acceptance-error.log').write_text(traceback.format_exc(), encoding='utf-8')
+        files.append('acceptance-error.log')
         failure = True
         results['failure'] = dict(type=type(error).__name__, stage=list(results))
         print('Acceptance failed; inspect local logs in '+str(target), flush=True)

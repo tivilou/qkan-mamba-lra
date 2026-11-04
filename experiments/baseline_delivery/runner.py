@@ -100,6 +100,9 @@ def compare_states(left,right):
 
 def canary(config,data,cache,output,device='cpu'):
     """Real parent -> fresh child -> checkpoint -> different child -> resume."""
+    # Every entry point must configure fresh CUDA workers before torch starts.
+    if device.startswith('cuda'):
+        os.environ['CUBLAS_WORKSPACE_CONFIG']=':4096:8'
     import numpy as np
     # Keep this parent free of torch until all training children have exited.
     # In particular, a CUDA context in the parent must not reserve GPU memory.

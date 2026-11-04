@@ -2,83 +2,38 @@
 
 ## Goal
 
-- Deliver source-pinned, tested baseline runners to the collaborator, with reproducibility and return-artifact contracts.
+- Deliver source-pinned baseline runners with full-state recovery, trace evidence and automatic artifact return. Collaborators run formal training.
 
 ## Current State
 
-- Consolidated collaborator acceptance implemented: experiments.baseline_delivery.acceptance; exact suite command in docs/baselines/consolidated-acceptance.md. Three independent task-adapter composition probes compare forward/loss/gradients/one AdamW update; no paper-level fidelity certificate is inferred. Then fresh Mamba/ListOps and Transformer/Retrieval recovery+trace canaries run from original bounded inputs. Reports and declared diagnostic logs automatically return to qkan-mamba/acceptance/<id>. Only AST syntax parsing/code inspection performed; no owner model tests or training.
-- Mamba1 CUDA FP32 bounded canary now uses recovery_contract.py: symmetric per-element rtol=1e-5/atol=1e-6 matching existing trace budget, exact controls/selection/discrete fields, with explicit policy receipt. CPU/other models remain exact. This is an engineering tolerance, not a statistical noise bound or long-horizon guarantee; collaborator execution pending. Formal release remains blocked.
-- Author-source followup: IMDb Stanford author endpoint timed out; CIFAR author page accessible and requests technical-report citation. No blanket permission or dataset qualification promotion inferred.
-
-
-- Formal-launch closeout now routed by docs/baselines/formal-launch-closeout.md. Leaf review covers 1311 state leaves; 60 exceed their own observed uninterrupted-repeat maximum (model 14, optimizer 33, best_weights 11, history 1, update_trace 1). This is not a failure proof or a calibrated acceptance threshold. No additional owner tests or collaborator rerun requested. Next: close source/use evidence and cohort, prepare paired upstream/adapter fidelity checks and a scoped numerical recovery policy before a single consolidated collaborator acceptance handoff. Evidence: docs/evidence/baseline-recovery-leaf-review-20261103.json.
-
-
-- Collaborator 5-pair GPU diagnostic received at 2026-11-03 22:31 Singapore time under qkan-mamba/recovery-replicates/recovery-replicates-f19b2bf61722. Both files downloaded and SHA-256/size verified against service receipts. All 5 paired recovery and 10 dependent uninterrupted comparisons have exact controls and finite numbers. Model maxima: uninterrupted 7.23e-7, recovery 5.74e-7; optimizer both 3.73e-9; update loss both 8.94e-8. Evidence: docs/evidence/baseline-recovery-replicates-received-20261103.json. Next: inspect per-leaf evidence before defining numerical recovery acceptance; no gate promotion.
-
-
-- Repeated recovery diagnostic delivered at a31cac4 (GitHub ref verified): experiments.baseline_delivery.recovery_replicates defaults to 5 identical-seed pairs, each full six-update run plus update-2 interruption/fresh-process resume. Reports per-field differences and dependent full/full comparisons; automatically returns report.json/summary.json to qkan-mamba/recovery-replicates/<audit-id>. No tolerance or formal gate changed.
-- User instructed stopping tests and handing directly to collaborator. Latest scheduler attempt 04a5fdbe548841b9b516e4388cbb8001 cancellation requested; final full regression is not certified. Earlier real Transformer CPU 3-pair run passed once but repeat hit exit -9 under 1 GiB cgroup; final fixture uses pinned S4D. Five return tests had a missing Git revision fixture, now isolated; final rerun incomplete.
-
-
-- One-command candidate implemented: `scripts/run_baselines.sh`, `experiments/baseline_delivery/`, handoff `docs/baselines/one-click.md`. Preparation, independent GPU jobs, full-state resume and immutable chunked return are implemented; formal baseline is not yet certified.
-- Latest blocker: after CUDA repair, collaborator Conv1d forward/backward passed and suite advanced to Mamba1/ListOps recovery. Both runs finish 6 updates with equal CPU/CUDA RNG; three displayed parameters differ by up to 5.96e-8. Full audit now shows model/optimizer/history/trajectory differences, also present in an uninterrupted repeat; equivalence remains unestablished. Pinned Mamba backward uses atomic adds; nondeterminism is a supported hypothesis, not sole-cause proof.
-- Authorized diagnostic at `0102d38`: `python -m experiments.baseline_delivery.recovery_audit --canary <existing failed folder> --cache <cache> --device cuda:0` adds one uninterrupted repeat, verifies scientific source/environment equality, and records full model/optimizer/scheduler/RNG/order/trajectory differences in three pairwise reports. It never writes a pass receipt or changes tolerances. Collaborator GPU report received: repeat/original max_abs=6.18e-7, resumed/original=4.77e-7; all three pairs finite with exact control state and equal environment records. This supports execution nondeterminism but does not certify recovery or establish a noise bound. See docs/evidence/baseline-collaborator-recovery-review-20261103.json.
-- Data verification fixed at `36278f4`: collaborator subsequently verified all 15 splits' exact internal NPY identities despite different ZIP encoding. Source-bound member hashes preserve strict integrity; workers/resume bind actual local NPZ bytes. Collaborator Mamba 2.2.4 compiled/installed and bootstrap passed before reaching GPU preflight.
-- Trace replay fix at `96fcb66`: collaborator Transformer/Retrieval GPU canary reached trace capture, then CPU NumPy pooling versus GPU FP32 pooling failed on 4/256 values (maximum absolute difference about 3.02e-6). Replay now independently decodes saved encoder/mask arrays and reconstructs pooling/pair/head with original device, dtype and batch shape. Tolerances remain rtol=1e-5, atol=1e-6; collaborator GPU rerun is still required.
-- Dependency mirror at `f1adc22`: 44 official-source dependency artifacts (3,036,418,350 bytes), including cu126 Torch/CUDA wheels and pinned Mamba source, published to authenticated exchange in 64 MiB chunks. Complete HTTPS readback hashes pass. Installer now uses only this manifest and `pip --no-index`; Mamba source identity is certified by the pinned archive hash. Linux x86_64 / Python 3.11 supported; collaborator confirms 3.11.11. Data still comes directly from the author.
-- Installer repair at `410b28c`: constrained cu126 Torch/NumPy/einops/Triton/Transformers/setuptools; active Mamba source changed to author v2.2.4 commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9`, still Mamba1. Original surveyed pin remains historical evidence. Exchange configuration is checked before installation; final stack/source/extension imports are checked before data work. GPU installation remains unverified.
-- Collaborator setup guide: `docs/baselines/collaborator-beginner-guide.zh-CN.md`, linked from README and one-click handoff. It gives direct Chinese steps from server setup through automatic data preparation and formal result upload; keep introductions, audit prose and troubleshooting out of this guide. Mamba CUDA extension opt-in is set in the environment steps.
-- Engineering candidates: Transformer, explicitly pedagogical minimal upstream S4D, pinned Mamba1. Formal comparisons remain gated by foundation D01, cohort freeze and per-model fidelity.
-- Primary-source inventory pins S4/S5/MEGA/Mamba and one explicitly unofficial LRU implementation. Candidate shortlist is provisional, not a current top-x claim.
-- Legacy runner defects and per-model fidelity/recovery/trace delivery gates are documented in docs/baselines/delivery-contract.md.
-
-## In Progress
-
-- Supporting R01: two pages of recent primary-paper search and six detailed papers screened; B2S6/strong Transformer recipes and newer gates must be considered. See docs/baselines/recent-screen.md.
-- No model implementation or formal run has been certified; no performance result is claimed.
-- Owner-side 3080Ti queue diagnostics passed on 2026-10-29: unit correctness, Transformer/S4D minimal fresh-process exact recovery, trace structural/semantic/replay, and full v3 split/dictionary identity checks. Evidence: `docs/evidence/baseline-runner-diagnostics-20261029.json`.
-- Upstream Apache-2.0 source asset round-trip passed; data is acquired directly from the author and is not redistributed through our exchange. Handoff commit `fac5ae5` is pushed to GitHub branch `research/collaboration-foundation`.
-
-- Automatic report return implemented at a0e9444: recovery audit uploads report.json/summary.json to qkan-mamba/recovery-audit/<run-id>, verifies SHA-256 receipts, and retains local retry inventory on failure. User confirms this pattern for future collaborator scripts.
+- Collaborator acceptance `acceptance-b5bad50719b8` at revision `02c3700` failed. Exchange report and uninterrupted worker log inspected directly on 2026-11-04. Transformer, S4D minimal and Mamba1 adapter composition probes passed; these are not paper-level fidelity certificates.
+- First Mamba/ListOps worker exited at its initial matrix multiplication: deterministic CUDA requires CUBLAS_WORKSPACE_CONFIG, omitted by the standalone acceptance entry point. Recovery comparison and Transformer/Retrieval canary were not reached.
+- Fixed runner.canary to set `CUBLAS_WORKSPACE_CONFIG=:4096:8` before starting CUDA children, covering standalone callers. Acceptance now automatically returns its full parent exception traceback as acceptance-error.log. Collaborator rerun pending; no owner model tests/training performed per user instruction. AST syntax and diff checks pass.
+- Consolidated command: docs/baselines/consolidated-acceptance.md. Uses original suite `runs/baseline-20261103T115633Z-fa88b308`, fresh acceptance directories, three adapter probes and Mamba/ListOps plus Transformer/Retrieval recovery/trace canaries. Required diagnostic artifacts automatically upload to `qkan-mamba/acceptance/<id>` with verified receipts.
+- Mamba1 CUDA FP32 recovery policy `mamba1-cuda-fp32-v1`: symmetric per-element rtol=1e-5, atol=1e-6, exact controls/discrete/selection state. This is engineering tolerance, not a statistical or long-horizon guarantee. CPU/other models retain exact recovery.
+- Five-pair collaborator GPU diagnostic received and verified: model maximum full/full 7.23e-7, recovery 5.74e-7; optimizer both 3.73e-9. Leaf review found 60/1311 leaves exceeding their own observed repeat maxima; maxima do not define a calibrated bound. Evidence: docs/evidence/baseline-recovery-replicates-received-20261103.json and baseline-recovery-leaf-review-20261103.json.
+- Engineering candidates: Transformer, explicitly pedagogical upstream minimal S4D, pinned Mamba1 v2.2.4 commit 95d8aba8a8c75aedcaa6143713b11e745e7cd0d9. No frozen formal cohort or per-model fidelity certification.
 
 ## Next Actions
 
-- Collaborator pulls research/collaboration-foundation, runs recovery_replicates against existing mamba1-listops canary with --repeats 5 and existing exchange configuration; review automatically returned reports before defining numerical recovery acceptance.
-
-
-- Hand the branch to the collaborator; they run actual GPU preflight and return receipts. In parallel, finish dataset-use qualification, cohort freeze, and per-model fidelity certification before any formal launch.
-- Collaborator updates the branch and reruns preflight with exchange variables set; the installer restores Torch 2.7.1+cu126 and replaces the previously built Mamba 2.3.2 package. Do not reuse that old wheel as the new pin. CPU checks do not certify GPU execution.
+- Collaborator pulls the repair and reruns the same consolidated acceptance command; review automatic return before calling the engineering canaries passed.
+- Complete source/use qualification, evidence-grounded cohort selection and model fidelity certificates, tracked in docs/baselines/formal-launch-closeout.md. Acceptance success alone does not release formal experiments.
 
 ## Blockers
 
-- Dataset qualification is insufficient solely on the remaining source/use evidence category; cohort and model fidelity remain uncertified. `release.json` is not_released; no formal-ready launch package.
-- Do not switch to P4: the authorized 3080Ti node is online and was used for the owner-side queue diagnostics. Formal release remains blocked by data-use qualification, cohort, per-model fidelity, and collaborator GPU preflight.
+- Formal dataset qualification remains insufficient on source/use evidence. release.json remains not_released with no frozen cohort/certificates. No formal-ready launch package or performance result.
+- Owner tests stopped by user; do not resume them. Do not contact the released historical GPU endpoint. Resolve authorized development server through serverctl.
 
 ## Validation
 
-- Official source commits and README/paper metadata retrieved through the authorized server; compact source receipt committed with this stage.
-- Recovery audit tool: 20 regressions pass via scheduler task `e015acaa9c81409c8d76e2ad009c7a3b`; evidence `docs/evidence/baseline-recovery-audit-20261103.json`. Orchestration uses mocked child fixtures; collaborator GPU audit received and reviewed; numerical acceptance criteria remain pending.
-- CUDA file repair: 14 regressions pass through task `999c5b66a07b41f4aa88bf30900c3b0e`; evidence `docs/evidence/baseline-cudnn-runtime-20261103.json`. Checks mock the mismatch/repair; actual collaborator GPU repair remains unverified.
-- Replay fix at `96fcb66`: 13 regression tests pass via task `4d6f70bf1ab6463fa8cac227d5b3d3be`; CPU Transformer fresh-process recovery and trace semantic/replay pass via `96ba0347c4724259b362a9bc0d99d08f`. Evidence: `docs/evidence/baseline-trace-replay-20261103.json`. Actual collaborator GPU rerun remains pending.
-- Content-identity fix: scheduler tasks `71692a78b4424472842c9df6f78f32b8` and `03e91287fa8941539d83fc7019d0855d` complete; 11 regressions plus 15 reference splits, 3 dictionaries and 15 configuration constructions pass. Evidence: `docs/evidence/baseline-data-content-20261103.json`. No GPU preflight or qualification promotion claimed.
-- Mirror receipt: `docs/evidence/baseline-install-mirror-20261103.json`; all 44 objects readback-verified, shell syntax and 8 regressions pass via scheduler task `dc5229a54f5541ccb009af023e1efa78`. No actual GPU installation/compilation is certified.
-- Installer shell syntax and four regression tests pass through shared queue task `b7c32cc747614dafad2c3f55fc12b624` at `410b28c`; evidence `docs/evidence/baseline-bootstrap-20261103.json`. Session: sessions/2026-11/20261103-bootstrap-repair.md.
-- Owner-side CPU engineering validation passed; it is not GPU or performance evidence. Non-Git upstream asset publication and idempotent round-trip passed; datasets remain unpublished.
-- At 52257f2, 31 qualification/data/pixel-source/exchange tests passed through the shared scheduler; all Image/Pathfinder pixels and labels exactly match pinned source. These tests do not certify baseline fidelity; no baseline performance is claimed.
+- Latest repair: AST parsing of changed Python files and git diff --check only. Actual collaborator CUDA rerun pending.
+- Prior collaborator verified all 15 splits by internal NPY content and installed mirrored Torch 2.7.1+cu126/Mamba 2.2.4. Trace replay GPU fix remains subject to consolidated acceptance.
+- Historical validation receipts and implementation sessions remain in docs/evidence and sessions/2026-11; no old CPU check certifies present GPU acceptance.
 
 ## Relevant Decisions
 
-- None.
+- No formal release decision. Session: sessions/2026-11/20261104-acceptance-cublas.md.
 
 ## Plan Control
 
-- Plan: plans/one-click/v001.json
-- Plan Version: 1
-- Plan Status: active
-- Focus Step: F01
-- Focus Status: blocked
-- Completed Steps: I01, V01, X01, H01
-- Next Action: 合作者在实际 GPU 节点执行 preflight 并回传收据；研究方继续完成数据资格、cohort 与逐模型 fidelity
-- Blocker: 正式运行仍被数据用途资格、cohort 冻结、逐模型 fidelity 及合作者 GPU 预检阻止
-- Last Checkpoint: 2026-10-29
+- Plan: plans/one-click/v001.json; focus F01 blocked. Formal release requires data qualification, cohort/fidelity and collaborator GPU acceptance.
