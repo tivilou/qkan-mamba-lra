@@ -176,6 +176,7 @@ def main():
             atomic_json(failure/'failure.json',dict(status='failed',error_type=type(error).__name__,
                 source_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                 suite=suite.relative_to(ROOT).as_posix(),local_logs=logs,
+                recovery_diagnostics=[read(p) for p in sorted((suite/'preflight').glob('*/*/child-failure.json'))],
                 setup_diagnostic=summarize(suite/'setup.log'),formal_release_allowed=False))
             from .return_artifacts import upload_declared
             files=['failure.json']

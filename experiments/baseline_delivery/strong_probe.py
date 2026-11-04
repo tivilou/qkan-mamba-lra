@@ -71,12 +71,19 @@ def s5(device):
                 h=jax.vmap(lambda row:upstream.apply({'params':p['encoder']},row,jnp.ones(32)))(h)
                 h=jnp.where(mask[...,None],h,0);parts.append(h.sum(1)/mask.sum(1)[:,None])
             z=jnp.concatenate((abs(parts[0]-parts[1]),parts[0]*parts[1]),-1)
-            return z@p['head']['kernel']+p['head']['bias']
+            return jnp.matmul(z,p['head']['kernel'],precision=jax.lax.Precision.HIGHEST)+p['head']['bias']
         def compare(a,b):
             aa,ta=jax.tree_util.tree_flatten(a);bb,tb=jax.tree_util.tree_flatten(b)
             if ta!=tb: raise ValueError('S5 parameter structure differs')
             for x,y in zip(aa,bb): np.testing.assert_allclose(x,y,rtol=1e-5,atol=1e-6)
         compare(model.apply({'params':params},batch)[0],direct(params))
+        # Check the compiled head boundary independently, starting from its
+        # actual encoder outputs. Comparing two full encoder compilations
+        # would confound this check with upstream reduction/fusion choices.
+        compiled,values=jax.jit(lambda p:model.apply({'params':p},batch))(params)
+        pooled=[values['encoder'+str(i)].sum(1)/values['mask'+str(i)].sum(1)[:,None] for i in range(2)]
+        z=jnp.concatenate((abs(pooled[0]-pooled[1]),pooled[0]*pooled[1]),-1)
+        compare(compiled,jnp.matmul(z,params['head']['kernel'],precision=jax.lax.Precision.HIGHEST)+params['head']['bias'])
         fa=lambda p:optax.softmax_cross_entropy_with_integer_labels(model.apply({'params':p},batch)[0],labels).mean()
         fb=lambda p:optax.softmax_cross_entropy_with_integer_labels(direct(p),labels).mean()
         va,ga=jax.value_and_grad(fa)(params);vb,gb=jax.value_and_grad(fb)(params)

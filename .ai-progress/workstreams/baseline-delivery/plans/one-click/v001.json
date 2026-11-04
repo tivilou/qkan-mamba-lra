@@ -7,7 +7,7 @@
   "objective": "实现并验证自动准备、隔离运行、完整恢复及文件回传入口；保持正式比较的资格与复现门槛",
   "focus_step_id": "F01",
   "next_action": "Collaborator pulls the complete offline delivery and runs the same consolidated command in a fresh suite; all runtime gates and receipt return precede automatic training",
-  "blocker": "MEGA source import missing sklearn; complete offline supplement delivered, actual probe/recovery/trace evidence pending",
+  "blocker": "S5 ListOps logit replay failed at 22dc743; explicit HIGHEST classification head and compiled replay delivered, actual-device gates pending",
   "user_confirmation_needed": false,
   "steps": [
     {
@@ -147,11 +147,12 @@
         "experiments/baseline_delivery/strong-offline-mirror.json",
         "docs/evidence/strong-offline-publication-20261104.json",
         "docs/evidence/python-headers-repair-20261104.json",
-        "docs/evidence/mega-import-dependency-repair-20261104.json"
+        "docs/evidence/mega-import-dependency-repair-20261104.json",
+        "docs/evidence/s5-trace-replay-repair-20261104.json"
       ],
       "owner": "我们；GPU 验收由合作者执行",
-      "blocker": "MEGA source import missing sklearn; complete offline supplement delivered, actual probe/recovery/trace evidence pending",
-      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.\nNative workers and conditional all-gate launch delivered; current revision has static checks only.\nFirst launch failed before training on system Python3.10 missing ensurepip; isolated Conda fallback and incomplete environment recreation added.\nSecond bootstrap failure traced to Conda channel alias mapping conda-forge to Aliyun HTTP404; official full URL and child-only alias added. Private redacted setup tail now returns automatically.\nUser requires no external network. Interim online Conda repair superseded by local Python3.10 --without-pip, offline pip bootstrap, complete exchange wheel/source mirror, cache-only qualified data and private redacted failure return. Asset publication is not runtime certification.\n55c8abf reached MEGA compilation and failed on missing Python.h. Published complete project-local CPython3.10 amd64 headers with hash/readback; build include flags repaired. No formal experiment yet.\n33046c4 completed both isolated environments and data verification, then eager fairseq import required sklearn absent from upstream install_requires. Added pinned scikit-learn1.2.2/joblib1.3.2/threadpoolctl3.1.0 offline wheels; synthetic source-probe redacted logs now return automatically.",
+      "blocker": "S5 ListOps logit replay failed at 22dc743; explicit HIGHEST classification head and compiled replay delivered, actual-device gates pending",
+      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.\nNative workers and conditional all-gate launch delivered; current revision has static checks only.\nFirst launch failed before training on system Python3.10 missing ensurepip; isolated Conda fallback and incomplete environment recreation added.\nSecond bootstrap failure traced to Conda channel alias mapping conda-forge to Aliyun HTTP404; official full URL and child-only alias added. Private redacted setup tail now returns automatically.\nUser requires no external network. Interim online Conda repair superseded by local Python3.10 --without-pip, offline pip bootstrap, complete exchange wheel/source mirror, cache-only qualified data and private redacted failure return. Asset publication is not runtime certification.\n55c8abf reached MEGA compilation and failed on missing Python.h. Published complete project-local CPython3.10 amd64 headers with hash/readback; build include flags repaired. No formal experiment yet.\n33046c4 completed both isolated environments and data verification, then eager fairseq import required sklearn absent from upstream install_requires. Added pinned scikit-learn1.2.2/joblib1.3.2/threadpoolctl3.1.0 offline wheels; synthetic source-probe redacted logs now return automatically.\n22dc743 completed all five source probes, then the first S5/ListOps uninterrupted canary failed in trace logit replay (max abs 0.00055149), before S5 resume comparison. Explicit HIGHEST head precision and compiled independent replay delivered without relaxing tolerances or changing the official encoder. Structured code-location and aggregate replay failure evidence now returns automatically. Actual GPU verification remains pending.",
       "supersedes": [],
       "superseded_by": []
     }
@@ -162,5 +163,5 @@
       "reason": "用户明确要求实现一键正式baseline运行及自动同步；作为D01的支持工程工作，不推进资格闸门"
     }
   ],
-  "updated_at": "2026-11-04T12:21:10.345356+00:00"
+  "updated_at": "2026-11-04T15:35:42.949749+00:00"
 }

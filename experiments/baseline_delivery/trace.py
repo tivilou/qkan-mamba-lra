@@ -124,6 +124,19 @@ def emit(values, labels, ids, split, output, config, checkpoint, replayer, backe
     lookups=[{rep['id']:np.load(output/rep['artifact_refs'][0]['path'],allow_pickle=False)
               for rep in sample['representations']} for sample in samples]
     expected,replay=replayer(lookups)
+    diagnostics={}
+    for name,actual,target in (('pooled',expected,np.stack([r['pooled'] for r in lookups])),
+                               ('logits',replay,np.stack([r['logits'] for r in lookups]))):
+        actual=np.asarray(actual);same_shape=actual.shape==target.shape
+        finite=bool(np.all(np.isfinite(actual)) and np.all(np.isfinite(target)))
+        difference=float(np.max(np.abs(actual-target))) if same_shape and finite else None
+        diagnostics[name]=dict(shape_matches=same_shape,finite=finite,
+            passed=bool(same_shape and finite and np.allclose(actual,target,rtol=1e-5,atol=1e-6)),
+            max_absolute_difference=difference if difference is None or math.isfinite(difference) else None)
+    # Safe aggregate evidence accompanies failures; raw private trace values do not.
+    atomic_json(output/'trace-replay-diagnostic.json',dict(schema='qkan-trace-replay-diagnostic.v1',
+        backend=backend,rtol=1e-5,atol=1e-6,comparisons=diagnostics,
+        privacy='Aggregate differences only; no logits, representations, labels or inputs'))
     np.testing.assert_allclose(expected,np.stack([r['pooled'] for r in lookups]),rtol=1e-5,atol=1e-6)
     np.testing.assert_allclose(replay,np.stack([r['logits'] for r in lookups]),rtol=1e-5,atol=1e-6)
     atomic_json(output/'trace-validation.json',{'schema':'qkan-trace-readiness.v1','passed':True,

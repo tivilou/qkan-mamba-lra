@@ -30,6 +30,18 @@
       {
         "path": "experiments/baseline_delivery/strong-offline-mirror.json",
         "sha256": "5789cf5c9a7d3dfc5976500fcad5791ec24379147efe6c02677941f7d710dadc"
+      },
+      {
+        "path": "experiments/baseline_delivery/s5_worker.py",
+        "sha256": "2c9f7a8545e8bed4ecd015bff22fdcafc551a5c32db1fb9c26594bbc875645de"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong_probe.py",
+        "sha256": "a4e3ccc50634997a53277150601aaf45116e8bdc0414e22bde10e28782ff84fd"
+      },
+      {
+        "path": "experiments/baseline_delivery/trace.py",
+        "sha256": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9"
       }
     ]
   },

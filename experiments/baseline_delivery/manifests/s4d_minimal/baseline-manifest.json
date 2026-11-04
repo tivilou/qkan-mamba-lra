@@ -18,7 +18,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "975389fafbad807e2e9e170c9eea9ea1fe74eff7fe6d10419e3d22ed1dbe70e9"
+        "sha256": "0d019c7bff3b1ba364b13d197673e7aba374056621ec3993263650d21d31e410"
       },
       {
         "path": "experiments/baseline_delivery/protocol.json",

@@ -1,0 +1,39 @@
+{
+  "schema": "qkan-s5-trace-replay-repair.v1",
+  "receipt": "qkan-mamba/formal-readiness/failure-80f2fef49ca9/failure.json",
+  "suite": "runs/formal-ready-20261104T134648Z-d8ac91ae",
+  "revision": "22dc7439a0a5bd1c2c6c7279af3ae874ccc04ac7",
+  "evidence": "Retrieved compact failure receipt plus user-supplied uninterrupted.log traceback screenshot; no raw task log or array copied into Git",
+  "screenshot_sha256": "9a7f4c485dbc5f09e9ac65dee4a007e3374144d2f49b42e7299319e84a874a48",
+  "child_log_bytes": 2385,
+  "child_log_sha256": "05674f3745b85b95a81bb27c2df0f41e6eae9c3974779150c2c93b2c6097228c",
+  "failure": {
+    "child": "s5-listops-s42/uninterrupted",
+    "exception": "AssertionError",
+    "stage": "trace.py emit logit replay assertion",
+    "rtol": 1e-05,
+    "atol": 1e-06,
+    "mismatched_elements": 20,
+    "total_elements": 20,
+    "max_absolute_difference": 0.00055149
+  },
+  "established": "S5 uninterrupted short training reached trace emission. Logit replay failed before any interrupted/resumed S5 comparison. The preceding ComplexWarning is not the terminating exception.",
+  "code_finding": "Compiled Flax Dense forward versus eager replay matmul; head dot precision unspecified in both. Captured pooled reconstruction passed before logit assertion.",
+  "causal_limit": "Kernel precision/fusion is an evidenced path discrepancy and repair target, not a GPU-verified root-cause attribution.",
+  "repair": [
+    "Explicit HIGHEST dot precision in forward Dense, independent source-composition reference and trace matmul",
+    "Compile independent batched pooling/pair-feature/head replay with JAX JIT; replay only decoded encoders and masks",
+    "Source probe compares compiled logits to independent head reconstruction from actual encoder outputs",
+    "Checkpoint runtime metadata binds classifier precision",
+    "Automatic failure receipt adds exception type/project frame positions and aggregate replay differences; no exception messages, locals, samples or arrays"
+  ],
+  "encoder_operator_changed": false,
+  "tolerance_changed": false,
+  "new_dependencies": false,
+  "actual_source_probes_at_previous_revision": "All five completed; current changed revision must pass again",
+  "earlier_canaries": "Control flow implies preceding Transformer/Mamba1/MEGA all-task gates completed; no final immutable gate report exists for that failed suite",
+  "runtime_repair_verified": false,
+  "formal_training_started": false,
+  "owner_model_tests_install_training": false,
+  "next": "Pull same branch and run the existing consolidated entry in a fresh suite; formal jobs start only after all gates and verified return"
+}

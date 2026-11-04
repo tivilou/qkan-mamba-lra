@@ -93,7 +93,10 @@ def build(modules, config):
                 pooled.append(h.sum(1)/mask.sum(1)[:,None])
                 values.update({f'input{side}':x,f'mask{side}':mask,f'encoder{side}':h})
             z=jnp.concatenate((abs(pooled[0]-pooled[1]),pooled[0]*pooled[1]),-1) if len(pooled)==2 else pooled[0]
-            logits=nn.Dense(TASKS[config['task']][1],name='head')(z)
+            # Declare dot precision: JIT fusion and eager matmul may otherwise
+            # choose different reduced-precision GPU kernels for this head.
+            logits=nn.Dense(TASKS[config['task']][1],name='head',
+                            precision=jax.lax.Precision.HIGHEST)(z)
             return logits,{**values,'pooled':z,'logits':logits}
     return Model
 
@@ -118,7 +121,9 @@ def run(args, modules):
     contract=fingerprint(dict(config=config,train=train.identity,val=val.identity,dictionary=dict_sha))
     runtime={name:importlib.metadata.version(name) for name in ('jax','jaxlib','flax','optax','numpy')}
     runtime['backend']=jax.default_backend()
-    atomic_json(out/'environment.json',dict(packages=runtime,devices=[str(d) for d in jax.devices()],precision='float32; no AMP'))
+    runtime['classifier_dot_precision']='highest'
+    atomic_json(out/'environment.json',dict(packages=runtime,devices=[str(d) for d in jax.devices()],
+        precision='float32; no AMP; classifier dot HIGHEST in forward/reference/replay'))
     Model=build(modules,config);model=Model(training=True);evaluation=Model(training=False)
     rng=jax.random.PRNGKey(config['seed']);rng,init,drop=jax.random.split(rng,3)
     dummy=train.numpy_batch(np.arange(min(config['micro_batch'],len(train))))
@@ -202,14 +207,23 @@ def run(args, modules):
     test=None if args.synthetic else evaluate(best,Split(args.data,config['task'],'test',args.cache,config['data_hashes']['test']))
     weights=out/'best-model.msgpack';weights.write_bytes(serialization.msgpack_serialize(best))
     ids=np.arange(min(2,len(val)));batch=val.numpy_batch(ids);_,values=predict(best,batch)
+    @jax.jit
+    def replay_head(encoded, masks, kernel, bias):
+        # Reconstruct from decoded encoders, never the captured pooled/logits.
+        # Match the forward's compiled batched reduction and explicit dot
+        # precision while keeping this an independent implementation.
+        parts=[h.sum(1)/mask.sum(1)[:,None] for h,mask in zip(encoded,masks)]
+        z=jnp.concatenate((abs(parts[0]-parts[1]),parts[0]*parts[1]),-1) if len(parts)==2 else parts[0]
+        return z,jnp.matmul(z,kernel,precision=jax.lax.Precision.HIGHEST)+bias
+
     def replay(rows):
-        parts=[]
+        encoded=[];masks=[]
         for side in range(2 if config['task']=='retrieval' else 1):
             h=jnp.asarray(np.stack([r['encoder'+str(side)] for r in rows]));mask=np.stack([r['mask'+str(side)] for r in rows])
             if mask.dtype!=bool or np.any(mask.sum(1)==0) or np.any(np.asarray(h)[~mask]!=0): raise ValueError('Invalid S5 trace mask')
-            parts.append(h.sum(1)/jnp.asarray(mask).sum(1)[:,None])
-        z=jnp.concatenate((abs(parts[0]-parts[1]),parts[0]*parts[1]),-1) if len(parts)==2 else parts[0]
-        return np.asarray(z),np.asarray(z@jnp.asarray(best['head']['kernel'])+jnp.asarray(best['head']['bias']))
+            encoded.append(h);masks.append(jnp.asarray(mask))
+        pooled,logits=replay_head(tuple(encoded),tuple(masks),jnp.asarray(best['head']['kernel']),jnp.asarray(best['head']['bias']))
+        return np.asarray(pooled),np.asarray(logits)
     from .trace import emit
     emit(jax.tree_util.tree_map(np.asarray,values),batch['labels'],ids,val,out,config,digest(weights),replay,'jax')
     atomic_json(out/'summary.json',dict(schema='qkan-baseline-result.v1',task=config['task'],model='s5',seed=config['seed'],
@@ -231,8 +245,13 @@ def main():
         from .runner import check_release
         check_release(read(args.config))
     for sig in (signal.SIGTERM,signal.SIGINT,signal.SIGHUP): signal.signal(sig,pause)
-    with lock(args.output/'worker.lock'),official_source('s5',os.environ['QKAN_S5_SOURCE']) as modules:
-        return run(args,modules)
+    try:
+        with lock(args.output/'worker.lock'),official_source('s5',os.environ['QKAN_S5_SOURCE']) as modules:
+            return run(args,modules)
+    except Exception as error:
+        from .common import worker_failure
+        worker_failure(args.output,error)
+        raise
 
 
 if __name__=='__main__': raise SystemExit(main())

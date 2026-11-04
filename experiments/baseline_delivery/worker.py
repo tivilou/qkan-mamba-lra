@@ -231,8 +231,13 @@ def main():
         check_release(read(args.config))
     for sig in (signal.SIGTERM,signal.SIGINT): signal.signal(sig,request_pause)
     if hasattr(signal,'SIGHUP'): signal.signal(signal.SIGHUP,request_pause)
-    with lock(args.output/'worker.lock'):
-        return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic)
+    try:
+        with lock(args.output/'worker.lock'):
+            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic)
+    except Exception as error:
+        from .common import worker_failure
+        worker_failure(args.output,error)
+        raise
 
 
 if __name__=='__main__':

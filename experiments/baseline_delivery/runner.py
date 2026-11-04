@@ -135,7 +135,14 @@ def canary(config,data,cache,output,device='cpu'):
     for name,extra,expected in (('uninterrupted',[],0),('interrupted',['--stop-after','2'],75),('interrupted',['--resume'],0)):
         spec=child_spec(*common,'--output',folder/name,*extra)
         status=run_child(spec,folder/(name+('-resume' if extra==['--resume'] else '')+'.log'))
-        if status!=expected: raise ValueError('Canary child failed; inspect '+str(folder))
+        if status!=expected:
+            diagnostic=dict(schema='qkan-recovery-child-failure.v1',model=config['model'],task=task,
+                child=name,resume=extra==['--resume'],returncode=status,expected_returncode=expected)
+            for key,filename in (('exception','worker-error.json'),('trace_replay','trace-replay-diagnostic.json')):
+                path=folder/name/filename
+                if path.is_file(): diagnostic[key]=read(path)
+            atomic_json(folder/'child-failure.json',diagnostic)
+            raise ValueError('Canary child failed; inspect '+str(folder))
     # The child owns the fingerprint. Validate the pointer and all checkpoint bytes
     # before deserializing either locally generated state.
     if config['model']=='s5':

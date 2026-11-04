@@ -47,6 +47,22 @@ def atomic_json(path, value):
     os.replace(temp, path)
 
 
+def worker_failure(output, error):
+    """Return code locations only; never exception messages, locals or arrays."""
+    import re
+    name=type(error).__name__
+    if not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]{0,79}',name): name='Exception'
+    frames=[];tb=error.__traceback__
+    while tb is not None:
+        path=Path(tb.tb_frame.f_code.co_filename).resolve()
+        if path.is_relative_to(ROOT) and path.suffix=='.py':
+            frames.append(dict(file=path.relative_to(ROOT).as_posix(),line=tb.tb_lineno))
+        tb=tb.tb_next
+    atomic_json(Path(output)/'worker-error.json',dict(schema='qkan-worker-error.v1',
+        error_type=name,project_frames=frames[-16:],
+        privacy='Exception text, source lines, locals, inputs and arrays excluded'))
+
+
 def revision():
     result = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
     dirty = subprocess.check_output(['git', '-C', str(ROOT), 'status', '--porcelain', '--untracked-files=no'], text=True).strip()
