@@ -1,5 +1,5 @@
 # CPython 3.10; explicitly replaces upstream's unresolved GPU placeholder.
-# Install using the official JAX CUDA wheel archive, not an unpinned latest.
+# Owner stages the pinned wheel archive; collaborator installs offline only.
 jax[cuda12_pip]==0.4.23
 jaxlib==0.4.23+cuda12.cudnn89
 flax==0.8.2
@@ -13,6 +13,7 @@ msgpack==1.0.8
 nvidia-cublas-cu12==12.2.5.6
 nvidia-cuda-cupti-cu12==12.2.142
 nvidia-cuda-nvcc-cu12==12.2.140
+nvidia-cuda-nvrtc-cu12==12.2.140
 nvidia-cuda-runtime-cu12==12.2.140
 nvidia-cudnn-cu12==8.9.7.29
 nvidia-cufft-cu12==11.0.8.103

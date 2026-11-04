@@ -18,6 +18,26 @@ def verify_checkout(model, checkout):
         raise ValueError('Unknown strong baseline: '+model)
     record = registry['models'][model]
     checkout = Path(checkout).resolve(strict=True)
+    snapshot=checkout/'.qkan-source-snapshot.json'
+    if snapshot.is_file():
+        from .strong_offline import manifest
+        source=manifest()['models'][model]['source']
+        if (source['revision']!=record['revision'] or read(snapshot)!=dict(model=model,
+                revision=record['revision'],archive_sha256=source['sha256'])):
+            raise ValueError('Offline source snapshot identity differs')
+        for name,item in source['members'].items():
+            path=checkout/name
+            if path.is_symlink() or not path.resolve().is_relative_to(checkout): raise ValueError('Unsafe offline source path')
+            if path.stat().st_size!=item['size_bytes'] or digest(path)!=item['sha256']:
+                raise ValueError('Offline source inventory changed: '+name)
+        for path in checkout.rglob('*'):
+            name=path.relative_to(checkout).as_posix()
+            if path.is_symlink(): raise ValueError('Offline source symlink rejected')
+            if path.is_file() and name not in source['members'] and name!='.qkan-source-snapshot.json' and path.suffix!='.so':
+                raise ValueError('Unexpected offline source file: '+name)
+        for name,item in record['files'].items():
+            if digest(checkout/name)!=item['sha256']: raise ValueError('Pinned API hash differs: '+name)
+        return checkout,record
     def git(*args):
         return subprocess.check_output(['git', '-C', str(checkout), *args], text=True).strip()
     if Path(git('rev-parse', '--show-toplevel')).resolve() != checkout:

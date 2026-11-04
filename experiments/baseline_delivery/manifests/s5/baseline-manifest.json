@@ -13,7 +13,7 @@
     "artifacts": [
       {
         "path": "experiments/baseline_delivery/strong_sources.py",
-        "sha256": "8454a8d5a663ed4ab61c92a4dbabdf40d43acc0cb08a43b47a43899cdd1a332b"
+        "sha256": "af5e47797c199119639e68724e34682d643696019ae6fc6c5fa8f45c6a80bb51"
       },
       {
         "path": "experiments/baseline_delivery/strong-source-registry.json",
@@ -22,6 +22,14 @@
       {
         "path": "experiments/baseline_delivery/cohort-review.json",
         "sha256": "36e9d423cc1d4ad62682e9974e2890e86adfe0048680df9d76f95d543f9a2086"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong_offline.py",
+        "sha256": "dac4dc64ffad09c6fbd9895e48c67aa9a5d92e05c3ca9690bbe0d6737006dee9"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong-offline-mirror.json",
+        "sha256": "e559def99e6cecc829d084ea9e2b23101d676515babbaf7de88608f573ecda8b"
       }
     ]
   },
@@ -32,7 +40,7 @@
     ],
     "invariants": [
       "Import official clean pinned source; do not rewrite active operator",
-      "Verify git root, commit, clean tracked/untracked state, source hashes and imported module location",
+      "Verify Git root/commit/clean state or full SHA-inventoried exact source snapshot, API hashes and imported module location",
       "Constructor choices explicit; no fallback approximation"
     ],
     "assumptions": [

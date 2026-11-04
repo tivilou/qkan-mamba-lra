@@ -1,0 +1,34 @@
+{
+  "schema": "qkan-strong-offline-publication.v1",
+  "date": "2026-11-04",
+  "status": "published",
+  "mirror_sha256": "e559def99e6cecc829d084ea9e2b23101d676515babbaf7de88608f573ecda8b",
+  "objects": 67,
+  "total_bytes": 3929439551,
+  "models": {
+    "mega": {
+      "wheels": 25,
+      "source_revision": "aeaa4b44592cd1d60a9a34554e359eda2a62b03b",
+      "source_members": 393,
+      "requirements_sha256": "00f8a52aab563566c4783ba71e7cf9510a4c3b1f3b3ca8c5aed39d3ed8fe1928"
+    },
+    "s5": {
+      "wheels": 40,
+      "source_revision": "3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+      "source_members": 48,
+      "requirements_sha256": "1da70522c347619553d8e4c5b9955f4aa1098c5c842e1618639979572d3d6837"
+    }
+  },
+  "checks": [
+    "All PUT size/SHA receipts verified",
+    "All stored chunks and reconstructed object hashes verified"
+  ],
+  "authenticated_https_readback": [
+    "mega-source.zip",
+    "s5-source.zip",
+    "pip-23.3.2-py3-none-any.whl"
+  ],
+  "runtime_validation": "pending collaborator; no owner model imports/tests/installation/training",
+  "scope": "Dependencies and official source only; no restricted task data or credentials",
+  "prefix": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1"
+}

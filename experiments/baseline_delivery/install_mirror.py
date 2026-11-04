@@ -11,11 +11,13 @@ from .common import ROOT, digest, read
 from .sync import download
 
 
-def fetch(cache, manifest):
+def fetch(cache, manifest, *, target_python_tag=None):
     check_exchange()
     if platform.system() != 'Linux' or platform.machine() != 'x86_64':
         raise ValueError('Installation mirror requires Linux x86_64')
-    tag = f'cp{sys.version_info.major}{sys.version_info.minor}'
+    # A parent may stage assets for a separate interpreter; its installer must
+    # validate that interpreter before using them. Existing callers stay strict.
+    tag = target_python_tag or f'cp{sys.version_info.major}{sys.version_info.minor}'
     if tag != manifest['python_tag']:
         raise ValueError(f'Mirror supports {manifest["python_tag"]}; this environment is {tag}. Use the Python version in the collaborator guide.')
     cache = Path(cache)

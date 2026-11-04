@@ -168,7 +168,7 @@ def main():
     with lock(suite/'suite.lock'):
         try: execute(args,suite)
         except BaseException as error:
-            from .setup_diagnostics import summarize
+            from .setup_diagnostics import summarize,redacted_tail
             # No raw child logs/exception text may leak input text or credentials.
             failure=suite/('failure-'+uuid.uuid4().hex[:12]);failure.mkdir()
             logs={p.relative_to(suite).as_posix():dict(sha256=digest(p),bytes=p.stat().st_size)
@@ -178,7 +178,10 @@ def main():
                 suite=suite.relative_to(ROOT).as_posix(),local_logs=logs,
                 setup_diagnostic=summarize(suite/'setup.log'),formal_release_allowed=False))
             from .return_artifacts import upload_declared
-            try: upload_declared(failure,'formal-readiness',['failure.json'],run_id=failure.name)
+            files=['failure.json']
+            if redacted_tail(suite/'setup.log',failure/'setup-redacted.log'):
+                files.append('setup-redacted.log')
+            try: upload_declared(failure,'formal-readiness',files,run_id=failure.name)
             except Exception: print('Failure receipt retained locally: '+str(failure),flush=True)
             raise
 

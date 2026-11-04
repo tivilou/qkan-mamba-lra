@@ -43,7 +43,7 @@ def check_release(config=None):
 
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
-    paths += [ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
+    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',

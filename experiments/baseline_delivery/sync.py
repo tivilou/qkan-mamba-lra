@@ -146,19 +146,19 @@ def verify_data(data):
 
 
 def rebuild_data(cache):
-    """Acquire author bytes directly; do not redistribute AAN via our exchange."""
+    """Use pre-provisioned local data; never fetch author data on the worker."""
     sys.path.insert(0,str(ROOT/'scripts'))
+    final=cache/'data/mega-document-disjoint-v3'
+    if (final/'build-manifest.json').is_file():
+        # prepare() verifies every split/dictionary before admitting this path.
+        return final
     raw = cache/'raw/lra.zip'
     if raw.exists():
         from scripts.rebuild_mega_lra import ARCHIVE_SHA256
         if digest(raw) != ARCHIVE_SHA256:
             raise ValueError('Existing author archive hash mismatch')
     else:
-        subprocess.run([sys.executable,'-B',str(ROOT/'scripts/fetch_mega_lra.py'),
-                        '--output',str(raw),'--receipt',str(cache/'raw/download.json')],check=True,cwd=ROOT)
-        from scripts.rebuild_mega_lra import ARCHIVE_SHA256
-        if digest(raw) != ARCHIVE_SHA256:
-            raise ValueError('Author archive changed; refuse rebuilding')
+        raise ValueError('Offline worker needs pre-provisioned qualified data or local raw/lra.zip; external author download is disabled. Restricted task data are not redistributed by our dependency exchange.')
     # Each stage builds into a private .building directory, then commits it.
     # Interrupted builds remain inspectable and are never silently accepted.
     stages = [cache/'data/mega-independent-v1', cache/'data/mega-independent-pairclean-v2',

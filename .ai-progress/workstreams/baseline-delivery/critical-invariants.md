@@ -21,11 +21,13 @@ Put rationale and chronology in decisions/*.md instead.
 - Public Git holds code/configuration and reviewed compact evidence. Data, weights, raw traces and credentials remain outside Git and use the authenticated project exchange when shared.
 
 - User instruction (2026-11-03): future collaborator scripts must automatically return explicitly needed runtime artifacts to the designated project exchange directory, with verified receipts and retryable local retention; reuse existing authenticated return tooling.
+- User instruction (2026-11-04): assume the collaborator cannot access external internet. Runtime/install scripts use local prerequisites/data and authenticated exchange only; prepare source/dependency assets on our side, disable public-source fallbacks, and stop clearly if an asset is missing. No owner model tests, training or dependency installation.
 
 ## Decision Index
 
 <!-- Add one bullet per decision: `- [STATUS] Short title -> [detail](relative/path.md)`. -->
 - [ACTIVE] Implementation roster and claim scope -> [detail](decisions/2026-11-04-implementation-roster.md)
+- [ACTIVE] Assume collaborator has no external internet -> [detail](decisions/2026-11-04-offline-collaborator.md)
 
 ## Information Map
 

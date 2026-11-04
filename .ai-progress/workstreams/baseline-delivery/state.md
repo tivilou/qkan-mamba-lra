@@ -6,26 +6,26 @@
 
 ## Current State
 
-- First consolidated execution at dd4c1d2, runs/formal-ready-20261104T112338Z-ddafd722, failed before training: system Python3.10 lacks ensurepip. Received failure-5f53160eebb4 plus collaborator screenshot identify the cause. Fixed complete-Python selection, isolated Conda fallback and preserved incomplete-env recreation. New compact setup diagnostics return automatically. Current fix has no actual-device receipt.
-
-- Native MEGA and S5 task/training/checkpoint/trace workers and isolated environment recipes are delivered. S5 retains native JAX/Flax source scan and Optax standard groups. MEGA uses official fairseq encoder and clears derived EMA eval caches on weight loading. See docs/baselines/consolidated-launch.md.
-- One command runs isolated setup, source forward/loss/gradient/update probes, all five-model/five-task fresh-process recovery and complete trace gates, returns compact evidence, then automatically starts the 25 full-data seed42 jobs only if all gates pass. Per-device evidence and implementation/protocol/source/policy hashes bind a local release. Committed release remains not_released and all five manifests not_verifiable until runtime evidence exists.
-- Dataset is qualified for documented internal noncommercial/no-data-redistribution scope. Main roster Transformer/Mamba1/MEGA/S5; minimal S4D auxiliary. No author benchmark reproduction, SOTA/top-two or quantum claim.
-- Mamba corrected no-decay optimizer still needs current runtime evidence; historical acceptance-bacaa36685de at 7c05389 is not transferred. New entry uses a fresh suite and protocol; old suite cannot resume here.
+- Offline assets published: 65 wheels and exact MEGA/S5 source archives, 3,929,439,551 bytes. All upload receipts, stored chunks and reconstructed hashes verified; both source archives and pip bootstrap read back over authenticated HTTPS. See strong-offline-mirror.json and docs/evidence/strong-offline-publication-20261104.json.
+- User requires no external network on collaborator. Setup uses existing local Python3.10/stdlib venv --without-pip, verified local pip23.3.2 bootstrap, exchange-only wheel/source staging and --no-index installs/build. No Conda/apt/public pip/Git/author-data fallback. Qualified local task cache is reused and verified. S5 NVRTC is pinned to CUDA12.2 alongside its runtime.
+- Last actual attempt at 0c9d6c3, runs/formal-ready-20261104T114512Z-0a205127, failed before model execution: Conda channel mapped to Aliyun HTTP404. Prior missing ensurepip/partial-venv and online fallback are superseded by offline setup. Retrieved failure receipt and supplied setup screenshot establish the cause. Future failures return fixed diagnostic facts and a bounded credential-redacted setup log privately.
+- Native MEGA/S5 workers remain source-faithful task adapters. Main roster Transformer/Mamba1/MEGA/S5; minimal S4D auxiliary. Dataset qualified for documented internal noncommercial/no-data-redistribution scope. No author benchmark reproduction, SOTA/top-two or quantum claim.
+- One entry installs, runs source forward/loss/gradient/update probes, all five-model/five-task fresh-process recovery and trace gates, returns compact evidence, then automatically starts 25 full-data seed42 jobs only when every gate passes. Committed release stays not_released and all five manifests not_verifiable. Current GPU/runtime success is not established.
 
 ## Next Actions
 
-- Collaborator pulls the repair and runs the same consolidated launch command in a new suite (no --resume to the old revision). Successful checks automatically start formal training and return completion artifacts; failed checks stop with compact return receipt and local logs. Owner must inspect actual returned evidence before claiming readiness/results.
+- Collaborator pulls this complete delivery and runs bash scripts/run_formal_readiness.sh --cache "$QKAN_CACHE" --gpus 0 in the existing configured terminal. Use a fresh suite, never --resume a previous code revision. See docs/baselines/consolidated-launch.md.
+- Inspect actual returned gates/results. Source presence and historical acceptance do not certify the current implementation/protocol.
 
 ## Blockers
 
-- The dd4c1d2 setup defect is evidenced and repaired in code; current repair/environment, source probes, exact recovery and all-task trace still need collaborator execution. No formal training has started.
-- User stopped owner model tests/training/installations; continue to honor this instruction.
+- Actual collaborator offline environment build, source probes, recovery and trace gates pending; no formal training started. Local Python3.10/stdlib venv and native build tools are prerequisites. Missing assets stop without internet fallback.
+- No owner model imports/tests, dependency installation or experiment runs, per user instruction.
 
 ## Validation
 
-- Python AST/JSON, manifest and artifact hashes, policy bindings, source/API inspection, pinned package metadata and shell syntax only. No model imports/tests, installations or experiment launched on owner hardware.
+- Owner staging: dependency resolution/download and pure-Python ANTLR wheel preparation without installation. Actual asset publication/hash/readback checks; Python AST, manifest schema/provenance/source pins, requirements and reviewed policy hashes. No owner model execution.
 
-## Plan Control
+## Relevant Decisions
 
-- plans/one-click/v001.json F01 remains blocked on current runtime evidence, not missing native worker code. Current entry scripts/run_formal_readiness.sh; docs/baselines/consolidated-launch.md.
+- decisions/2026-11-04-offline-collaborator.md; decisions/2026-11-04-implementation-roster.md. Plan one-click/v001.json F01 remains blocked on actual runtime evidence.
