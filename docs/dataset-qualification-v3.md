@@ -1,6 +1,6 @@
 # 五任务 v3 资格记录
 
-当前状态：**insufficient；不发放正式 baseline 全量任务**。数据泄漏修复、全量结构检查、参考诊断和 Pathfinder 严格源等价核验已完成；剩余门槛为逐任务用途证据。机器记录为 `docs/evidence/mega-document-v3-qualification.json`。
+当前状态（2026-11-04）：**qualified，限定内部非商业研究、不再分发原文／派生数组**。原始 IMDb 作者论文的明确研究基准发布说明补齐了用途证据；逐任务评审见 `docs/evidence/task-internal-use-review-20261104.json`。数据、划分、变换和现有结构／参考诊断均未改变。机器记录为 `docs/evidence/mega-document-v3-qualification.json`。这只关闭数据资格门槛；模型保真、协议和设备放行仍单独受 `release.json` 约束，尚不发放全量任务。
 
 ## 任务与模型输入
 

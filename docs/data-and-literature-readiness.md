@@ -1,6 +1,6 @@
 # 数据与相关工作准备状态
 
-当前结论（2026-10-28）：五任务已重建到 `mega-document-disjoint-v3`，修复了 Retrieval 跨划分共享文档的问题。所有任务结构检查通过；Retrieval 精确共享文档和已发现的近重复跨划分边均为0。资格状态仍为 **insufficient**，尚未解锁正式基线比较。完整契约见 `docs/dataset-qualification-v3.md`。
+当前结论（2026-11-04）：五任务 `mega-document-disjoint-v3` 在内部非商业研究、不再分发原文／数组的限定范围内已 **qualified**。结构、Retrieval 文档隔离、已发现近重复边、参考信号和作者来源证据共同支持该结论；完整契约见 `docs/dataset-qualification-v3.md`。模型认证与正式发布仍未通过，不等于现在可以启动全量训练。
 
 ## 数据
 
@@ -20,9 +20,9 @@
 
 当前目录：`/home/qkan-mamba-lra/data/versions/mega-document-disjoint-v3`。v2 后续关系审计发现 train/val 共享 9,958 篇编码文档，train/test 共享 9,684 篇，所有验证／测试行都至少含一篇训练中出现的文档。v3 将精确文档及已发现近重复边先分组、再独立哈希分桶，只保留两篇文档同属一个划分的样本；原包与 v1/v2 保留。四个未改动任务哈希与 v2 相同；六个输出已与终止回执核验，见 `docs/evidence/document-v3-scheduler-completion-20261028.json`。
 
-固定 train/validation 诊断中，Text/Image/v3 Retrieval 检测到参考信号，ListOps 输入解析 1,024 条全部对齐标签。Pathfinder 已补齐严格源等价与作者已报告可学习性证据：Image/Pathfinder 共 260,000 条像素和标签全部与固定作者包一致，公共缩放保留全部像素信息，见 `docs/pathfinder-source-audit.md`。31 项调度测试通过。MEGA 的 Pathfinder 输入为公共输入的 2 倍，训练配方适配仍需单独验证。当前剩余门槛是逐任务用途证据；IMDb 作者页不可获取，数据卡未提供许可，AAN 不上传共享文件服务。近重复搜索是近似检索，不宣称穷举去重或作者独立。当前划分与原 LRA/MEGA 或历史分数不可直接比较。
+固定 train/validation 诊断中，Text/Image/v3 Retrieval 检测到参考信号，ListOps 输入解析 1,024 条全部对齐标签。Pathfinder 已补齐严格源等价与作者已报告可学习性证据：Image/Pathfinder 共 260,000 条像素和标签全部与固定作者包一致，公共缩放保留全部像素信息，见 `docs/pathfinder-source-audit.md`。31 项调度测试通过。MEGA 的 Pathfinder 输入为公共输入的 2 倍，训练配方适配仍需单独验证。逐任务限定研究用途评审现已通过；IMDb 原作者论文已取证，AAN 原文／数组仍不上传共享文件服务。近重复搜索是近似检索，不宣称穷举去重或作者独立。当前划分与原 LRA/MEGA 或历史分数不可直接比较。
 
-## 相关工作范围（已初筛，未冻结队列）
+## 相关工作范围（实现名单已固定，认证未完成）
 
 1. LRA 官方任务、数据处理与评估协议，以及后续复用中的差异。
 2. 长序列分类的状态空间方法：S4/S4D、Mamba，以及任务匹配的近期强方法。
@@ -36,6 +36,6 @@
 
 ## 基线状态
 
-当前上游 Mamba-only 初测尚未形成正式忠实性证书；S4 为简化自写实现；Transformer 已有代码但无已恢复结果。正式队列尚未选定。历史文档中的平均准确率和 >83% 目标未附核实来源，不能作正式比较依据。
+当前上游 Mamba-only 初测尚未形成正式忠实性证书；S4 为简化自写实现；Transformer 已有代码但无已恢复结果。实现名单现固定为 Transformer、Mamba1、MEGA、S5，minimal S4D 仅作辅助；名单固定不代表模型认证或正式发布。历史文档中的平均准确率和 >83% 目标未附核实来源，不能作正式比较依据。
 
-下一步：取得逐任务权威用途／获取声明，或提出有证据的数据范围调整，再审定 v3 资格。相关工作与源码审计可以并行。数据 qualified、队列与协议冻结、实现忠实性和运行预检通过后，才发放正式基线任务。
+下一步：按固定的候选角色完成 MEGA/S5 源码接入及独立运行环境，关闭各模型适配／恢复／trace gate，最后登记真实证书和正式发布。当前用途证据评审见 `docs/evidence/task-internal-use-review-20261104.json`；此前数据用途不足的判断保留于 Git 历史和原始回执，不再作为当前 blocker。

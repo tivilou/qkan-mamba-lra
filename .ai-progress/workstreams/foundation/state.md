@@ -6,6 +6,8 @@
 
 ## Current State
 
+- 2026-11-04: D01 completed. Original IMDb paper recovered from ACL; explicit future-research dataset release plus per-task author-source/acquisition assessment closes use evidence for internal non-commercial research/no-data-redistribution only. docs/evidence/task-internal-use-review-20261104.json and imdb-primary-paper-sources-20261104.json support qualified data; model release remains false. Session: sessions/2026-11/20261104-data-qualified.md.
+
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
 - F01/F02/F03 complete: code provenance restored, isolated HTTPS exchange accepted, six portal workbenches validated. sigmoidpp has accepted write access.
 - Collaborator's new GitHub account `bigmi-cuc` received a write-access invitation on 2026-11-01; invitation `340846475` is pending acceptance. Prior account access was not revoked. Receipt: sessions/2026-11/20261101T084458Z-collaborator-account.md.
@@ -15,25 +17,25 @@
 
 ## In Progress
 
-- 2026-11-04: AAN author download/use page recovered, SHA-256 pinned in docs/evidence/qualification-closeout-sources-20261104.json. Research-only, no redistribution, citation/publication notice requirements now supported directly. No form submitted or registration receipt inferred. CIFAR author page re-fetched; IMDb current-author URL 404 and Stanford unavailable. Updated docs/data-use-boundaries.md; qualification remains insufficient, without requiring a blanket unified license. Session: sessions/2026-11/20261104-data-use-closeout.md.
-- D01 blocked on per-task use evidence. Pathfinder source/learnability gate now passes via exact author-package equivalence, all-256-value invertibility and the primary MEGA reference; no local trained Pathfinder result is claimed.
+- Earlier same-day AAN/CIFAR source recovery and IMDb website failures are preserved in prior receipts. The original author paper now supplies research-release evidence; see the current qualified assessment above.
+- D01 is now done for the declared internal research scope. Pathfinder source/learnability gate now passes via exact author-package equivalence, all-256-value invertibility and the primary MEGA reference; no local trained Pathfinder result is claimed.
 - Source audit found MEGA Pathfinder scales the common input by 2; Image mean/std also differ. These require explicit baseline adapter/fidelity evidence, not silent preprocessing changes. See docs/pathfinder-source-audit.md.
 - Retrieved MEGA paper, pixel loader, LRA generators, Pathfinder MIT code license and Stanford IMDb dataset card. Author-page recovery failed; card says other/More Information Needed for licensing. No qualification promotion.
 - v2 pair audit missed shared documents in every validation/test pair; preserved v2 is not eligible for unseen-document claims.
 - `mega-document-disjoint-v3` is built and audited: Retrieval counts 117790/1804/1724; zero exact shared documents or discovered near-duplicate cross-split edges; other four task NPZ hashes unchanged from v2. All six output hashes match terminal receipt.
 - Pilot finds signal for Text/Image/v3 Retrieval (58.20% versus 48.34% majority/null); ListOps input-only parser has 0/1024 mismatches. Diagnostics remain outside the formal baseline table.
-- Current assessment: docs/evidence/mega-document-v3-qualification.json, status insufficient; formal_baseline_allowed=false.
-- Orchestrator tracked run `.research-radar/research-system/2026-10-28-e2fe05c74d66` is blocked on the same use-evidence gate; prior user authorization was reused, with no new confirmation request. Baseline release stage remains pending.
-- Formal experiment package remains pending data qualification and baseline selection.
+- Current data assessment: docs/evidence/mega-document-v3-qualification.json is qualified, formal_baseline_allowed=true within documented scope. release.json still not_released; no formal training authorized by this data flag alone.
+- Historical orchestrator tracking is not promoted from its old blocked snapshot automatically; current project plan has moved D01 to done and R01 active. Baseline release remains pending.
+- Formal package remains pending native strong-baseline workers/environment/recovery/trace and fidelity certification; source-stage integration and fixed implementation roster are recorded in baseline-delivery.
 
 ## Next Actions
 
-- 取得逐任务权威用途与获取声明，闭合剩余数据资格门槛
+- Complete native MEGA/S5 training, recovery and trace adapters from verified official source factories.
 
 ## Blockers
 
-- Per-task use evidence remains incomplete; author-page connection failures and the IMDb card do not establish permission terms. LRA disallows redistributing AAN text; no dataset arrays/raw text are currently delivered through our exchange. Approximate deduplication does not certify author independence.
-- Dataset qualification remains insufficient; historical Text JSON/checkpoint is still unavailable and is not synthesized.
+- No current data-use evidence blocker within the reviewed internal scope. No raw/derived data redistribution; approximate deduplication still does not certify exhaustive semantic or author independence.
+- Native baseline implementation/environment/certification remains incomplete. Historical Text JSON/checkpoint remains unavailable; do not synthesize it.
 
 ## Validation
 
@@ -56,9 +58,9 @@
 - Plan: plans/research-cycle/v001.json
 - Plan Version: 1
 - Plan Status: active
-- Focus Step: D01
-- Focus Status: blocked
-- Completed Steps: F01, F02, F03
-- Next Action: 取得逐任务权威用途与获取声明，闭合剩余数据资格门槛
-- Blocker: Per-task authoritative use/acquisition evidence incomplete; see docs/data-use-boundaries.md
-- Last Checkpoint: 2026-10-28
+- Focus Step: R01
+- Focus Status: active
+- Completed Steps: F01, F02, F03, D01
+- Next Action: Complete native MEGA/S5 training, recovery and trace adapters from verified source factories
+- Blocker: None for continued source integration; model release remains gated on implementation and runtime evidence.
+- Last Checkpoint: 2026-11-04

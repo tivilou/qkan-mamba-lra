@@ -4,9 +4,9 @@
   "cohort_frozen": false,
   "certificates": {},
   "blocked_by": [
-    "Dataset remains insufficient on task-specific use/acquisition evidence; see qualification-closeout-sources-20261104.json.",
-    "Cohort is a selection proposal only; strong MEGA/S5 integrations and modern-neighbor artifact review are incomplete.",
-    "Candidate manifests are not_verifiable; Mamba upstream no-decay correction and installed-source assertions have no runtime receipt yet."
+    "Data qualified within documented internal research scope; main model roster fixed for implementation but full protocol/certification release pending.",
+    "MEGA/S5 source entry factories written; native training adapters, environment certification, complete resume and trace are unavailable.",
+    "Candidate manifests remain not_verifiable; corrected Mamba no-decay grouping and source assertions have no runtime receipt."
   ],
   "available_operations": [
     "prepare",

@@ -1,0 +1,84 @@
+{
+  "schema_version": "baseline-reproduction-fidelity.v1",
+  "baseline_id": "mega",
+  "provenance": {
+    "mode": "source",
+    "upstream": {
+      "source_url": "https://github.com/facebookresearch/mega",
+      "revision": "aeaa4b44592cd1d60a9a34554e359eda2a62b03b",
+      "entrypoints": [
+        "fairseq.models.lra.mega_lra_encoder.MegaLRAEncoder"
+      ]
+    },
+    "artifacts": [
+      {
+        "path": "experiments/baseline_delivery/strong_sources.py",
+        "sha256": "b6e67e5af85dba9a331ff50480f77355ca126651c0e9eba4d5dba14cd21491a8"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong-source-registry.json",
+        "sha256": "2b09d407727f6c1be2ccdea7dec0e1664d807c48e7ebde5ae460894d9208b6f1"
+      },
+      {
+        "path": "experiments/baseline_delivery/cohort-review.json",
+        "sha256": "1d8704e7f91a711e807a24c9dc159cd625bb0af7168850b61d8e5aef08158c85"
+      }
+    ]
+  },
+  "mechanism_contract": {
+    "entrypoints": [
+      "fairseq.models.lra.mega_lra_encoder.MegaLRAEncoder",
+      "experiments/baseline_delivery/strong_sources.py"
+    ],
+    "invariants": [
+      "Import official clean pinned source; do not rewrite active operator",
+      "Verify git root, commit, clean tracked/untracked state, source hashes and imported module location",
+      "Constructor choices explicit; no fallback approximation"
+    ],
+    "assumptions": [
+      "Source factories only: no native training worker, full-state resume, common task-head/trace integration or runtime certification yet"
+    ],
+    "unknowns": [
+      "Executable environment compatibility and complete pinned dependency mirror",
+      "Native task/head adapter, source forward/gradient/update comparison",
+      "Optimizer parameter groups and scheduler behavior under common protocol",
+      "Fresh-process full-state recovery and sample-trace.v2 semantic/replay evidence"
+    ]
+  },
+  "adaptation": {
+    "allowed_changes": [
+      "Task input and output head only after explicit implementation and source review",
+      "Separate framework-specific worker without changing active source mechanism"
+    ],
+    "forbidden_changes": [
+      "Replacing S5 by PyTorch/S4D approximation",
+      "Replacing MEGA by a generic Mamba/EMA-only block",
+      "Silently ignoring padding or changing normalization/scheduler/optimizer metadata",
+      "Declaring source import or constructor success a fidelity certificate"
+    ],
+    "postprocessing_rules": []
+  },
+  "equivalence": {
+    "status": "not_verifiable",
+    "scope": "Official source API factory written and static source identities pinned; end-to-end integration and every runtime gate pending."
+  },
+  "validation": {
+    "gates": {
+      "provenance_locked": false,
+      "mechanism_contract_reviewed": false,
+      "adaptation_boundary_reviewed": false,
+      "manifest_frozen": false,
+      "upstream_fixture_checked": false,
+      "forward_checked": false,
+      "gradient_checked": false,
+      "optimizer_update_checked": false,
+      "sampler_checked": false,
+      "checkpoint_checked": false,
+      "no_postprocessing_rules": true
+    },
+    "commands": [],
+    "evidence_files": [
+      "docs/evidence/strong-baseline-sources-20261104.json"
+    ]
+  }
+}

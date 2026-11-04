@@ -25,7 +25,7 @@ Put rationale and chronology in decisions/*.md instead.
 ## Decision Index
 
 <!-- Add one bullet per decision: `- [STATUS] Short title -> [detail](relative/path.md)`. -->
-- No decisions indexed yet.
+- [ACTIVE] Implementation roster and claim scope -> [detail](decisions/2026-11-04-implementation-roster.md)
 
 ## Information Map
 

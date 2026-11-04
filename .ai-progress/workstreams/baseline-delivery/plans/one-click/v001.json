@@ -6,8 +6,8 @@
   "status": "active",
   "objective": "实现并验证自动准备、隔离运行、完整恢复及文件回传入口；保持正式比较的资格与复现门槛",
   "focus_step_id": "F01",
-  "next_action": "合作者在实际 GPU 节点执行 preflight 并回传收据；研究方继续完成数据资格、cohort 与逐模型 fidelity",
-  "blocker": "正式运行仍被数据用途资格、cohort 冻结、逐模型 fidelity 及合作者 GPU 预检阻止",
+  "next_action": "Implement native MEGA/S5 task, training, checkpoint and trace adapters with reproducible isolated environments",
+  "blocker": "Native MEGA/S5 workers and executable environments incomplete; five manifests not_verifiable; corrected Mamba optimizer has no runtime receipt",
   "user_confirmation_needed": false,
   "steps": [
     {
@@ -141,11 +141,13 @@
         "数据资格 qualified；cohort冻结；逐模型 fidelity 证书绑定实现与协议；合作者实际GPU预检通过"
       ],
       "evidence_paths": [
-        "experiments/baseline_delivery/release.json"
+        "experiments/baseline_delivery/release.json",
+        "docs/evidence/task-internal-use-review-20261104.json",
+        "experiments/baseline_delivery/strong-source-registry.json"
       ],
       "owner": "我们；GPU 验收由合作者执行",
-      "blocker": "数据用途、cohort、逐模型 fidelity 与 GPU 验收尚未完成",
-      "notes": "",
+      "blocker": "Native MEGA/S5 workers and executable environments incomplete; five manifests not_verifiable; corrected Mamba optimizer has no runtime receipt",
+      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.",
       "supersedes": [],
       "superseded_by": []
     }
@@ -156,5 +158,5 @@
       "reason": "用户明确要求实现一键正式baseline运行及自动同步；作为D01的支持工程工作，不推进资格闸门"
     }
   ],
-  "updated_at": "2026-10-29"
+  "updated_at": "2026-11-04"
 }

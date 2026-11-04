@@ -1,6 +1,6 @@
 {
   "schema": "qkan-cohort-review.v1",
-  "status": "proposal_pending_dataset_qualification",
+  "status": "implementation_roster_frozen_certification_pending",
   "formal_cohort_frozen": false,
   "scope": "Adapted five-task classification; common-protocol results only; no current global top-x claim",
   "strong_reference_target_count": 2,
@@ -26,13 +26,13 @@
     {
       "id": "mega",
       "role": "strong attention reference target",
-      "disposition": "required_integration_pending_qualification",
+      "disposition": "selected_source_factory_written_native_runner_pending",
       "reason": "Author five-task LRA recipe and same author data release; normalization/training adaptations must be explicit"
     },
     {
       "id": "s5",
       "role": "strong state-space reference target",
-      "disposition": "required_integration_pending_qualification",
+      "disposition": "selected_source_factory_written_native_runner_pending",
       "reason": "Official LRA recipe and distinct MIMO parallel-scan mechanism; separate JAX environment/recovery adapter needed"
     },
     {
@@ -74,7 +74,21 @@
   ],
   "evidence": [
     "docs/baselines/candidate-inventory.md",
-    "docs/baselines/recent-screen.md"
+    "docs/baselines/recent-screen.md",
+    "docs/evidence/strong-baseline-sources-20261104.json"
   ],
-  "limitation": "This selection proposal is grounded in the existing bounded screen, not an exhaustive ranking or completed cohort freeze. Do not start MEGA/S5 implementation before dataset qualification."
+  "limitation": "Roster fixed for source integration. Native workers, data/head adaptation, environments, optimizer/scheduler fidelity, full-state recovery and trace gates are not complete. Formal release remains false.",
+  "selection_frozen": true,
+  "main_roster": [
+    "transformer",
+    "mamba1",
+    "mega",
+    "s5"
+  ],
+  "auxiliary_roster": [
+    "s4d_minimal"
+  ],
+  "selection_rule": "Two established task-matched strong reference families with official LRA source/recipes (MEGA attention and S5 SSM), plus classic attention and direct Mamba backbone. This is a bounded landscape selection, not global top-two ranking.",
+  "claim_ceiling": "Only common-protocol comparisons against the selected certified models. No global SOTA, quantum advantage or superiority over unresolved modern neighbors.",
+  "qualification": "docs/evidence/mega-document-v3-qualification.json"
 }
