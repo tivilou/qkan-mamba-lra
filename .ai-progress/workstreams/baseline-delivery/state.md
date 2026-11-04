@@ -6,6 +6,7 @@
 
 ## Current State
 
+- Latest collaborator acceptance `acceptance-bacaa36685de` at `7c05389` is engineering_checks_complete. Direct exchange review confirms all three adapter probes passed, Mamba/ListOps recovery passed mamba1-cuda-fp32-v1, Transformer/Retrieval recovery exact, both six-update fresh-process canaries with trace semantic/replay passed. Formal release remains false. Evidence: docs/evidence/baseline-acceptance-received-20261104.json. This supersedes the pending rerun below.
 - Collaborator acceptance `acceptance-b5bad50719b8` at revision `02c3700` failed. Exchange report and uninterrupted worker log inspected directly on 2026-11-04. Transformer, S4D minimal and Mamba1 adapter composition probes passed; these are not paper-level fidelity certificates.
 - First Mamba/ListOps worker exited at its initial matrix multiplication: deterministic CUDA requires CUBLAS_WORKSPACE_CONFIG, omitted by the standalone acceptance entry point. Recovery comparison and Transformer/Retrieval canary were not reached.
 - Fixed runner.canary to set `CUBLAS_WORKSPACE_CONFIG=:4096:8` before starting CUDA children, covering standalone callers. Acceptance now automatically returns its full parent exception traceback as acceptance-error.log. Collaborator rerun pending; no owner model tests/training performed per user instruction. AST syntax and diff checks pass.
@@ -16,7 +17,7 @@
 
 ## Next Actions
 
-- Collaborator pulls the repair and reruns the same consolidated acceptance command; review automatic return before calling the engineering canaries passed.
+- No repeat of the same acceptance requested. Close remaining research qualification/release work on our side; two bounded CUDA canaries are now passed, not all task/model combinations.
 - Complete source/use qualification, evidence-grounded cohort selection and model fidelity certificates, tracked in docs/baselines/formal-launch-closeout.md. Acceptance success alone does not release formal experiments.
 
 ## Blockers
@@ -26,7 +27,7 @@
 
 ## Validation
 
-- Latest repair: AST parsing of changed Python files and git diff --check only. Actual collaborator CUDA rerun pending.
+- Latest collaborator CUDA acceptance passed as recorded above; no additional owner tests/training run.
 - Prior collaborator verified all 15 splits by internal NPY content and installed mirrored Torch 2.7.1+cu126/Mamba 2.2.4. Trace replay GPU fix remains subject to consolidated acceptance.
 - Historical validation receipts and implementation sessions remain in docs/evidence and sessions/2026-11; no old CPU check certifies present GPU acceptance.
 
