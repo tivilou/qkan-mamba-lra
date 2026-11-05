@@ -123,6 +123,13 @@ def run(args, modules):
     runtime['backend']=jax.default_backend()
     runtime['classifier_dot_precision']='highest'
     runtime['training_state_placement']='jax-device-arrays-v1'
+    runtime['xla_flags']=os.environ.get('XLA_FLAGS','')
+    runtime['cublas_workspace_config']=os.environ.get('CUBLAS_WORKSPACE_CONFIG','')
+    if args.device.startswith('cuda') and not (
+            '--xla_gpu_deterministic_ops=true' in runtime['xla_flags'].split()
+            and '--xla_gpu_autotune_level=0' in runtime['xla_flags'].split()
+            and runtime['cublas_workspace_config']==':4096:8'):
+        raise ValueError('S5 GPU requires declared deterministic launcher settings')
     atomic_json(out/'environment.json',dict(packages=runtime,devices=[str(d) for d in jax.devices()],
         precision='float32; no AMP; classifier dot HIGHEST in forward/reference/replay'))
     Model=build(modules,config);model=Model(training=True);evaluation=Model(training=False)

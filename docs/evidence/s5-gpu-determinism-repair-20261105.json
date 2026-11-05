@@ -1,0 +1,52 @@
+{
+  "schema": "qkan-s5-gpu-determinism-repair.v1",
+  "receipt": "qkan-mamba/formal-readiness/failure-b046cc6bb814/failure.json",
+  "receipt_sha256": "21d9c850763cce0bf92c604b328fb7340d0b7c74d8ff1d91efa9d623a4c120de",
+  "revision": "888a123ee5dccf9009cb9469635d407ca741a20d",
+  "suite": "runs/formal-ready-20261105T033034Z-f9a571d5",
+  "observed": {
+    "stage": "S5/ListOps final exact recovery comparison",
+    "checked_leaves": 530,
+    "mismatch_count": 282,
+    "returned_mismatch_records": 32,
+    "returned_record_max_absolute_difference": 1.4901161193847656e-07,
+    "returned_records_scope": "Optimizer first moments only; capped records, not a global bound or complete control-state assessment"
+  },
+  "conclusion": "State placement repair was insufficient. Float32 accumulation/kernel nondeterminism remains a concrete execution risk; exact cause of all observed mismatches is not established.",
+  "source_audit": [
+    {
+      "url": "https://raw.githubusercontent.com/jax-ml/jax/jax-v0.4.23/third_party/xla/workspace.bzl",
+      "sha256": "8a2b3a790c145a328f66a0167d96a826cb607c2bc7a2a35409585dd3f27d93ba",
+      "bytes": 1944
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openxla/xla/a487d8ba5da8d0dec056972270e50de6748a1035/xla/debug_options_flags.cc",
+      "sha256": "51911d34b48383306ca585a8806798b28e0f84f60bb00bc55486b1556dd79154",
+      "bytes": 73248
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openxla/xla/a487d8ba5da8d0dec056972270e50de6748a1035/xla/service/gpu/gpu_compiler.cc",
+      "sha256": "dbc3e3a18eea55526ed2e080b82e0978400034e1eae15e652f66755cc3e9867d",
+      "bytes": 90996
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openxla/xla/a487d8ba5da8d0dec056972270e50de6748a1035/xla/service/gpu/ir_emitter_unnested.cc",
+      "sha256": "7d4ac54c9e4f85c5e5c5aaa4b0c9df5a631d66a3584a1f4adf8b3cdfdd764a14",
+      "bytes": 166539
+    }
+  ],
+  "verified_source_behavior": "Pinned XLA recognizes deterministic_ops/autotune_level flags; GPU compiler expands indeterministic scatters when deterministic_ops is true. Nondeterministic unsupported instructions fail closed.",
+  "repair": [
+    "Set deterministic_ops=true, autotune_level=0 and CUBLAS_WORKSPACE_CONFIG=:4096:8 for all S5 children before backend initialization",
+    "Bind effective compiler/cuBLAS settings into checkpoint runtime identity and enforce GPU launcher configuration",
+    "Retain exact recovery; add aggregate per-field mismatch counts/maxima without array or scalar value disclosure"
+  ],
+  "limitation": "Potential throughput cost, including deterministic scatter expansion. Actual-device success pending; no noise bound or numerical tolerance introduced.",
+  "source_encoder_changed": false,
+  "optimizer_algorithm_changed": false,
+  "recovery_tolerance_changed": false,
+  "new_dependencies": false,
+  "owner_model_tests_install_training": false,
+  "runtime_repair_verified": false,
+  "formal_training_started": false
+}

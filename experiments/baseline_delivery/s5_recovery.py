@@ -8,11 +8,18 @@ FIELDS=('train_state','rng','sampler','permutation','cursor','step','epoch',
 
 def validate(left,right):
     import numpy as np
-    mismatches=[];count=0;leaves=0
+    mismatches=[];count=0;leaves=0;by_field={}
 
     def fail(path,reason,**details):
         nonlocal count
         count+=1
+        field=path.split('/')[0]
+        summary=by_field.setdefault(field,dict(mismatches=0,max_absolute_difference=None))
+        summary['mismatches']+=1
+        delta=details.get('max_absolute_difference')
+        if delta is not None:
+            previous=summary['max_absolute_difference']
+            summary['max_absolute_difference']=delta if previous is None else max(previous,delta)
         if len(mismatches)<32: mismatches.append(dict(field=path,reason=reason,**details))
 
     def visit(a,b,path):
@@ -45,5 +52,6 @@ def validate(left,right):
         else: visit(left[key],right[key],key)
     return dict(schema='qkan-s5-exact-recovery.v1',passed=count==0,agreement='exact',
         checked_fields=list(FIELDS),checked_leaves=leaves,mismatch_count=count,mismatches=mismatches,
+        field_summary={key:by_field.get(key,dict(mismatches=0,max_absolute_difference=None)) for key in FIELDS},
         privacy='State field paths and aggregate differences only; no values, arrays, sample IDs, labels or inputs',
         tolerance='No numerical tolerance; dtype, shape and values must match')

@@ -128,7 +128,12 @@ def spawn(spec, log, env=None):
         env['LD_LIBRARY_PATH']=os.pathsep.join(map(str,sorted((site/'nvidia').glob('*/lib'))))
         nvcc=site/'nvidia/cuda_nvcc'
         env['PATH']=str(nvcc/'bin')+os.pathsep+env.get('PATH','')
-        env['XLA_FLAGS']='--xla_gpu_cuda_data_dir='+str(nvcc)
+        # JAX0.4.23's pinned XLA supports deterministic scatter expansion.
+        # Repeated embedding indices otherwise allow atomic reduction order
+        # to vary between fresh processes. Freeze GEMM algorithm selection too.
+        env['XLA_FLAGS']=('--xla_gpu_cuda_data_dir='+str(nvcc)+
+            ' --xla_gpu_deterministic_ops=true --xla_gpu_autotune_level=0')
+        env['CUBLAS_WORKSPACE_CONFIG']=':4096:8'
         env['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
     kwargs = {'start_new_session': True} if os.name != 'nt' else {'creationflags': subprocess.CREATE_NEW_PROCESS_GROUP}
     return subprocess.Popen(spec['argv'], cwd=spec['cwd'], env=env,
