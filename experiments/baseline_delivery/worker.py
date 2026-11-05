@@ -146,12 +146,48 @@ def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=F
         restore_rng(state['rng'])
     elif (output/'checkpoints/latest.json').exists():
         raise ValueError('Existing checkpoint requires explicit resume')
+    adaptive=None
+    if config.get('adaptive_memory'):
+        if not device.startswith('cuda'): raise ValueError('Adaptive memory requires CUDA')
+        from .adaptive_memory import Controller,transaction,attach_journal,evaluation as adaptive_evaluate
+        adaptive=Controller(config['adaptive_memory'],config['batch_size'],state.get('adaptive_memory'))
+        attach_journal(adaptive,output,lambda:state['step'])
+        if any(isinstance(m,nn.modules.batchnorm._BatchNorm) for m in model.modules()):
+            raise ValueError('Adaptive microbatch does not support BatchNorm')
+        def host(value):
+            if isinstance(value,torch.Tensor): return value.detach().cpu().clone()
+            if isinstance(value,dict): return {k:host(v) for k,v in value.items()}
+            if isinstance(value,list): return [host(v) for v in value]
+            if isinstance(value,tuple): return tuple(host(v) for v in value)
+            return copy.deepcopy(value)
+        def capture_update():
+            return host(dict(model=model.state_dict(),optimizer=opt.state_dict(),
+                             scheduler=schedule.state_dict(),rng=rng_state()))
+        def restore_update(snapshot):
+            state.pop('optimizer',None);opt.state.clear();torch.cuda.empty_cache()
+            model.load_state_dict(snapshot['model']);opt.load_state_dict(snapshot['optimizer'])
+            schedule.load_state_dict(snapshot['scheduler']);restore_rng(snapshot['rng'])
+            # Existing checkpoint payloads must not retain superseded GPU states.
+            state.update(model=model.state_dict(),optimizer=opt.state_dict(),scheduler=schedule.state_dict())
+        def cleanup_update():
+            import gc
+            opt.zero_grad(set_to_none=True);gc.collect();torch.cuda.empty_cache()
+        def memory():
+            free,total=torch.cuda.mem_get_info()
+            return dict(free_bytes=free,total_bytes=total,peak_bytes=torch.cuda.max_memory_allocated(),
+                        allocated_bytes=torch.cuda.memory_allocated(),reserved_bytes=torch.cuda.memory_reserved())
+    def evaluate_split(split):
+        if adaptive:
+            return adaptive_evaluate(adaptive,lambda micro:evaluate(model,split,device,micro),
+                cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError))
+        return evaluate(model,split,device,config['micro_batch'])
     atomic_json(output/'config.json',config)
     started=time.monotonic(); last_save=started
     def save():
         nonlocal last_save,started
         now=time.monotonic(); state['training_seconds']+=now-started; started=now
         state.update(model=model.state_dict(),optimizer=opt.state_dict(),scheduler=schedule.state_dict(),rng=rng_state())
+        if adaptive: state['adaptive_memory']=adaptive.snapshot()
         save_checkpoint(output,state);last_save=now
     while state['epoch']<config['epochs']:
         if state['permutation'] is None:
@@ -160,28 +196,41 @@ def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=F
         while state['cursor']<len(train):
             end=min(len(train),state['cursor']+config['batch_size'])
             ids=state['permutation'][state['cursor']:end].numpy()
-            opt.zero_grad(set_to_none=True); update_loss=0.; update_correct=0
-            for start in range(0,len(ids),config['micro_batch']):
-                sub=ids[start:start+config['micro_batch']]
-                batch=train.batch(sub,device); logits=model(batch)
-                loss=nn.functional.cross_entropy(logits,batch['labels'],reduction='sum')/len(ids)
-                if not torch.isfinite(loss): raise ValueError('Nonfinite loss')
-                loss.backward();update_loss+=loss.item()*len(ids)
-                update_correct+=int((logits.argmax(-1)==batch['labels']).sum())
-            nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
-            opt.step();schedule.step()
+            def update(micro_batch):
+                opt.zero_grad(set_to_none=True); update_loss=0.; update_correct=0
+                for start in range(0,len(ids),micro_batch):
+                    sub=ids[start:start+micro_batch]
+                    batch=train.batch(sub,device); logits=model(batch)
+                    loss=nn.functional.cross_entropy(logits,batch['labels'],reduction='sum')/len(ids)
+                    if not torch.isfinite(loss): raise ValueError('Nonfinite loss')
+                    loss.backward();update_loss+=loss.item()*len(ids)
+                    update_correct+=int((logits.argmax(-1)==batch['labels']).sum())
+                nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
+                opt.step();schedule.step()
+                return update_loss,update_correct
+            adaptive_status={}
+            if adaptive:
+                torch.cuda.reset_peak_memory_stats()
+                (update_loss,update_correct),adaptive_status=transaction(adaptive,update,capture_update,
+                    restore_update,cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
+                    memory,torch.cuda.synchronize)
+                state['adaptive_peak_bytes']=max(state.get('adaptive_peak_bytes',0),adaptive_status['peak_bytes'])
+            else: update_loss,update_correct=update(config['micro_batch'])
             state['cursor']=end;state['step']+=1
             state['epoch_loss']+=update_loss;state['epoch_correct']+=update_correct;state['epoch_samples']+=len(ids)
             if synthetic:
                 state['update_trace'].append({'step':state['step'],'rows':ids.tolist(),'loss':update_loss/len(ids)})
             atomic_json(output/'heartbeat.json',{'state':'running','epoch':state['epoch'],
                         'next_row_cursor':state['cursor'],'optimizer_step':state['step'],
-                        'loss':update_loss/len(ids),'updated_at':time.time()})
+                        'loss':update_loss/len(ids),'updated_at':time.time(),
+                        **({'adaptive_memory':adaptive_status} if adaptive else {})})
+            if adaptive: atomic_json(output/'adaptive-memory.json',dict(policy=adaptive.policy,
+                state=adaptive.snapshot(),last_update=adaptive_status,step=state['step']))
             if PAUSE or (stop_after is not None and state['step']>=stop_after):
                 save();atomic_json(output/'status.json',{'state':'paused','step':state['step']});return 75
             if state['step']%config['checkpoint_steps']==0 or time.monotonic()-last_save>=300:
                 save()
-        metric=evaluate(model,val,device,config['micro_batch'])
+        metric=evaluate_split(val)
         if metric['accuracy']>state['best_accuracy']:
             state['best_accuracy']=metric['accuracy'];state['best_epoch']=state['epoch']
             state['best_weights']=cpu_copy(model.state_dict())
@@ -195,14 +244,14 @@ def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=F
     # Evaluation retry uses the full-state checkpoint's own immutable best
     # weights, without repeating training or testing final-epoch weights.
     model.load_state_dict(state['best_weights'],strict=True)
-    selected_val=evaluate(model,val,device,config['micro_batch'])
+    selected_val=evaluate_split(val)
     if selected_val['accuracy']!=state['best_accuracy']:
         raise ValueError('Selected checkpoint validation does not reproduce')
     if synthetic:
         test_metric=None
     else:
         test=Split(data,config['task'],'test',cache,config['data_hashes']['test'])
-        test_metric=evaluate(model,test,device,config['micro_batch'])
+        test_metric=evaluate_split(test)
     torch.save(state['best_weights'],output/'best-model.pt')
     from .trace import capture
     capture(model,val,output,config,digest(output/'best-model.pt'))
@@ -214,6 +263,9 @@ def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=F
              'training_seconds':state['training_seconds'],
              'peak_gpu_bytes':torch.cuda.max_memory_allocated() if device.startswith('cuda') else None,
              'synthetic':synthetic,'formal':not synthetic,'best_weights_sha256':digest(output/'best-model.pt')}
+    if adaptive: summary['adaptive_memory']=dict(policy=adaptive.policy,state=adaptive.snapshot(),
+        peak_bytes=state.get('adaptive_peak_bytes'),trajectory='adaptive; not fixed-microbatch-equivalent')
+    if adaptive: summary['peak_gpu_bytes']=max(state.get('adaptive_peak_bytes',0),summary['peak_gpu_bytes'] or 0)
     atomic_json(output/'summary.json',summary)
     atomic_json(output/'status.json',{'state':'computed','step':state['step'],'delivery':'pending'})
     return 0

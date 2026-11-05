@@ -160,6 +160,10 @@ class Dashboard:
             if not hb or hb.get('updated_at',0)<started:
                 lines.append('  初始化/恢复中，等待本次进程的第一个训练心跳；速度与 ETA 待测。')
                 continue
+            adaptive=hb.get('adaptive_memory')
+            if adaptive:
+                lines.append(f"  显存适配：本步 micro-batch {adaptive['used_micro_batch']} | 下一步 {adaptive['micro_batch']} | "
+                             f"累计 OOM 重试 {adaptive['oom_retries']} | {adaptive['event']}")
             step=hb.get('optimizer_step');epoch=hb.get('epoch');epochs=config.get('epochs')
             n=self.rows.get(config.get('task'));batch_size=config.get('batch_size')
             batches=math.ceil(n/batch_size) if n and batch_size else None
@@ -275,6 +279,7 @@ def main():
             parser.error('Original runner is still active; safely pause it and wait for the shell prompt first')
         command=['bash',str(root/'scripts/run_formal_readiness.sh'),'--cache',str(cache),
                  '--gpus',context['gpus'],'--resume',str(suite)]
+        if context.get('adaptive_memory'): command.append('--adaptive-memory')
         atomic_json(suite/('progress-launch-'+str(time.time_ns())+'.json'),dict(
             schema='qkan-progress-supervisor.v1',executor_revision=expected,
             display_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

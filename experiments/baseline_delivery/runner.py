@@ -43,7 +43,7 @@ def check_release(config=None):
 
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
-    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
+    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',
@@ -138,7 +138,8 @@ def canary(config,data,cache,output,device='cpu'):
         if status!=expected:
             diagnostic=dict(schema='qkan-recovery-child-failure.v1',model=config['model'],task=task,
                 child=name,resume=extra==['--resume'],returncode=status,expected_returncode=expected)
-            for key,filename in (('exception','worker-error.json'),('trace_replay','trace-replay-diagnostic.json')):
+            for key,filename in (('exception','worker-error.json'),('trace_replay','trace-replay-diagnostic.json'),
+                                 ('adaptive_memory','adaptive-memory.json')):
                 path=folder/name/filename
                 if path.is_file(): diagnostic[key]=read(path)
             atomic_json(folder/'child-failure.json',diagnostic)
@@ -183,6 +184,15 @@ def canary(config,data,cache,output,device='cpu'):
             'config_sha256':fingerprint(config),'source_revision':config['source_revision'],
             'trace_semantic_and_replay':True,'test_access':False,
             'training_seconds':states[0]['training_seconds']}
+    if config.get('adaptive_memory'):
+        for state in states:
+            if not state.get('adaptive_memory'): raise ValueError('Adaptive controller checkpoint missing')
+        for key in ('index','ceiling','oom_count','wait','previous','transitions'):
+            if states[0]['adaptive_memory'][key]!=states[1]['adaptive_memory'][key]:
+                raise ValueError('Adaptive recovery decision differs: '+key)
+        report['adaptive_memory']=dict(policy=config['adaptive_memory'],
+            controller_restored=True,scope='Observed bounded recovery only; dynamic choices may depend on GPU pressure/timing',
+            fixed_microbatch_equivalence=False)
     atomic_json(folder/'canary.json',report)
     return report
 
@@ -235,6 +245,11 @@ def deliver(suite):
                 path=job/name
                 if not path.is_file(): raise ValueError('Required return artifact missing: '+str(path))
                 files.extend(return_files(path,'jobs/'+job.name+'/'+name))
+            if read(job/'config.json').get('adaptive_memory'):
+                for name in ('adaptive-memory.json','adaptive-events.jsonl'):
+                    path=job/name
+                    if not path.is_file(): raise ValueError('Adaptive return evidence missing')
+                    files.extend(return_files(path,'jobs/'+job.name+'/'+name))
             pointer=read(job/'checkpoints/latest.json')
             for name in ('latest.json',pointer['file']):
                 path=job/'checkpoints'/name

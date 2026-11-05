@@ -10,3 +10,5 @@
 - Forbidden: generic approximate replacement, silent padding/direction changes, test-based selection or claiming author result reproduction.
 
 - Source and complete Linux cp310 dependency closure arrive through authenticated exchange with SHA-256 manifests. Use local Python3.10/venv without ensurepip; pip bootstrap and installation are offline. No public Conda/pip/Git fallback. This transport adaptation changes no active model operator.
+
+Opt-in adaptive-memory execution changes only physical microbatch partitioning under the same logical update budget. It defines a distinct numerical trajectory; it does not establish equivalence to the fixed-policy run or inherit its checkpoint admission. Source-pinned mixer equations and precision remain unchanged. See `docs/baselines/adaptive-memory.md` for rollback, throughput search, bounded recovery coverage and pending hardware validation.

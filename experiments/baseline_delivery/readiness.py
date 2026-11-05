@@ -69,6 +69,7 @@ def execute(args,suite):
     context=suite/'context.json'
     identity=dict(source_revision=source,implementation_sha256=implementation,policy_sha256=policy,
                   cache=str(args.cache.resolve()),gpus=args.gpus)
+    if args.adaptive_memory: identity['adaptive_memory']=True
     if context.exists() and read(context)!=identity: raise ValueError('Readiness resume identity changed')
     atomic_json(context,identity)
     setup={'target':'experiments.baseline_delivery.strong_environments','cwd':str(ROOT),
@@ -98,6 +99,9 @@ def execute(args,suite):
         for task in TASKS:
             job_id=model+'-'+task+'-s42';job=suite/'jobs'/job_id;job.mkdir(parents=True,exist_ok=True)
             config=config_for(task,model,42,data,source);cfg=job/'config.json'
+            if args.adaptive_memory:
+                from .adaptive_memory import default_policy
+                config['adaptive_memory']=default_policy(config['batch_size'])
             if cfg.exists() and read(cfg)!=config: raise ValueError('Job configuration changed')
             atomic_json(cfg,config)
             jobs.append(dict(id=job_id,config_sha256=fingerprint(config)));statuses[job_id]=dict(state='pending')
@@ -161,6 +165,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--cache',type=Path,required=True);p.add_argument('--gpus',default='0')
     p.add_argument('--resume',type=Path);p.add_argument('--gates-only',action='store_true')
+    p.add_argument('--adaptive-memory',action='store_true',help='New adaptive trajectory; cannot resume a fixed-policy suite')
     args=p.parse_args()
     import signal
     def interrupted(*_): raise KeyboardInterrupt
@@ -186,6 +191,11 @@ def main():
                     for p in sorted((suite/'preflight').glob('*/*/recovery-validation.json'))
                     if p.parent.name.startswith('s5-')],
                 setup_diagnostic=summarize(suite/'setup.log'),formal_release_allowed=False))
+            if args.adaptive_memory:
+                failure_report=read(failure/'failure.json')
+                failure_report['adaptive_memory']=[dict(job=p.parent.name,report=read(p))
+                    for p in sorted((suite/'jobs').glob('*/adaptive-memory.json'))]
+                atomic_json(failure/'failure.json',failure_report)
             from .return_artifacts import upload_declared
             files=['failure.json']
             if redacted_tail(suite/'setup.log',failure/'setup-redacted.log'):

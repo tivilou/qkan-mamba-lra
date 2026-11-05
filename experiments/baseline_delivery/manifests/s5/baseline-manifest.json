@@ -33,7 +33,7 @@
       },
       {
         "path": "experiments/baseline_delivery/s5_worker.py",
-        "sha256": "10a6f9483ed2531488171f7795c01fdcaad292a5ddfdca16ad0635f77432c801"
+        "sha256": "245749255cd6ee320c7a70de7f581f38911036986ee6e8ffc5065caa0c1214aa"
       },
       {
         "path": "experiments/baseline_delivery/strong_probe.py",
@@ -46,6 +46,10 @@
       {
         "path": "experiments/baseline_delivery/s5_recovery.py",
         "sha256": "abdfdc0095abdee443ef20abd1e677b6c04bf44bf250df5f8a018047ca7f2bd5"
+      },
+      {
+        "path": "experiments/baseline_delivery/adaptive_memory.py",
+        "sha256": "23258c4ce5e57e398b6b9ede10eecc10a98d789c3a7b21e0157473fc2d913d86"
       }
     ]
   },
@@ -69,7 +73,8 @@
   "adaptation": {
     "allowed_changes": [
       "Task input and output head only after explicit implementation and source review",
-      "Separate framework-specific worker without changing active source mechanism"
+      "Separate framework-specific worker without changing active source mechanism",
+      "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md"
     ],
     "forbidden_changes": [
       "Replacing S5 by PyTorch/S4D approximation",

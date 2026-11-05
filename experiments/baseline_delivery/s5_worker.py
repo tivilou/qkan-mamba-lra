@@ -134,7 +134,7 @@ def run(args, modules):
         precision='float32; no AMP; classifier dot HIGHEST in forward/reference/replay'))
     Model=build(modules,config);model=Model(training=True);evaluation=Model(training=False)
     rng=jax.random.PRNGKey(config['seed']);rng,init,drop=jax.random.split(rng,3)
-    dummy=train.numpy_batch(np.arange(min(config['micro_batch'],len(train))))
+    dummy=train.numpy_batch(np.arange(min(1 if config.get('adaptive_memory') else config['micro_batch'],len(train))))
     from flax.core import unfreeze
     params=unfreeze(model.init({'params':init,'dropout':drop},dummy)['params'])
     steps=config['epochs']*math.ceil(len(train)/config['batch_size']);warmup=min(config['warmup_steps'],steps-1)
@@ -171,6 +171,25 @@ def run(args, modules):
         atomic_json(out/'restore-validation.json',dict(schema='qkan-s5-restore.v1',
             passed=True,state_placement='jax-device-arrays-v1',roundtrip='exact dtype/shape/value',
             scope='Parameters, optimizer moments/counters and training step before first resumed update'))
+    adaptive=None
+    if config.get('adaptive_memory'):
+        if not args.device.startswith('cuda'): raise ValueError('Adaptive S5 requires CUDA')
+        from .adaptive_memory import Controller,transaction,attach_journal,evaluation as adaptive_evaluate,jax_oom,board_memory
+        adaptive=Controller(config['adaptive_memory'],config['batch_size'],meta.get('adaptive_memory'))
+        attach_journal(adaptive,out,lambda:meta['step'])
+        def cleanup_update():
+            import gc
+            gc.collect();jax.clear_caches()
+        def memory():
+            stats=jax.devices()[0].memory_stats() or {}
+            # The process peak is conservative across tiers. Query global free
+            # memory only at comparison windows, keeping normal updates cheap.
+            result=dict(peak_bytes=stats.get('peak_bytes_in_use'),allocated_bytes=stats.get('bytes_in_use'))
+            if not adaptive.state['warmup'] and len(adaptive.state['samples'])>=adaptive.policy['window']-1:
+                result.update(board_memory())
+                if result['peak_bytes'] is None and result.get('total_bytes'):
+                    result['peak_bytes']=result['total_bytes']-result['free_bytes']
+            return result
     atomic_json(out/'config.json',config)
     @jax.jit
     def gradient(params,batch,key):
@@ -180,19 +199,24 @@ def run(args, modules):
         return jax.value_and_grad(loss,has_aux=True)(params)
     @jax.jit
     def predict(params,batch): return evaluation.apply({'params':params},batch)
-    def evaluate(params,split):
+    def evaluate(params,split,micro_batch):
         loss=correct=0.
-        for start in range(0,len(split),config['micro_batch']):
-            b=split.numpy_batch(np.arange(start,min(start+config['micro_batch'],len(split))))
+        for start in range(0,len(split),micro_batch):
+            b=split.numpy_batch(np.arange(start,min(start+micro_batch,len(split))))
             logits,_=predict(params,b)
             loss+=float(optax.softmax_cross_entropy_with_integer_labels(logits,b['labels']).sum())
             correct+=int((logits.argmax(-1)==b['labels']).sum())
         return dict(loss=loss/len(split),accuracy=correct/len(split),samples=len(split))
+    def evaluate_split(params,split):
+        if adaptive:
+            return adaptive_evaluate(adaptive,lambda micro:evaluate(params,split,micro),cleanup_update,jax_oom)
+        return evaluate(params,split,config['micro_batch'])
     started=time.monotonic();last_save=started
     def save():
         nonlocal started,last_save
         now=time.monotonic();meta['training_seconds']+=now-started;started=last_save=now
         meta['train_state']=jax.tree_util.tree_map(np.asarray,serialization.to_state_dict(state))
+        if adaptive: meta['adaptive_memory']=adaptive.snapshot()
         save_checkpoint(out,meta)
     while meta['epoch']<config['epochs']:
         if meta['permutation'] is None:
@@ -200,33 +224,48 @@ def run(args, modules):
             meta['permutation']=sampler.permutation(len(train));meta['sampler']=sampler.get_state()
         while meta['cursor']<len(train):
             end=min(meta['cursor']+config['batch_size'],len(train));ids=meta['permutation'][meta['cursor']:end]
-            grads=jax.tree_util.tree_map(jnp.zeros_like,state.params);loss=0.;correct=0
-            for start in range(0,len(ids),config['micro_batch']):
-                sub=ids[start:start+config['micro_batch']];batch=train.numpy_batch(sub)
-                key,drop=jax.random.split(jnp.asarray(meta['rng']));meta['rng']=np.asarray(key)
-                (value,count),g=gradient(state.params,batch,drop)
-                if not np.isfinite(float(value)): raise ValueError('Nonfinite S5 loss')
-                weight=len(sub)/len(ids);loss+=float(value)*weight;correct+=int(count)
-                grads=jax.tree_util.tree_map(lambda a,b:a+weight*b,grads,g)
-            if not all(np.isfinite(np.asarray(g)).all() for g in jax.tree_util.tree_leaves(grads)):
-                raise ValueError('Nonfinite S5 gradient')
-            state=state.apply_gradients(grads=grads);meta['cursor']=end;meta['step']+=1
+            def update(micro_batch):
+                grads=jax.tree_util.tree_map(jnp.zeros_like,state.params);loss=0.;correct=0
+                key=jnp.asarray(meta['rng'])
+                for start in range(0,len(ids),micro_batch):
+                    sub=ids[start:start+micro_batch];batch=train.numpy_batch(sub)
+                    key,drop=jax.random.split(key)
+                    (value,count),g=gradient(state.params,batch,drop)
+                    if not np.isfinite(float(value)): raise ValueError('Nonfinite S5 loss')
+                    weight=len(sub)/len(ids);loss+=float(value)*weight;correct+=int(count)
+                    grads=jax.tree_util.tree_map(lambda a,b:a+weight*b,grads,g)
+                if not all(np.isfinite(np.asarray(g)).all() for g in jax.tree_util.tree_leaves(grads)):
+                    raise ValueError('Nonfinite S5 gradient')
+                new_state=state.apply_gradients(grads=grads)
+                jax.block_until_ready(new_state)
+                return new_state,loss,correct,np.asarray(key)
+            adaptive_status={}
+            if adaptive:
+                # JAX state/optimizer arrays are immutable; update() commits
+                # neither state nor RNG until all asynchronous work succeeds.
+                (new_state,loss,correct,key),adaptive_status=transaction(adaptive,update,
+                    lambda:None,lambda snapshot:None,cleanup_update,jax_oom,memory,lambda:None)
+            else: new_state,loss,correct,key=update(config['micro_batch'])
+            state=new_state;meta['rng']=key;meta['cursor']=end;meta['step']+=1
             meta['epoch_loss']+=loss*len(ids);meta['epoch_correct']+=correct;meta['epoch_samples']+=len(ids)
             if args.synthetic: meta['update_trace'].append(dict(step=meta['step'],rows=ids.tolist(),loss=loss))
-            atomic_json(out/'heartbeat.json',dict(state='running',epoch=meta['epoch'],optimizer_step=meta['step'],loss=loss,updated_at=time.time()))
+            atomic_json(out/'heartbeat.json',dict(state='running',epoch=meta['epoch'],optimizer_step=meta['step'],loss=loss,updated_at=time.time(),
+                **({'adaptive_memory':adaptive_status} if adaptive else {})))
+            if adaptive: atomic_json(out/'adaptive-memory.json',dict(policy=adaptive.policy,
+                state=adaptive.snapshot(),last_update=adaptive_status,step=meta['step']))
             if PAUSE or (args.stop_after is not None and meta['step']>=args.stop_after):
                 save();atomic_json(out/'status.json',dict(state='paused',step=meta['step']));return 75
             if meta['step']%config['checkpoint_steps']==0 or time.monotonic()-last_save>=300: save()
-        metric=evaluate(state.params,val)
+        metric=evaluate_split(state.params,val)
         if metric['accuracy']>meta['best_accuracy']:
             meta.update(best_accuracy=metric['accuracy'],best_epoch=meta['epoch'],best_weights=jax.tree_util.tree_map(np.asarray,state.params))
         meta['history'].append(dict(epoch=meta['epoch'],train_loss=meta['epoch_loss']/meta['epoch_samples'],
             train_accuracy=meta['epoch_correct']/meta['epoch_samples'],validation=metric))
         meta.update(epoch=meta['epoch']+1,cursor=0,permutation=None,epoch_loss=0.,epoch_correct=0,epoch_samples=0);save()
     if not meta['training_complete']: meta['training_complete']=True;save()
-    best=meta['best_weights'];metric=evaluate(best,val)
+    best=meta['best_weights'];metric=evaluate_split(best,val)
     if metric['accuracy']!=meta['best_accuracy']: raise ValueError('S5 selected validation does not reproduce')
-    test=None if args.synthetic else evaluate(best,Split(args.data,config['task'],'test',args.cache,config['data_hashes']['test']))
+    test=None if args.synthetic else evaluate_split(best,Split(args.data,config['task'],'test',args.cache,config['data_hashes']['test']))
     weights=out/'best-model.msgpack';weights.write_bytes(serialization.msgpack_serialize(best))
     ids=np.arange(min(2,len(val)));batch=val.numpy_batch(ids);_,values=predict(best,batch)
     @jax.jit
@@ -253,7 +292,8 @@ def run(args, modules):
         data_hashes=config.get('data_hashes',{}),best_epoch=meta['best_epoch'],validation=metric,test=test,
         history=meta['history'],optimizer_steps=meta['step'],parameters=sum(p.size for p in jax.tree_util.tree_leaves(best)),
         training_seconds=meta['training_seconds'],peak_gpu_bytes=None,synthetic=args.synthetic,formal=not args.synthetic,
-        best_weights_sha256=digest(weights)))
+        best_weights_sha256=digest(weights),**({'adaptive_memory':dict(policy=adaptive.policy,
+            state=adaptive.snapshot(),trajectory='adaptive; not fixed-microbatch-equivalent')} if adaptive else {})))
     atomic_json(out/'status.json',dict(state='computed',step=meta['step'],delivery='pending'));return 0
 
 
