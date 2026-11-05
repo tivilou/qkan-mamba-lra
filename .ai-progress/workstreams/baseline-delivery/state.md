@@ -23,6 +23,7 @@
 
 ## Blockers
 
+- Adaptive throughput code is committed locally at d50da46. GitHub publication is pending: configured local proxy terminates TLS for github.com/api.github.com, and direct github.com:443 connection fails. Existing credentials were available; no authentication error was observed. Do not tell the collaborator to pull this revision until publication succeeds.
 - No admission/startup blocker reported; screenshot confirms advancing formal training. No owner access to collaborator live process; checkpoint continuity beyond the screenshot awaits runtime evidence.
 - Adaptive mechanism is code-delivered only: actual CUDA rollback, tier throughput/peaks, model recovery and Linux shell execution remain collaborator checks. No claimed speedup or equivalence to the old fixed-policy trajectory.
 - No owner model imports/tests, dependency installation or experiment runs, per user instruction.
