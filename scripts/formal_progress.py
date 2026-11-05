@@ -4,6 +4,7 @@ This file can be fetched into .bootstrap/ without changing the executor checkout
 Only the original readiness entry owns training, checkpoints and admission.
 """
 import argparse
+import csv
 import datetime as dt
 import hashlib
 import json
@@ -69,6 +70,36 @@ def duration(seconds):
     return f'{hours:02d}:{minutes:02d}:{seconds:02d}'
 
 
+def gpu_usage():
+    """One bounded, read-only board query per frame; no CUDA/framework import."""
+    try:
+        result=subprocess.run(['nvidia-smi',
+            '--query-gpu=index,utilization.gpu,memory.used,memory.total',
+            '--format=csv,noheader,nounits'],capture_output=True,text=True,timeout=2,check=True)
+    except (OSError,subprocess.SubprocessError):
+        return {},'不可用（nvidia-smi 缺失、超时或查询失败）'
+    def number(value,maximum=None):
+        try: parsed=float(value.strip())
+        except ValueError: return None
+        return parsed if math.isfinite(parsed) and parsed>=0 and (maximum is None or parsed<=maximum) else None
+    metrics={}
+    for row in csv.reader(result.stdout.splitlines()):
+        if len(row)!=4 or not row[0].strip().isdigit(): continue
+        index,util,used,total=row
+        metrics[str(int(index))]=(number(util,100),number(used),number(total))
+    return metrics,None
+
+
+def gpu_line(index,metrics,error):
+    if index not in metrics:
+        return f'GPU {index} 整卡占用：'+(error or '不可用（未返回该物理 GPU）')
+    util,used,total=metrics[index]
+    utilization=f'{util:.0f}%' if util is not None else '不可用'
+    memory=(f'{used/1024:.2f}/{total/1024:.2f} GiB ({100*used/total:.1f}%)'
+            if used is not None and total and used<=total else '不可用')
+    return f'GPU {index} 整卡占用：利用率 {utilization} | 显存 {memory}'
+
+
 class Dashboard:
     def __init__(self, root, suite):
         self.root=Path(root);self.suite=Path(suite);self.samples={}
@@ -91,6 +122,12 @@ class Dashboard:
         lines=[f'\n[{clock}] 实验：{self.suite.name}',
                f"任务 {len(names)} | 已计算 {len(groups['computed'])} | 运行 {len(groups['running'])} | "
                f"排队 {len(groups['pending'])} | 失败 {len(groups['failed'])} | 暂停 {len(groups['paused'])}"]
+        gpu_ids={str(gpu) for gpu in manifest.get('gpu_inventory',{})}
+        gpu_ids.update(str(states[job]['physical_gpu']) for job in groups['running']
+                       if 'physical_gpu' in states[job])
+        if gpu_ids:
+            metrics,error=gpu_usage()
+            for gpu in sorted(gpu_ids): lines.append(gpu_line(gpu,metrics,error))
         launch=self.launch or read(self.suite/'display-heartbeat.json',{})
         if self.launch is None:
             lines.append('模式：只读观察；不会自动启动或恢复暂停任务。')
