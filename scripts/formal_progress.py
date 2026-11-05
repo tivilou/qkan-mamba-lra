@@ -11,9 +11,49 @@ import math
 import os
 from pathlib import Path
 import signal
+import shutil
 import subprocess
 import sys
 import time
+import unicodedata
+
+
+def fit_line(text, columns):
+    """Bound terminal cells, including Chinese, so redraw never wraps/scrolls."""
+    output=[];used=0;limit=max(1,columns-1)
+    for char in text:
+        if ord(char)<32 or ord(char)==127: continue
+        width=0 if unicodedata.combining(char) else (2 if unicodedata.east_asian_width(char) in 'WF' else 1)
+        if used+width>limit:
+            while output and used>limit-1:
+                removed=output.pop();used-=0 if unicodedata.combining(removed) else (2 if unicodedata.east_asian_width(removed) in 'WF' else 1)
+            return ''.join(output)+'…'
+        output.append(char);used+=width
+    return ''.join(output)
+
+
+class Terminal:
+    def __init__(self, mode):
+        self.live=mode!='append' and sys.stdout.isatty() and os.environ.get('TERM','')!='dumb'
+        self.entered=False
+
+    def show(self, text):
+        if not self.live:
+            print(text,flush=True);return
+        if not self.entered:
+            sys.stdout.write('\x1b[?1049h\x1b[?25l')
+            self.entered=True
+        size=shutil.get_terminal_size(fallback=(100,30))
+        lines=text.strip('\n').splitlines();height=max(1,size.lines-1)
+        if len(lines)>height:
+            lines=lines[:max(0,height-1)]+['窗口高度不足；放大窗口，或使用 --display append 查看完整快照。']
+        frame='\n'.join(fit_line(line,size.columns) for line in lines)
+        sys.stdout.write('\x1b[H\x1b[J'+frame);sys.stdout.flush()
+
+    def close(self):
+        if self.entered:
+            sys.stdout.write('\x1b[?25h\x1b[?1049l');sys.stdout.flush()
+            self.entered=False
 
 
 def read(path, default=None):
@@ -83,8 +123,8 @@ class Dashboard:
                 if previous is None or step>previous[1]: self.samples[key]=(now,step)
             eta=(total-step)/rate if rate and total and step<=total else None
             loss=hb.get('loss');loss_text=f'{loss:.6g}' if isinstance(loss,(float,int)) else '?'
-            lines.append(f'  loss {loss_text} | 速度 {f"{rate:.3f} step/s" if rate else "待测"} | '
-                         f'剩余训练更新 ETA {duration(eta)}（不含后续验证/测试/回传） | 心跳 {int(age)}s 前')
+            lines.append(f'  loss {loss_text} | 速度 {f"{rate:.3f} step/s" if rate else "待测"} | 心跳 {int(age)}s 前')
+            lines.append(f'  剩余训练更新 ETA {duration(eta)}（不含后续验证/测试/回传）')
             if age>120:
                 lines.append('  提示：超过 120s 无新训练心跳；可能在编译/验证/保存，不能据此判定失败。')
         for label,key in (('已计算','computed'),('排队','pending'),('失败','failed'),('暂停','paused')):
@@ -102,17 +142,26 @@ def main():
     parser.add_argument('--resume',type=Path,required=True)
     parser.add_argument('--cache',type=Path)
     parser.add_argument('--interval',type=float,default=15)
+    parser.add_argument('--display',choices=('auto','inplace','append'),default='auto',
+                        help='TTY: refresh in place; redirected output: append snapshots; append forces plain output')
     parser.add_argument('--watch-only',action='store_true',help='Read existing files without launching or writing anything')
     args=parser.parse_args()
     if not math.isfinite(args.interval) or not 1<=args.interval<=60: parser.error('interval must be 1..60 seconds')
     root=args.root.resolve();suite=(root/args.resume).resolve()
     if not suite.is_relative_to(root/'runs') or not suite.is_dir(): parser.error('resume must be an existing suite under runs/')
     dashboard=Dashboard(root,suite)
+    terminal=Terminal(args.display)
     if args.watch_only:
+        def leave_watch(*_): raise KeyboardInterrupt
+        watch_signals={sig:signal.signal(sig,leave_watch) for sig in
+                       (signal.SIGTERM,signal.SIGHUP)} if os.name=='posix' else {}
         try:
             while True:
-                print(dashboard.render(),flush=True);time.sleep(args.interval)
+                terminal.show(dashboard.render());time.sleep(args.interval)
         except KeyboardInterrupt: return 0
+        finally:
+            terminal.close()
+            for sig,handler in watch_signals.items(): signal.signal(sig,handler)
     if os.name!='posix': parser.error('Training supervision requires the collaborator Linux runtime; watch-only supports other hosts')
     context=read(suite/'context.json');manifest=read(suite/'suite.json')
     report=read(suite/'gate-report.json')
@@ -158,17 +207,19 @@ def main():
                 last=0.
                 while child.poll() is None:
                     if time.monotonic()-last>=args.interval:
-                        print(dashboard.render(),flush=True);last=time.monotonic()
+                        terminal.show(dashboard.render());last=time.monotonic()
                         atomic_json(suite/'display-heartbeat.json',dict(updated_at=time.time(),
                             supervisor_pid=os.getpid(),runner_pid=child.pid,pause_requested=pause_requested,
                             meaning='Display supervisor alive; worker progress is in per-job heartbeat.json'))
                     time.sleep(.5)
+                terminal.close()
                 print(dashboard.render(),flush=True)
                 code=child.returncode
                 print('入口已退出：'+str(code)+'；'+('已完成计算与回传。' if code==0 and (suite/'delivery-complete.json').exists()
                       else '检查 progress-parent.log；退出/暂停不代表实验完成。'),flush=True)
                 return code if code>=0 else 128-code
         finally:
+            terminal.close()
             if child is not None and child.poll() is None:
                 child.send_signal(signal.SIGTERM)
                 child.wait()  # Let original runner finish its checkpoint/cleanup protocol.

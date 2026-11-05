@@ -1,6 +1,21 @@
 # Formal progress display and checkpoint continuation
 
-The display supervisor in scripts/formal_progress.py adds plain appended snapshots every 15 seconds to an already admitted formal run. It displays total/computed/running/pending/failed/paused counts; physical GPU, job name and PID; epoch, batch, optimizer steps and update percentage; measured optimizer steps/second, process elapsed time, remaining training-update ETA and heartbeat age; and job names grouped by state. Final delivery is displayed separately from computation completion.
+The display supervisor in scripts/formal_progress.py refreshes in place on an interactive terminal (including tmux), every 15 seconds by default. Redirected output automatically uses plain appended snapshots; --display append explicitly selects that mode. It displays total/computed/running/pending/failed/paused counts; physical GPU, job name and PID; epoch, batch, optimizer steps and update percentage; measured optimizer steps/second, process elapsed time, remaining training-update ETA and heartbeat age; and job names grouped by state. Final delivery is displayed separately from computation completion.
+
+Interactive rendering uses the alternate screen and redraws the same rows, without terminal queries. Width is measured in terminal cells including Chinese characters; long job-name lists are clipped with an ellipsis and oversized frames show a resize hint, preventing wrap/scroll. Terminal size is re-read each frame. Cursor and previous screen are restored on normal exit and handled interruption. Full snapshots remain available using --display append.
+
+## Switch display without interrupting an active supervisor
+
+The 8adcd7c screenshot confirms active training resumed (Transformer/ListOps Epoch4). Leave that training/supervisor window running. In tmux press Ctrl+B, release, then C to create a new window; run the commands below there. Watch-only reads existing files, never starts/stops training and never writes experiment state. Ctrl+C in this new watch window exits only the monitor. Ctrl+C in the original supervisor window still requests training pause.
+
+```bash
+cd /root/projects/qkan-mamba-lra
+git fetch origin research/collaboration-foundation
+git show FETCH_HEAD:scripts/formal_progress.py > .bootstrap/formal_progress-new.py
+.venv-baselines/bin/python -B .bootstrap/formal_progress-new.py --resume runs/formal-ready-20261105T042214Z-1e90315e --watch-only --display inplace --interval 5
+```
+
+Use fetch only; do not pull/change the pinned executor revision. The original supervisor may continue appending in its original window, but the new view refreshes in place without restarting training.
 
 The supervisor reads existing structured worker heartbeats and frozen train-row counts. Rates need two advancing observations in the current process; unavailable rates/ETAs say pending measurement. ETA applies only to remaining optimizer updates of the active job, not all 25 jobs or validation/test/upload. A quiet heartbeat gets a caution after 120 seconds, never an automatic failure or kill. The original worker does not report distinct validation/save/trace phases; the UI explicitly states this limitation. No metrics, labels, data arrays, weights or optimizer state are modified by the monitor. Every child keeps its independent worker.log; parent runner output goes to progress-parent.log. The display's own outer heartbeat is explicitly marked as supervisor liveness, not worker progress. Launch argv and display SHA are recorded privately per attempt.
 
