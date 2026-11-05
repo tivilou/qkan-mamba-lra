@@ -14,11 +14,11 @@
     "artifacts": [
       {
         "path": "experiments/baseline_delivery/models.py",
-        "sha256": "d79911952c63fc0de87d1387b412b9806b8193ed06a32c5beb528d689f58cc04"
+        "sha256": "d2ec8c73ae661960e6a8ff2d8d4a2bffc78a84b1926121bb91143ce39e9d72d2"
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "7870973acfb3505cb88be35ae228e97f3b319c51203b3bf7fba9ecf55b4144e6"
+        "sha256": "8dc279cbbea6e38ea4a1fc6e26835a5203dfc0dc10a6e6da768a3e38053bdcf2"
       },
       {
         "path": "experiments/baseline_delivery/protocol.json",
@@ -30,7 +30,15 @@
       },
       {
         "path": "experiments/baseline_delivery/adaptive_memory.py",
-        "sha256": "23258c4ce5e57e398b6b9ede10eecc10a98d789c3a7b21e0157473fc2d913d86"
+        "sha256": "004b44a9e987e4e05eb6a82d952a4a8db6adc9d53c47594ee6e288967f950328"
+      },
+      {
+        "path": "experiments/baseline_delivery/execution.py",
+        "sha256": "9277d9d7e7a81ab96e1480a1ce91e2e5770695f6bb449700738c614fa94da21f"
+      },
+      {
+        "path": "experiments/baseline_delivery/data.py",
+        "sha256": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f"
       }
     ]
   },
@@ -65,7 +73,8 @@
       "Float32 pixels x/255-.5; row-major sequence; no fitted preprocessing",
       "Masked mean pool and shared two-document retrieval encoder with abs difference/product pair head",
       "AdamW, cosine warmup, clipping and FP32 under project common protocol; not upstream paper training recipe",
-      "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md"
+      "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md",
+      "Adaptive execution also uses a validated logical-batch staging cache, one CPU batch of prefetch, device-side per-update statistics, five-second advisory status writes and reusable GPU rollback buffers with CPU fallback (immutable candidate state for S5). Positive throughput gains have no percentage floor and require multiple confirmation windows. FP32 and the logical update budget are unchanged; device behavior and speedup remain unverified for this revision."
     ],
     "forbidden_changes": [
       "Change upstream active mixer equations or silently substitute architecture",

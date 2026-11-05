@@ -61,4 +61,6 @@ For observation without restart or writes, the same display also supports:
   --resume runs/formal-ready-20261105T042214Z-1e90315e --watch-only
 ```
 
+For new adaptive suites, steady-training worker heartbeats refresh every five seconds, or immediately on tier transitions and safe pause. A few seconds of unchanged displayed step is expected; it does not establish a stalled worker. The independent monitor still reads the existing fixed-policy suite without changing its executor.
+
 Owner validation is restricted to stdlib AST/argument parsing and temporary structured display fixtures (progress/rate/ETA/stale-heartbeat behavior). No model import, dependency installation, training or live collaborator interruption was performed. Linux supervision and actual checkpoint continuation are executor checks.

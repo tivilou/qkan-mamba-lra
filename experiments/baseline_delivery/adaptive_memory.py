@@ -15,8 +15,11 @@ from pathlib import Path
 def default_policy(batch_size):
     tiers=[n for n in range(1,batch_size+1) if batch_size%n==0]
     return dict(schema='qkan-adaptive-memory.v1',tiers=tiers,
-        initial=max(n for n in tiers if n<=4),window=8,warmup=2,cooldown=256,gain=.05,
-        target_fraction=.85,reserve_bytes=512*1024**2,max_oom=8)
+        initial=max(n for n in tiers if n<=4),window=16,warmup=2,cooldown=256,gain=0.,
+        confirm_windows=3,max_trial_windows=8,status_interval=5.,
+        target_fraction=.85,reserve_bytes=512*1024**2,max_oom=8,
+        execution=dict(logical_batch_cache=True,cpu_prefetch=1,rollback='gpu_preferred_cpu_fallback',
+                       statistics='logical_batch',precision='fp32'))
 
 
 def jax_oom(error):
@@ -54,13 +57,17 @@ class Controller:
             raise ValueError('Adaptive tiers must be increasing divisors of the logical batch')
         for name in ('window','warmup','cooldown','max_oom','reserve_bytes'):
             if type(policy[name]) is not int or policy[name]<1: raise ValueError('Invalid adaptive '+name)
-        if not 0<policy['target_fraction']<1 or not 0<policy['gain']<1:
+        if not 0<policy['target_fraction']<1 or not 0<=policy['gain']<1:
             raise ValueError('Invalid adaptive memory target/gain')
+        if (type(policy.get('confirm_windows',3)) is not int or type(policy.get('max_trial_windows',8)) is not int
+                or not 1<=policy.get('confirm_windows',3)<=policy.get('max_trial_windows',8)):
+            raise ValueError('Invalid throughput confirmation windows')
         if policy.get('initial') not in tiers: raise ValueError('Invalid initial adaptive tier')
         self.state=copy.deepcopy(saved) if saved else dict(index=tiers.index(policy['initial']),oom_count=0,
             ceiling=len(tiers)-1,samples=[],warmup=policy['warmup'],wait=0,baseline=None,
             previous=None,last_event='initial_known_tier',transitions=0)
         s=self.state
+        s.setdefault('trial_windows',[])
         self.on_event=None
         self._event_index=s['index'];self.last_memory={}
         if not 0<=s['index']<=s['ceiling']<len(tiers) or s['oom_count']<0:
@@ -85,7 +92,7 @@ class Controller:
             self.event('oom_exhausted')
             raise Exhausted('Adaptive microbatch tiers/retry budget exhausted')
         s['ceiling']=min(s['ceiling'],s['index']-1);s['index']-=1
-        s['baseline']=s['previous']=None;s['wait']=self.policy['cooldown']
+        s['baseline']=s['previous']=None;s['trial_windows']=[];s['wait']=self.policy['cooldown']
         self.event('oom_downgrade')
 
     def observe(self,seconds,memory):
@@ -99,10 +106,23 @@ class Controller:
         if len(s['samples'])<p['window']: return
         mean=sum(s['samples'])/len(s['samples']);s['samples']=[]
         if s['previous'] is not None:
-            if mean>s['baseline']/(1+p['gain']):
+            s['trial_windows'].append(mean)
+            windows=s['trial_windows'];required=p.get('confirm_windows',3)
+            if len(windows)<required: return
+            average=sum(windows)/len(windows);threshold=s['baseline']/(1+p['gain'])
+            faster=sum(value<threshold for value in windows)
+            slower=sum(value>s['baseline'] for value in windows)
+            if slower>=required and slower/len(windows)>=2/3 and average>s['baseline']:
                 s['index']=s['previous'];s['wait']=p['cooldown']
-                s['previous']=s['baseline']=None;self.event('throughput_revert');return
-            s['previous']=s['baseline']=None;self.event('throughput_upgrade_accepted')
+                s['previous']=s['baseline']=None;s['trial_windows']=[]
+                self.event('throughput_revert');return
+            if faster>=required and faster/len(windows)>=2/3 and average<threshold:
+                s['previous']=s['baseline']=None;s['trial_windows']=[]
+                self.event('throughput_upgrade_accepted');return
+            if len(windows)<p.get('max_trial_windows',8): return
+            # An inconclusive trial is retained, without claiming a speed gain.
+            s['previous']=s['baseline']=None;s['trial_windows']=[];s['wait']=p['cooldown']
+            self.event('throughput_trial_inconclusive');return
         if s['wait']:
             s['wait']=max(0,s['wait']-p['window'])
             if not s['wait']: s['ceiling']=len(p['tiers'])-1
@@ -113,9 +133,9 @@ class Controller:
         total=memory.get('total_bytes');free=memory.get('free_bytes');peak=memory.get('peak_bytes')
         if not total or free is None or peak is None: return
         ratio=p['tiers'][s['index']+1]/self.micro_batch
-        if peak*ratio>total*p['target_fraction'] or free<max(p['reserve_bytes'],peak*(ratio-1)):
+        if peak*ratio>total*p['target_fraction'] or free<peak*(ratio-1)+p['reserve_bytes']:
             return
-        s['previous']=s['index'];s['baseline']=mean;s['index']+=1
+        s['previous']=s['index'];s['baseline']=mean;s['trial_windows']=[];s['index']+=1
         self.event('headroom_upgrade_trial')
 
     def telemetry(self):
@@ -137,14 +157,15 @@ def attach_journal(controller,output,step):
     emit(dict(timestamp=time.time(),**controller.telemetry()))
 
 
-def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchronize):
+def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchronize,started_at=None):
     """Rollback *all* mutable training state before rerunning the same update.
 
     Callbacks must include model buffers, optimizer/scheduler and RNG; caller
     commits the sampler cursor only after this returns. Cleanup runs after the
     failed traceback is released. Non-OOM errors are never retried.
     """
-    started=time.perf_counter();snapshot=capture();retries=0
+    started=time.perf_counter() if started_at is None else started_at
+    snapshot=capture();retries=0
     while True:
         failed=False
         try:

@@ -96,9 +96,9 @@ class Classifier(nn.Module):
         self.norm=nn.Identity() if self.kind=='mega' else nn.LayerNorm(width)
         self.head=nn.Linear(width*(2 if self.task=='retrieval' else 1),TASKS[self.task][1])
 
-    def encode(self,x):
+    def encode(self,x,validated_inputs=False):
         mask=x.ne(1) if self.tokens else torch.ones_like(x,dtype=torch.bool)
-        if torch.any(mask.sum(1)==0):
+        if not validated_inputs and torch.any(mask.sum(1)==0):
             raise ValueError('Empty model input')
         if self.kind=='mega':
             states,pooled=self.encoder(x, mask.sum(1), last_state_only=True)
@@ -120,12 +120,12 @@ class Classifier(nn.Module):
                                   'encoder':h.detach().cpu()})
         return h.sum(1)/mask.sum(1).unsqueeze(-1)
 
-    def forward(self,batch,representations=False):
+    def forward(self,batch,representations=False,validated_inputs=False):
         if self.task=='retrieval':
-            a,b=self.encode(batch['inputs1']),self.encode(batch['inputs2'])
+            a,b=self.encode(batch['inputs1'],validated_inputs),self.encode(batch['inputs2'],validated_inputs)
             pooled=torch.cat(((a-b).abs(),a*b),dim=-1)
         else:
-            pooled=self.encode(batch['inputs'])
+            pooled=self.encode(batch['inputs'],validated_inputs)
         logits=self.head(pooled)
         return (logits,pooled) if representations else logits
 

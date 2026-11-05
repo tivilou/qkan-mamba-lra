@@ -1,5 +1,6 @@
 """Native JAX/Flax S5 worker. No Torch model or rewritten SSM is used."""
 import argparse
+from contextlib import ExitStack
 import importlib.metadata
 import math
 import os
@@ -102,6 +103,10 @@ def build(modules, config):
 
 
 def run(args, modules):
+    with ExitStack() as resources: return _run(args,modules,resources)
+
+
+def _run(args, modules, resources):
     import jax
     import jax.numpy as jnp
     import optax
@@ -176,6 +181,9 @@ def run(args, modules):
         if not args.device.startswith('cuda'): raise ValueError('Adaptive S5 requires CUDA')
         from .adaptive_memory import Controller,transaction,attach_journal,evaluation as adaptive_evaluate,jax_oom,board_memory
         adaptive=Controller(config['adaptive_memory'],config['batch_size'],meta.get('adaptive_memory'))
+        from .execution import BatchPrefetch,StatusWriter
+        prefetch=resources.enter_context(BatchPrefetch(lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
+        status_writer=StatusWriter(atomic_json,adaptive.policy.get('status_interval',5.))
         attach_journal(adaptive,out,lambda:meta['step'])
         def cleanup_update():
             import gc
@@ -199,6 +207,9 @@ def run(args, modules):
         return jax.value_and_grad(loss,has_aux=True)(params)
     @jax.jit
     def predict(params,batch): return evaluation.apply({'params':params},batch)
+    @jax.jit
+    def gradients_finite(grads):
+        return jnp.all(jnp.stack([jnp.all(jnp.isfinite(g)) for g in jax.tree_util.tree_leaves(grads)]))
     def evaluate(params,split,micro_batch):
         loss=correct=0.
         for start in range(0,len(split),micro_batch):
@@ -224,35 +235,61 @@ def run(args, modules):
             meta['permutation']=sampler.permutation(len(train));meta['sampler']=sampler.get_state()
         while meta['cursor']<len(train):
             end=min(meta['cursor']+config['batch_size'],len(train));ids=meta['permutation'][meta['cursor']:end]
+            update_started=time.perf_counter()
+            if adaptive:
+                staged=prefetch.get(ids)
+                device_batch=None
+                try:
+                    device_batch=jax.device_put(staged);jax.block_until_ready(device_batch)
+                    staged=device_batch
+                except Exception as error:
+                    if not jax_oom(error): raise
+                    device_batch=None
+                if end<len(train): prefetch.submit(meta['permutation'][end:min(end+config['batch_size'],len(train))])
             def update(micro_batch):
-                grads=jax.tree_util.tree_map(jnp.zeros_like,state.params);loss=0.;correct=0
+                grads=jax.tree_util.tree_map(jnp.zeros_like,state.params);loss=0.;correct=0;finite=True
                 key=jnp.asarray(meta['rng'])
                 for start in range(0,len(ids),micro_batch):
-                    sub=ids[start:start+micro_batch];batch=train.numpy_batch(sub)
+                    sub=ids[start:start+micro_batch]
+                    batch=({name:values[start:start+micro_batch] for name,values in staged.items()}
+                           if adaptive else train.numpy_batch(sub))
                     key,drop=jax.random.split(key)
                     (value,count),g=gradient(state.params,batch,drop)
-                    if not np.isfinite(float(value)): raise ValueError('Nonfinite S5 loss')
-                    weight=len(sub)/len(ids);loss+=float(value)*weight;correct+=int(count)
+                    if adaptive:
+                        finite=finite & jnp.isfinite(value)
+                        weight=len(sub)/len(ids);loss=loss+value*weight;correct=correct+count
+                    else:
+                        if not np.isfinite(float(value)): raise ValueError('Nonfinite S5 loss')
+                        weight=len(sub)/len(ids);loss+=float(value)*weight;correct+=int(count)
                     grads=jax.tree_util.tree_map(lambda a,b:a+weight*b,grads,g)
-                if not all(np.isfinite(np.asarray(g)).all() for g in jax.tree_util.tree_leaves(grads)):
+                if adaptive:
+                    finite=finite & gradients_finite(grads)
+                if (adaptive and not bool(finite)) or (not adaptive and not all(
+                        np.isfinite(np.asarray(g)).all() for g in jax.tree_util.tree_leaves(grads))):
                     raise ValueError('Nonfinite S5 gradient')
                 new_state=state.apply_gradients(grads=grads)
                 jax.block_until_ready(new_state)
-                return new_state,loss,correct,np.asarray(key)
+                return new_state,float(loss),int(correct),np.asarray(key)
             adaptive_status={}
             if adaptive:
                 # JAX state/optimizer arrays are immutable; update() commits
                 # neither state nor RNG until all asynchronous work succeeds.
                 (new_state,loss,correct,key),adaptive_status=transaction(adaptive,update,
-                    lambda:None,lambda snapshot:None,cleanup_update,jax_oom,memory,lambda:None)
+                    lambda:None,lambda snapshot:None,cleanup_update,jax_oom,memory,lambda:None,
+                    started_at=update_started)
+                adaptive_status.update(rollback_device='immutable_jax_state',cpu_prefetch=1)
             else: new_state,loss,correct,key=update(config['micro_batch'])
             state=new_state;meta['rng']=key;meta['cursor']=end;meta['step']+=1
             meta['epoch_loss']+=loss*len(ids);meta['epoch_correct']+=correct;meta['epoch_samples']+=len(ids)
             if args.synthetic: meta['update_trace'].append(dict(step=meta['step'],rows=ids.tolist(),loss=loss))
-            atomic_json(out/'heartbeat.json',dict(state='running',epoch=meta['epoch'],optimizer_step=meta['step'],loss=loss,updated_at=time.time(),
-                **({'adaptive_memory':adaptive_status} if adaptive else {})))
-            if adaptive: atomic_json(out/'adaptive-memory.json',dict(policy=adaptive.policy,
-                state=adaptive.snapshot(),last_update=adaptive_status,step=meta['step']))
+            heartbeat=dict(state='running',epoch=meta['epoch'],optimizer_step=meta['step'],loss=loss,updated_at=time.time(),
+                **({'adaptive_memory':adaptive_status} if adaptive else {}))
+            if adaptive:
+                status_writer.emit(lambda write:(write(out/'heartbeat.json',heartbeat),write(out/'adaptive-memory.json',
+                    dict(policy=adaptive.policy,state=adaptive.snapshot(),last_update=adaptive_status,step=meta['step']))),
+                    force=PAUSE or (args.stop_after is not None and meta['step']>=args.stop_after),
+                    token=adaptive.state['transitions'])
+            else: atomic_json(out/'heartbeat.json',heartbeat)
             if PAUSE or (args.stop_after is not None and meta['step']>=args.stop_after):
                 save();atomic_json(out/'status.json',dict(state='paused',step=meta['step']));return 75
             if meta['step']%config['checkpoint_steps']==0 or time.monotonic()-last_save>=300: save()

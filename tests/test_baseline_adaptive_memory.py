@@ -25,19 +25,51 @@ class AdaptiveMemoryTests(unittest.TestCase):
     def feed(self,controller,seconds=10,memory=None):
         for _ in range(3): controller.observe(seconds,self.memory() if memory is None else memory)
 
+    def confirm(self,controller,seconds):
+        for _ in range(7): controller.observe(seconds,self.memory())
+
     def test_headroom_promotes_but_slow_trial_reverts(self):
         c=Controller(self.policy(),32);self.assertEqual(c.micro_batch,4)
         self.feed(c);self.assertEqual(c.micro_batch,8)
-        self.feed(c,11);self.assertEqual(c.micro_batch,4)
+        self.confirm(c,11);self.assertEqual(c.micro_batch,4)
         self.assertEqual(c.state['last_event'],'throughput_revert')
 
     def test_headroom_alone_does_not_claim_speedup(self):
-        c=Controller(self.policy(),32);self.feed(c);self.feed(c,10)
-        self.assertEqual(c.micro_batch,4)  # Less than the required 5% gain.
+        c=Controller(self.policy(),32);self.feed(c);self.confirm(c,10)
+        self.assertEqual(c.micro_batch,8)
+        self.assertNotEqual(c.state['last_event'],'throughput_upgrade_accepted')
 
     def test_fast_trial_is_accepted(self):
-        c=Controller(self.policy(),32);self.feed(c);self.feed(c,8)
+        c=Controller(self.policy(),32);self.feed(c);self.confirm(c,8)
         self.assertGreaterEqual(c.micro_batch,8)
+
+    def test_one_percent_gain_is_retained(self):
+        c=Controller(self.policy(),32);self.feed(c);self.confirm(c,9.9)
+        self.assertEqual(c.micro_batch,8)
+        self.assertEqual(c.state['last_event'],'throughput_upgrade_accepted')
+
+    def test_one_slow_window_does_not_revert(self):
+        c=Controller(self.policy(),32);self.feed(c);self.feed(c,11)
+        self.assertEqual(c.micro_batch,8)
+        for _ in range(8): c.observe(8,self.memory())
+        self.assertEqual(c.micro_batch,8)
+        self.assertEqual(c.state['last_event'],'throughput_upgrade_accepted')
+
+    def test_equal_trial_is_bounded_and_retained_without_gain_claim(self):
+        c=Controller(self.policy(),32);self.feed(c)
+        for _ in range(17): c.observe(10,self.memory())
+        self.assertEqual(c.micro_batch,8)
+        self.assertIsNone(c.state['previous'])
+        self.assertEqual(c.state['last_event'],'throughput_trial_inconclusive')
+
+    def test_partial_confirmation_windows_restore(self):
+        c=Controller(self.policy(),32);self.feed(c);self.feed(c,9.9)
+        self.assertEqual(len(c.state['trial_windows']),1)
+        restored=Controller(self.policy(),32,json.loads(json.dumps(c.snapshot())))
+        for _ in range(4):
+            c.observe(9.9,self.memory());restored.observe(9.9,self.memory())
+        self.assertEqual(restored.snapshot(),c.snapshot())
+        self.assertEqual(c.state['last_event'],'throughput_upgrade_accepted')
 
     def test_missing_or_low_headroom_blocks_promotion(self):
         for memory in ({},dict(self.memory(),free_bytes=1),dict(self.memory(),peak_bytes=20*1024**3)):
@@ -52,7 +84,7 @@ class AdaptiveMemoryTests(unittest.TestCase):
     def test_saved_policy_restores_pending_trial(self):
         c=Controller(self.policy(),32);self.feed(c)
         restored=Controller(self.policy(),32,json.loads(json.dumps(c.snapshot())))
-        self.feed(c,11);self.feed(restored,11)
+        self.confirm(c,11);self.confirm(restored,11)
         self.assertEqual(restored.snapshot(),c.snapshot())
 
     def test_controller_restores_in_a_fresh_stdlib_process(self):

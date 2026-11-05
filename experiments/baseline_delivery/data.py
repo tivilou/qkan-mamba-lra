@@ -54,7 +54,7 @@ class Split:
     def __len__(self):
         return len(self.arrays['labels'])
 
-    def numpy_batch(self, ids):
+    def numpy_batch(self, ids, validate=False):
         values={}
         for key,array in self.arrays.items():
             copy=np.array(array[ids],copy=True)
@@ -64,6 +64,10 @@ class Split:
                 values[key]=copy.astype(np.float32)/255.-.5
             else:
                 values[key]=copy.astype(np.int64)
+        if validate and self.task not in ('image','pathfinder'):
+            for key,value in values.items():
+                if key!='labels' and np.any(np.all(value==1,axis=1)):
+                    raise ValueError('Empty model input')
         return values
 
     def batch(self, ids, device):
