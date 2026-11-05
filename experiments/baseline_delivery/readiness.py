@@ -120,6 +120,11 @@ def execute(args,suite):
                     raise ValueError('Recovery/trace gate does not bind job/device: '+job_id)
                 for name in ('canary.json','uninterrupted/trace-validation.json','interrupted/trace-validation.json'):
                     path=folder/name;probe_evidence[model][path.relative_to(ROOT).as_posix()]=digest(path)
+                if model=='s5':
+                    for name in ('recovery-validation.json','interrupted/restore-validation.json'):
+                        path=folder/name
+                        if not read(path).get('passed'): raise ValueError('S5 recovery/restore evidence failed')
+                        probe_evidence[model][path.relative_to(ROOT).as_posix()]=digest(path)
     certificates={}
     for model,evidence in probe_evidence.items():
         certificate=suite/(model+'-certificate.json')
@@ -177,6 +182,9 @@ def main():
                 source_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                 suite=suite.relative_to(ROOT).as_posix(),local_logs=logs,
                 recovery_diagnostics=[read(p) for p in sorted((suite/'preflight').glob('*/*/child-failure.json'))],
+                recovery_comparisons=[dict(job=p.parent.name,report=read(p))
+                    for p in sorted((suite/'preflight').glob('*/*/recovery-validation.json'))
+                    if p.parent.name.startswith('s5-')],
                 setup_diagnostic=summarize(suite/'setup.log'),formal_release_allowed=False))
             from .return_artifacts import upload_declared
             files=['failure.json']

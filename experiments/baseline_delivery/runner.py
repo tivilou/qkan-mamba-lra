@@ -166,10 +166,11 @@ def canary(config,data,cache,output,device='cpu'):
             raise ValueError('Numerical recovery contract failed; inspect recovery-validation.json')
         agreement='mamba1-cuda-fp32-v1'
     elif config['model']=='s5':
-        from .readiness import compare_numpy
-        for key in ('train_state','rng','sampler','permutation','cursor','step','epoch',
-                    'best_weights','best_accuracy','best_epoch','history','update_trace'):
-            compare_numpy(states[0][key],states[1][key])
+        from .s5_recovery import validate
+        recovery=validate(states[0],states[1])
+        atomic_json(folder/'recovery-validation.json',recovery)
+        if not recovery['passed']:
+            raise ValueError('S5 exact recovery failed; inspect recovery-validation.json')
     else:
         for key in ('model','optimizer','scheduler','rng','permutation','cursor','step','epoch',
                     'best_weights','best_accuracy','best_epoch','history','update_trace'):

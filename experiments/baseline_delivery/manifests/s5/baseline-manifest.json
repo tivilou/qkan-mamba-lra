@@ -33,7 +33,7 @@
       },
       {
         "path": "experiments/baseline_delivery/s5_worker.py",
-        "sha256": "2c9f7a8545e8bed4ecd015bff22fdcafc551a5c32db1fb9c26594bbc875645de"
+        "sha256": "0c5589e6aea356384be3d2594e535ba12e49747e6d33e404fae5b749ba917941"
       },
       {
         "path": "experiments/baseline_delivery/strong_probe.py",
@@ -42,6 +42,10 @@
       {
         "path": "experiments/baseline_delivery/trace.py",
         "sha256": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9"
+      },
+      {
+        "path": "experiments/baseline_delivery/s5_recovery.py",
+        "sha256": "6a2912fac052848136def4f1b5e2b731c57d693bf5054beaf6e34fe28f8ee173"
       }
     ]
   },

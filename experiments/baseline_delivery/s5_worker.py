@@ -122,6 +122,7 @@ def run(args, modules):
     runtime={name:importlib.metadata.version(name) for name in ('jax','jaxlib','flax','optax','numpy')}
     runtime['backend']=jax.default_backend()
     runtime['classifier_dot_precision']='highest'
+    runtime['training_state_placement']='jax-device-arrays-v1'
     atomic_json(out/'environment.json',dict(packages=runtime,devices=[str(d) for d in jax.devices()],
         precision='float32; no AMP; classifier dot HIGHEST in forward/reference/replay'))
     Model=build(modules,config);model=Model(training=True);evaluation=Model(training=False)
@@ -149,6 +150,20 @@ def run(args, modules):
         if meta['runtime']!=runtime: raise ValueError('S5 runtime changed')
         state=serialization.from_state_dict(state,meta['train_state'])
     elif (out/'checkpoints/latest.json').exists(): raise ValueError('Existing S5 state requires --resume')
+    # Flax from_state_dict restores the supplied NumPy leaves as-is. Eager
+    # Optax arithmetic on host moments/counters can differ from uninterrupted
+    # JAX arithmetic. Canonicalize BOTH fresh and restored states before any
+    # gradient/update; keep sampler and saved explicit RNG metadata on host.
+    state=state.replace(step=jnp.asarray(state.step,dtype=jnp.int32))
+    state=jax.device_put(jax.tree_util.tree_map(lambda value:jnp.asarray(value,dtype=value.dtype),state))
+    if any(not isinstance(value,jax.Array) for value in jax.tree_util.tree_leaves(state)):
+        raise ValueError('S5 training state has non-JAX leaves')
+    if args.resume:
+        from .readiness import compare_numpy
+        compare_numpy(meta['train_state'],jax.tree_util.tree_map(np.asarray,serialization.to_state_dict(state)))
+        atomic_json(out/'restore-validation.json',dict(schema='qkan-s5-restore.v1',
+            passed=True,state_placement='jax-device-arrays-v1',roundtrip='exact dtype/shape/value',
+            scope='Parameters, optimizer moments/counters and training step before first resumed update'))
     atomic_json(out/'config.json',config)
     @jax.jit
     def gradient(params,batch,key):
