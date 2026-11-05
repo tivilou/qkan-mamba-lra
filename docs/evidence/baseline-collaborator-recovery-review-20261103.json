@@ -1,0 +1,35 @@
+{
+  "schema": "qkan-collaborator-recovery-review.v1",
+  "source_report_sha256": "5936f55fceeca38e3eeab2ce33df5db1114a570ba7474e28c4e4dd20c6b381bd",
+  "audit_revision": "328547b78d7e378aff171bb84ee5d5e39b74a1b2",
+  "producer_revision": "db065750af1e725124ac1312fdefc7265f9f13c9",
+  "model": "mamba1",
+  "task": "listops",
+  "environment_records_equal": true,
+  "comparisons": {
+    "repeat_vs_original": {
+      "exact": false,
+      "all_finite": true,
+      "control_state_exact": true,
+      "differing_leaves": 260,
+      "max_abs": 6.183981895446777E-07
+    },
+    "resumed_vs_original": {
+      "exact": false,
+      "all_finite": true,
+      "control_state_exact": true,
+      "differing_leaves": 265,
+      "max_abs": 4.76837158203125E-07
+    },
+    "resumed_vs_repeat": {
+      "exact": false,
+      "all_finite": true,
+      "control_state_exact": true,
+      "differing_leaves": 266,
+      "max_abs": 4.76837158203125E-07
+    }
+  },
+  "assessment": "Independent uninterrupted repeat differs too; supports execution nondeterminism. One repeat cannot establish a noise bound or certify numerical recovery.",
+  "formal": false,
+  "recovery_gate_changed": false
+}

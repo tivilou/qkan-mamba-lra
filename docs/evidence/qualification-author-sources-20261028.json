@@ -1,0 +1,83 @@
+{
+  "schema": "qkan-primary-source-receipt.v1",
+  "pins": {},
+  "policy": {
+    "requests_max": 5,
+    "retries": 0,
+    "per_origin_concurrency": 1,
+    "minimum_delay_seconds": 1.5,
+    "freshness": "retrieval time or explicitly unvalidated cache age",
+    "purpose": "baseline candidates, upstream protocol, dataset use terms",
+    "allowed_fields": [
+      "public paper metadata",
+      "README",
+      "commit",
+      "public use and license terms"
+    ]
+  },
+  "sources": [
+    {
+      "id": "imdb-author-current-site",
+      "method": "GET",
+      "url": "https://www.andrew-maas.net/data/sentiment/",
+      "retrieved_at": "2026-10-28T10:42:24.539900+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "<urlopen error timed out>"
+    },
+    {
+      "id": "imdb-author-stanford-alias",
+      "method": "GET",
+      "url": "https://cs.stanford.edu/people/amaas/data/sentiment/",
+      "retrieved_at": "2026-10-28T10:43:26.129704+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "id": "pathfinder-generator-readme-lowercase",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/drewlinsley/pathfinder/7b538865667dfe16f949ed3b7c8dc6a65ca87099/README",
+      "retrieved_at": "2026-10-28T10:43:26.583782+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": 404,
+      "failure_reason": "HTTP Error 404: Not Found"
+    },
+    {
+      "id": "pathfinder-generator-tree",
+      "method": "GET",
+      "url": "https://api.github.com/repos/drewlinsley/pathfinder/git/trees/7b538865667dfe16f949ed3b7c8dc6a65ca87099",
+      "retrieved_at": "2026-10-28T10:43:26.976484+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://api.github.com/repos/drewlinsley/pathfinder/git/trees/7b538865667dfe16f949ed3b7c8dc6a65ca87099",
+      "cache_state": "miss",
+      "sha256": "dd0a289aa31aa6a03e5d85607d4f73831ed35bb6a357baa59162ed05ad3855a0",
+      "size_bytes": 2242,
+      "response_classification": "public_primary_source"
+    },
+    {
+      "id": "imdb-author-publisher-card",
+      "method": "GET",
+      "url": "https://huggingface.co/datasets/stanfordnlp/imdb/raw/main/README.md",
+      "retrieved_at": "2026-10-28T10:43:27.499073+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://huggingface.co/datasets/stanfordnlp/imdb/raw/main/README.md",
+      "cache_state": "miss",
+      "sha256": "595990b17278ad1ee355a3bc34d89a5e72328490c60fcb92a24df27dfaa643d9",
+      "size_bytes": 7809,
+      "response_classification": "public_primary_source"
+    }
+  ]
+}

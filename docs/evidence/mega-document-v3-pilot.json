@@ -1,0 +1,43 @@
+{
+  "schema": "qkan-qualification-pilot.v1",
+  "formal_baseline_allowed": false,
+  "build_manifest_sha256": "1877ae821926f0da2322fb2b7ace9277836e4b2afb418abd8688770ff1446d2f",
+  "contract": {
+    "seed": 20261028,
+    "train_limit": 4096,
+    "val_limit": 1024,
+    "test_access": false,
+    "epochs": 12,
+    "batch_size": 64,
+    "reference": "fixed linear softmax SGD; paired token bags or fixed grayscale pixels",
+    "selection": "none; fixed final epoch",
+    "signal_gate": "Wilson 95% lower accuracy > validation accuracy of training-majority predictor + 0.02",
+    "null": "same training features, deterministically shuffled training labels"
+  },
+  "tasks": [
+    {
+      "task": "retrieval",
+      "train": {
+        "split": "train",
+        "samples": 4096,
+        "population": 117790,
+        "row_ids_sha256": "9995e5da4570056fdba432eaa14c1197a76666ee764b93dbf88aeb27fa72617a",
+        "npz_sha256": "5dc6a7331aadbf956f639a32f1a03331109fec7b6376677ab9d2257c5d0c2e2b"
+      },
+      "validation": {
+        "split": "val",
+        "samples": 1024,
+        "population": 1804,
+        "row_ids_sha256": "9acab5d9caff214fd2b6a2dca8647a2cac359e28d3db8ee0055e12d9998153ba",
+        "npz_sha256": "e859f704ef4590d9773d45a1106a5d5e2c9ff258907b5eab746d577a0acf7a58"
+      },
+      "accuracy": 0.58203125,
+      "majority_accuracy": 0.4833984375,
+      "shuffled_label_accuracy": 0.4833984375,
+      "wilson_lower": 0.5515695750519909,
+      "signal_detected": true
+    }
+  ],
+  "status": "diagnostic_only",
+  "limitations": "A negative weak-reference pilot is inconclusive for a difficult sequence task. It cannot reject learnability or certify neural-model correctness. Sampled row outcomes are not formal method results."
+}

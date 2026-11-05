@@ -1,0 +1,9 @@
+# MEGA source-stage contract
+
+Official commit aeaa4b44592cd1d60a9a34554e359eda2a62b03b. strong-source-registry.json pins the LRA encoder, sentence layer, moving-average gated attention, bidirectional multi-head EMA and LRA model/config source identities. strong_sources.official_source verifies the full clean Git checkout or exact hash-inventoried commit snapshot, plus imported package location; mega_encoder constructs the official class with explicit model/norm/pooling/chunk arguments. No operator is reimplemented.
+
+The encoder uses its own sparse/linear input embedding, padding mask, layer stack, optional final normalization and sentence representation. Token mode computes masked mean using src_lengths. Chunking can append padding, so trace alignment must account for the actual returned length. EMA cached kernels/incremental state are not a substitute for training recovery.
+
+Status: native task/training/full-state/trace adapters and explicit isolated environment recipes are implemented; current actual-device evidence is pending. All required source, recovery and trace commands are combined in scripts/run_formal_readiness.sh. A committed reviewed admission policy binds this contract and the declared adaptation diff; runtime certificates are generated only after all gates and verified return pass. Import/constructor success alone never certifies the model. Source-author score equivalence is not claimed.
+
+Opt-in adaptive-memory execution changes only physical microbatch partitioning under the same logical update budget. It defines a distinct numerical trajectory; it does not establish equivalence to the fixed-policy run or inherit its checkpoint admission. Source-pinned mixer equations and precision remain unchanged. See `docs/baselines/adaptive-memory.md` for rollback, throughput search, bounded recovery coverage and pending hardware validation.

@@ -1,0 +1,14 @@
+{
+  "schema": "qkan-github-publication.v1",
+  "date": "2026-10-28",
+  "repository": "https://github.com/tivilou/qkan-mamba-lra",
+  "branch": "research/collaboration-foundation",
+  "published_commit": "32bc9883247c0a5a779ca89983bfe23d237c2901",
+  "verification": "Remote ls-remote exactly matched the published commit after push through the authorized server relay",
+  "worker_head_preserved": "6fd939241d8d1167188d9576a25aaa9c114019a3",
+  "worker_worktree_clean": true,
+  "transport": "Verified local Git bundle, separate delivery ref, non-force HTTPS push",
+  "scope": "Data curation/audit code, compact evidence, baseline candidate inventory, delivery requirements and portal projections",
+  "data_and_credentials_in_git": false,
+  "formal_baseline_package_released": false
+}

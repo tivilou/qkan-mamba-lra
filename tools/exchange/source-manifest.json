@@ -1,0 +1,34 @@
+{
+  "source": "collaborator-artifact-exchange/templates",
+  "service_revision": "qore-upload-v4",
+  "files": [
+    {
+      "path": "service/qore_upload_server.py",
+      "sha256": "a8852cf835d6c9e24961edea08caa251391955455008cb939aa2e7b34e0b11eb"
+    },
+    {
+      "path": "web/app.js",
+      "sha256": "a2ccb08287cf6595a0358c78b4e39d54fff62da53acda911295446715cd02c3a"
+    },
+    {
+      "path": "web/index.html",
+      "sha256": "99c6e22b867403eb1652eb09c967c1b56ec08c78adc2a23702155087b77c9469"
+    },
+    {
+      "path": "web/login.html",
+      "sha256": "dc288d757432a6b3566d1e7c6ee2ada4a6e6b3f9574bf0ccac2b202d25030fee"
+    },
+    {
+      "path": "web/LUCIDE-LICENSE.txt",
+      "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+    },
+    {
+      "path": "web/lucide.min.js",
+      "sha256": "f5e19dbcfdbaa3f1d1b9125a6962eeb4158358ea2dfc78439e76ea30f1ce303f"
+    },
+    {
+      "path": "web/styles.css",
+      "sha256": "a066a077605f7860ca0f0eaa81250fbcd73ed35025cd3183d5795b7b9649476d"
+    }
+  ]
+}

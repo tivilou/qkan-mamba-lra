@@ -1,0 +1,88 @@
+{
+  "schema_version": "qkan.baseline-runner-diagnostics.v1",
+  "recorded_at": "2026-10-29",
+  "node_role": "3080ti coordinator and bounded CPU validation node",
+  "execution": {
+    "scheduler": "unified research queue",
+    "device": "cpu",
+    "formal_baseline_allowed": false,
+    "performance_result": false,
+    "test_split_used_for_training_or_selection": false
+  },
+  "checks": [
+    {
+      "name": "unit_correctness",
+      "passed": true,
+      "source_revision": "67fc89ece23add40bfe1822bf9260f69dc213637",
+      "task_id": "7a1dee7d44ad40e0844012dc0071e045",
+      "attempt_id": "54a9629d6139479ca3b620d5e8d93d15",
+      "receipt_sha256": "25d234e59bf1feb839297a17449d79ba7d6b20502e81417b1e7820678af132d1",
+      "child_peak_rss_kib": 579040,
+      "validated": [
+        "model and input contracts",
+        "optimizer update equivalence",
+        "complete-state resume",
+        "sample-trace structure, semantics and replay",
+        "one-command entry and formal release gate"
+      ]
+    },
+    {
+      "name": "transformer_fresh_process_recovery_canary",
+      "passed": true,
+      "source_revision": "67fc89ece23add40bfe1822bf9260f69dc213637",
+      "task_id": "83f9ca5c90f24e44a56d69bac98953e7",
+      "attempt_id": "e350d59d05264d5f8fcce0b857365398",
+      "diagnostic_sha256": "4e214a6b681ff6de091d7bc8f5500f23584d0d5a5d05902ff2084d750d4f7e17",
+      "canary_sha256": "614de3fca1134aab8a62a52766b52a5459dddece3708d7e5f8732727300a2c3d7",
+      "updates": 6,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "data": "generated uint8; not LRA performance"
+    },
+    {
+      "name": "s4d_minimal_fresh_process_recovery_canary",
+      "passed": true,
+      "source_revision": "67fc89ece23add40bfe1822bf9260f69dc213637",
+      "task_id": "66b35143059040eb9b8d6c2a75306927",
+      "attempt_id": "232910d0530c438996eea4bae77f4a50",
+      "diagnostic_sha256": "f5e3a9e1e6db32a178241c8702c76378db5b19488969bfc8ddf86c46438a7580",
+      "canary_sha256": "2859f38938b39834e6bdbaa1c24c3616d875a7e158d119e4c1953b18226e1f1b",
+      "updates": 6,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "data": "generated uint8; not LRA performance"
+    },
+    {
+      "name": "full_split_and_dictionary_identity",
+      "passed": true,
+      "source_revision": "25b4d03923c0c7899966c5b087c10ac317d3d7e3",
+      "task_id": "ff171b184474421ebed075d13fceda0e",
+      "attempt_id": "45b30f92b0f44e5bb9585f3ae593b0bc",
+      "diagnostic_sha256": "178ffd0922bb83ec2c82d0bf1379ab26da7ce1092434a6d4014e9ea0a708f7a0",
+      "verified_npz_splits": 15,
+      "verified_dictionary_identities": 3,
+      "configs_constructed": 15,
+      "dataset_version": "mega-document-disjoint-v3"
+    },
+    {
+      "name": "non_git_upstream_asset_round_trip",
+      "passed": true,
+      "evidence": "docs/evidence/baseline-asset-publication-20261028.json",
+      "validated": [
+        "authenticated HTTPS upload",
+        "idempotent retry",
+        "automatic download and hash verification",
+        "cache reuse"
+      ],
+      "datasets_published": false
+    }
+  ],
+  "claim_boundary": {
+    "owner_cpu_engineering_validation": "passed",
+    "collaborator_gpu_preflight": "pending",
+    "dataset_qualification": "insufficient",
+    "cohort_freeze": "pending",
+    "per_model_fidelity_certification": "pending",
+    "formal_baseline_release": "blocked"
+  }
+}

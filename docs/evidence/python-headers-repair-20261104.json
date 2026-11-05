@@ -1,0 +1,24 @@
+{
+  "schema": "qkan-offline-build-repair.v1",
+  "receipt": "qkan-mamba/formal-readiness/failure-d7c52bb1f892/failure.json",
+  "suite": "runs/formal-ready-20261104T122816Z-a6915f78",
+  "revision": "55c8abf8f55f4280ce776fa2f635bad9be0764c7",
+  "setup_sha256": "b00892490143da58f0bfd64a70b936a94e30df4ce2e3c12b4068557b4a75b5a4",
+  "setup_bytes": 46233,
+  "stage": "mega:build",
+  "cause": "fatal error: Python.h: No such file or directory",
+  "established_progress": "MEGA offline dependency download, local Python3.10 venv/pip bootstrap and dependency installation reached native compilation",
+  "repair": "Complete project-local unmodified Ubuntu CPython3.10 amd64 include closure; CFLAGS/CPPFLAGS/CXXFLAGS include it during native build; no apt, public fallback, runtime replacement or /usr mutation",
+  "package_metadata_source": "https://security.ubuntu.com/ubuntu/dists/jammy-security/main/binary-amd64/Packages.xz",
+  "header_asset_sha256": "3e6bc23e712c2a6bde8364f63725f15523e145c59532d222ac14a4df2473da5e",
+  "header_bytes": 240896,
+  "header_members": 164,
+  "provenance": {
+    "url": "https://security.ubuntu.com/ubuntu/pool/main/p/python3.10/libpython3.10-dev_3.10.12-1~22.04.18_amd64.deb",
+    "package_sha256": "c058675011ec4b64f5ad803d74b5fe7de0c720c3700683040da68d1fb5b44ed9",
+    "scope": "Unmodified Ubuntu amd64 CPython3.10 headers only; no package installation"
+  },
+  "runtime_repair_verified": false,
+  "formal_training_started": false,
+  "owner_model_import_test_install_training": false
+}

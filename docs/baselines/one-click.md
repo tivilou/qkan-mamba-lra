@@ -1,0 +1,125 @@
+# 协作者一键运行入口
+
+[从新服务器开始的中文操作步骤](collaborator-beginner-guide.zh-CN.md)。
+
+入口：`bash scripts/run_baselines.sh`。安装镜像支持 Linux x86_64 + Python 3.11；GPU 阶段需要 NVIDIA 驱动，Mamba1 还需要与 PyTorch cu126 对应的 CUDA 工具链和 `nvcc`。首次安装和作者数据下载需要网络。脚本创建项目内 `.venv-baselines`，固定 PyTorch 2.7.1、NumPy 2.2.6、einops 0.8.1；不改系统 Python。
+
+**当前交付状态：研究方 CPU 工程验证已通过，合作者 GPU 预检待执行，尚未获准正式比较。** 2026-10-29 在 3080Ti 调度节点通过统一队列完成了单测、Transformer/S4D minimal 新进程精确恢复、trace 语义与重放，以及 `mega-document-disjoint-v3` 的 15 个 NPZ split、3 份字典身份和 15 份配置构建检查。可审计收据见 [`docs/evidence/baseline-runner-diagnostics-20261029.json`](../evidence/baseline-runner-diagnostics-20261029.json)。这些检查全部标记 `formal=false`，不是 LRA 性能结果，也不能替代实际 GPU 预检。
+
+`release.json` 仍明确记录未冻结 cohort、未认证的模型；数据资格也仍是 `insufficient`。现在可以准备数据、执行 GPU 诊断，`--mode run` 会说明原因并拒绝正式训练。此文档不是“baseline 已复现成功”的证明。
+
+安装入口于 2026-11-03 修正：Mamba1 使用作者 v2.2.4 commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9`；每次 pip 安装均传递固定约束，禁止依赖解析升级 Torch。启动时先检查交换服务配置，安装后检查 cu126、版本、源码身份及 `selective_scan_cuda` 导入。`MAMBA_FORCE_BUILD=TRUE` 可跳过上游预编译 wheel 下载；源码构建仍需匹配的工具链。CPU 回归检查不能替代合作者 GPU 安装与运行预检。
+
+## 1. 获取代码和私有配置
+
+安装依赖从认证交换服务的固定镜像获取，逐块及整包校验 SHA-256；pip 使用 `--no-index`，不访问公网安装源。镜像支持 Linux x86_64 / Python 3.11；Mamba 固定源码包本机编译。默认缓存为 `.bootstrap/install-mirror`，可用 `QKAN_INSTALL_CACHE` 指向持久化磁盘。中断后复用已完成的分块。
+
+从 GitHub 的 `research/collaboration-foundation` 分支取得双方确认的干净 commit；运行 `git pull --ff-only origin research/collaboration-foundation`，再记录 `git rev-parse HEAD`。同一 suite 恢复必须使用相同 commit 和协议。
+
+通过私下提供的渠道取得交换服务地址、token 和 CA 文件，在 shell 中设置：
+
+```bash
+export PROJECT_EXCHANGE_URL='https://<私下提供的主机>:18084'
+read -rsp 'Exchange token: ' PROJECT_EXCHANGE_TOKEN; echo
+export PROJECT_EXCHANGE_TOKEN
+export PROJECT_EXCHANGE_CA_FILE='/absolute/path/exchange-ca.crt'
+```
+
+不要将凭据放到 Git、截图、命令行参数或实验配置中。首次 CA 文件通过可信渠道提供；脚本保留 TLS 主机名和证书校验。
+
+## 2. 自动准备
+
+```bash
+bash scripts/run_baselines.sh --mode prepare --cache /data/qkan-cache
+```
+
+脚本自动从项目交换服务下载并校验上游代码包，再从作者地址 `https://dl.fbaipublicfiles.com/mega/data/lra.zip` 下载固定数据归档（约 1.45 GB），依次重建 v1 → pairclean-v2 → document-disjoint-v3，最后逐个校验 15 个 NPZ。已有正确文件复用；作者下载支持断点，交换对象在中断后重下该对象。构建阶段原子提交，中断的阶段保留并更名后重新构建。预留至少 12 GB 磁盘，失败重试时需额外空间存放保留目录。
+
+已有同一 v3 数据可加 `--data /absolute/path/mega-document-disjoint-v3`；仍会验证每个分割。Retrieval 使用新的文档组独立划分，因此不可直接与官方或历史 LRA 分数对比。
+
+原 LRA 对 AAN 文本的转发有限制，**我们的服务不发布该文本或整个数据压缩包**。各任务的用途证据和正式比较资格详见 `docs/data-use-boundaries.md`。作者下载失败时保留缓存；脚本不会自动切换为未审查的第三方数据集。
+
+## 3. 合作者实际 GPU 预检
+
+启动检查同时核对 cuDNN 包版本与实际加载的运行库版本。若库文件与元数据不一致，安装器从已校验缓存强制恢复固定 NVIDIA 依赖；随后在每块选定 GPU 上检查小型 Conv1d 的前向与反向，成功后进入各模型预检。
+
+数据校验保留参考 NPZ 文件哈希；若 ZIP 编码不同，则逐个核对内部 NPY 的完整头部及数组字节 SHA-256、长度与成员集合。只有内部内容与固定参考完全一致时才接受，后续任务与恢复绑定本机实际 NPZ 哈希。此前因压缩包哈希不同而停止的数据无需删除或重建，更新代码后重跑即可。
+
+```bash
+bash scripts/run_baselines.sh --mode preflight --cache /data/qkan-cache \
+  --gpus 0 --models transformer,s4d_minimal,mamba1 \
+  --tasks listops,text,retrieval,image,pathfinder --seeds 42
+```
+
+这会在指定的每块 GPU 上，对每个任务/模型/种子执行有界的真数据诊断：仅训练集前三个逻辑 batch、验证集前两行、两轮，不读取测试集。比较不中断与“新进程中断后再用另一个新进程恢复”的完整状态，并验证所选验证样本的 `sample-trace.v2` 结构、完整数值和分类头重放。诊断分数不进入正式结果页。研究方 CPU 诊断已通过，但失败仍必须保留日志排查；尤其 Mamba CUDA 算子及确定性支持尚不能由 CPU 测试代替。
+
+`s4d_minimal` 是作者明确标为教学用途的 minimal S4D 模块加本项目分类适配层，绝不等同于完整 S4/S4D benchmark 复现。当前三个实现是工程候选；MEGA、S5 等未交付，正式 cohort 需另行冻结。
+
+若 Mamba 的恢复检查仅出现微小浮点差异，可先单独运行对照诊断，保持原来的逐位一致验收标准不变：
+
+```bash
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.recovery_audit \
+  --canary /absolute/path/to/suite/preflight/GPU-ID/mamba1-listops-s42 \
+  --cache "$QKAN_CACHE" --device cuda:0
+```
+
+工具检查原科学源码和环境记录未变，保留原检查点，额外执行一次相同的有界不中断运行。它逐项记录模型、优化器、调度器、RNG、样本顺序与训练轨迹的差异，输出 `report.json` 和 `summary.json`。报告只作诊断，不写 `canary.json`，不设置数值容差、不放行正式实验。一次重复运行可揭示非确定性，但不足以建立统计噪声界或认证数值恢复。
+
+### 多次重复与恢复诊断
+
+单次噪声审计后，使用原失败 canary 中的配置和有界数据运行 5 组诊断：
+
+```bash
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.recovery_replicates \
+  --canary /absolute/path/to/suite/preflight/GPU-ID/mamba1-listops-s42 \
+  --cache "$QKAN_CACHE" --device cuda:0 --repeats 5
+```
+
+每组保持相同 seed、配置、数据和设备：不中断运行 6 次更新，另一路在第 2 次更新后退出，再由新进程恢复到第 6 次更新。默认共启动 15 个顺序子进程；不会修改原运行。`--repeats` 可设为 3–10。报告包含每组恢复对照，以及所有不中断运行之间的比较，分模型、优化器、调度器、RNG、样本顺序、选择结果和损失轨迹记录差异。样本行号、步数、随机数状态和调度器保持严格比较。
+
+完成后自动将 `report.json`、`summary.json` 上传至 `qkan-mamba/recovery-replicates/<audit-id>/` 并核验收据；使用已有 exchange 环境变量，缺配置时在计算前停止。诊断异常也会尝试回传失败摘要，原始日志、权重留在本地。上传失败时按终端打印的命令单独补传，不重跑诊断：
+
+```bash
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.return_artifacts \
+  --directory /absolute/path/to/recovery-replicates-ID --experiment recovery-replicates
+```
+
+这些是相同种子的执行重复，不是独立训练种子；两两比较共享运行，不应当作独立统计样本。最大差异仅为本次观测，不构成噪声上界或验收容差。脚本不写通过收据，不放行正式实验；拿到报告后再决定验收方案。
+
+## 4. 正式放行后的一键实验
+
+研究方补齐数据资格、固定 cohort/协议并提交逐模型复现证书后，更新 `release.json`。合作者更新到该发布 commit，再执行：
+
+```bash
+bash scripts/run_baselines.sh --mode run --cache /data/qkan-cache \
+  --gpus 0,1 --models transformer,s4d_minimal,mamba1 \
+  --tasks listops,text,retrieval,image,pathfinder --seeds 42,43,44
+```
+
+每块 GPU 一次一个独立 job；seed/任务/模型独立目录。配置固定训练预算、有效 batch 和 microbatch，microbatch 梯度累积；不因 OOM 静默改参数。按验证准确率选择最优权重，测试阶段重新载入该权重。Token ID 使用 embedding 和 padding mask，Retrieval 两文档独立编码、共享权重后进入显式 pair head。
+
+入口打印 `Suite: /.../runs/baseline-...`；保存路径。单任务失败会停止启动新任务，已在运行的任务完成后整体以失败状态返回，已完成任务保留。
+
+恢复或补传：
+
+```bash
+# 参数选择必须与原 suite 一致；Ctrl-C/SIGTERM 会请求在更新边界保存。
+bash scripts/run_baselines.sh --mode run --cache /data/qkan-cache \
+  --gpus 0,1 --models transformer,s4d_minimal,mamba1 \
+  --tasks listops,text,retrieval,image,pathfinder --seeds 42,43,44 \
+  --resume /absolute/path/to/runs/baseline-SUITE
+
+# 计算已完成，但网络或服务上传失败：只重试上传，不重训。
+bash scripts/run_baselines.sh --mode upload --resume /absolute/path/to/runs/baseline-SUITE
+```
+
+最新 checkpoint 含模型、优化器、调度器、全部 RNG、epoch/下个样本游标、数据排列、验证选择和最优权重；原子指针保留前一代。崩溃时从最近已提交更新恢复，最多重算自上次 checkpoint 之后的更新。损坏文件不会自动跳过；保留旧代供显式恢复。
+
+## 5. 结果回传和分析
+
+计算完成后自动将配置、指标、最优权重、最新完整状态和 trace 校验摘要上传至 `qkan-mamba/baseline-suite/<suite-id>/`。超过 512 MiB 的文件分块，附原文件和各块的 SHA-256 清单；客户端按块上传、核对服务收据，失败可补传。
+
+`compute-complete.json` 和 `delivery-complete.json` 区分“已算完”与“已交付”。原始输入、完整 sample trace、原始日志不会自动发布；保留在合作者服务器，按后续具体 case study 的权限和需求单独交换。小型指标经研究方审查、合并多种子统计后同步 GitHub 与门户；诊断测试不当作正式性能。
+
+
+Current handoff supersedes earlier commands: [consolidated launch](consolidated-launch.md). Native MEGA/S5 workers and conditional all-gates admission are delivered; no current runtime receipt is claimed.

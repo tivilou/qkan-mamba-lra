@@ -1,0 +1,24 @@
+{
+  "schema": "qkan-bootstrap-validation.v1",
+  "date": "2026-11-03",
+  "source_revision": "410b28c6f535683ac15d35cf74d98144ef7a40ed",
+  "formal": false,
+  "gpu_install_verified": false,
+  "scheduler_task": "b7c32cc747614dafad2c3f55fc12b624",
+  "scheduler_attempt": "9cb7512bb29a41f4943a37e21fec47b4",
+  "state": "complete",
+  "checks": ["bash -n", "four bootstrap regression tests"],
+  "outputs": {
+    "bootstrap-tests.log": "3974bd4887036c457e9ba4b9727c963a8dee53abc6d573107d8d51f3906f97d9",
+    "diagnostic.json": "331d6aac0bfc62d2f65ff8930e6886234ba07a4bb4937b0d4a2da0e679515346"
+  },
+  "upstream": {
+    "previous_survey_commit": "e9594ce1c732d97440f0332fdc43170a2294dbfa",
+    "active_runtime_commit": "95d8aba8a8c75aedcaa6143713b11e745e7cd0d9",
+    "tag": "v2.2.4",
+    "architecture": "mamba_simple.Mamba (Mamba1)",
+    "source": "https://github.com/state-spaces/mamba/tree/95d8aba8a8c75aedcaa6143713b11e745e7cd0d9",
+    "inspection": "Author tag resolves to active commit. setup.py no longer declares Mamba3 Triton>=3.5/TileLang/quack dependencies; package init has no Mamba3 import. Exact files read through authorized development server."
+  },
+  "limits": "Checks mock installed packages and exercise the Linux shell configuration gate. No actual pip installation, CUDA compilation or GPU training is certified. Collaborator GPU preflight remains required."
+}

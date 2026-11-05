@@ -1,0 +1,108 @@
+{
+  "schema_version": "baseline-reproduction-fidelity.v1",
+  "baseline_id": "s4d_minimal",
+  "provenance": {
+    "mode": "source",
+    "upstream": {
+      "source_url": "https://github.com/state-spaces/s4",
+      "revision": "e757cef57d89e448c413de7325ed5601aceaac13",
+      "license": "Apache-2.0",
+      "entrypoints": [
+        "models/s4/s4d.py:S4D"
+      ]
+    },
+    "artifacts": [
+      {
+        "path": "experiments/baseline_delivery/models.py",
+        "sha256": "d79911952c63fc0de87d1387b412b9806b8193ed06a32c5beb528d689f58cc04"
+      },
+      {
+        "path": "experiments/baseline_delivery/worker.py",
+        "sha256": "7870973acfb3505cb88be35ae228e97f3b319c51203b3bf7fba9ecf55b4144e6"
+      },
+      {
+        "path": "experiments/baseline_delivery/protocol.json",
+        "sha256": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+      },
+      {
+        "path": "experiments/baseline_delivery/acceptance.py",
+        "sha256": "acf7168b4a7636bc1b370bd81c275f6d2053241fcbf95d42da43e3c208a1eead"
+      },
+      {
+        "path": "experiments/baseline_delivery/adaptive_memory.py",
+        "sha256": "23258c4ce5e57e398b6b9ede10eecc10a98d789c3a7b21e0157473fc2d913d86"
+      }
+    ]
+  },
+  "mechanism_contract": {
+    "entrypoints": [
+      "models/s4/s4d.py:S4D",
+      "experiments/baseline_delivery/models.py:Classifier",
+      "experiments/baseline_delivery/worker.py:run"
+    ],
+    "invariants": [
+      "Hash-verified official minimal S4D module; only DropoutNd import path substituted",
+      "Preserve upstream _optim learning-rate and zero-decay metadata",
+      "d_state=64, transposed=False in project protocol",
+      "Integer token embedding with pad=1 and post-block padding mask",
+      "Float32 pixels x/255-.5; row-major sequence; no fitted preprocessing",
+      "Masked mean pool and shared two-document retrieval encoder with abs difference/product pair head",
+      "AdamW, cosine warmup, clipping and FP32 under project common protocol; not upstream paper training recipe",
+      "Validation selects earliest maximal accuracy; test only selected weights; latest full-state checkpoint independent of best weights"
+    ],
+    "assumptions": [
+      "Official pedagogical minimal S4D; does not represent complete S4 or S5 benchmark architecture"
+    ],
+    "unknowns": [
+      "No external upstream fixture in received probe",
+      "S4D GPU full-state recovery not covered by the latest two-canary acceptance"
+    ]
+  },
+  "adaptation": {
+    "allowed_changes": [
+      "Integer token embedding with pad=1 and post-block padding mask",
+      "Float32 pixels x/255-.5; row-major sequence; no fitted preprocessing",
+      "Masked mean pool and shared two-document retrieval encoder with abs difference/product pair head",
+      "AdamW, cosine warmup, clipping and FP32 under project common protocol; not upstream paper training recipe",
+      "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md"
+    ],
+    "forbidden_changes": [
+      "Change upstream active mixer equations or silently substitute architecture",
+      "Discard upstream optimizer metadata",
+      "Use test for model selection or hyperparameter tuning",
+      "Claim original LRA/MEGA scores comparable to document-disjoint-v3"
+    ],
+    "postprocessing_rules": []
+  },
+  "equivalence": {
+    "status": "not_verifiable",
+    "scope": "Audited candidate manifest; received adapter composition is bounded evidence, not a source fixture or formal certificate. See mechanism-contract.md and adaptation-diff.md.",
+    "tolerances": {
+      "adapter_rtol": 1e-05,
+      "adapter_atol": 1e-06
+    }
+  },
+  "validation": {
+    "gates": {
+      "provenance_locked": false,
+      "mechanism_contract_reviewed": true,
+      "adaptation_boundary_reviewed": true,
+      "no_postprocessing_rules": true,
+      "manifest_frozen": false,
+      "upstream_fixture_checked": false,
+      "forward_checked": false,
+      "gradient_checked": false,
+      "optimizer_update_checked": false,
+      "sampler_checked": false,
+      "checkpoint_checked": false,
+      "historical_adapter_composition_observed": true
+    },
+    "commands": [
+      ".venv-baselines/bin/python -B -m experiments.baseline_delivery.acceptance --suite runs/baseline-20261103T115633Z-fa88b308 --cache \"$QKAN_CACHE\" --device cuda:0"
+    ],
+    "evidence_files": [
+      "docs/evidence/baseline-acceptance-received-20261104.json",
+      "docs/evidence/qualification-closeout-sources-20261104.json"
+    ]
+  }
+}

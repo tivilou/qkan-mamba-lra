@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "plan_id": "one-click",
+  "plan_version": 1,
+  "workstream": "baseline-delivery",
+  "status": "done",
+  "objective": "实现并验证自动准备、隔离运行、完整恢复及文件回传入口；保持正式比较的资格与复现门槛",
+  "focus_step_id": "F01",
+  "next_action": "Reconnect and attach existing tmux qkan session; follow formal run/results without duplicating launch",
+  "blocker": "",
+  "user_confirmation_needed": false,
+  "steps": [
+    {
+      "id": "I01",
+      "title": "实现一键交付候选",
+      "status": "done",
+      "objective": "实现一键交付候选",
+      "inputs": [],
+      "outputs": [
+        "scripts/run_baselines.sh",
+        "experiments/baseline_delivery/runner.py",
+        "experiments/baseline_delivery/worker.py",
+        "docs/baselines/one-click.md"
+      ],
+      "depends_on": [],
+      "acceptance_checks": [
+        "代码及操作契约齐备并经静态检查；不代表运行认证"
+      ],
+      "evidence_paths": [
+        "scripts/run_baselines.sh",
+        "experiments/baseline_delivery/runner.py",
+        "experiments/baseline_delivery/worker.py",
+        "docs/baselines/one-click.md"
+      ],
+      "owner": "我们；GPU 验收由合作者执行",
+      "blocker": null,
+      "notes": "",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "V01",
+      "title": "通过工程正确性与新进程恢复诊断",
+      "status": "done",
+      "objective": "通过工程正确性与新进程恢复诊断",
+      "inputs": [
+        "I01"
+      ],
+      "outputs": [
+        "tests/test_baseline_delivery.py",
+        "scripts/baseline_diagnostic.py"
+      ],
+      "depends_on": [
+        "I01"
+      ],
+      "acceptance_checks": [
+        "统一调度 exact-source CPU 测试通过；Transformer/S4D 完整恢复逐项相同；trace 结构语义与重放通过"
+      ],
+      "evidence_paths": [
+        "tests/test_baseline_delivery.py",
+        "scripts/baseline_diagnostic.py",
+        "docs/evidence/baseline-runner-diagnostics-20261029.json"
+      ],
+      "owner": "我们；GPU 验收由合作者执行",
+      "blocker": null,
+      "notes": "\n3080Ti 统一队列完成 exact-source CPU 单测、Transformer/S4D minimal 新进程精确恢复及 trace 结构语义与重放",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "X01",
+      "title": "发布并回读非Git上游代码资产",
+      "status": "done",
+      "objective": "发布并回读非Git上游代码资产",
+      "inputs": [
+        "I01"
+      ],
+      "outputs": [
+        "experiments/baseline_delivery/assets.json"
+      ],
+      "depends_on": [
+        "I01"
+      ],
+      "acceptance_checks": [
+        "真实 HTTPS 上传、幂等重试及自动下载哈希校验通过；不发布受限数据"
+      ],
+      "evidence_paths": [
+        "experiments/baseline_delivery/assets.json",
+        "docs/evidence/baseline-asset-publication-20261028.json"
+      ],
+      "owner": "我们；GPU 验收由合作者执行",
+      "blocker": null,
+      "notes": "\n真实 HTTPS 上传、幂等重试、自动下载哈希核验及缓存复用通过；未发布数据集",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "H01",
+      "title": "发布测试证据与合作者交接版本",
+      "status": "done",
+      "objective": "发布测试证据与合作者交接版本",
+      "inputs": [
+        "V01",
+        "X01"
+      ],
+      "outputs": [
+        "docs/baselines/one-click.md"
+      ],
+      "depends_on": [
+        "V01",
+        "X01"
+      ],
+      "acceptance_checks": [
+        "代码经授权服务器推到GitHub；明确CPU/GPU/正式放行三种证据状态"
+      ],
+      "evidence_paths": [
+        "docs/baselines/one-click.md",
+        "docs/baselines/one-click.md"
+      ],
+      "owner": "我们；GPU 验收由合作者执行",
+      "blocker": "正式运行仍被数据用途资格、cohort 冻结、逐模型 fidelity 及合作者 GPU 预检阻止",
+      "notes": "\nfac5ae5 已经由 3080Ti 推送到 GitHub research/collaboration-foundation；CPU/GPU/formal 三层证据边界已写入交接文档",
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "F01",
+      "title": "逐模型取得正式比较放行",
+      "status": "done",
+      "objective": "逐模型取得正式比较放行",
+      "inputs": [
+        "H01"
+      ],
+      "outputs": [
+        "experiments/baseline_delivery/release.json"
+      ],
+      "depends_on": [
+        "H01"
+      ],
+      "acceptance_checks": [
+        "数据资格 qualified；cohort冻结；逐模型 fidelity 证书绑定实现与协议；合作者实际GPU预检通过"
+      ],
+      "evidence_paths": [
+        "experiments/baseline_delivery/release.json",
+        "docs/evidence/task-internal-use-review-20261104.json",
+        "experiments/baseline_delivery/strong-source-registry.json",
+        "experiments/baseline_delivery/strong-offline-mirror.json",
+        "docs/evidence/strong-offline-publication-20261104.json",
+        "docs/evidence/python-headers-repair-20261104.json",
+        "docs/evidence/mega-import-dependency-repair-20261104.json",
+        "docs/evidence/s5-trace-replay-repair-20261104.json",
+        "docs/evidence/s5-restore-placement-repair-20261105.json",
+        "docs/evidence/s5-gpu-determinism-repair-20261105.json",
+        "docs/evidence/formal-readiness-passed-20261105.json"
+      ],
+      "owner": "我们；GPU 验收由合作者执行",
+      "blocker": "",
+      "notes": "\nD01 now qualified for declared internal research; implementation roster fixed and official source factories written. Selection is not certification; no collaborator rerun or formal training requested.\nNative workers and conditional all-gate launch delivered; current revision has static checks only.\nFirst launch failed before training on system Python3.10 missing ensurepip; isolated Conda fallback and incomplete environment recreation added.\nSecond bootstrap failure traced to Conda channel alias mapping conda-forge to Aliyun HTTP404; official full URL and child-only alias added. Private redacted setup tail now returns automatically.\nUser requires no external network. Interim online Conda repair superseded by local Python3.10 --without-pip, offline pip bootstrap, complete exchange wheel/source mirror, cache-only qualified data and private redacted failure return. Asset publication is not runtime certification.\n55c8abf reached MEGA compilation and failed on missing Python.h. Published complete project-local CPython3.10 amd64 headers with hash/readback; build include flags repaired. No formal experiment yet.\n33046c4 completed both isolated environments and data verification, then eager fairseq import required sklearn absent from upstream install_requires. Added pinned scikit-learn1.2.2/joblib1.3.2/threadpoolctl3.1.0 offline wheels; synthetic source-probe redacted logs now return automatically.\n22dc743 completed all five source probes, then the first S5/ListOps uninterrupted canary failed in trace logit replay (max abs 0.00055149), before S5 resume comparison. Explicit HIGHEST head precision and compiled independent replay delivered without relaxing tolerances or changing the official encoder. Structured code-location and aggregate replay failure evidence now returns automatically. Actual GPU verification remains pending.\n2026-11-05 failure-8845df5c6186: S5/ListOps children and trace emission completed, then parent exact train_state comparison failed. Fixed asymmetric NumPy/JAX state placement after Flax restoration; exact roundtrip and exact recovery retained, parent mismatch diagnostics added. No actual-device success claimed.\nfailure-b046cc6bb814: all S5/ListOps children succeeded but strict comparison had 282/530 mismatching leaves. First 32 records are optimizer moments with max abs 1.4901161193847656e-7 (not a global bound). Pinned XLA source confirms deterministic scatter expansion; deterministic_ops=true/autotune_level=0 now set for all S5 children. Exact recovery retained, per-field aggregate diagnostics added. Placement repair alone was insufficient; GPU outcome pending.\n2026-11-05 authenticated immutable gate report and evidence received for 31639c0: all five probes, all 25 recovery/trace gates, five exact S5 agreements, runtime certificates and verified return passed. Runtime-scoped admission only; formal job completion/live process unobserved. Do not restart after SSH disconnect.",
+      "supersedes": [],
+      "superseded_by": []
+    }
+  ],
+  "change_log": [
+    {
+      "date": "2026-10-28",
+      "reason": "用户明确要求实现一键正式baseline运行及自动同步；作为D01的支持工程工作，不推进资格闸门"
+    }
+  ],
+  "updated_at": "2026-11-05T07:34:36.266090+00:00"
+}

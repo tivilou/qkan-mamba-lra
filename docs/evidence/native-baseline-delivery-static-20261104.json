@@ -1,0 +1,20 @@
+{
+  "schema": "qkan-native-delivery-static-review.v1",
+  "date": "2026-11-04",
+  "checks": [
+    "AST all baseline modules",
+    "JSON parsing",
+    "five canonical manifest schemas",
+    "manifest provenance hashes",
+    "conditional policy artifact hashes",
+    "committed release remains closed",
+    "official source API inspected",
+    "PyPI principal dependency metadata and all CUDA package identities verified"
+  ],
+  "model_execution": false,
+  "model_import": false,
+  "package_installation": false,
+  "runtime_evidence_available": false,
+  "shell_syntax": "Bash unavailable locally; script manually inspected",
+  "scope": "Static delivery review only; runtime admission requires collaborator all-gate evidence"
+}

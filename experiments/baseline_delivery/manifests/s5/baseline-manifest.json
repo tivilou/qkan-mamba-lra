@@ -1,0 +1,112 @@
+{
+  "schema_version": "baseline-reproduction-fidelity.v1",
+  "baseline_id": "s5",
+  "provenance": {
+    "mode": "source",
+    "upstream": {
+      "source_url": "https://github.com/lindermanlab/S5",
+      "revision": "3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+      "entrypoints": [
+        "s5.ssm.init_S5SSM + s5.seq_model.StackedEncoderModel"
+      ]
+    },
+    "artifacts": [
+      {
+        "path": "experiments/baseline_delivery/strong_sources.py",
+        "sha256": "af5e47797c199119639e68724e34682d643696019ae6fc6c5fa8f45c6a80bb51"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong-source-registry.json",
+        "sha256": "19e23bc05eb129205d684cbce42b14593094ec8ee8d74b2c96338684096679d8"
+      },
+      {
+        "path": "experiments/baseline_delivery/cohort-review.json",
+        "sha256": "36e9d423cc1d4ad62682e9974e2890e86adfe0048680df9d76f95d543f9a2086"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong_offline.py",
+        "sha256": "f4c19e64c7c5a6d8fb5d35f9a5cb713dfd7347ad239b9c00dd1a353fb796a427"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong-offline-mirror.json",
+        "sha256": "5789cf5c9a7d3dfc5976500fcad5791ec24379147efe6c02677941f7d710dadc"
+      },
+      {
+        "path": "experiments/baseline_delivery/s5_worker.py",
+        "sha256": "245749255cd6ee320c7a70de7f581f38911036986ee6e8ffc5065caa0c1214aa"
+      },
+      {
+        "path": "experiments/baseline_delivery/strong_probe.py",
+        "sha256": "a4e3ccc50634997a53277150601aaf45116e8bdc0414e22bde10e28782ff84fd"
+      },
+      {
+        "path": "experiments/baseline_delivery/trace.py",
+        "sha256": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9"
+      },
+      {
+        "path": "experiments/baseline_delivery/s5_recovery.py",
+        "sha256": "abdfdc0095abdee443ef20abd1e677b6c04bf44bf250df5f8a018047ca7f2bd5"
+      },
+      {
+        "path": "experiments/baseline_delivery/adaptive_memory.py",
+        "sha256": "23258c4ce5e57e398b6b9ede10eecc10a98d789c3a7b21e0157473fc2d913d86"
+      }
+    ]
+  },
+  "mechanism_contract": {
+    "entrypoints": [
+      "s5.ssm.init_S5SSM + s5.seq_model.StackedEncoderModel",
+      "experiments/baseline_delivery/strong_sources.py"
+    ],
+    "invariants": [
+      "Import official clean pinned source; do not rewrite active operator",
+      "Verify Git root/commit/clean state or full SHA-inventoried exact source snapshot, API hashes and imported module location",
+      "Constructor choices explicit; no fallback approximation"
+    ],
+    "assumptions": [
+      "Native task/training/checkpoint/trace adapters delivered; runtime validation delegated to collaborator; explicit common-protocol/environment adaptations listed in adaptation-diff.md"
+    ],
+    "unknowns": [
+      "Actual-device environment compatibility, direct-source gradient/update comparisons and fresh-process exact recovery/trace evidence pending"
+    ]
+  },
+  "adaptation": {
+    "allowed_changes": [
+      "Task input and output head only after explicit implementation and source review",
+      "Separate framework-specific worker without changing active source mechanism",
+      "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md"
+    ],
+    "forbidden_changes": [
+      "Replacing S5 by PyTorch/S4D approximation",
+      "Replacing MEGA by a generic Mamba/EMA-only block",
+      "Silently ignoring padding or changing normalization/scheduler/optimizer metadata",
+      "Declaring source import or constructor success a fidelity certificate"
+    ],
+    "postprocessing_rules": []
+  },
+  "equivalence": {
+    "status": "not_verifiable",
+    "scope": "Native workers and all required gate commands delivered; no runtime receipt yet."
+  },
+  "validation": {
+    "gates": {
+      "provenance_locked": false,
+      "mechanism_contract_reviewed": false,
+      "adaptation_boundary_reviewed": false,
+      "manifest_frozen": false,
+      "upstream_fixture_checked": false,
+      "forward_checked": false,
+      "gradient_checked": false,
+      "optimizer_update_checked": false,
+      "sampler_checked": false,
+      "checkpoint_checked": false,
+      "no_postprocessing_rules": true
+    },
+    "commands": [
+      "bash scripts/run_formal_readiness.sh --cache \"$QKAN_CACHE\" --gpus 0"
+    ],
+    "evidence_files": [
+      "docs/evidence/strong-baseline-sources-20261104.json"
+    ]
+  }
+}

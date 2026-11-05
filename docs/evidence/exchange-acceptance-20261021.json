@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-21",
+  "purpose": "service acceptance only; no model experiment",
+  "service": "qkan-mamba-exchange",
+  "namespace": "qkan-mamba",
+  "transport": "HTTPS with pinned private CA and hostname validation",
+  "checks": {
+    "authenticated_upload": "passed",
+    "download_bytes_and_hash": "passed",
+    "idempotent_retry": "passed",
+    "unauthorized_download": "401",
+    "other_namespace": "rejected",
+    "conflicting_overwrite": "409"
+  },
+  "max_file_bytes": 1073741824,
+  "payload_sha256": "e6b771243ace367d966e06a05b90d16c500c2fcf9fad23e9bef4e8f63de536b4",
+  "receipt": {
+    "path": "qkan-mamba/exchange-smoke/20261021/summary.json",
+    "size_bytes": 66,
+    "sha256": "e6b771243ace367d966e06a05b90d16c500c2fcf9fad23e9bef4e8f63de536b4"
+  },
+  "source_revision": "74acc3d7f389ff4930d03d06c0118a1e5dce3aff",
+  "source_dirty": true,
+  "credentials": "not included; server-side only"
+}
