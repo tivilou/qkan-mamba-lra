@@ -4,6 +4,18 @@ The display supervisor in scripts/formal_progress.py refreshes in place on an in
 
 Interactive rendering uses the alternate screen and redraws the same rows, without terminal queries. Width is measured in terminal cells including Chinese characters; long job-name lists are clipped with an ellipsis and oversized frames show a resize hint, preventing wrap/scroll. Terminal size is re-read each frame. Cursor and previous screen are restored on normal exit and handled interruption. Full snapshots remain available using --display append.
 
+## No running job after resuming
+
+The original readiness entry rechecks offline environments and data before scheduling jobs. During that interval status.json still contains the previous paused/pending states. Those counts alone do not establish a stalled or failed parent. The display now identifies watch-only mode, whether a recent supervisor heartbeat and live parent PID are available, parent elapsed time, and setup/parent log byte counts and write ages. Updated supervisors also identify fixed setup markers and data-validation messages from this launch only. These are observed entry events, not worker progress or proof that a stage has completed. Old supervisors lack launch offsets, so a new watch-only monitor reports liveness/log metadata without guessing a stage from historical logs.
+
+Watch-only never resumes a paused job. Do not repeatedly interrupt/relaunch a live parent to refresh the display. In another tmux window inspect the current private logs locally:
+
+```bash
+tail -n 30 /root/projects/qkan-mamba-lra/runs/formal-ready-20261105T042214Z-1e90315e/progress-parent.log /root/projects/qkan-mamba-lra/runs/formal-ready-20261105T042214Z-1e90315e/setup.log
+```
+
+No raw log text is added to the dashboard or automatic return. A displayed parent PID/liveness heartbeat is not evidence that optimizer updates have resumed; require a running job and a fresh worker heartbeat.
+
 ## Switch display without interrupting an active supervisor
 
 The 8adcd7c screenshot confirms active training resumed (Transformer/ListOps Epoch4). Leave that training/supervisor window running. In tmux press Ctrl+B, release, then C to create a new window; run the commands below there. Watch-only reads existing files, never starts/stops training and never writes experiment state. Ctrl+C in this new watch window exits only the monitor. Ctrl+C in the original supervisor window still requests training pause.

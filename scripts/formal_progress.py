@@ -72,6 +72,7 @@ def duration(seconds):
 class Dashboard:
     def __init__(self, root, suite):
         self.root=Path(root);self.suite=Path(suite);self.samples={}
+        self.launch=None
         build=read(self.root/'docs/evidence/mega-document-v3-build.json',{})
         self.rows={t['task']:t['splits']['train']['arrays']['labels']['shape'][0]
                    for t in build.get('tasks',[])}
@@ -90,6 +91,26 @@ class Dashboard:
         lines=[f'\n[{clock}] 实验：{self.suite.name}',
                f"任务 {len(names)} | 已计算 {len(groups['computed'])} | 运行 {len(groups['running'])} | "
                f"排队 {len(groups['pending'])} | 失败 {len(groups['failed'])} | 暂停 {len(groups['paused'])}"]
+        launch=self.launch or read(self.suite/'display-heartbeat.json',{})
+        if self.launch is None:
+            lines.append('模式：只读观察；不会自动启动或恢复暂停任务。')
+        if launch:
+            pid=launch.get('runner_pid');alive=False
+            if isinstance(pid,int) and pid>0:
+                try: os.kill(pid,0);alive=True
+                except PermissionError: alive=True
+                except OSError: pass
+            fresh=now-launch.get('updated_at',0)<max(60,launch.get('interval',15)*3)
+            if alive and fresh:
+                elapsed=duration(now-launch['started_at']) if 'started_at' in launch else '未知'
+                lines.append(f'恢复入口：PID {pid} 存活 | 入口耗时 {elapsed}')
+                if not groups['running'] and not computed_suite(self.suite):
+                    lines.append('当前阶段：恢复入口运行中；尚未派发训练。下方暂停/排队是上次保存的任务状态。')
+                    lines.extend(startup_lines(self.suite,launch,now))
+            elif self.launch is None and not groups['running']:
+                lines.append('恢复入口：未确认存活；仅打开观察器不能让暂停任务继续。')
+        elif not groups['running'] and groups['paused']:
+            lines.append('恢复入口：无启动心跳；需要实际续跑入口，观察器本身不恢复训练。')
         if not jobs:
             probes=sum(bool(read(p,{}).get('passed')) for p in self.suite.glob('*-source-probe.json'))
             canaries=sum(bool(read(p,{}).get('passed')) for p in self.suite.glob('preflight/*/*/canary.json'))
@@ -134,6 +155,36 @@ class Dashboard:
         lines.append('回传：'+('已完成' if delivered else ('计算完成，回传尚未完成' if computed else '等待全部任务计算完成')))
         lines.append('详情：各任务 jobs/<任务名>/worker.log；主入口日志 progress-parent.log。')
         return '\n'.join(lines)
+
+
+def computed_suite(suite):
+    return (suite/'compute-complete.json').exists()
+
+
+def startup_lines(suite,launch,now):
+    """Read only this launch's bounded log tails; never print raw child text."""
+    lines=[]
+    for name,label in (('setup.log','环境检查'),('progress-parent.log','入口日志')):
+        path=suite/name
+        try:
+            stat=path.stat();offset=launch.get('log_offsets',{}).get(name)
+            lines.append(f'  {label}：{stat.st_size} bytes | 最后写入 {int(max(0,now-stat.st_mtime))}s 前')
+            if offset is None: continue
+            with path.open('rb') as handle:
+                handle.seek(max(offset,stat.st_size-65536))
+                tail=handle.read(65536).decode('utf8',errors='replace')
+            if name=='setup.log':
+                stages=[s.removeprefix('QKAN_SETUP_STAGE ') for s in tail.splitlines()
+                        if s.startswith('QKAN_SETUP_STAGE ')]
+                allowed={'bootstrap_python'}|{m+':'+s for m in ('mega','s5')
+                         for s in ('source','environment','dependencies','build','verify')}
+                if stages and stages[-1] in allowed:
+                    lines.append('  本次环境阶段：'+stages[-1]+'（进入阶段；不代表完成）')
+            elif 'Verified identical array content despite ZIP encoding difference:' in tail:
+                lines.append('  本次入口已进入数据一致性校验；全部完成后继续派发。')
+        except OSError: pass
+    lines.append('  暂无训练进度；请勿重复启动。若需排查，在另一窗口查看 progress-parent.log 与 setup.log。')
+    return lines
 
 
 def main():
@@ -203,13 +254,20 @@ def main():
             print('接续原实验目录与原执行版本：'+expected+'\n'+str(suite),flush=True)
             with (suite/'progress-parent.log').open('ab') as log:
                 if pause_requested: return 75
+                started=time.time()
+                offsets={name:(suite/name).stat().st_size if (suite/name).exists() else 0
+                         for name in ('setup.log','progress-parent.log')}
                 child=subprocess.Popen(command,cwd=root,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+                dashboard.launch=dict(started_at=started,runner_pid=child.pid,interval=args.interval,
+                                      log_offsets=offsets)
                 last=0.
                 while child.poll() is None:
                     if time.monotonic()-last>=args.interval:
+                        dashboard.launch['updated_at']=time.time()
                         terminal.show(dashboard.render());last=time.monotonic()
                         atomic_json(suite/'display-heartbeat.json',dict(updated_at=time.time(),
                             supervisor_pid=os.getpid(),runner_pid=child.pid,pause_requested=pause_requested,
+                            started_at=started,interval=args.interval,log_offsets=offsets,
                             meaning='Display supervisor alive; worker progress is in per-job heartbeat.json'))
                     time.sleep(.5)
                 terminal.close()
