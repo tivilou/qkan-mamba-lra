@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from experiments.baseline_delivery.logical_batch import JointController,SampleClock,TorchSampleSchedule,policy,canary_rows,canary_tier
+from experiments.baseline_delivery.logical_batch import JointController,SampleClock,TorchSampleSchedule,policy,canary_rows,canary_tier,planned_batch_size
 from experiments.baseline_delivery.adaptive_memory import transaction
 from experiments.baseline_delivery.common import atomic_json,fingerprint,read
 from experiments.baseline_delivery.migration import ADAPTIVE_REVISION,compatible,load_state
@@ -141,6 +141,36 @@ class SampleClockTests(unittest.TestCase):
 
 
 class NativeCanaryPolicyTests(unittest.TestCase):
+    def test_prefetch_and_consumer_share_plan_through_every_tier(self):
+        from experiments.baseline_delivery.execution import BatchPrefetch
+        config=dict(batch_size=32,epochs=2,adaptive_memory=policy(32),canary_logical_tiers=[32,64,128])
+        sizes=[];c=JointController(config['adaptive_memory'],32)
+        with BatchPrefetch(lambda ids:tuple(ids)) as prefetch:
+            for epoch in range(2):
+                cursor=0
+                for step in range(epoch*3,epoch*3+3):
+                    canary_tier(c,config,step)
+                    end=min(cursor+planned_batch_size(c,config,step),224)
+                    ids=tuple(range(cursor,end));self.assertEqual(prefetch.get(ids),ids)
+                    sizes.append(len(ids));cursor=end
+                    if end<224:
+                        next_end=min(end+planned_batch_size(c,config,step+1),224)
+                        prefetch.submit(range(end,next_end))
+        self.assertEqual(sizes,[32,64,128]*2)
+    def test_resume_discards_prefetch_and_rebuilds_from_committed_cursor(self):
+        from experiments.baseline_delivery.execution import BatchPrefetch
+        config=dict(batch_size=32,epochs=2,adaptive_memory=policy(32),canary_logical_tiers=[32,64,128])
+        c=JointController(config['adaptive_memory'],32)
+        with BatchPrefetch(tuple) as old: old.submit(range(96,224))
+        restored=JointController(c.policy,32,c.snapshot());canary_tier(restored,config,2)
+        with BatchPrefetch(tuple) as fresh:
+            size=planned_batch_size(restored,config,2)
+            self.assertEqual(fresh.get(range(96,96+size)),tuple(range(96,224)))
+    def test_formal_prefetch_follows_post_commit_controller(self):
+        c=JointController(policy(32),32);config=dict(batch_size=32)
+        self.assertEqual(planned_batch_size(c,config,100),32)
+        c.state['logical_index']=2
+        self.assertEqual(planned_batch_size(c,config,101),128)
     def test_real_formal_jobs_cannot_force_tiers(self):
         config=dict(batch_size=32,epochs=2,adaptive_memory=policy(32),canary_logical_tiers=[32,64,128])
         self.assertEqual(canary_rows(config,True),224)

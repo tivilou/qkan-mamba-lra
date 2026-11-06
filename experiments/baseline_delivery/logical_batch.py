@@ -104,6 +104,12 @@ def make_controller(config,batch_size,saved=None):
 def logical_size(controller,base): return getattr(controller,'logical_batch',base)
 
 
+def planned_batch_size(controller,config,step):
+    """One plan for next-row selection and prefetch, including forced canaries."""
+    tiers=config.get('canary_logical_tiers')
+    return tiers[step%len(tiers)] if tiers is not None else logical_size(controller,config['batch_size'])
+
+
 def canary_rows(config,synthetic):
     """Force bounded native recovery through every logical tier, never formal tuning."""
     tiers=config.get('canary_logical_tiers')

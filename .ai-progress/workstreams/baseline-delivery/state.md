@@ -6,6 +6,8 @@
 
 ## Current State
 
+- Latest attempt6456818 failed in the first Transformer/ListOps uninterrupted canary, after update1. Downloaded authenticated failure-705a610d831a (SHA2566dc7971f209e2f2a887142679ae69df813523d84263a9170ed8d7f35f01340ca): BatchPrefetch.get identity guard at execution.py21. Forced canary advanced32→64 but prefetch retained32. Both native workers now use shared planned_batch_size for consumption and post-commit prefetch. Original source96 checkpoint remains the migration source; failed new suite never entered formal training. See docs/evidence/dynamic-canary-prefetch-repair-20261106.json.
+
 - Latest user screenshot: suite `adaptive-migrated-20261106T042749Z-67281`, executor96e542dd527b777d7690f6602fa1d14530957f85, Transformer/ListOps Epoch41/100, step121584/300000 (40.53%), physical32/logical32, about3.152 step/s, GPU100%,11.70/24GiB, running1/pending24/failed0. This supports advancing migrated training as reported by the user; it is not independent live inspection, controlled speed evidence or a completed result. Source checkout from prior handoff is `/root/projects/qkan-mamba-lra-adaptive-96e542dd527b`.
 - User authorized dynamic logical batch implementation. New opt-in logical32/64/128 plus physical1/2/4/8/16/32/64/128 controller compares seconds/sample, accepts any confirmed positive throughput gain, retains one-window slow trials and reverts confirmed sustained slowdown. Headroom is bounded to85%/512MiB; not a VRAM-filling/global-optimum guarantee. OOM retries identical rows with smaller physical slices; only after commit does the next logical batch decrease. Tier1/retry exhaustion fails clearly.
 - Sample-clock LR/progress preserves epochs*train_rows and committed cursor, anchors migration at existing group LR and sample position without warmup restart or counter rescaling. Actual Adam state/counter, RNG, permutation/cursor, history/best weights and accumulated time persist. Logical and physical policies, pending comparison windows and sample clock are checkpoint-owned. Changing batch/schedule defines a distinct optimization trajectory; no fixed-batch equivalence or accuracy claim.
@@ -22,8 +24,8 @@
 
 ## Blockers / Validation
 
-- No active-run failure reported. Dynamic native Torch/JAX restore/OOM/allocation behavior, Linux wrappers and measured speed/accuracy await collaborator execution; code availability does not certify them.
-- 74 standard-library/mock checks pass:42 adaptive/execution/migration regressions plus32 joint-batch, OOM/sample-clock rollback, migration lineage, forced-tier isolation and dashboard checks. All baseline AST and readiness help pass. Manifests/policy hashes are refreshed and checked separately against staged bytes; no framework execution is used for these checks.
+- Dynamic admission failed at6456818; code repair is ready for new admission. Dynamic native Torch/JAX restore/OOM/allocation behavior, Linux wrappers and measured speed/accuracy await collaborator execution; code availability does not certify them.
+- 77 standard-library/mock checks pass:42 adaptive/execution/migration regressions plus35 joint-batch, OOM/sample-clock rollback, migration lineage, forced-tier isolation and dashboard checks. All baseline AST and readiness help pass. Manifests/policy hashes are refreshed and checked separately against staged bytes; no framework execution is used for these checks.
 
 ## Relevant Decisions
 

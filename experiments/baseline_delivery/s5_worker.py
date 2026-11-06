@@ -117,7 +117,7 @@ def _run(args, modules, resources):
     if args.device.startswith('cuda') and jax.default_backend()!='gpu': raise ValueError('JAX CUDA backend unavailable')
     train=Split(args.data,config['task'],'train',args.cache,config.get('data_hashes',{}).get('train'))
     val=Split(args.data,config['task'],'val',args.cache,config.get('data_hashes',{}).get('val'))
-    from .logical_batch import canary_rows,canary_tier
+    from .logical_batch import canary_rows,canary_tier,planned_batch_size
     bounded_rows=canary_rows(config,args.synthetic)
     if args.synthetic:
         marker=read(args.data/'synthetic-canary.json')
@@ -274,7 +274,7 @@ def _run(args, modules, resources):
             meta['permutation']=sampler.permutation(len(train));meta['sampler']=sampler.get_state()
         while meta['cursor']<len(train):
             canary_tier(adaptive,config,meta['step'])
-            batch_size=logical_size(adaptive,config['batch_size']) if adaptive else config['batch_size']
+            batch_size=planned_batch_size(adaptive,config,meta['step'])
             end=min(meta['cursor']+batch_size,len(train));ids=meta['permutation'][meta['cursor']:end]
             update_started=time.perf_counter()
             if adaptive:
@@ -323,7 +323,9 @@ def _run(args, modules, resources):
             state=new_state;meta['rng']=key;meta['cursor']=end;meta['step']+=1
             if dynamic:
                 sample_clock.advance(len(ids))
-                if end<len(train): prefetch.submit(meta['permutation'][end:min(end+adaptive.logical_batch,len(train))])
+                if end<len(train):
+                    next_batch=planned_batch_size(adaptive,config,meta['step'])
+                    prefetch.submit(meta['permutation'][end:min(end+next_batch,len(train))])
             meta['epoch_loss']+=loss*len(ids);meta['epoch_correct']+=correct;meta['epoch_samples']+=len(ids)
             if args.synthetic: meta['update_trace'].append(dict(step=meta['step'],rows=ids.tolist(),loss=loss))
             heartbeat=dict(state='running',epoch=meta['epoch'],optimizer_step=meta['step'],loss=loss,updated_at=time.time(),

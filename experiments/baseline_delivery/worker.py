@@ -115,7 +115,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         torch.backends.cudnn.allow_tf32=False
     train=Split(data,config['task'],'train',cache,config.get('data_hashes',{}).get('train'))
     val=Split(data,config['task'],'val',cache,config.get('data_hashes',{}).get('val'))
-    from .logical_batch import canary_rows,canary_tier
+    from .logical_batch import canary_rows,canary_tier,planned_batch_size
     bounded_rows=canary_rows(config,synthetic)
     if synthetic:
         marker=read(Path(data)/'synthetic-canary.json')
@@ -264,7 +264,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         model.train()
         while state['cursor']<len(train):
             canary_tier(adaptive,config,state['step'])
-            batch_size=logical_size(adaptive,config['batch_size']) if adaptive else config['batch_size']
+            batch_size=planned_batch_size(adaptive,config,state['step'])
             end=min(len(train),state['cursor']+batch_size)
             ids=state['permutation'][state['cursor']:end].numpy()
             update_started=time.perf_counter()
@@ -313,7 +313,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             else: update_loss,update_correct=update(config['micro_batch'])
             state['cursor']=end;state['step']+=1
             if dynamic and end<len(train):
-                prefetch.submit(state['permutation'][end:min(end+adaptive.logical_batch,len(train))].numpy())
+                next_batch=planned_batch_size(adaptive,config,state['step'])
+                prefetch.submit(state['permutation'][end:min(end+next_batch,len(train))].numpy())
             state['epoch_loss']+=update_loss;state['epoch_correct']+=update_correct;state['epoch_samples']+=len(ids)
             if synthetic:
                 state['update_trace'].append({'step':state['step'],'rows':ids.tolist(),'loss':update_loss/len(ids)})
