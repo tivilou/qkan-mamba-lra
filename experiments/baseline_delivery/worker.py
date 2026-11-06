@@ -96,12 +96,12 @@ def evaluate(model,split,device,microbatch):
     return {'loss':loss/total,'accuracy':correct/total,'samples':total}
 
 
-def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False):
+def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False):
     with ExitStack() as resources:
-        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources)
+        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only)
 
 
-def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources):
+def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only):
     output=Path(output); output.mkdir(parents=True,exist_ok=True)
     torch.set_num_threads(int(os.environ.get('QKAN_CPU_THREADS','1')))
     seed=config['seed']; random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
@@ -144,8 +144,14 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources):
            'history':[],'epoch_loss':0.,'epoch_correct':0,'epoch_samples':0,'update_trace':[],
            'training_seconds':0.,'training_complete':False,'amp':{'enabled':False,'scaler':None},
            'runtime':{'torch':torch.__version__,'numpy':np.__version__,'device_type':device.split(':')[0]}}
-    if resume:
-        state=load_checkpoint(output,contract)
+    if resume or migration_check_only:
+        if migration_check_only:
+            if resume or synthetic or (output/'checkpoints/latest.json').exists():
+                raise ValueError('Migration check requires a new formal job without a target checkpoint')
+            from .migration import load_state
+            state=load_state(output,config,contract,lambda old:fingerprint(
+                {'config':old,'train':train.identity,'val':val.identity,'dictionary':dict_sha}),load_checkpoint)
+        else: state=load_checkpoint(output,contract)
         if state['runtime']!={'torch':torch.__version__,'numpy':np.__version__,'device_type':device.split(':')[0]}:
             raise ValueError('Runtime changed; exact resume is not certified across runtimes')
         model.load_state_dict(state['model'],strict=True);opt.load_state_dict(state['optimizer']);schedule.load_state_dict(state['scheduler'])
@@ -203,6 +209,19 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources):
             free,total=torch.cuda.mem_get_info()
             return dict(free_bytes=free,total_bytes=total,peak_bytes=torch.cuda.max_memory_allocated(),
                         allocated_bytes=torch.cuda.memory_allocated(),reserved_bytes=torch.cuda.memory_reserved())
+    if migration_check_only:
+        if adaptive is None: raise ValueError('Migration target must enable adaptive memory')
+        from .runner import compare_states
+        for name,actual in dict(model=model.state_dict(),optimizer=opt.state_dict(),
+                scheduler=schedule.state_dict(),rng=rng_state()).items():
+            compare_states(state[name],host(actual))
+        state['adaptive_memory']=adaptive.snapshot()
+        save_checkpoint(output,state)
+        compare_states(state,load_checkpoint(output,contract))
+        atomic_json(output/'migration-validation.json',dict(passed=True,**state['migration'],
+            state_roundtrip='exact before first adaptive optimizer update',
+            target_contract=contract,optimizer_steps_performed=0))
+        return 0
     def evaluate_split(split):
         if adaptive:
             return adaptive_evaluate(adaptive,lambda micro:evaluate(model,split,device,micro),
@@ -319,6 +338,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources):
              'synthetic':synthetic,'formal':not synthetic,'best_weights_sha256':digest(output/'best-model.pt')}
     if adaptive: summary['adaptive_memory']=dict(policy=adaptive.policy,state=adaptive.snapshot(),
         peak_bytes=state.get('adaptive_peak_bytes'),trajectory='adaptive; not fixed-microbatch-equivalent')
+    if state.get('migration'): summary['migration']=state['migration']
     if adaptive: summary['peak_gpu_bytes']=max(state.get('adaptive_peak_bytes',0),summary['peak_gpu_bytes'] or 0)
     atomic_json(output/'summary.json',summary)
     atomic_json(output/'status.json',{'state':'computed','step':state['step'],'delivery':'pending'})
@@ -331,6 +351,7 @@ def main():
     parser.add_argument('--cache',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--device',required=True);parser.add_argument('--resume',action='store_true')
     parser.add_argument('--synthetic',action='store_true');parser.add_argument('--stop-after',type=int)
+    parser.add_argument('--migration-check-only',action='store_true')
     args=parser.parse_args()
     if not args.synthetic:
         from .runner import check_release
@@ -339,7 +360,7 @@ def main():
     if hasattr(signal,'SIGHUP'): signal.signal(signal.SIGHUP,request_pause)
     try:
         with lock(args.output/'worker.lock'):
-            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic)
+            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic,args.migration_check_only)
     except Exception as error:
         from .common import worker_failure
         worker_failure(args.output,error)

@@ -37,7 +37,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "8dc279cbbea6e38ea4a1fc6e26835a5203dfc0dc10a6e6da768a3e38053bdcf2"
+        "sha256": "b7ea9fe2883bf88130c231b5e5edcf3b2e4bd145175259f7ef95c642e6cafc8b"
       },
       {
         "path": "experiments/baseline_delivery/execution.py",
@@ -46,6 +46,14 @@
       {
         "path": "experiments/baseline_delivery/data.py",
         "sha256": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f"
+      },
+      {
+        "path": "experiments/baseline_delivery/migration.py",
+        "sha256": "5b77a0fe6af9109034e1b22ed632e46b2e3c093f3a6a0f12e424648ff4dd01f8"
+      },
+      {
+        "path": "experiments/baseline_delivery/readiness.py",
+        "sha256": "5cd253c441d0283b4f24cc7af95b7e72c856c6f44fd2c5fb3874f5650cb49425"
       }
     ]
   },
@@ -71,7 +79,8 @@
       "Task input and output head only after explicit implementation and source review",
       "Separate framework-specific worker without changing active source mechanism",
       "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md",
-      "Adaptive execution also uses a validated logical-batch staging cache, one CPU batch of prefetch, device-side per-update statistics, five-second advisory status writes and reusable GPU rollback buffers with CPU fallback (immutable candidate state for S5). Positive throughput gains have no percentage floor and require multiple confirmation windows. FP32 and the logical update budget are unchanged; device behavior and speedup remain unverified for this revision."
+      "Adaptive execution also uses a validated logical-batch staging cache, one CPU batch of prefetch, device-side per-update statistics, five-second advisory status writes and reusable GPU rollback buffers with CPU fallback (immutable candidate state for S5). Positive throughput gains have no percentage floor and require multiple confirmation windows. FP32 and the logical update budget are unchanged; device behavior and speedup remain unverified for this revision.",
+      "Explicit migration may fork a paused admitted31639c0 full-state checkpoint into a separate adaptive suite after new source/recovery/trace admission and a fresh native-worker zero-update restore/roundtrip check. Only revision/contract and controller metadata change; scientific configuration is locked. The fixed prefix and adaptive continuation retain lineage and must not be reported as an uninterrupted fixed-policy baseline. Original checkpoints are preserved; native migration remains executor validation."
     ],
     "forbidden_changes": [
       "Replacing S5 by PyTorch/S4D approximation",

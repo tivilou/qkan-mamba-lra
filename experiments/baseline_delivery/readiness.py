@@ -66,10 +66,17 @@ def execute(args,suite):
     from .sync import prepare
     from .bootstrap import check_core,check_mamba
     source=revision();implementation,policy=policy_check()
+    from .migration import snapshot,plan_for,compatible,admit
+    if args.migrate_from:
+        if not args.adaptive_memory: raise ValueError('Migration requires explicit adaptive-memory policy')
+        snapshot(args.migrate_from,suite,args.cache)
+    migration=plan_for(suite)
+    if migration and not args.adaptive_memory: raise ValueError('Migrated suite requires adaptive memory')
     context=suite/'context.json'
     identity=dict(source_revision=source,implementation_sha256=implementation,policy_sha256=policy,
                   cache=str(args.cache.resolve()),gpus=args.gpus)
     if args.adaptive_memory: identity['adaptive_memory']=True
+    if migration: identity['migration_sha256']=digest(suite/'migration-source/plan.json')
     if context.exists() and read(context)!=identity: raise ValueError('Readiness resume identity changed')
     atomic_json(context,identity)
     setup={'target':'experiments.baseline_delivery.strong_environments','cwd':str(ROOT),
@@ -102,6 +109,8 @@ def execute(args,suite):
             if args.adaptive_memory:
                 from .adaptive_memory import default_policy
                 config['adaptive_memory']=default_policy(config['batch_size'])
+            if migration:
+                compatible(read(suite/'migration-source'/job_id/'config.json'),config)
             if cfg.exists() and read(cfg)!=config: raise ValueError('Job configuration changed')
             atomic_json(cfg,config)
             jobs.append(dict(id=job_id,config_sha256=fingerprint(config)));statuses[job_id]=dict(state='pending')
@@ -144,6 +153,9 @@ def execute(args,suite):
         source_revision=source,policy_sha256=policy))
     validate_runtime_release(read(release),None)
     os.environ['QKAN_RUNTIME_RELEASE']=str(release)
+    from .common import child_spec
+    migration_report=admit(suite,{j['id']:read(suite/'jobs'/j['id']/'config.json') for j in jobs},
+        data,args.cache,gpus,run_child,child_spec,inventory)
     atomic_json(suite/'suite.json',dict(schema='qkan-baseline-suite.v1',source_revision=source,
         protocol_sha256=digest(ROOT/'experiments/baseline_delivery/protocol.json'),models=list(MODELS),
         tasks=list(TASKS),seeds=[42],data=str(data),jobs=jobs,gpu_inventory=inventory))
@@ -152,6 +164,7 @@ def execute(args,suite):
     compact=dict(context=identity,source_probes={m:read(suite/(m+'-source-probe.json')) for m in MODELS},
         recovery=[read(p) for p in sorted((suite/'preflight').glob('*/*/canary.json'))],
         certificates={m:read(suite/(m+'-certificate.json')) for m in MODELS})
+    if migration_report: compact['migration']=migration_report
     atomic_json(suite/'gate-evidence.json',compact)
     atomic_json(suite/'gate-report.json',dict(status='passed',source_revision=source,
         next='formal_training_ready',jobs=len(jobs),
@@ -165,14 +178,19 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--cache',type=Path,required=True);p.add_argument('--gpus',default='0')
     p.add_argument('--resume',type=Path);p.add_argument('--gates-only',action='store_true')
+    p.add_argument('--output',type=Path,help='Explicit NEW suite path under runs/')
     p.add_argument('--adaptive-memory',action='store_true',help='New adaptive trajectory; cannot resume a fixed-policy suite')
+    p.add_argument('--migrate-from',type=Path,help='Fork paused admitted31639c0 full checkpoints into a new adaptive suite')
     args=p.parse_args()
+    if args.migrate_from and (args.resume or not args.adaptive_memory):
+        p.error('--migrate-from needs --adaptive-memory and a NEW suite, not --resume')
+    if args.output and args.resume: p.error('--output and --resume are mutually exclusive')
     import signal
     def interrupted(*_): raise KeyboardInterrupt
     for sig in (signal.SIGTERM,signal.SIGINT,signal.SIGHUP): signal.signal(sig,interrupted)
     from .bootstrap import check_exchange
     check_exchange()
-    suite=args.resume.resolve() if args.resume else ROOT/'runs'/('formal-ready-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
+    suite=args.resume.resolve() if args.resume else (args.output.resolve() if args.output else ROOT/'runs'/('formal-ready-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8]))
     if not suite.is_relative_to(ROOT/'runs'): raise ValueError('Readiness directory must be under project runs/')
     suite.mkdir(parents=True,exist_ok=bool(args.resume));print('Suite: '+str(suite),flush=True)
     with lock(suite/'suite.lock'):
@@ -195,6 +213,11 @@ def main():
                 failure_report=read(failure/'failure.json')
                 failure_report['adaptive_memory']=[dict(job=p.parent.name,report=read(p))
                     for p in sorted((suite/'jobs').glob('*/adaptive-memory.json'))]
+                atomic_json(failure/'failure.json',failure_report)
+            if (suite/'migration-source/plan.json').exists():
+                failure_report=read(failure/'failure.json')
+                failure_report['migration_diagnostics']=[dict(job=p.parent.name,report=read(p))
+                    for p in sorted((suite/'jobs').glob('*/worker-error.json'))]
                 atomic_json(failure/'failure.json',failure_report)
             from .return_artifacts import upload_declared
             files=['failure.json']

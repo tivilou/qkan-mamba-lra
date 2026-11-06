@@ -43,7 +43,7 @@ def check_release(config=None):
 
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
-    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
+    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'scripts/migrate_fixed_to_adaptive.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',
@@ -268,10 +268,15 @@ def deliver(suite):
 
 def execute(suite,gpus,cache,data):
     manifest=read(suite/'suite.json');jobs=manifest['jobs'];running={};pending=[]
+    from .migration import plan_for
+    migration=plan_for(suite)
     states=read(suite/'status.json')
     for job in jobs:
         directory=suite/'jobs'/job['id']
         check_release(read(directory/'config.json'))
+        if migration and migration['jobs'][job['id']]['checkpoint'] is not None:
+            if not (directory/'migration-validation.json').exists() or not (directory/'checkpoints/latest.json').exists():
+                raise ValueError('Migrated job lost validated full checkpoint; refusing fresh fallback')
         if (directory/'summary.json').exists():
             summary=read(directory/'summary.json')
             if summary['config_sha256']!=job['config_sha256'] or not read(directory/'trace-validation.json')['passed']:

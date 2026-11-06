@@ -157,8 +157,15 @@ def _run(args, modules, resources):
         rng=np.asarray(rng),sampler=np.random.RandomState(config['seed']).get_state(),
         best_accuracy=-1.,best_epoch=None,best_weights=None,history=[],update_trace=[],
         epoch_loss=0.,epoch_correct=0,epoch_samples=0,training_seconds=0.,training_complete=False)
-    if args.resume:
-        meta=load_checkpoint(out,contract)
+    migration_check_only=getattr(args,'migration_check_only',False)
+    if args.resume or migration_check_only:
+        if migration_check_only:
+            if args.resume or args.synthetic or (out/'checkpoints/latest.json').exists():
+                raise ValueError('Migration check requires a new formal job without a target checkpoint')
+            from .migration import load_state
+            meta=load_state(out,config,contract,lambda old:fingerprint(
+                dict(config=old,train=train.identity,val=val.identity,dictionary=dict_sha)),load_checkpoint)
+        else: meta=load_checkpoint(out,contract)
         if meta['runtime']!=runtime: raise ValueError('S5 runtime changed')
         state=serialization.from_state_dict(state,meta['train_state'])
     elif (out/'checkpoints/latest.json').exists(): raise ValueError('Existing S5 state requires --resume')
@@ -170,7 +177,7 @@ def _run(args, modules, resources):
     state=jax.device_put(jax.tree_util.tree_map(lambda value:jnp.asarray(value,dtype=value.dtype),state))
     if any(not isinstance(value,jax.Array) for value in jax.tree_util.tree_leaves(state)):
         raise ValueError('S5 training state has non-JAX leaves')
-    if args.resume:
+    if args.resume or migration_check_only:
         from .readiness import compare_numpy
         compare_numpy(meta['train_state'],jax.tree_util.tree_map(np.asarray,serialization.to_state_dict(state)))
         atomic_json(out/'restore-validation.json',dict(schema='qkan-s5-restore.v1',
@@ -198,6 +205,16 @@ def _run(args, modules, resources):
                 if result['peak_bytes'] is None and result.get('total_bytes'):
                     result['peak_bytes']=result['total_bytes']-result['free_bytes']
             return result
+    if migration_check_only:
+        if adaptive is None: raise ValueError('Migration target must enable adaptive memory')
+        # The restored TrainState already passed exact host/device roundtrip above.
+        meta['adaptive_memory']=adaptive.snapshot()
+        save_checkpoint(out,meta)
+        compare_numpy(meta,load_checkpoint(out,contract))
+        atomic_json(out/'migration-validation.json',dict(passed=True,**meta['migration'],
+            state_roundtrip='exact before first adaptive optimizer update',
+            target_contract=contract,optimizer_steps_performed=0))
+        return 0
     atomic_json(out/'config.json',config)
     @jax.jit
     def gradient(params,batch,key):
@@ -329,7 +346,8 @@ def _run(args, modules, resources):
         data_hashes=config.get('data_hashes',{}),best_epoch=meta['best_epoch'],validation=metric,test=test,
         history=meta['history'],optimizer_steps=meta['step'],parameters=sum(p.size for p in jax.tree_util.tree_leaves(best)),
         training_seconds=meta['training_seconds'],peak_gpu_bytes=None,synthetic=args.synthetic,formal=not args.synthetic,
-        best_weights_sha256=digest(weights),**({'adaptive_memory':dict(policy=adaptive.policy,
+        best_weights_sha256=digest(weights),**({'migration':meta['migration']} if meta.get('migration') else {}),
+        **({'adaptive_memory':dict(policy=adaptive.policy,
             state=adaptive.snapshot(),trajectory='adaptive; not fixed-microbatch-equivalent')} if adaptive else {})))
     atomic_json(out/'status.json',dict(state='computed',step=meta['step'],delivery='pending'));return 0
 
@@ -339,6 +357,7 @@ def main():
     for name in ('config','data','cache','output'): p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--device',required=True);p.add_argument('--resume',action='store_true')
     p.add_argument('--synthetic',action='store_true');p.add_argument('--stop-after',type=int)
+    p.add_argument('--migration-check-only',action='store_true')
     args=p.parse_args()
     if not args.synthetic:
         from .runner import check_release

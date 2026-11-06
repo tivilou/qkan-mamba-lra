@@ -2,7 +2,7 @@
 
 This opt-in execution policy adjusts the physical microbatch while holding the logical batch (32 by default), dataset/order, learning-rate schedule, optimizer-update count, clipping and FP32 precision fixed. It covers the PyTorch Transformer/Mamba1/MEGA/minimal-S4D worker and the native JAX S5 worker. It introduces no dependency downloads or framework replacement. Each job owns an independent controller.
 
-Changing microbatch partitioning can change dropout keys, reduction order and numerical trajectories. Adaptive configurations are distinct experiments, not bitwise-equivalent continuations of the existing fixed-microbatch suite. Current executor31639c0 and its active suite must continue untouched. Do not git pull there or alter its checkpoint/config to enable adaptation.
+Changing microbatch partitioning can change dropout keys, reduction order and numerical trajectories. Adaptive configurations are distinct experiments, not bitwise-equivalent continuations of the existing fixed-microbatch suite. Keep executor31639c0 and its checkpoint/config untouched. The explicit migration entry below can fork its paused full state into a separate adaptive suite; it never edits the original contract in place.
 
 ## Policy
 
@@ -54,6 +54,26 @@ bash scripts/run_adaptive_readiness.sh --cache "$QKAN_CACHE" --gpus 0 --gates-on
 The command prints the actual new Suite path. It runs the source probes and all25 bounded recovery/trace canaries, binding adaptive configuration, source, device and controller restoration. A canary covers its observed schedule; it is not an exhaustive test of every pressure/timing trajectory. Owner-side injected-failure tests cover controller/transaction logic without importing models. Actual Torch/JAX rollback, speed and all-tier numerical behavior remain hardware checks until executed and reviewed.
 
 After successful admission, use that printed suite path with the same wrapper and --resume to continue the new experiment. The formal_progress supervisor preserves --adaptive-memory from its context on subsequent resumes. Certificates from31639c0 cannot authorize this revision; the original release remains closed in Git.
+
+## Fork an existing fixed checkpoint
+
+The explicit migration entry supports the admitted31639c0 suite before any job has completed. Pause its original supervisor with Ctrl+C once and wait for the shell prompt. Source suite/worker locks must be free. The importer rejects completed jobs rather than relabeling old fixed results as adaptive. Started jobs without valid full checkpoints stop migration; never silently restart them. Untouched pending jobs start normally in the new adaptive suite.
+
+Run in the separate checkout created by prepare_adaptive_checkout.sh:
+
+```bash
+bash scripts/migrate_fixed_to_adaptive.sh \
+  --migrate-from /root/projects/qkan-mamba-lra/runs/formal-ready-20261105T042214Z-1e90315e \
+  --cache /root/qkan-cache --gpus 0
+```
+
+This snapshots source configuration and the latest generation bytes with SHA-256 validation. It reruns this revision's source/recovery/trace gates and obtains new admission. Then a fresh native worker loads each copied full checkpoint, verifies the original data/dictionary contract and unchanged scientific configuration, restores parameters/optimizer/scheduler/RNG, checks exact restoration/serialization roundtrip and writes a new checkpoint. This check performs zero optimizer updates. No old certificate is copied into the new release. The wrapper enters the in-place progress supervisor only after all checks and evidence return succeed, then continues the remaining update budget.
+
+Migration preserves committed step/epoch/cursor/permutation, all optimizer moments/counters, scheduler, RNG, best weights/validation history and accumulated training time. Only source/config contract metadata is rebound and a new adaptive controller is initialized. Scalar runtime/package/backend identity must still match. Changing model dimensions, data, logical batch, epochs, seed, optimizer settings or protocol is rejected. The new run is a fixed-prefix/adaptive-continuation trajectory with checkpoint hash and switch step in migration-validation.json, gate-evidence.json and final summary. It is not an uninterrupted fixed baseline.
+
+If a gate fails, do not rerun the migration wrapper to duplicate an experiment: keep the printed new Suite path, inspect its local logs, and resume its admission with run_adaptive_readiness.sh --resume NEW_SUITE --cache /root/qkan-cache --gpus 0 --gates-only after resolving the cause. After a successful admission use formal_progress.py --resume NEW_SUITE. A partially written target checkpoint without migration-validation.json is blocked for explicit inspection. Original checkpoints remain available for rollback through the original executor. Do not run both suites on GPU0 simultaneously.
+
+Owner verification covers stdlib migration policy, byte-copy/hash behavior and injected failures only. Native restore checks and new GPU admission execute on the collaborator; implementation availability does not establish that this particular checkpoint has already migrated successfully.
 
 ## Evidence and display
 
