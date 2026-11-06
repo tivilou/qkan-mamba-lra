@@ -1,7 +1,8 @@
 """Opt-in microbatch adaptation. No framework imports or allocation by this policy.
 
 Changing physical batches defines an adaptive experiment, not bitwise equivalence
-to a fixed-batch run. The logical optimizer batch is never changed.
+to a fixed-batch run. This base policy keeps the logical batch fixed;
+logical_batch.py adds the explicitly separate sample-scheduled joint policy.
 """
 import copy
 import json
@@ -148,7 +149,7 @@ def attach_journal(controller,output,step):
     from .common import atomic_json
     output=Path(output)
     def emit(event):
-        event.update(step=step(),logical_batch_unchanged=True)
+        event.update(step=step(),logical_batch_unchanged=not bool(controller.policy.get('logical_tiers')))
         with (output/'adaptive-events.jsonl').open('a',encoding='utf8') as handle:
             handle.write(json.dumps(event,allow_nan=False)+'\n');handle.flush()
         atomic_json(output/'adaptive-memory.json',dict(policy=controller.policy,
@@ -157,7 +158,7 @@ def attach_journal(controller,output,step):
     emit(dict(timestamp=time.time(),**controller.telemetry()))
 
 
-def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchronize,started_at=None):
+def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchronize,started_at=None,samples=None):
     """Rollback *all* mutable training state before rerunning the same update.
 
     Callbacks must include model buffers, optimizer/scheduler and RNG; caller
@@ -176,8 +177,15 @@ def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchro
             failed=True
         if not failed:
             used=controller.micro_batch;memory=measure()
-            controller.observe(time.perf_counter()-started,memory)
-            return result,dict(used_micro_batch=used,**controller.telemetry(),**memory)
+            used_logical=getattr(controller,'logical_batch',None)
+            transitions=controller.state['transitions']
+            if used_logical is not None: controller.used_samples=samples
+            if used_logical is not None and retries:
+                controller.committed_oom()
+            else: controller.observe(time.perf_counter()-started,memory)
+            if used_logical is not None and transitions!=controller.state['transitions']: controller.publish()
+            return result,dict(used_micro_batch=used,**controller.telemetry(),**memory,
+                **(dict(used_logical_batch=used_logical) if used_logical is not None else {}))
         # Outside except: no retained exception frame owns failed tensors.
         try: controller.last_memory=measure()
         except (RuntimeError,OSError): controller.last_memory={}

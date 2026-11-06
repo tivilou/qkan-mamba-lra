@@ -76,6 +76,7 @@ def execute(args,suite):
     identity=dict(source_revision=source,implementation_sha256=implementation,policy_sha256=policy,
                   cache=str(args.cache.resolve()),gpus=args.gpus)
     if args.adaptive_memory: identity['adaptive_memory']=True
+    if args.dynamic_logical_batch: identity['dynamic_logical_batch']=True
     if migration: identity['migration_sha256']=digest(suite/'migration-source/plan.json')
     if context.exists() and read(context)!=identity: raise ValueError('Readiness resume identity changed')
     atomic_json(context,identity)
@@ -86,6 +87,7 @@ def execute(args,suite):
     data=prepare(args.cache,None);gpus,inventory=discover_gpus(args.gpus)
     probe_evidence={}
     for model in MODELS:
+        print('Source gate: '+model,flush=True)
         path=suite/(model+'-source-probe.json')
         if path.exists():
             value=read(path)
@@ -109,6 +111,9 @@ def execute(args,suite):
             if args.adaptive_memory:
                 from .adaptive_memory import default_policy
                 config['adaptive_memory']=default_policy(config['batch_size'])
+                if args.dynamic_logical_batch:
+                    from .logical_batch import policy as logical_policy
+                    config['adaptive_memory']=logical_policy(config['batch_size'])
             if migration:
                 compatible(read(suite/'migration-source'/job_id/'config.json'),config)
             if cfg.exists() and read(cfg)!=config: raise ValueError('Job configuration changed')
@@ -117,6 +122,8 @@ def execute(args,suite):
             for gpu in gpus:
                 folder=suite/'preflight'/fingerprint(inventory[gpu])[:12]/job_id
                 if not (folder/'canary.json').exists():
+                    print('Recovery/trace gate: '+job_id+' GPU '+gpu+
+                        (' | logical32/64/128; fresh-process restore' if args.dynamic_logical_batch else ''),flush=True)
                     if folder.exists(): folder.rename(folder.with_name(folder.name+'.failed-'+uuid.uuid4().hex[:8]))
                     previous=os.environ.get('CUDA_VISIBLE_DEVICES');os.environ['CUDA_VISIBLE_DEVICES']=gpu
                     try:
@@ -145,7 +152,11 @@ def execute(args,suite):
             status='source_faithful_adapted',implementation_sha256=implementation,
             protocol_sha256=digest(ROOT/'experiments/baseline_delivery/protocol.json'),policy_sha256=policy,
             source_revision=source,evidence=evidence,
-            scope='Direct pinned-source mechanism under explicitly reviewed common protocol. No author score reproduction or SOTA claim.'))
+            execution_variant='dynamic_logical_sample_clock' if args.dynamic_logical_batch else ('adaptive_physical' if args.adaptive_memory else 'fixed'),
+            scope=('Pinned-source mechanism with reviewed dynamic logical batch/sample schedule; '
+                   'not fixed-batch protocol equivalence. No author score reproduction or SOTA claim.'
+                if args.dynamic_logical_batch else
+                   'Direct pinned-source mechanism under explicitly reviewed common protocol. No author score reproduction or SOTA claim.')))
         certificates[model]=dict(path=certificate.relative_to(ROOT).as_posix(),sha256=digest(certificate))
     release=suite/'runtime-release.json'
     atomic_json(release,dict(schema='qkan-baseline-release.v1',status='released',cohort_frozen=True,
@@ -180,8 +191,10 @@ def main():
     p.add_argument('--resume',type=Path);p.add_argument('--gates-only',action='store_true')
     p.add_argument('--output',type=Path,help='Explicit NEW suite path under runs/')
     p.add_argument('--adaptive-memory',action='store_true',help='New adaptive trajectory; cannot resume a fixed-policy suite')
-    p.add_argument('--migrate-from',type=Path,help='Fork paused admitted31639c0 full checkpoints into a new adaptive suite')
+    p.add_argument('--migrate-from',type=Path,help='Fork paused admitted31639c0 or adaptive96e542d full checkpoints into a separate new suite')
+    p.add_argument('--dynamic-logical-batch',action='store_true',help='New sample-scheduled logical32/64/128 trajectory')
     args=p.parse_args()
+    if args.dynamic_logical_batch: args.adaptive_memory=True
     if args.migrate_from and (args.resume or not args.adaptive_memory):
         p.error('--migrate-from needs --adaptive-memory and a NEW suite, not --resume')
     if args.output and args.resume: p.error('--output and --resume are mutually exclusive')

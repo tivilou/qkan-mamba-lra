@@ -115,10 +115,12 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         torch.backends.cudnn.allow_tf32=False
     train=Split(data,config['task'],'train',cache,config.get('data_hashes',{}).get('train'))
     val=Split(data,config['task'],'val',cache,config.get('data_hashes',{}).get('val'))
+    from .logical_batch import canary_rows,canary_tier
+    bounded_rows=canary_rows(config,synthetic)
     if synthetic:
         marker=read(Path(data)/'synthetic-canary.json')
         if (marker.get('bounded') is not True or marker.get('test_included') is not False or
-                config['epochs']!=2 or len(train)>3*config['batch_size'] or len(val)>2):
+                config['epochs']!=2 or len(train)>bounded_rows or len(val)>2):
             raise ValueError('Synthetic mode is restricted to the bounded recovery canary')
     vocab,dict_sha=vocabulary(data,config['task'])
     if config.get('vocabulary')!=vocab:
@@ -139,6 +141,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         if step<warmup: return (step+1)/max(1,warmup)
         return .5*(1+math.cos(math.pi*min(1,(step-warmup)/max(1,total_steps-warmup))))
     schedule=torch.optim.lr_scheduler.LambdaLR(opt,multiplier)
+    dynamic=bool((config.get('adaptive_memory') or {}).get('logical_tiers'))
     state={'schema':'qkan-training-state.v1','contract':contract,'step':0,'epoch':0,'cursor':0,
            'permutation':None,'best_accuracy':-1.,'best_epoch':None,'best_weights':None,
            'history':[],'epoch_loss':0.,'epoch_correct':0,'epoch_samples':0,'update_trace':[],
@@ -154,7 +157,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         else: state=load_checkpoint(output,contract)
         if state['runtime']!={'torch':torch.__version__,'numpy':np.__version__,'device_type':device.split(':')[0]}:
             raise ValueError('Runtime changed; exact resume is not certified across runtimes')
-        model.load_state_dict(state['model'],strict=True);opt.load_state_dict(state['optimizer']);schedule.load_state_dict(state['scheduler'])
+        model.load_state_dict(state['model'],strict=True);opt.load_state_dict(state['optimizer'])
+        if not dynamic or state['scheduler'].get('schema')!='qkan-sample-clock.v1':
+            schedule.load_state_dict(state['scheduler'])
         restore_rng(state['rng'])
     elif (output/'checkpoints/latest.json').exists():
         raise ValueError('Existing checkpoint requires explicit resume')
@@ -163,7 +168,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         if not device.startswith('cuda'): raise ValueError('Adaptive memory requires CUDA')
         from .adaptive_memory import Controller,transaction,attach_journal,evaluation as adaptive_evaluate
         from .execution import BatchPrefetch,RollbackBuffer,StatusWriter
-        adaptive=Controller(config['adaptive_memory'],config['batch_size'],state.get('adaptive_memory'))
+        from .logical_batch import make_controller,logical_size,SampleClock,TorchSampleSchedule
+        adaptive=make_controller(config['adaptive_memory'],config['batch_size'],state.get('adaptive_memory'))
         prefetch=resources.enter_context(BatchPrefetch(lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
         status_writer=StatusWriter(atomic_json,adaptive.policy.get('status_interval',5.))
         rollback=RollbackBuffer(torch,cpu=state.get('rollback_device')=='cpu')
@@ -209,12 +215,28 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             free,total=torch.cuda.mem_get_info()
             return dict(free_bytes=free,total_bytes=total,peak_bytes=torch.cuda.max_memory_allocated(),
                         allocated_bytes=torch.cuda.memory_allocated(),reserved_bytes=torch.cuda.memory_reserved())
+    if dynamic:
+        # Preserve the current group rates when rebasing a legacy checkpoint.
+        position=state['epoch']*len(train)+state['cursor']
+        rates=[group['lr'] for group in opt.param_groups]
+        clock=SampleClock(config['epochs']*len(train),min(config['warmup_steps']*config['batch_size'],
+            max(0,config['epochs']*len(train)-config['batch_size'])),
+            [group.get('initial_lr',config['lr']) for group in opt.param_groups],position,rates if (resume or migration_check_only) else None,
+            saved=state.get('sample_clock'),reference_batch=config['batch_size'])
+        if clock.state['progress']!=position: raise ValueError('Sample clock and sampler cursor differ')
+        schedule=TorchSampleSchedule(opt,clock)
     if migration_check_only:
         if adaptive is None: raise ValueError('Migration target must enable adaptive memory')
         from .runner import compare_states
         for name,actual in dict(model=model.state_dict(),optimizer=opt.state_dict(),
                 scheduler=schedule.state_dict(),rng=rng_state()).items():
+            if name=='scheduler' and dynamic: continue
             compare_states(state[name],host(actual))
+        if dynamic:
+            state['scheduler']=schedule.state_dict();state['sample_clock']=clock.snapshot()
+            state['migration']['sample_schedule']=dict(samples_seen=position,
+                sample_budget=clock.state['total'],anchor_rates=clock.rates(),
+                optimizer_counter='preserved; not rescaled',warmup_restart=False)
         state['adaptive_memory']=adaptive.snapshot()
         save_checkpoint(output,state)
         compare_states(state,load_checkpoint(output,contract))
@@ -234,18 +256,21 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         now=time.monotonic(); state['training_seconds']+=now-started; started=now
         state.update(model=model.state_dict(),optimizer=opt.state_dict(),scheduler=schedule.state_dict(),rng=rng_state())
         if adaptive: state['adaptive_memory']=adaptive.snapshot()
+        if dynamic: state['sample_clock']=clock.snapshot()
         save_checkpoint(output,state);last_save=now
     while state['epoch']<config['epochs']:
         if state['permutation'] is None:
             state['permutation']=torch.randperm(len(train))
         model.train()
         while state['cursor']<len(train):
-            end=min(len(train),state['cursor']+config['batch_size'])
+            canary_tier(adaptive,config,state['step'])
+            batch_size=logical_size(adaptive,config['batch_size']) if adaptive else config['batch_size']
+            end=min(len(train),state['cursor']+batch_size)
             ids=state['permutation'][state['cursor']:end].numpy()
             update_started=time.perf_counter()
             if adaptive:
                 arrays=prefetch.get(ids)
-                if end<len(train):
+                if end<len(train) and not dynamic:
                     prefetch.submit(state['permutation'][end:min(end+config['batch_size'],len(train))].numpy())
                 staged={key:torch.as_tensor(value) for key,value in arrays.items()}
                 try: staged={key:value.pin_memory() for key,value in staged.items()}
@@ -272,19 +297,23 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     loss.backward()
                 if adaptive and not bool(finite): raise ValueError('Nonfinite loss')
                 nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
-                opt.step();schedule.step()
+                opt.step()
+                if dynamic: schedule.step(len(ids))
+                else: schedule.step()
                 return (float(update_loss),int(update_correct)) if adaptive else (update_loss,update_correct)
             adaptive_status={}
             if adaptive:
                 torch.cuda.reset_peak_memory_stats()
                 (update_loss,update_correct),adaptive_status=transaction(adaptive,update,capture_update,
                     restore_update,cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
-                    memory,torch.cuda.synchronize,started_at=update_started)
+                    memory,torch.cuda.synchronize,started_at=update_started,samples=len(ids))
                 adaptive_status.update(rollback_device='cpu' if rollback.cpu else 'gpu',
                     batch_staging='gpu' if all(value.is_cuda for value in staged.values()) else 'cpu',cpu_prefetch=1)
                 state['adaptive_peak_bytes']=max(state.get('adaptive_peak_bytes',0),adaptive_status['peak_bytes'])
             else: update_loss,update_correct=update(config['micro_batch'])
             state['cursor']=end;state['step']+=1
+            if dynamic and end<len(train):
+                prefetch.submit(state['permutation'][end:min(end+adaptive.logical_batch,len(train))].numpy())
             state['epoch_loss']+=update_loss;state['epoch_correct']+=update_correct;state['epoch_samples']+=len(ids)
             if synthetic:
                 state['update_trace'].append({'step':state['step'],'rows':ids.tolist(),'loss':update_loss/len(ids)})
@@ -292,6 +321,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                         'next_row_cursor':state['cursor'],'optimizer_step':state['step'],
                         'loss':update_loss/len(ids),'updated_at':time.time(),
                         **({'adaptive_memory':adaptive_status} if adaptive else {})}
+            if dynamic: heartbeat.update(samples_seen=state['epoch']*len(train)+end,
+                sample_budget=config['epochs']*len(train),next_row_cursor=end,
+                logical_batch=adaptive.logical_batch)
             if adaptive:
                 status_writer.emit(lambda write:(write(output/'heartbeat.json',heartbeat),
                     write(output/'adaptive-memory.json',dict(policy=adaptive.policy,state=adaptive.snapshot(),
@@ -339,6 +371,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     if adaptive: summary['adaptive_memory']=dict(policy=adaptive.policy,state=adaptive.snapshot(),
         peak_bytes=state.get('adaptive_peak_bytes'),trajectory='adaptive; not fixed-microbatch-equivalent')
     if state.get('migration'): summary['migration']=state['migration']
+    if dynamic: summary['sample_clock']=clock.snapshot()
+    if dynamic: summary['adaptive_memory']['trajectory']='dynamic logical batch/sample schedule; not fixed-batch equivalent'
     if adaptive: summary['peak_gpu_bytes']=max(state.get('adaptive_peak_bytes',0),summary['peak_gpu_bytes'] or 0)
     atomic_json(output/'summary.json',summary)
     atomic_json(output/'status.json',{'state':'computed','step':state['step'],'delivery':'pending'})

@@ -164,10 +164,26 @@ class Dashboard:
             if adaptive:
                 lines.append(f"  显存适配：本步 micro-batch {adaptive['used_micro_batch']} | 下一步 {adaptive['micro_batch']} | "
                              f"累计 OOM 重试 {adaptive['oom_retries']} | {adaptive['event']}")
+                if 'logical_batch' in adaptive:
+                    lines.append(f"  逻辑 batch：本步 {adaptive['used_logical_batch']} | 下一步 {adaptive['logical_batch']} | 按样本调度学习率")
             step=hb.get('optimizer_step');epoch=hb.get('epoch');epochs=config.get('epochs')
             n=self.rows.get(config.get('task'));batch_size=config.get('batch_size')
             batches=math.ceil(n/batch_size) if n and batch_size else None
             total=epochs*batches if epochs and batches else None
+            dynamic=isinstance(hb.get('samples_seen'),int) and isinstance(hb.get('sample_budget'),int)
+            if dynamic:
+                seen=hb['samples_seen'];budget=hb['sample_budget']
+                key=(job,state.get('pid'),started,'samples');previous=self.samples.get(key)
+                rate=(seen-previous[1])/(now-previous[0]) if previous and seen>previous[1] and now>previous[0] else None
+                if previous is None or seen>previous[1]: self.samples[key]=(now,seen)
+                eta=(budget-seen)/rate if rate and budget>=seen else None
+                loss=hb.get('loss');loss_text=f'{loss:.6g}' if isinstance(loss,(float,int)) else '?'
+                lines.append(f'  训练更新 | Epoch {epoch+1 if isinstance(epoch,int) else "?"}/{epochs or "?"} | '
+                    f'样本 {seen}/{budget} ({100*seen/budget:.2f}%) | 实际 Step {step}')
+                lines.append(f'  loss {loss_text} | 速度 {f"{rate:.2f} samples/s" if rate else "待测"} | 心跳 {int(age)}s 前')
+                lines.append(f'  剩余训练样本 ETA {duration(eta)}（不含后续验证/测试/回传）')
+                if age>120: lines.append('  提示：超过120s无新训练心跳；可能在编译/验证/保存，不能据此判定失败。')
+                continue
             batch=step-epoch*batches if batches and isinstance(step,int) and isinstance(epoch,int) else None
             # The old worker has no phase event. Never label a quiet validation,
             # checkpoint write or compilation as a confirmed training stall.
@@ -280,6 +296,7 @@ def main():
         command=['bash',str(root/'scripts/run_formal_readiness.sh'),'--cache',str(cache),
                  '--gpus',context['gpus'],'--resume',str(suite)]
         if context.get('adaptive_memory'): command.append('--adaptive-memory')
+        if context.get('dynamic_logical_batch'): command.append('--dynamic-logical-batch')
         atomic_json(suite/('progress-launch-'+str(time.time_ns())+'.json'),dict(
             schema='qkan-progress-supervisor.v1',executor_revision=expected,
             display_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

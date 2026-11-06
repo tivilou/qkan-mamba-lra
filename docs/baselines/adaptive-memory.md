@@ -1,5 +1,7 @@
 # Adaptive memory execution
 
+Scope: this page describes the fixed-logical-batch physical policy. The separately opted-in [dynamic logical-batch policy](dynamic-logical-batch.md) adds logical32/64/128, a sample-based schedule and migration from the current adaptive96e542d executor. Its optimizer-update count and trajectory differ; the fixed-batch statements below apply only to this original policy.
+
 This opt-in execution policy adjusts the physical microbatch while holding the logical batch (32 by default), dataset/order, learning-rate schedule, optimizer-update count, clipping and FP32 precision fixed. It covers the PyTorch Transformer/Mamba1/MEGA/minimal-S4D worker and the native JAX S5 worker. It introduces no dependency downloads or framework replacement. Each job owns an independent controller.
 
 Changing microbatch partitioning can change dropout keys, reduction order and numerical trajectories. Adaptive configurations are distinct experiments, not bitwise-equivalent continuations of the existing fixed-microbatch suite. Keep executor31639c0 and its checkpoint/config untouched. The explicit migration entry below can fork its paused full state into a separate adaptive suite; it never edits the original contract in place.

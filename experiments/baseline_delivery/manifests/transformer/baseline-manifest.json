@@ -18,7 +18,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "b7ea9fe2883bf88130c231b5e5edcf3b2e4bd145175259f7ef95c642e6cafc8b"
+        "sha256": "646fdf1d11eb4806e03f9f87558e422cd02d409831132b8bc868bfa3536ef2c5"
       },
       {
         "path": "experiments/baseline_delivery/protocol.json",
@@ -30,7 +30,7 @@
       },
       {
         "path": "experiments/baseline_delivery/adaptive_memory.py",
-        "sha256": "004b44a9e987e4e05eb6a82d952a4a8db6adc9d53c47594ee6e288967f950328"
+        "sha256": "12a6730a9575a72e0f114323415e7f84b146ca4ca897e2d75b80ed5495958856"
       },
       {
         "path": "experiments/baseline_delivery/execution.py",
@@ -42,11 +42,35 @@
       },
       {
         "path": "experiments/baseline_delivery/migration.py",
-        "sha256": "5b77a0fe6af9109034e1b22ed632e46b2e3c093f3a6a0f12e424648ff4dd01f8"
+        "sha256": "817578c512cdd184ce015ccb3ebf6cbac016e823e4cc35be19c6299d7254433d"
       },
       {
         "path": "experiments/baseline_delivery/readiness.py",
-        "sha256": "5cd253c441d0283b4f24cc7af95b7e72c856c6f44fd2c5fb3874f5650cb49425"
+        "sha256": "8a1fdf6edaee623e886f503cc7202f301b96eda654b096d74e8612abb2530f73"
+      },
+      {
+        "path": "experiments/baseline_delivery/logical_batch.py",
+        "sha256": "03865cde428fc580c2615431f12102dbd12855ad59f849d0b2990472e1e20b76"
+      },
+      {
+        "path": "experiments/baseline_delivery/runner.py",
+        "sha256": "f4cabbbea0bc93164bd2bf87ff06fd27823e42fc757c8abcc3a1c3e0b42aaa3e"
+      },
+      {
+        "path": "experiments/baseline_delivery/s5_worker.py",
+        "sha256": "ef49a7e7841f739a50a3d3c5b76edfc11951ec54e987e687b209570ce9e7a65e"
+      },
+      {
+        "path": "scripts/formal_progress.py",
+        "sha256": "d9e4b97fe6dc3d7925e110e96008facc468d27f6f36cdaf440bcbd773ad94e28"
+      },
+      {
+        "path": "scripts/migrate_dynamic_logical.sh",
+        "sha256": "5ab0a6782f606b598bacd76f83ce6044208e9a7f8b3063bcfac6c59d066e0eeb"
+      },
+      {
+        "path": "tests/test_baseline_logical_batch.py",
+        "sha256": "da25348bba2a1ad061ee6434b06a83d20900e8f0ec9153334153e7ad4c81fbef"
       }
     ]
   },
@@ -80,7 +104,8 @@
       "AdamW, cosine warmup, clipping and FP32 under project common protocol; not upstream paper training recipe",
       "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md",
       "Adaptive execution also uses a validated logical-batch staging cache, one CPU batch of prefetch, device-side per-update statistics, five-second advisory status writes and reusable GPU rollback buffers with CPU fallback (immutable candidate state for S5). Positive throughput gains have no percentage floor and require multiple confirmation windows. FP32 and the logical update budget are unchanged; device behavior and speedup remain unverified for this revision.",
-      "Explicit migration may fork a paused admitted31639c0 full-state checkpoint into a separate adaptive suite after new source/recovery/trace admission and a fresh native-worker zero-update restore/roundtrip check. Only revision/contract and controller metadata change; scientific configuration is locked. The fixed prefix and adaptive continuation retain lineage and must not be reported as an uninterrupted fixed-policy baseline. Original checkpoints are preserved; native migration remains executor validation."
+      "Explicit migration may fork a paused admitted31639c0 full-state checkpoint into a separate adaptive suite after new source/recovery/trace admission and a fresh native-worker zero-update restore/roundtrip check. Only revision/contract and controller metadata change; scientific configuration is locked. The fixed prefix and adaptive continuation retain lineage and must not be reported as an uninterrupted fixed-policy baseline. Original checkpoints are preserved; native migration remains executor validation.",
+      "Separately opted-in dynamic logical32/64/128 and physical1..128 policy uses committed samples for LR/progress and samples/s for throughput decisions. It changes optimizer-update count and training trajectory; it is not fixed-batch/common-protocol performance equivalence. FP32, model/data identity and total epoch/sample budget remain declared. Explicit migration from fixed31639c0 or adaptive96e542d preserves parameters, optimizer moments/counters, RNG, sampler, best/history and lineage in a separate suite, anchors LR at the source position, and requires new native admission. Controller timing resets. Native dynamic recovery, OOM behavior, accuracy and speed remain unverified until collaborator execution; owner checks use stdlib/mocks only."
     ],
     "forbidden_changes": [
       "Change upstream active mixer equations or silently substitute architecture",

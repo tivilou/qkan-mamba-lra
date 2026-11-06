@@ -1,0 +1,103 @@
+{
+  "schema": "qkan-dynamic-logical-batch-implementation.v1",
+  "date": "2026-11-06",
+  "status": "implemented_pending_native_validation",
+  "owner_validation": {
+    "passed": true,
+    "stdlib_mock_checks": 74,
+    "regressions": 42,
+    "new_checks": 32,
+    "all_baseline_ast": true,
+    "readiness_help": true,
+    "framework_imports": false,
+    "gpu_query": false,
+    "model_execution": false,
+    "dependency_installation": false
+  },
+  "policy": {
+    "logical_tiers": [
+      32,
+      64,
+      128
+    ],
+    "physical_tiers": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128
+    ],
+    "maximum_physical": "current logical batch",
+    "initial_logical": 32,
+    "initial_physical": 4,
+    "target_fraction": 0.85,
+    "reserve_bytes": 536870912,
+    "throughput_unit": "samples/s",
+    "minimum_gain": 0,
+    "confirmation_windows": 3,
+    "max_comparison_windows": 8,
+    "oom": "retry identical full batch at smaller slice; lower next logical tier only after commit",
+    "sample_budget": "epochs * train_rows; committed row cursor",
+    "optimizer_counter": "preserved actual updates, never rescaled"
+  },
+  "migration": {
+    "known_source_revisions": [
+      "31639c014a62504f6596e75cf56a1abd5068bce4",
+      "96e542dd527b777d7690f6602fa1d14530957f85"
+    ],
+    "current_source_suite": "adaptive-migrated-20261106T042749Z-67281",
+    "current_source_evidence": "user screenshot; not independent live inspection",
+    "source_unchanged": true,
+    "new_suite": true,
+    "new_native_admission": true,
+    "native_restore_optimizer_updates": 0,
+    "lr_anchor": "current group rates and committed sample position",
+    "sample_clock_and_controller_checkpoint_owned": true,
+    "previous_migration_lineage_preserved": true
+  },
+  "native_gate": {
+    "status": "pending collaborator run",
+    "model_task_pairs": 25,
+    "logical_sequence": [
+      32,
+      64,
+      128,
+      32,
+      64,
+      128
+    ],
+    "interrupt_after_update": 2,
+    "force_tiers_allowed_only_in_bounded_canary": true,
+    "test_access": false,
+    "scopes": [
+      "native variable-shape update",
+      "fresh-process recovery",
+      "sample-clock equality",
+      "trace semantic/replay",
+      "zero-update migration roundtrip"
+    ]
+  },
+  "limitations": [
+    "no measured speedup or GPU allocation claim",
+    "finite headroom heuristic cannot guarantee filled VRAM or maximum performance",
+    "changed optimization trajectory may change accuracy; no fixed-batch equivalence",
+    "native Torch/JAX, actual OOM and Linux shell still require collaborator evidence"
+  ],
+  "source_sha256": {
+    "experiments/baseline_delivery/logical_batch.py": "03865cde428fc580c2615431f12102dbd12855ad59f849d0b2990472e1e20b76",
+    "experiments/baseline_delivery/adaptive_memory.py": "12a6730a9575a72e0f114323415e7f84b146ca4ca897e2d75b80ed5495958856",
+    "experiments/baseline_delivery/migration.py": "817578c512cdd184ce015ccb3ebf6cbac016e823e4cc35be19c6299d7254433d",
+    "experiments/baseline_delivery/readiness.py": "8a1fdf6edaee623e886f503cc7202f301b96eda654b096d74e8612abb2530f73",
+    "experiments/baseline_delivery/runner.py": "f4cabbbea0bc93164bd2bf87ff06fd27823e42fc757c8abcc3a1c3e0b42aaa3e",
+    "experiments/baseline_delivery/worker.py": "646fdf1d11eb4806e03f9f87558e422cd02d409831132b8bc868bfa3536ef2c5",
+    "experiments/baseline_delivery/s5_worker.py": "ef49a7e7841f739a50a3d3c5b76edfc11951ec54e987e687b209570ce9e7a65e",
+    "scripts/formal_progress.py": "d9e4b97fe6dc3d7925e110e96008facc468d27f6f36cdaf440bcbd773ad94e28",
+    "scripts/migrate_dynamic_logical.sh": "5ab0a6782f606b598bacd76f83ce6044208e9a7f8b3063bcfac6c59d066e0eeb",
+    "tests/test_baseline_logical_batch.py": "da25348bba2a1ad061ee6434b06a83d20900e8f0ec9153334153e7ad4c81fbef",
+    "docs/baselines/dynamic-logical-batch.md": "292229c8d6429802fc866cceae692eed91db98144865d822d5ebd62f450a3fd2",
+    "docs/baselines/adaptive-memory.md": "43b464dbad95f7fb8af031796358077755f4fbc384e592f1ae42011ed4dbd031"
+  }
+}

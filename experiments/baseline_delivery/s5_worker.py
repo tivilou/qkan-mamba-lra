@@ -117,9 +117,11 @@ def _run(args, modules, resources):
     if args.device.startswith('cuda') and jax.default_backend()!='gpu': raise ValueError('JAX CUDA backend unavailable')
     train=Split(args.data,config['task'],'train',args.cache,config.get('data_hashes',{}).get('train'))
     val=Split(args.data,config['task'],'val',args.cache,config.get('data_hashes',{}).get('val'))
+    from .logical_batch import canary_rows,canary_tier
+    bounded_rows=canary_rows(config,args.synthetic)
     if args.synthetic:
         marker=read(args.data/'synthetic-canary.json')
-        if marker.get('test_included') is not False or not marker.get('bounded') or config['epochs']!=2 or len(train)>3*config['batch_size'] or len(val)>2:
+        if marker.get('test_included') is not False or not marker.get('bounded') or config['epochs']!=2 or len(train)>bounded_rows or len(val)>2:
             raise ValueError('Invalid bounded S5 canary')
     vocab,dict_sha=vocabulary(args.data,config['task'])
     if vocab!=config['vocabulary']: raise ValueError('S5 vocabulary differs')
@@ -143,7 +145,9 @@ def _run(args, modules, resources):
     from flax.core import unfreeze
     params=unfreeze(model.init({'params':init,'dropout':drop},dummy)['params'])
     steps=config['epochs']*math.ceil(len(train)/config['batch_size']);warmup=min(config['warmup_steps'],steps-1)
+    dynamic=bool((config.get('adaptive_memory') or {}).get('logical_tiers'));sample_clock=None
     def schedule(step):
+        if sample_clock is not None: return jnp.asarray(sample_clock.rates()[0],dtype=jnp.float32)
         return config['lr']*jnp.where(step<warmup,(step+1)/max(1,warmup),
             .5*(1+jnp.cos(jnp.pi*jnp.minimum(1,(step-warmup)/max(1,steps-warmup)))))
     flat=traverse_util.flatten_dict(params)
@@ -187,7 +191,8 @@ def _run(args, modules, resources):
     if config.get('adaptive_memory'):
         if not args.device.startswith('cuda'): raise ValueError('Adaptive S5 requires CUDA')
         from .adaptive_memory import Controller,transaction,attach_journal,evaluation as adaptive_evaluate,jax_oom,board_memory
-        adaptive=Controller(config['adaptive_memory'],config['batch_size'],meta.get('adaptive_memory'))
+        from .logical_batch import make_controller,logical_size,SampleClock
+        adaptive=make_controller(config['adaptive_memory'],config['batch_size'],meta.get('adaptive_memory'))
         from .execution import BatchPrefetch,StatusWriter
         prefetch=resources.enter_context(BatchPrefetch(lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
         status_writer=StatusWriter(atomic_json,adaptive.policy.get('status_interval',5.))
@@ -205,10 +210,26 @@ def _run(args, modules, resources):
                 if result['peak_bytes'] is None and result.get('total_bytes'):
                     result['peak_bytes']=result['total_bytes']-result['free_bytes']
             return result
+    if dynamic:
+        # Optax schedule closures execute in the existing eager apply_gradients
+        # path; gradient() is jitted separately and never captures this clock.
+        anchor_rate=float(schedule(meta['step']))
+        sample_clock=SampleClock(config['epochs']*len(train),min(config['warmup_steps']*config['batch_size'],
+            max(0,config['epochs']*len(train)-config['batch_size'])),
+            [config['lr']],meta['epoch']*len(train)+meta['cursor'],
+            [anchor_rate] if (args.resume or migration_check_only) else None,
+            saved=meta.get('sample_clock'),reference_batch=config['batch_size'])
+        if sample_clock.state['progress']!=meta['epoch']*len(train)+meta['cursor']:
+            raise ValueError('Sample clock and sampler cursor differ')
     if migration_check_only:
         if adaptive is None: raise ValueError('Migration target must enable adaptive memory')
         # The restored TrainState already passed exact host/device roundtrip above.
         meta['adaptive_memory']=adaptive.snapshot()
+        if dynamic:
+            meta['sample_clock']=sample_clock.snapshot()
+            meta['migration']['sample_schedule']=dict(samples_seen=sample_clock.state['progress'],
+                sample_budget=sample_clock.state['total'],anchor_rates=sample_clock.rates(),
+                optimizer_counter='preserved; not rescaled',warmup_restart=False)
         save_checkpoint(out,meta)
         compare_numpy(meta,load_checkpoint(out,contract))
         atomic_json(out/'migration-validation.json',dict(passed=True,**meta['migration'],
@@ -245,13 +266,16 @@ def _run(args, modules, resources):
         now=time.monotonic();meta['training_seconds']+=now-started;started=last_save=now
         meta['train_state']=jax.tree_util.tree_map(np.asarray,serialization.to_state_dict(state))
         if adaptive: meta['adaptive_memory']=adaptive.snapshot()
+        if dynamic: meta['sample_clock']=sample_clock.snapshot()
         save_checkpoint(out,meta)
     while meta['epoch']<config['epochs']:
         if meta['permutation'] is None:
             sampler=np.random.RandomState();sampler.set_state(meta['sampler'])
             meta['permutation']=sampler.permutation(len(train));meta['sampler']=sampler.get_state()
         while meta['cursor']<len(train):
-            end=min(meta['cursor']+config['batch_size'],len(train));ids=meta['permutation'][meta['cursor']:end]
+            canary_tier(adaptive,config,meta['step'])
+            batch_size=logical_size(adaptive,config['batch_size']) if adaptive else config['batch_size']
+            end=min(meta['cursor']+batch_size,len(train));ids=meta['permutation'][meta['cursor']:end]
             update_started=time.perf_counter()
             if adaptive:
                 staged=prefetch.get(ids)
@@ -262,7 +286,7 @@ def _run(args, modules, resources):
                 except Exception as error:
                     if not jax_oom(error): raise
                     device_batch=None
-                if end<len(train): prefetch.submit(meta['permutation'][end:min(end+config['batch_size'],len(train))])
+                if end<len(train) and not dynamic: prefetch.submit(meta['permutation'][end:min(end+config['batch_size'],len(train))])
             def update(micro_batch):
                 grads=jax.tree_util.tree_map(jnp.zeros_like,state.params);loss=0.;correct=0;finite=True
                 key=jnp.asarray(meta['rng'])
@@ -293,14 +317,19 @@ def _run(args, modules, resources):
                 # neither state nor RNG until all asynchronous work succeeds.
                 (new_state,loss,correct,key),adaptive_status=transaction(adaptive,update,
                     lambda:None,lambda snapshot:None,cleanup_update,jax_oom,memory,lambda:None,
-                    started_at=update_started)
+                    started_at=update_started,samples=len(ids))
                 adaptive_status.update(rollback_device='immutable_jax_state',cpu_prefetch=1)
             else: new_state,loss,correct,key=update(config['micro_batch'])
             state=new_state;meta['rng']=key;meta['cursor']=end;meta['step']+=1
+            if dynamic:
+                sample_clock.advance(len(ids))
+                if end<len(train): prefetch.submit(meta['permutation'][end:min(end+adaptive.logical_batch,len(train))])
             meta['epoch_loss']+=loss*len(ids);meta['epoch_correct']+=correct;meta['epoch_samples']+=len(ids)
             if args.synthetic: meta['update_trace'].append(dict(step=meta['step'],rows=ids.tolist(),loss=loss))
             heartbeat=dict(state='running',epoch=meta['epoch'],optimizer_step=meta['step'],loss=loss,updated_at=time.time(),
                 **({'adaptive_memory':adaptive_status} if adaptive else {}))
+            if dynamic: heartbeat.update(samples_seen=meta['epoch']*len(train)+end,
+                sample_budget=config['epochs']*len(train),next_row_cursor=end,logical_batch=adaptive.logical_batch)
             if adaptive:
                 status_writer.emit(lambda write:(write(out/'heartbeat.json',heartbeat),write(out/'adaptive-memory.json',
                     dict(policy=adaptive.policy,state=adaptive.snapshot(),last_update=adaptive_status,step=meta['step']))),
@@ -347,8 +376,10 @@ def _run(args, modules, resources):
         history=meta['history'],optimizer_steps=meta['step'],parameters=sum(p.size for p in jax.tree_util.tree_leaves(best)),
         training_seconds=meta['training_seconds'],peak_gpu_bytes=None,synthetic=args.synthetic,formal=not args.synthetic,
         best_weights_sha256=digest(weights),**({'migration':meta['migration']} if meta.get('migration') else {}),
+        **({'sample_clock':sample_clock.snapshot()} if dynamic else {}),
         **({'adaptive_memory':dict(policy=adaptive.policy,
-            state=adaptive.snapshot(),trajectory='adaptive; not fixed-microbatch-equivalent')} if adaptive else {})))
+            state=adaptive.snapshot(),trajectory=('dynamic logical batch/sample schedule; not fixed-batch equivalent'
+                if dynamic else 'adaptive; not fixed-microbatch-equivalent'))} if adaptive else {})))
     atomic_json(out/'status.json',dict(state='computed',step=meta['step'],delivery='pending'));return 0
 
 

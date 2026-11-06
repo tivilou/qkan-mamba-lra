@@ -1,4 +1,4 @@
-"""Explicit fixed-to-adaptive fork. Filesystem and policy checks use stdlib only.
+"""Explicit checkpoint forks. Filesystem and policy checks use stdlib only.
 
 Checkpoint deserialization stays in the native worker after source verification.
 No original checkpoint/config is rewritten and no release is inherited.
@@ -12,9 +12,17 @@ import uuid
 from .common import atomic_json,digest,fingerprint,lock,read
 
 SOURCE_REVISION='31639c014a62504f6596e75cf56a1abd5068bce4'
+ADAPTIVE_REVISION='96e542dd527b777d7690f6602fa1d14530957f85'
 
 
 def compatible(old,new):
+    if (new.get('adaptive_memory') or {}).get('logical_tiers'):
+        from .logical_batch import policy
+        if old.get('source_revision') not in (SOURCE_REVISION,ADAPTIVE_REVISION):
+            raise ValueError('Unsupported source for dynamic logical-batch migration')
+        expected={**old,'source_revision':new['source_revision'],'adaptive_memory':policy(old['batch_size'])}
+        if expected!=new: raise ValueError('Dynamic migration changed scientific configuration')
+        return
     if old.get('source_revision')!=SOURCE_REVISION or old.get('adaptive_memory'):
         raise ValueError('Migration supports the admitted fixed executor31639c0 only')
     expected={**old,'source_revision':new['source_revision'],'adaptive_memory':new.get('adaptive_memory')}
@@ -41,7 +49,7 @@ def snapshot(source,suite,cache):
     source_root=source.parent.parent
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip()
     dirty=subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=source_root,text=True).strip()
-    if revision!=SOURCE_REVISION or dirty: raise ValueError('Original executor revision/files changed')
+    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
     destination=suite/'migration-source'
     if destination.exists(): raise ValueError('Migration snapshot already exists; resume the new suite')
     pending=suite/('migration-pending-'+uuid.uuid4().hex)
@@ -49,9 +57,9 @@ def snapshot(source,suite,cache):
         for path in (source/'progress-supervisor.lock',source/'suite.lock'):
             held.enter_context(lock(path))
         context=read(source/'context.json');manifest=read(source/'suite.json');gate=read(source/'gate-report.json')
-        if (context.get('source_revision')!=SOURCE_REVISION or context.get('adaptive_memory')
-                or manifest.get('source_revision')!=SOURCE_REVISION or gate.get('status')!='passed'
-                or gate.get('source_revision')!=SOURCE_REVISION or context['cache']!=str(Path(cache).resolve())):
+        if (context.get('source_revision')!=revision
+                or manifest.get('source_revision')!=revision or gate.get('status')!='passed'
+                or gate.get('source_revision')!=revision or context['cache']!=str(Path(cache).resolve())):
             raise ValueError('Original source admission/cache differs')
         records={};pending.mkdir()
         try:
@@ -64,7 +72,7 @@ def snapshot(source,suite,cache):
                 if (folder/'summary.json').exists():
                     raise ValueError('Completed fixed jobs cannot be relabeled adaptive; migrate before completion')
                 config=read(folder/'config.json')
-                if fingerprint(config)!=job['config_sha256'] or config['source_revision']!=SOURCE_REVISION:
+                if fingerprint(config)!=job['config_sha256'] or config['source_revision']!=revision:
                     raise ValueError('Original job configuration changed')
                 target=pending/name;target.mkdir();atomic_json(target/'config.json',config)
                 record=dict(config_sha256=fingerprint(config),checkpoint=None)
@@ -83,9 +91,9 @@ def snapshot(source,suite,cache):
                         raise ValueError('Started job lacks a valid full checkpoint; refusing fresh fallback')
                 records[name]=record
             plan=dict(schema='qkan-checkpoint-migration.v1',source_suite=str(source),
-                source_revision=SOURCE_REVISION,source_manifest_sha256=digest(source/'suite.json'),
+                source_revision=revision,source_manifest_sha256=digest(source/'suite.json'),
                 data=manifest['data'],cache=context['cache'],jobs=records,
-                trajectory='fixed prefix followed by adaptive continuation; not fixed-policy equivalent')
+                trajectory='recorded prefix followed by adaptive continuation; not fixed-policy equivalent')
             atomic_json(pending/'plan.json',plan)
             pending.rename(destination)
         finally:
@@ -112,13 +120,19 @@ def load_state(output,config,contract,original_contract,loader):
     if pointer['contract']!=original_contract(old):
         raise ValueError('Original checkpoint data/dictionary contract differs')
     state=loader(folder,pointer['contract'])
-    if state['step']!=pointer['step'] or 'adaptive_memory' in state or 'migration' in state:
+    dynamic=bool((config.get('adaptive_memory') or {}).get('logical_tiers'))
+    if state['step']!=pointer['step'] or (not dynamic and ('adaptive_memory' in state or 'migration' in state)):
         raise ValueError('Original checkpoint step/trajectory differs')
     if state.get('training_complete'): raise ValueError('Cannot migrate a completed training state')
-    lineage=dict(source_revision=SOURCE_REVISION,source_contract=pointer['contract'],
+    lineage=dict(source_revision=plan['source_revision'],source_contract=pointer['contract'],
         source_checkpoint_sha256=pointer['sha256'],optimizer_step=state['step'],
         source_config_sha256=record['config_sha256'],target_config_sha256=fingerprint(config),
         trajectory=plan['trajectory'])
+    if dynamic:
+        if state.get('migration'): lineage['previous_migration']=state['migration']
+        state.pop('adaptive_memory',None)
+        state.pop('sample_clock',None)
+        lineage['trajectory']='recorded prefix followed by dynamic logical-batch/sample-schedule continuation'
     state['contract']=contract;state['migration']=lineage
     return state
 
@@ -137,6 +151,7 @@ def admit(suite,configs,data,cache,gpus,run,build,inventory):
         if record['checkpoint'] is None: continue
         report=folder/'migration-validation.json'
         if not report.exists():
+            print('Checkpoint migration: '+name+' | zero-update native restore',flush=True)
             if (folder/'checkpoints/latest.json').exists():
                 raise ValueError('Partial migration checkpoint exists without validation; inspect locally')
             spec=build('--config',folder/'config.json','--data',data,'--cache',cache,
@@ -149,7 +164,7 @@ def admit(suite,configs,data,cache,gpus,run,build,inventory):
             raise ValueError('Migration validation identity differs')
         checked_pointer(folder)
         receipts[name]=value
-    report=dict(schema='qkan-migration-admission.v1',passed=True,source_revision=SOURCE_REVISION,
+    report=dict(schema='qkan-migration-admission.v1',passed=True,source_revision=plan['source_revision'],
         plan_sha256=digest(suite/'migration-source/plan.json'),restores=receipts,
         gpu_identity=inventory[gpus[0]],trajectory=plan['trajectory'])
     atomic_json(suite/'migration-report.json',report)

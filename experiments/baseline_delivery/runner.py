@@ -43,7 +43,7 @@ def check_release(config=None):
 
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
-    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'scripts/migrate_fixed_to_adaptive.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
+    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'scripts/migrate_fixed_to_adaptive.sh',ROOT/'scripts/migrate_dynamic_logical.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',
@@ -115,7 +115,9 @@ def canary(config,data,cache,output,device='cpu'):
     import zipfile
     folder=Path(output);folder.mkdir(parents=True,exist_ok=False)
     small=folder/'data';task=config['task'];(small/task).mkdir(parents=True)
-    count=config['batch_size']*3
+    dynamic=bool((config.get('adaptive_memory') or {}).get('logical_tiers'))
+    tiers=config['adaptive_memory']['logical_tiers'] if dynamic else None
+    count=sum(tiers) if dynamic else config['batch_size']*3
     for split in ('train','val'):
         arrays={}
         with ExitStack() as stack:
@@ -130,6 +132,7 @@ def canary(config,data,cache,output,device='cpu'):
         shutil.copyfile(dictionary_path(data,task),small/'metadata'/(task+'-dictionary.json'))
     atomic_json(small/'synthetic-canary.json',{'bounded':True,'source_task':task,'test_included':False})
     probe={**config,'epochs':2,'data_hashes':{},'checkpoint_steps':1}
+    if dynamic: probe['canary_logical_tiers']=tiers
     cfg=folder/'config.json';atomic_json(cfg,probe)
     common=['--config',cfg,'--data',small,'--cache',cache,'--device',device,'--synthetic']
     for name,extra,expected in (('uninterrupted',[],0),('interrupted',['--stop-after','2'],75),('interrupted',['--resume'],0)):
@@ -190,6 +193,19 @@ def canary(config,data,cache,output,device='cpu'):
         for key in ('index','ceiling','oom_count','wait','previous','transitions'):
             if states[0]['adaptive_memory'][key]!=states[1]['adaptive_memory'][key]:
                 raise ValueError('Adaptive recovery decision differs: '+key)
+        if config['adaptive_memory'].get('logical_tiers'):
+            for key in ('logical_index','previous_logical'):
+                if states[0]['adaptive_memory'][key]!=states[1]['adaptive_memory'][key]:
+                    raise ValueError('Logical recovery decision differs: '+key)
+            if states[0]['sample_clock']!=states[1]['sample_clock']:
+                raise ValueError('Sample-clock recovery differs')
+            expected_rows=tiers*2
+            for state in states:
+                if [len(row['rows']) for row in state['update_trace']]!=expected_rows:
+                    raise ValueError('Native canary did not exercise every logical tier')
+            report['logical_batch_validation']=dict(tiers=tiers,forced_sequence=expected_rows,
+                interrupted_after_update=2,remaining_tier_after_restore=tiers[-1],
+                scope='Native variable-shape recovery; throughput decisions tested separately')
         report['adaptive_memory']=dict(policy=config['adaptive_memory'],
             controller_restored=True,scope='Observed bounded recovery only; dynamic choices may depend on GPU pressure/timing',
             fixed_microbatch_equivalence=False)
