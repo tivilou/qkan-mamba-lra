@@ -13,9 +13,19 @@ from .common import atomic_json,digest,fingerprint,lock,read
 
 SOURCE_REVISION='31639c014a62504f6596e75cf56a1abd5068bce4'
 ADAPTIVE_REVISION='96e542dd527b777d7690f6602fa1d14530957f85'
+DYNAMIC_REVISION='9a147cd70cedf1511de89d0381dfbdabac3274f2'
 
 
 def compatible(old,new):
+    if new.get('performance'):
+        from .performance import policy as performance_policy
+        from .logical_batch import policy as logical_policy
+        if (old.get('source_revision')!=DYNAMIC_REVISION or old.get('performance')
+                or old.get('adaptive_memory')!=logical_policy(old['batch_size'])):
+            raise ValueError('Performance migration requires dynamic executor9a147cd')
+        expected={**old,'source_revision':new['source_revision'],'performance':performance_policy()}
+        if expected!=new: raise ValueError('Performance migration changed scientific configuration')
+        return
     if (new.get('adaptive_memory') or {}).get('logical_tiers'):
         from .logical_batch import policy
         if old.get('source_revision') not in (SOURCE_REVISION,ADAPTIVE_REVISION):
@@ -49,7 +59,7 @@ def snapshot(source,suite,cache):
     source_root=source.parent.parent
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip()
     dirty=subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=source_root,text=True).strip()
-    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
+    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION,DYNAMIC_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
     destination=suite/'migration-source'
     if destination.exists(): raise ValueError('Migration snapshot already exists; resume the new suite')
     pending=suite/('migration-pending-'+uuid.uuid4().hex)
@@ -130,8 +140,13 @@ def load_state(output,config,contract,original_contract,loader):
         trajectory=plan['trajectory'])
     if dynamic:
         if state.get('migration'): lineage['previous_migration']=state['migration']
-        state.pop('adaptive_memory',None)
-        state.pop('sample_clock',None)
+        if config.get('performance'):
+            if not state.get('sample_clock') or not state.get('adaptive_memory'):
+                raise ValueError('Dynamic source lacks sample clock/controller; refusing schedule reset')
+            lineage['execution_policy']='FP32 lookahead/pinned staging; sample clock and controller preserved'
+        else:
+            state.pop('adaptive_memory',None)
+            state.pop('sample_clock',None)
         lineage['trajectory']='recorded prefix followed by dynamic logical-batch/sample-schedule continuation'
     state['contract']=contract;state['migration']=lineage
     return state

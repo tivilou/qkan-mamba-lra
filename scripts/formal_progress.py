@@ -297,6 +297,7 @@ def main():
                  '--gpus',context['gpus'],'--resume',str(suite)]
         if context.get('adaptive_memory'): command.append('--adaptive-memory')
         if context.get('dynamic_logical_batch'): command.append('--dynamic-logical-batch')
+        if context.get('performance'): command.append('--performance')
         atomic_json(suite/('progress-launch-'+str(time.time_ns())+'.json'),dict(
             schema='qkan-progress-supervisor.v1',executor_revision=expected,
             display_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

@@ -43,7 +43,7 @@ def check_release(config=None):
 
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
-    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'scripts/migrate_fixed_to_adaptive.sh',ROOT/'scripts/migrate_dynamic_logical.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
+    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'scripts/migrate_fixed_to_adaptive.sh',ROOT/'scripts/migrate_dynamic_logical.sh',ROOT/'scripts/migrate_performance.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',
@@ -266,6 +266,8 @@ def deliver(suite):
                     path=job/name
                     if not path.is_file(): raise ValueError('Adaptive return evidence missing')
                     files.extend(return_files(path,'jobs/'+job.name+'/'+name))
+            if (job/'performance-profile.json').exists():
+                files.extend(return_files(job/'performance-profile.json','jobs/'+job.name+'/performance-profile.json'))
             pointer=read(job/'checkpoints/latest.json')
             for name in ('latest.json',pointer['file']):
                 path=job/'checkpoints'/name
@@ -299,9 +301,12 @@ def execute(suite,gpus,cache,data):
                 raise ValueError('Existing completion does not match this job')
             states[job['id']]={'state':'computed'}
         else: pending.append(job)
+    from .performance import ProfileReturn
+    profile_return=ProfileReturn(ROOT)
     failed=False;last_display=0.
     try:
         while pending or running:
+            profile_return.tick(suite,jobs)
             for gpu in gpus:
                 if gpu in running or not pending or failed: continue
                 job=pending.pop(0);directory=suite/'jobs'/job['id']
@@ -328,6 +333,7 @@ def execute(suite,gpus,cache,data):
             if failed and not running: break
             time.sleep(.5)
     finally:
+        profile_return.close()
         for child,log,job in running.values():
             stop_child(child);log.close();states[job['id']]={'state':'paused','exit_code':child.returncode}
         atomic_json(suite/'status.json',states)

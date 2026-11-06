@@ -145,6 +145,9 @@ def _run(args, modules, resources):
     from flax.core import unfreeze
     params=unfreeze(model.init({'params':init,'dropout':drop},dummy)['params'])
     steps=config['epochs']*math.ceil(len(train)/config['batch_size']);warmup=min(config['warmup_steps'],steps-1)
+    from .performance import Lookahead,Profile
+    performance=bool(config.get('performance'))
+    profile=Profile(limit=16 if performance and not (out/'performance-profile.json').exists() else 0)
     dynamic=bool((config.get('adaptive_memory') or {}).get('logical_tiers'));sample_clock=None
     def schedule(step):
         if sample_clock is not None: return jnp.asarray(sample_clock.rates()[0],dtype=jnp.float32)
@@ -194,7 +197,7 @@ def _run(args, modules, resources):
         from .logical_batch import make_controller,logical_size,SampleClock
         adaptive=make_controller(config['adaptive_memory'],config['batch_size'],meta.get('adaptive_memory'))
         from .execution import BatchPrefetch,StatusWriter
-        prefetch=resources.enter_context(BatchPrefetch(lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
+        prefetch=resources.enter_context((Lookahead if performance else BatchPrefetch)(lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
         status_writer=StatusWriter(atomic_json,adaptive.policy.get('status_interval',5.))
         attach_journal(adaptive,out,lambda:meta['step'])
         def cleanup_update():
@@ -277,8 +280,13 @@ def _run(args, modules, resources):
             batch_size=planned_batch_size(adaptive,config,meta['step'])
             end=min(meta['cursor']+batch_size,len(train));ids=meta['permutation'][meta['cursor']:end]
             update_started=time.perf_counter()
+            profile.begin()
+            retries_before=adaptive.state['oom_count'] if adaptive else 0
             if adaptive:
-                staged=prefetch.get(ids)
+                with profile.phase('cpu_batch_wait',device=False): staged=prefetch.get(ids)
+                if performance and end<len(train):
+                    capacity=max(adaptive.policy.get('logical_tiers',[config['batch_size']]))
+                    prefetch.submit(meta['permutation'][end:min(end+capacity,len(train))])
                 device_batch=None
                 try:
                     device_batch=jax.device_put(staged);jax.block_until_ready(device_batch)
@@ -286,7 +294,7 @@ def _run(args, modules, resources):
                 except Exception as error:
                     if not jax_oom(error): raise
                     device_batch=None
-                if end<len(train) and not dynamic: prefetch.submit(meta['permutation'][end:min(end+config['batch_size'],len(train))])
+                if end<len(train) and not dynamic and not performance: prefetch.submit(meta['permutation'][end:min(end+config['batch_size'],len(train))])
             def update(micro_batch):
                 grads=jax.tree_util.tree_map(jnp.zeros_like,state.params);loss=0.;correct=0;finite=True
                 key=jnp.asarray(meta['rng'])
@@ -320,10 +328,15 @@ def _run(args, modules, resources):
                     started_at=update_started,samples=len(ids))
                 adaptive_status.update(rollback_device='immutable_jax_state',cpu_prefetch=1)
             else: new_state,loss,correct,key=update(config['micro_batch'])
+            if profile.finish((adaptive.state['oom_count']-retries_before) if adaptive else 0):
+                atomic_json(out/'performance-profile.json',dict(profile.report(),
+                    config_sha256=fingerprint(config),source_revision=config['source_revision'],
+                    framework='jax',phase_limit='Host update wall only; existing block_until_ready; no CUDA-event breakdown',
+                    optimizer_step=meta['step']+1))
             state=new_state;meta['rng']=key;meta['cursor']=end;meta['step']+=1
             if dynamic:
                 sample_clock.advance(len(ids))
-                if end<len(train):
+                if end<len(train) and not performance:
                     next_batch=planned_batch_size(adaptive,config,meta['step'])
                     prefetch.submit(meta['permutation'][end:min(end+next_batch,len(train))])
             meta['epoch_loss']+=loss*len(ids);meta['epoch_correct']+=correct;meta['epoch_samples']+=len(ids)

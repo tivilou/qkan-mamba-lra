@@ -18,7 +18,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "073eb46b9dc4ae98a8cc2f5d30e523d13acd29da4aed147850b892dec893c19d"
+        "sha256": "b95a0e99a87ae91dbeeb38d9ba25731a84a7417f5ed57287e5ef8b2fe0f6f75d"
       },
       {
         "path": "experiments/baseline_delivery/protocol.json",
@@ -42,11 +42,11 @@
       },
       {
         "path": "experiments/baseline_delivery/migration.py",
-        "sha256": "817578c512cdd184ce015ccb3ebf6cbac016e823e4cc35be19c6299d7254433d"
+        "sha256": "f2f58062090ed9fec317173325fe2b7cd7425a6c887d04e6190d73b907cc12a9"
       },
       {
         "path": "experiments/baseline_delivery/readiness.py",
-        "sha256": "8a1fdf6edaee623e886f503cc7202f301b96eda654b096d74e8612abb2530f73"
+        "sha256": "3a41bec8ebc9da4b8d7b787379fc5f3fb988a7574bf8a0203485cc1f1e03e463"
       },
       {
         "path": "experiments/baseline_delivery/logical_batch.py",
@@ -54,15 +54,15 @@
       },
       {
         "path": "experiments/baseline_delivery/runner.py",
-        "sha256": "f4cabbbea0bc93164bd2bf87ff06fd27823e42fc757c8abcc3a1c3e0b42aaa3e"
+        "sha256": "9390374fe333680081ed2a366c10925a83281257d6548e12e6e2df4571813f60"
       },
       {
         "path": "experiments/baseline_delivery/s5_worker.py",
-        "sha256": "d89ad2b5383e87c19a120a62e38f9703a4c2fe179886faa4c046521757092935"
+        "sha256": "69f4f4f90db9f7e2818dbafb35530d64c125a4179d54e18469558c66b2008b49"
       },
       {
         "path": "scripts/formal_progress.py",
-        "sha256": "d9e4b97fe6dc3d7925e110e96008facc468d27f6f36cdaf440bcbd773ad94e28"
+        "sha256": "63b700680fa95941d15d61f24ff5b88a33d63740d493dcec5c4118e4d2b8cd1d"
       },
       {
         "path": "scripts/migrate_dynamic_logical.sh",
@@ -71,6 +71,22 @@
       {
         "path": "tests/test_baseline_logical_batch.py",
         "sha256": "b7a753fa8c52f196036b56d317e62c1f4667234bb80a4826802f5eb8c93f1ca8"
+      },
+      {
+        "path": "experiments/baseline_delivery/performance.py",
+        "sha256": "5628ae6fa2c5c5ce280845a19531b23facc8f07ece74eae5e3363c7c5ae68679"
+      },
+      {
+        "path": "scripts/migrate_performance.sh",
+        "sha256": "c2336b09229eee78768588cd343a74315afb23600dd68fc266a482063a389c16"
+      },
+      {
+        "path": "tests/test_baseline_performance.py",
+        "sha256": "005e310f9171974a7f62b9166979c72db7f023207d37a98f5da7fafb1bc48ac1"
+      },
+      {
+        "path": "docs/baselines/fp32-performance.md",
+        "sha256": "eb0f0d2bbe4e84830cadacb49de119d68ecc01cd92c709c6f0a2f741b89e26d7"
       }
     ]
   },

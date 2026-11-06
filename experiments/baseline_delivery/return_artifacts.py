@@ -50,10 +50,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--directory',type=Path,required=True)
     parser.add_argument('--experiment',default='recovery-audit')
+    parser.add_argument('--run-id',help='Unique immutable run namespace; default directory basename')
     parser.add_argument('--file',action='append',dest='files')
     args=parser.parse_args()
     try:
-        upload_declared(args.directory,args.experiment,args.files or ['report.json','summary.json'])
+        upload_declared(args.directory,args.experiment,args.files or ['report.json','summary.json'],run_id=args.run_id)
     except Exception as error:
         # Do not print credential-bearing network exception details.
         parser.exit(2,'Artifact return failed ('+type(error).__name__+'); local files and artifact-delivery.json are retained. Retry this same upload command; no training rerun required.\n')

@@ -163,6 +163,10 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         restore_rng(state['rng'])
     elif (output/'checkpoints/latest.json').exists():
         raise ValueError('Existing checkpoint requires explicit resume')
+    from .performance import Lookahead,PinnedStaging,Profile
+    performance=bool(config.get('performance'))
+    profile=Profile(limit=16 if performance and not (output/'performance-profile.json').exists() else 0,
+        event=(lambda:torch.cuda.Event(enable_timing=True)) if performance else None)
     adaptive=None
     if config.get('adaptive_memory'):
         if not device.startswith('cuda'): raise ValueError('Adaptive memory requires CUDA')
@@ -170,7 +174,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         from .execution import BatchPrefetch,RollbackBuffer,StatusWriter
         from .logical_batch import make_controller,logical_size,SampleClock,TorchSampleSchedule
         adaptive=make_controller(config['adaptive_memory'],config['batch_size'],state.get('adaptive_memory'))
-        prefetch=resources.enter_context(BatchPrefetch(lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
+        prefetch=resources.enter_context((Lookahead if performance else BatchPrefetch)(
+            lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
+        staging=PinnedStaging(torch,max(adaptive.policy.get('logical_tiers',[config['batch_size']])))
         status_writer=StatusWriter(atomic_json,adaptive.policy.get('status_interval',5.))
         rollback=RollbackBuffer(torch,cpu=state.get('rollback_device')=='cpu')
         attach_journal(adaptive,output,lambda:state['step'])
@@ -183,6 +189,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             if isinstance(value,tuple): return tuple(host(v) for v in value)
             return copy.deepcopy(value)
         def capture_update():
+            with profile.phase('rollback_snapshot'):
+                return capture_payload()
+        def capture_payload():
             payload=dict(model=model.state_dict(),optimizer=opt.state_dict(),
                          scheduler=schedule.state_dict(),rng=rng_state())
             try: return rollback.capture(payload)
@@ -268,24 +277,33 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             end=min(len(train),state['cursor']+batch_size)
             ids=state['permutation'][state['cursor']:end].numpy()
             update_started=time.perf_counter()
+            profile.begin()
+            retries_before=adaptive.state['oom_count'] if adaptive else 0
             if adaptive:
-                arrays=prefetch.get(ids)
-                if end<len(train) and not dynamic:
+                with profile.phase('cpu_batch_wait',device=False): arrays=prefetch.get(ids)
+                if performance and end<len(train):
+                    capacity=max(adaptive.policy.get('logical_tiers',[config['batch_size']]))
+                    prefetch.submit(state['permutation'][end:min(end+capacity,len(train))].numpy())
+                if end<len(train) and not dynamic and not performance:
                     prefetch.submit(state['permutation'][end:min(end+config['batch_size'],len(train))].numpy())
-                staged={key:torch.as_tensor(value) for key,value in arrays.items()}
-                try: staged={key:value.pin_memory() for key,value in staged.items()}
-                except RuntimeError: pass  # Pageable CPU transfer remains valid.
-                try: staged={key:value.to(device,non_blocking=True) for key,value in staged.items()}
-                except torch.cuda.OutOfMemoryError:
-                    torch.cuda.empty_cache()  # Keep CPU staging; slice/transfer per microbatch.
+                with profile.phase('host_staging',device=False):
+                    staged=staging.batch(arrays) if performance else {key:torch.as_tensor(value) for key,value in arrays.items()}
+                    if not performance:
+                        try: staged={key:value.pin_memory() for key,value in staged.items()}
+                        except RuntimeError: pass
+                with profile.phase('h2d_transfer'):
+                    try: staged={key:value.to(device,non_blocking=True) for key,value in staged.items()}
+                    except torch.cuda.OutOfMemoryError:
+                        torch.cuda.empty_cache()  # Keep CPU staging for microbatch transfer.
             def update(micro_batch):
                 opt.zero_grad(set_to_none=True); update_loss=0.; update_correct=0;finite=True
                 for start in range(0,len(ids),micro_batch):
                     sub=ids[start:start+micro_batch]
                     batch=({key:value[start:start+micro_batch].to(device,non_blocking=True) for key,value in staged.items()}
                            if adaptive else train.batch(sub,device))
-                    logits=model(batch,validated_inputs=True) if adaptive else model(batch)
-                    loss=nn.functional.cross_entropy(logits,batch['labels'],reduction='sum')/len(ids)
+                    with profile.phase('forward_loss'):
+                        logits=model(batch,validated_inputs=True) if adaptive else model(batch)
+                        loss=nn.functional.cross_entropy(logits,batch['labels'],reduction='sum')/len(ids)
                     if adaptive:
                         finite=finite & torch.isfinite(loss.detach())
                         update_loss=update_loss+loss.detach()*len(ids)
@@ -294,12 +312,13 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                         if not torch.isfinite(loss): raise ValueError('Nonfinite loss')
                         update_loss+=loss.item()*len(ids)
                         update_correct+=int((logits.argmax(-1)==batch['labels']).sum())
-                    loss.backward()
+                    with profile.phase('backward'): loss.backward()
                 if adaptive and not bool(finite): raise ValueError('Nonfinite loss')
-                nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
-                opt.step()
-                if dynamic: schedule.step(len(ids))
-                else: schedule.step()
+                with profile.phase('clip_optimizer_schedule'):
+                    nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
+                    opt.step()
+                    if dynamic: schedule.step(len(ids))
+                    else: schedule.step()
                 return (float(update_loss),int(update_correct)) if adaptive else (update_loss,update_correct)
             adaptive_status={}
             if adaptive:
@@ -311,8 +330,12 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     batch_staging='gpu' if all(value.is_cuda for value in staged.values()) else 'cpu',cpu_prefetch=1)
                 state['adaptive_peak_bytes']=max(state.get('adaptive_peak_bytes',0),adaptive_status['peak_bytes'])
             else: update_loss,update_correct=update(config['micro_batch'])
+            if profile.finish((adaptive.state['oom_count']-retries_before) if adaptive else 0):
+                atomic_json(output/'performance-profile.json',dict(profile.report(),
+                    config_sha256=fingerprint(config),source_revision=config['source_revision'],
+                    framework='torch',optimizer_step=state['step']+1))
             state['cursor']=end;state['step']+=1
-            if dynamic and end<len(train):
+            if dynamic and end<len(train) and not performance:
                 next_batch=planned_batch_size(adaptive,config,state['step'])
                 prefetch.submit(state['permutation'][end:min(end+next_batch,len(train))].numpy())
             state['epoch_loss']+=update_loss;state['epoch_correct']+=update_correct;state['epoch_samples']+=len(ids)
