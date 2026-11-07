@@ -122,6 +122,9 @@ class Dashboard:
         lines=[f'\n[{clock}] 实验：{self.suite.name}',
                f"任务 {len(names)} | 已计算 {len(groups['computed'])} | 运行 {len(groups['running'])} | "
                f"排队 {len(groups['pending'])} | 失败 {len(groups['failed'])} | 暂停 {len(groups['paused'])}"]
+        preserved=[job['id'] for job in jobs if job.get('preserved_completion')]
+        if preserved:
+            lines.append('沿用已完成结果（保留原版本，不重跑）：'+', '.join(preserved))
         gpu_ids={str(gpu) for gpu in manifest.get('gpu_inventory',{})}
         gpu_ids.update(str(states[job]['physical_gpu']) for job in groups['running']
                        if 'physical_gpu' in states[job])

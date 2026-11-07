@@ -25,7 +25,11 @@ bash scripts/migrate_performance.sh \
   --cache /root/qkan-cache --gpus 0
 ```
 
-入口生成新版本的独立checkout和新Suite，验证并复制当前最新checkpoint，保留模型、优化器计数/矩、RNG、采样排列/游标、历史/最佳权重、累计耗时、**原有sample_clock及controller（包括OOM上限和未完成窗口）**；不重新锚定已有学习率曲线。不修改源文件。原生零更新恢复与序列化核验、五个源码探针、25个任务恢复/trace验收均成功后，入口自动继续训练。没有公共网络下载与新依赖；复用既有环境/缓存/认证共享服务。已完成源任务不迁移、不重新标注；缺失完整断点明确拒绝。
+入口生成新版本的独立checkout和新Suite，验证并复制未完成任务的最新checkpoint，保留模型、优化器计数/矩、RNG、采样排列/游标、历史/最佳权重、累计耗时、**原有sample_clock及controller（包括OOM上限和未完成窗口）**；不重新锚定已有学习率曲线。不修改源文件。五个源码探针、未完成任务的恢复/trace验收，以及已有断点的零更新原生恢复/序列化核验均成功后，入口自动继续剩余训练。没有公共网络下载与新依赖；复用既有环境/缓存/认证共享服务。
+
+已完成任务现在支持原样保留：逐一核对原config、summary、正式运行标志、选中权重哈希、trace验收哈希、最新完整断点和保留的前一代断点，再复制原始字节至新Suite的同名任务目录。原始配置、summary、权重和版本身份均不改写。缺少或损坏任一必要产物会明确中止，绝不降级成从头训练。旧版模型无需再次导入或测试；原始私有trace和日志继续保存在源Suite。
+
+新Suite仍显示25个任务；沿用的结果计为“已计算”，另有“沿用已完成结果（保留原版本，不重跑）”提示。例如现在已完成ListOps，会显示已计算1，只对其余24个任务执行新版验收与后续训练。迁移快照还保存原Suite/context/gate报告及现有gate-evidence/runtime-release字节，迁移报告明确列出preserved_completions，原结果不获得新版验收身份。最终自动回传包含原结果及未完成任务的新结果、迁移血缘和原验收快照；delivery.json用result_source_revisions逐任务标记版本，mixed_source_revisions明确混合版本，不能把整套结果宣称为新版统一重跑。
 
 记下新入口打印的 `Suite:`。以后在同一新checkout中恢复：
 

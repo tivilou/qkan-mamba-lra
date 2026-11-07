@@ -52,6 +52,89 @@ def checked_pointer(folder):
     return pointer,target
 
 
+def completed_files(folder,config):
+    """Validate an existing result without deserializing weights or rerunning it."""
+    folder=Path(folder)
+    if not (folder/'summary.json').is_file() or not (folder/'trace-validation.json').is_file():
+        raise ValueError('Completed result lacks summary/trace evidence')
+    summary=read(folder/'summary.json');trace=read(folder/'trace-validation.json')
+    if (summary.get('formal') is not True or summary.get('synthetic') is not False
+            or summary.get('config_sha256')!=fingerprint(config)
+            or any(summary.get(k)!=config[k] for k in ('source_revision','model','task','seed'))
+            or summary.get('data_hashes')!=config.get('data_hashes',{})
+            or trace.get('passed') is not True):
+        raise ValueError('Completed result identity/formal trace differs')
+    weights='best-model.msgpack' if config['model']=='s5' else 'best-model.pt'
+    weight_sha=digest(folder/weights)
+    if summary.get('best_weights_sha256')!=weight_sha or trace.get('checkpoint_sha256')!=weight_sha:
+        raise ValueError('Completed selected weights/trace hash differs')
+    pointer,generation=checked_pointer(folder)
+    if pointer['contract']!=summary.get('contract') or pointer['step']!=summary.get('optimizer_steps'):
+        raise ValueError('Completed latest checkpoint/summary differs')
+    names=['config.json','summary.json','environment.json',weights,'trace-validation.json',
+           'checkpoints/latest.json','checkpoints/'+generation.name]
+    for previous in pointer.get('previous',[]):
+        name=previous['file']
+        if Path(name).name!=name or name in ('.','..') or digest(folder/'checkpoints'/name)!=previous['sha256']:
+            raise ValueError('Completed retained checkpoint differs')
+        names.append('checkpoints/'+name)
+    if config.get('adaptive_memory'): names+=['adaptive-memory.json','adaptive-events.jsonl']
+    if (folder/'performance-profile.json').exists(): names.append('performance-profile.json')
+    hashes={}
+    for name in names:
+        path=folder/name
+        if path.is_symlink() or path.parent.is_symlink() or not path.is_file():
+            raise ValueError('Invalid completed result artifact')
+        hashes[name]=digest(path)
+    return dict(source_revision=config['source_revision'],config_sha256=fingerprint(config),files=hashes)
+
+
+def copy_verified(source,target,files):
+    """Idempotent immutable copy. Never overwrite an existing differing file."""
+    for name,sha in files.items():
+        if (Path(name).is_absolute() or '\\' in name or '..' in Path(name).parts):
+            raise ValueError('Invalid preserved artifact path')
+        src=source/name;dst=target/name
+        if src.is_symlink() or src.parent.is_symlink() or digest(src)!=sha:
+            raise ValueError('Preserved source artifact changed')
+        if dst.exists():
+            if dst.is_symlink() or dst.parent.is_symlink() or digest(dst)!=sha:
+                raise ValueError('Preserved target artifact changed')
+            continue
+        dst.parent.mkdir(parents=True,exist_ok=True)
+        if dst.parent.is_symlink(): raise ValueError('Preserved target directory is a symlink')
+        temp=dst.with_name(dst.name+'.pending-'+uuid.uuid4().hex)
+        try:
+            shutil.copyfile(src,temp)
+            if digest(temp)!=sha: raise ValueError('Preserved copied artifact hash differs')
+            temp.replace(dst)
+        finally:
+            if temp.exists(): temp.unlink()
+
+
+def preserve_completed(suite,name):
+    """Materialize the original result, with its original config/source identity."""
+    suite=Path(suite);plan=plan_for(suite);entry=plan['jobs'][name]['completion']
+    source=suite/'migration-source'/name;target=suite/'jobs'/name
+    if completed_files(source,read(source/'config.json'))!=entry:
+        raise ValueError('Completed migration snapshot differs')
+    copy_verified(source,target,entry['files'])
+    job=dict(id=name,config_sha256=entry['config_sha256'],preserved_completion=entry)
+    verify_completed(suite,job)
+    return job
+
+
+def verify_completed(suite,job):
+    suite=Path(suite);plan=plan_for(suite)
+    expected=plan['jobs'][job['id']].get('completion') if plan else None
+    if not expected or job.get('preserved_completion')!=expected or job['config_sha256']!=expected['config_sha256']:
+        raise ValueError('Missing original completed-result provenance')
+    folder=suite/'jobs'/job['id']
+    if completed_files(folder,read(folder/'config.json'))!=expected:
+        raise ValueError('Preserved completed result changed')
+    return expected
+
+
 def snapshot(source,suite,cache):
     source=Path(source).resolve();suite=Path(suite).resolve()
     if source.parent.name!='runs' or source==suite or source in suite.parents or suite in source.parents:
@@ -73,19 +156,32 @@ def snapshot(source,suite,cache):
             raise ValueError('Original source admission/cache differs')
         records={};pending.mkdir()
         try:
+            admission_names=['context.json','suite.json','gate-report.json']
+            for leaf in ('gate-evidence.json','runtime-release.json'):
+                if (source/leaf).is_file(): admission_names.append(leaf)
+            if gate.get('evidence_sha256') and digest(source/'gate-evidence.json')!=gate['evidence_sha256']:
+                raise ValueError('Original admission evidence changed')
+            admission={name:digest(source/name) for name in admission_names}
+            copy_verified(source,pending/'source-admission',admission)
             for job in manifest['jobs']:
                 name=job['id']
                 if Path(name).name!=name or name in records or name in ('.','..'):
                     raise ValueError('Invalid source job identity')
                 folder=source/'jobs'/name
                 held.enter_context(lock(folder/'worker.lock'))
-                if (folder/'summary.json').exists():
-                    raise ValueError('Completed fixed jobs cannot be relabeled adaptive; migrate before completion')
                 config=read(folder/'config.json')
                 if fingerprint(config)!=job['config_sha256'] or config['source_revision']!=revision:
                     raise ValueError('Original job configuration changed')
-                target=pending/name;target.mkdir();atomic_json(target/'config.json',config)
+                target=pending/name;target.mkdir()
                 record=dict(config_sha256=fingerprint(config),checkpoint=None)
+                if (folder/'summary.json').exists():
+                    completion=completed_files(folder,config)
+                    copy_verified(folder,target,completion['files'])
+                    record['completion']=completion;records[name]=record
+                    continue
+                atomic_json(target/'config.json',config)
+                if read(source/'status.json')[name]['state']=='computed':
+                    raise ValueError('Completed source status lacks result; refusing fresh fallback')
                 if (folder/'checkpoints/latest.json').exists():
                     pointer,generation=checked_pointer(folder)
                     (target/'checkpoints').mkdir()
@@ -102,6 +198,7 @@ def snapshot(source,suite,cache):
                 records[name]=record
             plan=dict(schema='qkan-checkpoint-migration.v1',source_suite=str(source),
                 source_revision=revision,source_manifest_sha256=digest(source/'suite.json'),
+                source_admission=admission,
                 data=manifest['data'],cache=context['cache'],jobs=records,
                 trajectory='recorded prefix followed by adaptive continuation; not fixed-policy equivalent')
             atomic_json(pending/'plan.json',plan)
@@ -158,10 +255,17 @@ def admit(suite,configs,data,cache,gpus,run,build,inventory):
     if plan is None: return None
     if plan['data']!=str(data) or plan['cache']!=str(Path(cache).resolve()) or set(plan['jobs'])!=set(configs):
         raise ValueError('Migration data/cache/job selection differs')
+    for name,sha in plan.get('source_admission',{}).items():
+        if digest(suite/'migration-source/source-admission'/name)!=sha:
+            raise ValueError('Original source admission snapshot changed')
     receipts={}
     import os
     for name,config in configs.items():
         folder=suite/'jobs'/name;record=plan['jobs'][name]
+        if record.get('completion'):
+            job=dict(id=name,config_sha256=record['config_sha256'],preserved_completion=record['completion'])
+            verify_completed(suite,job)
+            continue
         compatible(read(suite/'migration-source'/name/'config.json'),config)
         if record['checkpoint'] is None: continue
         report=folder/'migration-validation.json'
@@ -181,6 +285,7 @@ def admit(suite,configs,data,cache,gpus,run,build,inventory):
         receipts[name]=value
     report=dict(schema='qkan-migration-admission.v1',passed=True,source_revision=plan['source_revision'],
         plan_sha256=digest(suite/'migration-source/plan.json'),restores=receipts,
+        preserved_completions={name:entry['completion'] for name,entry in plan['jobs'].items() if entry.get('completion')},
         gpu_identity=inventory[gpus[0]],trajectory=plan['trajectory'])
     atomic_json(suite/'migration-report.json',report)
     return report

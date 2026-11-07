@@ -247,10 +247,22 @@ def deliver(suite):
         raise ValueError('Only a fully computed formal suite can be automatically returned')
     if not manifest.exists():
         files=[]
+        from .migration import verify_completed
+        source_manifest=read(suite/'suite.json')
+        for entry in source_manifest['jobs']:
+            if entry.get('preserved_completion'): verify_completed(suite,entry)
         # This snapshot is immutable even if a later upload retry updates status.
         if not (suite/'return-status.json').exists(): atomic_json(suite/'return-status.json',read(suite/'status.json'))
         for name in ('suite.json','return-status.json','compute-complete.json'):
             files.append(str((suite/name).relative_to(ROOT))+'='+name)
+        for name in ('migration-report.json','migration-source/plan.json'):
+            if (suite/name).exists(): files.extend(return_files(suite/name,name))
+        from .migration import plan_for
+        migration=plan_for(suite)
+        for name,sha in (migration or {}).get('source_admission',{}).items():
+            path=suite/'migration-source/source-admission'/name
+            if digest(path)!=sha: raise ValueError('Original admission snapshot changed')
+            files.extend(return_files(path,'migration-source/source-admission/'+name))
         for job in sorted((suite/'jobs').iterdir()):
             if read(job/'summary.json').get('formal') is not True or not read(job/'trace-validation.json').get('passed'):
                 raise ValueError('Automatic formal return excludes diagnostic or invalid jobs')
@@ -275,6 +287,9 @@ def deliver(suite):
         package=inventory(ROOT,'baseline-suite',suite.name,files)
         package['artifact_sender_revision']=package['source_revision']
         package['source_revision']=read(suite/'suite.json')['source_revision']
+        package['result_source_revisions']={entry['id']:read(suite/'jobs'/entry['id']/'config.json')['source_revision']
+            for entry in source_manifest['jobs']}
+        package['mixed_source_revisions']=len(set(package['result_source_revisions'].values()))>1
         write(manifest,package)
     transport=Transport(os.environ.get('PROJECT_EXCHANGE_URL',''),os.environ.get('PROJECT_EXCHANGE_TOKEN',''),
                         os.environ.get('PROJECT_EXCHANGE_CA_FILE'))
@@ -291,6 +306,11 @@ def execute(suite,gpus,cache,data):
     states=read(suite/'status.json')
     for job in jobs:
         directory=suite/'jobs'/job['id']
+        if job.get('preserved_completion') or (migration and migration['jobs'][job['id']].get('completion')):
+            from .migration import verify_completed
+            verify_completed(suite,job)
+            states[job['id']]={'state':'computed','preserved':True}
+            continue
         check_release(read(directory/'config.json'))
         if migration and migration['jobs'][job['id']]['checkpoint'] is not None:
             if not (directory/'migration-validation.json').exists() or not (directory/'checkpoints/latest.json').exists():

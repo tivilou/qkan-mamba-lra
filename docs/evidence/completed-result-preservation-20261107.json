@@ -1,0 +1,43 @@
+{
+  "schema": "qkan-completed-result-preservation.v1",
+  "status": "implemented_pending_collaborator_validation",
+  "source_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+  "source_suite": "adaptive-migrated-20261106T111646Z-90465",
+  "trigger": "User screenshot reports ListOps complete; Text running;66c8eda not installed",
+  "behavior": [
+    "hash-bound byte-identical copy of completed formal config/summary/weights/trace-readiness/environment/latest and previous checkpoint",
+    "original source identity preserved; completed workers and new canaries skipped",
+    "remaining started checkpoints require native zero-update restore and recovery/trace gates",
+    "original suite admission snapshots retained",
+    "mixed-source final delivery explicitly maps each job revision"
+  ],
+  "validation": {
+    "stdlib_mock_tests": 96,
+    "passed": true,
+    "coverage": [
+      "mixed completed/pending",
+      "mixed completed/paused",
+      "all completed native admission starts no children",
+      "real parent launch contract skips completed job",
+      "native S5 filename support without framework import",
+      "missing/corrupt/identity-mismatched result rejected",
+      "idempotent copies and immutable target checks",
+      "previous generation retained",
+      "mixed-source return inventory preserves original summary"
+    ],
+    "framework_imports": false,
+    "gpu_query": false,
+    "training": false,
+    "dependency_install": false,
+    "native_collaborator": "pending"
+  },
+  "source_sha256": {
+    "experiments/baseline_delivery/migration.py": "bb3652f2d6feb8205fe48256c12eb20b8523dffcc5fd9b63b6cb6e2552a79a72",
+    "experiments/baseline_delivery/readiness.py": "a4be0721eeebef36b0da369d009416c0f5f05d2b31d7a720992f83880b686b0d",
+    "experiments/baseline_delivery/runner.py": "cbfb4a789f0406631df9dd8a2b2cac84db7f00453070f0f26b974101e904310f",
+    "scripts/formal_progress.py": "d4a6b0173e7c3abac4e331be2c6c8c2f22171b5cc0ebdd5d76c7ab49e8ca777e",
+    "tests/test_baseline_completed_migration.py": "cf02680eaeff8375c17042c6a788e1554815a6204c6b2d99e248dc1ded9fe9ef",
+    "docs/baselines/fp32-performance.md": "9c9a034a16c7116a9364ab890da3344d7a1efdccb7d794b3bc431b8c2e6412f9"
+  },
+  "limits": "Historical completion kept under original revision; no new-revision certification, measured speedup or accuracy claim. Raw logs/traces remain at original suite."
+}

@@ -108,6 +108,11 @@ def execute(args,suite):
     for model in MODELS:
         for task in TASKS:
             job_id=model+'-'+task+'-s42';job=suite/'jobs'/job_id;job.mkdir(parents=True,exist_ok=True)
+            if migration and migration['jobs'][job_id].get('completion'):
+                from .migration import preserve_completed
+                jobs.append(preserve_completed(suite,job_id));statuses[job_id]=dict(state='computed',preserved=True)
+                print('Preserved completed result: '+job_id+' | original revision '+migration['source_revision'],flush=True)
+                continue
             config=config_for(task,model,42,data,source);cfg=job/'config.json'
             if args.adaptive_memory:
                 from .adaptive_memory import default_policy
