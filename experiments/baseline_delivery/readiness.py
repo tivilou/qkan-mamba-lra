@@ -78,6 +78,7 @@ def execute(args,suite):
     if args.adaptive_memory: identity['adaptive_memory']=True
     if args.dynamic_logical_batch: identity['dynamic_logical_batch']=True
     if args.performance: identity['performance']=True
+    if args.torch_acceleration: identity['torch_acceleration']=True
     if migration: identity['migration_sha256']=digest(suite/'migration-source/plan.json')
     if context.exists() and read(context)!=identity: raise ValueError('Readiness resume identity changed')
     atomic_json(context,identity)
@@ -123,6 +124,9 @@ def execute(args,suite):
             if args.performance:
                 from .performance import policy as performance_policy
                 config['performance']=performance_policy()
+            if args.torch_acceleration and model!='s5':
+                from .torch_acceleration import policy as acceleration_policy
+                config['torch_acceleration']=acceleration_policy()
             if migration:
                 compatible(read(suite/'migration-source'/job_id/'config.json'),config)
             if cfg.exists() and read(cfg)!=config: raise ValueError('Job configuration changed')
@@ -203,7 +207,9 @@ def main():
     p.add_argument('--migrate-from',type=Path,help='Fork paused admitted31639c0/adaptive96e542d, or dynamic9a147cd with --performance, into a new suite')
     p.add_argument('--dynamic-logical-batch',action='store_true',help='New sample-scheduled logical32/64/128 trajectory')
     p.add_argument('--performance',action='store_true',help='FP32 bounded lookahead, reusable pinned staging and first16 update profile')
+    p.add_argument('--torch-acceleration',action='store_true',help='Optional Inductor plus bounded forward/backward CUDA Graph; S5 keeps native JAX')
     args=p.parse_args()
+    if args.torch_acceleration: args.performance=True
     if args.performance: args.dynamic_logical_batch=True
     if args.dynamic_logical_batch: args.adaptive_memory=True
     if args.migrate_from and (args.resume or not args.adaptive_memory):

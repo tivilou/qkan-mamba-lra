@@ -43,7 +43,7 @@ def check_release(config=None):
 
 def implementation_hash():
     paths=sorted((ROOT/'experiments/baseline_delivery').glob('*.py'))
-    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'scripts/migrate_fixed_to_adaptive.sh',ROOT/'scripts/migrate_dynamic_logical.sh',ROOT/'scripts/migrate_performance.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
+    paths += [ROOT/'experiments/baseline_delivery/strong-offline-mirror.json',ROOT/'experiments/baseline_delivery/strong-source-registry.json',ROOT/'experiments/baseline_delivery/cohort-review.json',ROOT/'scripts/run_formal_readiness.sh',ROOT/'scripts/run_adaptive_readiness.sh',ROOT/'scripts/migrate_fixed_to_adaptive.sh',ROOT/'scripts/migrate_dynamic_logical.sh',ROOT/'scripts/migrate_performance.sh',ROOT/'scripts/migrate_torch_acceleration.sh',ROOT/'requirements-mega.txt',ROOT/'requirements-s5.txt',ROOT/'scripts/run_baselines.sh',ROOT/'requirements-baselines.txt',
               ROOT/'experiments/baseline_delivery/assets.json',ROOT/'experiments/baseline_delivery/data-identities.json',
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',
@@ -142,7 +142,7 @@ def canary(config,data,cache,output,device='cpu'):
             diagnostic=dict(schema='qkan-recovery-child-failure.v1',model=config['model'],task=task,
                 child=name,resume=extra==['--resume'],returncode=status,expected_returncode=expected)
             for key,filename in (('exception','worker-error.json'),('trace_replay','trace-replay-diagnostic.json'),
-                                 ('adaptive_memory','adaptive-memory.json')):
+                                 ('adaptive_memory','adaptive-memory.json'),('torch_acceleration','torch-acceleration.json')):
                 path=folder/name/filename
                 if path.is_file(): diagnostic[key]=read(path)
             atomic_json(folder/'child-failure.json',diagnostic)
@@ -182,11 +182,19 @@ def canary(config,data,cache,output,device='cpu'):
     for name in ('uninterrupted','interrupted'):
         if not read(folder/name/'trace-validation.json')['passed']:
             raise ValueError('Trace semantic/replay gate failed')
+    if config.get('torch_acceleration'):
+        if any(not s.get('torch_acceleration') for s in states):
+            raise ValueError('Compiler/graph checkpoint metadata missing')
+        if states[0]['torch_acceleration']!=states[1]['torch_acceleration']:
+            raise ValueError('Compiler/graph recovery mode differs')
     report={'schema':'qkan-baseline-recovery-canary.v1','passed':True,'device':device,'model':config['model'],
             'task':task,'fresh_process':True,'updates':states[0]['step'],'agreement':agreement,
             'config_sha256':fingerprint(config),'source_revision':config['source_revision'],
             'trace_semantic_and_replay':True,'test_access':False,
             'training_seconds':states[0]['training_seconds']}
+    if config.get('torch_acceleration'):
+        report['torch_acceleration']=dict(policy=config['torch_acceleration'],state=states[0]['torch_acceleration'],
+            scope='Exact fresh-process recovery within selected execution mode; fallback is explicitly recorded, not graph certification')
     if config.get('adaptive_memory'):
         for state in states:
             if not state.get('adaptive_memory'): raise ValueError('Adaptive controller checkpoint missing')
@@ -280,6 +288,10 @@ def deliver(suite):
                     files.extend(return_files(path,'jobs/'+job.name+'/'+name))
             if (job/'performance-profile.json').exists():
                 files.extend(return_files(job/'performance-profile.json','jobs/'+job.name+'/performance-profile.json'))
+            if read(job/'config.json').get('torch_acceleration') and not (job/'torch-acceleration.json').is_file():
+                raise ValueError('Compiler/graph return evidence missing')
+            if (job/'torch-acceleration.json').exists():
+                files.extend(return_files(job/'torch-acceleration.json','jobs/'+job.name+'/torch-acceleration.json'))
             pointer=read(job/'checkpoints/latest.json')
             for name in ('latest.json',pointer['file']):
                 path=job/'checkpoints'/name

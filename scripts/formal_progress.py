@@ -162,6 +162,10 @@ class Dashboard:
             lines.append(f"GPU {state.get('physical_gpu','?')} | {job} | PID {state.get('pid','?')} | 本次进程耗时 {duration(now-started)}")
             if not hb or hb.get('updated_at',0)<started:
                 lines.append('  初始化/恢复中，等待本次进程的第一个训练心跳；速度与 ETA 待测。')
+                acceleration=read(folder/'torch-acceleration.json',{})
+                if acceleration:
+                    lines.append('  编译/Graph准备：'+acceleration.get('state',{}).get('phase',acceleration.get('state',{}).get('reason','待测'))+
+                        '；首次编译/捕获及有界测速可能较慢，尚未计入样本进度。')
                 continue
             adaptive=hb.get('adaptive_memory')
             if adaptive:
@@ -169,6 +173,9 @@ class Dashboard:
                              f"累计 OOM 重试 {adaptive['oom_retries']} | {adaptive['event']}")
                 if 'logical_batch' in adaptive:
                     lines.append(f"  逻辑 batch：本步 {adaptive['used_logical_batch']} | 下一步 {adaptive['logical_batch']} | 按样本调度学习率")
+                acceleration=adaptive.get('torch_acceleration')
+                if acceleration:
+                    lines.append('  编译/Graph：'+acceleration['mode']+' | '+acceleration['reason'])
             step=hb.get('optimizer_step');epoch=hb.get('epoch');epochs=config.get('epochs')
             n=self.rows.get(config.get('task'));batch_size=config.get('batch_size')
             batches=math.ceil(n/batch_size) if n and batch_size else None
@@ -301,6 +308,7 @@ def main():
         if context.get('adaptive_memory'): command.append('--adaptive-memory')
         if context.get('dynamic_logical_batch'): command.append('--dynamic-logical-batch')
         if context.get('performance'): command.append('--performance')
+        if context.get('torch_acceleration'): command.append('--torch-acceleration')
         atomic_json(suite/('progress-launch-'+str(time.time_ns())+'.json'),dict(
             schema='qkan-progress-supervisor.v1',executor_revision=expected,
             display_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

@@ -189,8 +189,10 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             if isinstance(value,tuple): return tuple(host(v) for v in value)
             return copy.deepcopy(value)
         def capture_update():
+            nonlocal active_snapshot
             with profile.phase('rollback_snapshot'):
-                return capture_payload()
+                active_snapshot=capture_payload()
+                return active_snapshot
         def capture_payload():
             payload=dict(model=model.state_dict(),optimizer=opt.state_dict(),
                          scheduler=schedule.state_dict(),rng=rng_state())
@@ -266,7 +268,50 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         state.update(model=model.state_dict(),optimizer=opt.state_dict(),scheduler=schedule.state_dict(),rng=rng_state())
         if adaptive: state['adaptive_memory']=adaptive.snapshot()
         if dynamic: state['sample_clock']=clock.snapshot()
+        if acceleration: state['torch_acceleration']=acceleration.snapshot()
         save_checkpoint(output,state);last_save=now
+    acceleration=None;active_snapshot=None
+    if config.get('torch_acceleration'):
+        if not adaptive or not device.startswith('cuda'):
+            raise ValueError('Torch acceleration requires the recoverable CUDA execution path')
+        from .torch_acceleration import Executor,torch_runtime
+        def publish_acceleration(value):
+            atomic_json(output/'torch-acceleration.json',dict(policy=config['torch_acceleration'],state=value,
+                source_revision=config['source_revision'],step=state['step'],runtime=acceleration.runtime.status() if acceleration else {}))
+        profile_trial_active=None
+        def profile_trial(enabled):
+            nonlocal profile_trial_active
+            if enabled:
+                profile_trial_active=profile.active;profile.active=False
+            elif profile_trial_active is not None:
+                profile.active=profile_trial_active;profile_trial_active=None
+        os.environ['TORCHINDUCTOR_CACHE_DIR']=str(output/'compile-cache/inductor')
+        os.environ['TRITON_CACHE_DIR']=str(output/'compile-cache/triton')
+        for key in ('TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE','TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE',
+                    'TORCHINDUCTOR_BUNDLED_AUTOTUNE_REMOTE_CACHE'):
+            os.environ[key]='0'
+        def acceleration_state():
+            return host(dict(model=model.state_dict(),optimizer=opt.state_dict(),
+                scheduler=schedule.state_dict(),rng=rng_state(),
+                gradients={name:p.grad for name,p in model.named_parameters()}))
+        def acceleration_compare(a,b):
+            if isinstance(a,torch.Tensor):
+                numerical=a.is_floating_point() or a.is_complex()
+                torch.testing.assert_close(a,b,rtol=1e-5 if numerical else 0,atol=1e-6 if numerical else 0)
+            elif isinstance(a,dict):
+                if not isinstance(b,dict) or a.keys()!=b.keys(): raise ValueError('Numerical state keys differ')
+                for key in a: acceleration_compare(a[key],b[key])
+            elif isinstance(a,(tuple,list)):
+                if type(a)!=type(b) or len(a)!=len(b): raise ValueError('Numerical state sequence differs')
+                for x,y in zip(a,b): acceleration_compare(x,y)
+            elif isinstance(a,np.ndarray):
+                if not isinstance(b,np.ndarray) or a.dtype!=b.dtype or not np.array_equal(a,b):
+                    raise ValueError('Numerical RNG array differs')
+            elif type(a)!=type(b) or a!=b: raise ValueError('Numerical control state differs')
+        acceleration=Executor(torch_runtime(torch,model,rng_state,restore_rng,config['torch_acceleration']),
+            config['torch_acceleration'],state.get('torch_acceleration'),synthetic,publish_acceleration,
+            trial=profile_trial,read_state=acceleration_state,compare=acceleration_compare)
+        publish_acceleration(acceleration.snapshot())
     while state['epoch']<config['epochs']:
         if state['permutation'] is None:
             state['permutation']=torch.randperm(len(train))
@@ -295,14 +340,14 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     try: staged={key:value.to(device,non_blocking=True) for key,value in staged.items()}
                     except torch.cuda.OutOfMemoryError:
                         torch.cuda.empty_cache()  # Keep CPU staging for microbatch transfer.
-            def update(micro_batch):
+            def update_impl(micro_batch):
                 opt.zero_grad(set_to_none=True); update_loss=0.; update_correct=0;finite=True
                 for start in range(0,len(ids),micro_batch):
                     sub=ids[start:start+micro_batch]
                     batch=({key:value[start:start+micro_batch].to(device,non_blocking=True) for key,value in staged.items()}
                            if adaptive else train.batch(sub,device))
                     with profile.phase('forward_loss'):
-                        logits=model(batch,validated_inputs=True) if adaptive else model(batch)
+                        logits=acceleration.forward(batch) if acceleration else (model(batch,validated_inputs=True) if adaptive else model(batch))
                         loss=nn.functional.cross_entropy(logits,batch['labels'],reduction='sum')/len(ids)
                     if adaptive:
                         finite=finite & torch.isfinite(loss.detach())
@@ -313,6 +358,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                         update_loss+=loss.item()*len(ids)
                         update_correct+=int((logits.argmax(-1)==batch['labels']).sum())
                     with profile.phase('backward'): loss.backward()
+                    if (acceleration and start==0 and not acceleration.reference
+                            and acceleration.state['mode']=='compile_graph'):
+                        acceleration.runtime.isolate_gradients()
                 if adaptive and not bool(finite): raise ValueError('Nonfinite loss')
                 with profile.phase('clip_optimizer_schedule'):
                     nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
@@ -320,6 +368,11 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     if dynamic: schedule.step(len(ids))
                     else: schedule.step()
                 return (float(update_loss),int(update_correct)) if adaptive else (update_loss,update_correct)
+            def update(micro_batch):
+                if not acceleration: return update_impl(micro_batch)
+                return acceleration.run(lambda:update_impl(micro_batch),active_snapshot,
+                    restore_update,lambda:opt.zero_grad(set_to_none=True),torch.cuda.synchronize,
+                    lambda error:isinstance(error,torch.cuda.OutOfMemoryError))
             adaptive_status={}
             if adaptive:
                 torch.cuda.reset_peak_memory_stats()
@@ -328,12 +381,15 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     memory,torch.cuda.synchronize,started_at=update_started,samples=len(ids))
                 adaptive_status.update(rollback_device='cpu' if rollback.cpu else 'gpu',
                     batch_staging='gpu' if all(value.is_cuda for value in staged.values()) else 'cpu',cpu_prefetch=1)
+                if acceleration:
+                    adaptive_status['torch_acceleration']=acceleration.snapshot()
                 state['adaptive_peak_bytes']=max(state.get('adaptive_peak_bytes',0),adaptive_status['peak_bytes'])
             else: update_loss,update_correct=update(config['micro_batch'])
             if profile.finish((adaptive.state['oom_count']-retries_before) if adaptive else 0):
                 atomic_json(output/'performance-profile.json',dict(profile.report(),
                     config_sha256=fingerprint(config),source_revision=config['source_revision'],
-                    framework='torch',optimizer_step=state['step']+1))
+                    framework='torch',optimizer_step=state['step']+1,
+                    **(dict(torch_acceleration=dict(state=acceleration.snapshot(),runtime=acceleration.runtime.status())) if acceleration else {})))
             state['cursor']=end;state['step']+=1
             if dynamic and end<len(train) and not performance:
                 next_batch=planned_batch_size(adaptive,config,state['step'])
@@ -351,7 +407,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             if adaptive:
                 status_writer.emit(lambda write:(write(output/'heartbeat.json',heartbeat),
                     write(output/'adaptive-memory.json',dict(policy=adaptive.policy,state=adaptive.snapshot(),
-                        last_update=adaptive_status,step=state['step']))),
+                        last_update=adaptive_status,step=state['step'])),
+                    publish_acceleration(acceleration.snapshot()) if acceleration else None),
                     force=PAUSE or (stop_after is not None and state['step']>=stop_after),
                     token=adaptive.state['transitions'])
             else: atomic_json(output/'heartbeat.json',heartbeat)
@@ -396,6 +453,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         peak_bytes=state.get('adaptive_peak_bytes'),trajectory='adaptive; not fixed-microbatch-equivalent')
     if state.get('migration'): summary['migration']=state['migration']
     if dynamic: summary['sample_clock']=clock.snapshot()
+    if acceleration: summary['torch_acceleration']=dict(policy=config['torch_acceleration'],state=acceleration.snapshot())
     if dynamic: summary['adaptive_memory']['trajectory']='dynamic logical batch/sample schedule; not fixed-batch equivalent'
     if adaptive: summary['peak_gpu_bytes']=max(state.get('adaptive_peak_bytes',0),summary['peak_gpu_bytes'] or 0)
     atomic_json(output/'summary.json',summary)

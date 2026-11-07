@@ -17,6 +17,17 @@ DYNAMIC_REVISION='9a147cd70cedf1511de89d0381dfbdabac3274f2'
 
 
 def compatible(old,new):
+    if new.get('torch_acceleration'):
+        from .torch_acceleration import policy as acceleration_policy
+        from .performance import policy as performance_policy
+        from .logical_batch import policy as logical_policy
+        if (old.get('source_revision')!=DYNAMIC_REVISION or old.get('performance') or old.get('torch_acceleration')
+                or old.get('adaptive_memory')!=logical_policy(old['batch_size']) or old['model']=='s5'):
+            raise ValueError('Acceleration migration requires the dynamic9a Torch executor')
+        expected={**old,'source_revision':new['source_revision'],'performance':performance_policy(),
+            'torch_acceleration':acceleration_policy()}
+        if expected!=new: raise ValueError('Acceleration migration changed scientific configuration')
+        return
     if new.get('performance'):
         from .performance import policy as performance_policy
         from .logical_batch import policy as logical_policy
@@ -80,6 +91,7 @@ def completed_files(folder,config):
         names.append('checkpoints/'+name)
     if config.get('adaptive_memory'): names+=['adaptive-memory.json','adaptive-events.jsonl']
     if (folder/'performance-profile.json').exists(): names.append('performance-profile.json')
+    if (folder/'torch-acceleration.json').exists(): names.append('torch-acceleration.json')
     hashes={}
     for name in names:
         path=folder/name
