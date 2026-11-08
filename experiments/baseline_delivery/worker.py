@@ -102,6 +102,7 @@ def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=F
 
 
 def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only):
+    run_started_at=time.time()
     output=Path(output); output.mkdir(parents=True,exist_ok=True)
     torch.set_num_threads(int(os.environ.get('QKAN_CPU_THREADS','1')))
     seed=config['seed']; random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
@@ -163,6 +164,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         restore_rng(state['rng'])
     elif (output/'checkpoints/latest.json').exists():
         raise ValueError('Existing checkpoint requires explicit resume')
+    run_samples_start=state['epoch']*len(train)+state['cursor']
+    run_optimizer_step_start=state['step']
     from .performance import Lookahead,PinnedStaging,Profile
     performance=bool(config.get('performance'))
     profile=Profile(limit=16 if performance and not (output/'performance-profile.json').exists() else 0,
@@ -372,7 +375,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 if not acceleration: return update_impl(micro_batch)
                 return acceleration.run(lambda:update_impl(micro_batch),active_snapshot,
                     restore_update,lambda:opt.zero_grad(set_to_none=True),torch.cuda.synchronize,
-                    lambda error:isinstance(error,torch.cuda.OutOfMemoryError))
+                    lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
+                    execution_key=(micro_batch,len(ids)))
             adaptive_status={}
             if adaptive:
                 torch.cuda.reset_peak_memory_stats()
@@ -400,6 +404,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             heartbeat={'state':'running','epoch':state['epoch'],
                         'next_row_cursor':state['cursor'],'optimizer_step':state['step'],
                         'loss':update_loss/len(ids),'updated_at':time.time(),
+                        'run_started_at':run_started_at,'run_samples_start':run_samples_start,
+                        'run_optimizer_step_start':run_optimizer_step_start,
                         **({'adaptive_memory':adaptive_status} if adaptive else {})}
             if dynamic: heartbeat.update(samples_seen=state['epoch']*len(train)+end,
                 sample_budget=config['epochs']*len(train),next_row_cursor=end,

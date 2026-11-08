@@ -14,9 +14,29 @@ from .common import atomic_json,digest,fingerprint,lock,read
 SOURCE_REVISION='31639c014a62504f6596e75cf56a1abd5068bce4'
 ADAPTIVE_REVISION='96e542dd527b777d7690f6602fa1d14530957f85'
 DYNAMIC_REVISION='9a147cd70cedf1511de89d0381dfbdabac3274f2'
+ACCELERATION_REVISION='9ce7f00d45d2e38b73194ca7dfbf379fc05fd5fb'
 
 
 def compatible(old,new):
+    if old.get('source_revision')==ACCELERATION_REVISION:
+        from .torch_acceleration import policy as acceleration_policy
+        from .performance import policy as performance_policy
+        from .logical_batch import policy as logical_policy
+        if (old.get('performance')!=performance_policy()
+                or old.get('adaptive_memory')!=logical_policy(old['batch_size'])):
+            raise ValueError('Compiler migration requires the admitted9ce execution policies')
+        expected={**old,'source_revision':new['source_revision']}
+        if old['model']!='s5':
+            mode=(old.get('torch_acceleration') or {}).get('mode')
+            legacy=acceleration_policy(mode)
+            legacy.pop('update_warmup');legacy.pop('validation');legacy['schema']='qkan-torch-acceleration.v1'
+            if old.get('torch_acceleration')!=legacy:
+                raise ValueError('Original9ce compiler policy differs')
+            expected['torch_acceleration']=acceleration_policy(new.get('torch_acceleration',{}).get('mode'))
+        elif old.get('torch_acceleration'):
+            raise ValueError('S5 cannot inherit a Torch execution policy')
+        if new!=expected: raise ValueError('Compiler migration changed scientific configuration')
+        return
     if new.get('torch_acceleration'):
         from .torch_acceleration import policy as acceleration_policy
         from .performance import policy as performance_policy
@@ -147,6 +167,39 @@ def verify_completed(suite,job):
     return expected
 
 
+def validate_source_admission(source,revision):
+    """Authenticate the latest9ce admission without executing its training entry."""
+    root=source.parent.parent
+    context=read(source/'context.json');release=read(source/'runtime-release.json')
+    gate=read(source/'gate-report.json');evidence=read(source/'gate-evidence.json')
+    policy=read(root/'experiments/baseline_delivery/fidelity-policy.json')
+    policy_sha=digest(root/'experiments/baseline_delivery/fidelity-policy.json')
+    if (gate.get('status')!='passed' or gate.get('evidence_sha256')!=digest(source/'gate-evidence.json')
+            or evidence.get('context')!=context or release.get('formal_run_allowed') is not True
+            or any(item.get('source_revision')!=revision for item in (context,release,gate))
+            or any(item.get('policy_sha256')!=policy_sha for item in (context,release))
+            or release.get('implementation_sha256')!=context.get('implementation_sha256')
+            or set(release.get('certificates',{}))!=set(policy['models'])):
+        raise ValueError('Original compiler admission identity changed')
+    for name,sha in policy['reviewed_artifacts'].items():
+        path=(root/name).resolve()
+        if not path.is_relative_to(root) or digest(path)!=sha: raise ValueError('Original reviewed source changed')
+    def confined(name):
+        path=(root/name).resolve()
+        if Path(name).is_absolute() or not path.is_relative_to(source):
+            raise ValueError('Original certificate artifact escapes suite')
+        return path
+    for name,entry in release['certificates'].items():
+        path=confined(entry['path'])
+        if digest(path)!=entry['sha256']: raise ValueError('Original certificate hash differs')
+        certificate=read(path)
+        if (certificate!=evidence.get('certificates',{}).get(name) or certificate.get('model')!=name
+                or certificate.get('policy_sha256')!=policy_sha):
+            raise ValueError('Original certificate identity differs')
+        for artifact,sha in certificate['evidence'].items():
+            if digest(confined(artifact))!=sha: raise ValueError('Original runtime evidence changed')
+
+
 def snapshot(source,suite,cache):
     source=Path(source).resolve();suite=Path(suite).resolve()
     if source.parent.name!='runs' or source==suite or source in suite.parents or suite in source.parents:
@@ -154,13 +207,14 @@ def snapshot(source,suite,cache):
     source_root=source.parent.parent
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip()
     dirty=subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=source_root,text=True).strip()
-    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION,DYNAMIC_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
+    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION,DYNAMIC_REVISION,ACCELERATION_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
     destination=suite/'migration-source'
     if destination.exists(): raise ValueError('Migration snapshot already exists; resume the new suite')
     pending=suite/('migration-pending-'+uuid.uuid4().hex)
     with ExitStack() as held:
         for path in (source/'progress-supervisor.lock',source/'suite.lock'):
             held.enter_context(lock(path))
+        if revision==ACCELERATION_REVISION: validate_source_admission(source,revision)
         context=read(source/'context.json');manifest=read(source/'suite.json');gate=read(source/'gate-report.json')
         if (context.get('source_revision')!=revision
                 or manifest.get('source_revision')!=revision or gate.get('status')!='passed'
@@ -182,8 +236,10 @@ def snapshot(source,suite,cache):
                 folder=source/'jobs'/name
                 held.enter_context(lock(folder/'worker.lock'))
                 config=read(folder/'config.json')
-                if fingerprint(config)!=job['config_sha256'] or config['source_revision']!=revision:
+                inherited=job.get('preserved_completion')
+                if fingerprint(config)!=job['config_sha256'] or (not inherited and config['source_revision']!=revision):
                     raise ValueError('Original job configuration changed')
+                if inherited: verify_completed(source,job)
                 target=pending/name;target.mkdir()
                 record=dict(config_sha256=fingerprint(config),checkpoint=None)
                 if (folder/'summary.json').exists():
@@ -253,6 +309,9 @@ def load_state(output,config,contract,original_contract,loader):
             if not state.get('sample_clock') or not state.get('adaptive_memory'):
                 raise ValueError('Dynamic source lacks sample clock/controller; refusing schedule reset')
             lineage['execution_policy']='FP32 lookahead/pinned staging; sample clock and controller preserved'
+            if old.get('source_revision')==ACCELERATION_REVISION and config.get('torch_acceleration'):
+                lineage['previous_torch_acceleration']=state.pop('torch_acceleration',None)
+                lineage['backend_recertification']='new process-local warmup; fresh recovery admission; no optimizer updates'
         else:
             state.pop('adaptive_memory',None)
             state.pop('sample_clock',None)

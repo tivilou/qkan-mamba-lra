@@ -107,6 +107,7 @@ def run(args, modules):
 
 
 def _run(args, modules, resources):
+    run_started_at=time.time()
     import jax
     import jax.numpy as jnp
     import optax
@@ -176,6 +177,8 @@ def _run(args, modules, resources):
         if meta['runtime']!=runtime: raise ValueError('S5 runtime changed')
         state=serialization.from_state_dict(state,meta['train_state'])
     elif (out/'checkpoints/latest.json').exists(): raise ValueError('Existing S5 state requires --resume')
+    run_samples_start=meta['epoch']*len(train)+meta['cursor']
+    run_optimizer_step_start=meta['step']
     # Flax from_state_dict restores the supplied NumPy leaves as-is. Eager
     # Optax arithmetic on host moments/counters can differ from uninterrupted
     # JAX arithmetic. Canonicalize BOTH fresh and restored states before any
@@ -342,6 +345,8 @@ def _run(args, modules, resources):
             meta['epoch_loss']+=loss*len(ids);meta['epoch_correct']+=correct;meta['epoch_samples']+=len(ids)
             if args.synthetic: meta['update_trace'].append(dict(step=meta['step'],rows=ids.tolist(),loss=loss))
             heartbeat=dict(state='running',epoch=meta['epoch'],optimizer_step=meta['step'],loss=loss,updated_at=time.time(),
+                run_started_at=run_started_at,run_samples_start=run_samples_start,
+                run_optimizer_step_start=run_optimizer_step_start,
                 **({'adaptive_memory':adaptive_status} if adaptive else {}))
             if dynamic: heartbeat.update(samples_seen=meta['epoch']*len(train)+end,
                 sample_budget=config['epochs']*len(train),next_row_cursor=end,logical_batch=adaptive.logical_batch)

@@ -136,8 +136,42 @@ class AccelerationTests(unittest.TestCase):
         executor=self.setup_executor(synthetic=True)
         executor.read_state=lambda:copy.deepcopy(self.state)
         executor.compare=lambda a,b:self.assertEqual(a,b)
-        self.run();self.assert_one_commit();self.assertEqual(len(self.runtime.calls),3)
+        self.run();self.assert_one_commit();self.assertEqual(len(self.runtime.calls),4)
         self.assertEqual(executor.state['eager_agreement'],'passed_rtol1e-5_atol1e-6_rng_exact')
+
+    def test_cold_backward_warmup_is_discarded_before_agreement(self):
+        executor=self.setup_executor(synthetic=True);reads=[]
+        executor.read_state=lambda:(reads.append(len(self.runtime.calls)) or copy.deepcopy(self.state))
+        executor.compare=lambda a,b:self.assertEqual(a,b)
+        self.run();self.assert_one_commit()
+        self.assertEqual(reads,[2,3])
+        self.assertEqual(self.runtime.calls,['compile_graph','eager','compile_graph','compile_graph'])
+
+    def test_shape_change_rechecks_once_without_repeating_speed_benchmark(self):
+        executor=self.setup_executor(synthetic=True)
+        executor.read_state=lambda:copy.deepcopy(self.state);executor.compare=Mock()
+        def update(key):
+            return executor.run(lambda:executor.forward({}),self.original,lambda _:None,
+                Mock(),Mock(),lambda _:False,execution_key=key)
+        for key in ((16,128),(16,128),(32,128),(32,128),(16,128)):
+            update(key)
+        self.assertEqual(executor.compare.call_count,3)  # Graph recaptured on return to16.
+        self.assertFalse(any(e.get('phase')=='bounded_benchmark' for e in self.events))
+
+    def test_shape_validation_budget_falls_back_instead_of_endless_trials(self):
+        executor=self.setup_executor(synthetic=True);executor.read_state=lambda:{};executor.compare=Mock()
+        for i in range(20):
+            executor.run(lambda:executor.forward({}),{},lambda _:None,Mock(),Mock(),lambda _:False,execution_key=i)
+        self.assertEqual(executor.state['mode'],'eager')
+        self.assertLessEqual(executor.compare.call_count,2*policy()['max_builds'])
+
+    def test_restarted_process_warms_again_but_same_shape_does_not(self):
+        executor=self.setup_executor(synthetic=True);executor.read_state=lambda:{};executor.compare=Mock()
+        self.run();first=len(self.runtime.calls);self.run()
+        self.assertEqual(len(self.runtime.calls)-first,1)
+        restarted=Executor(Runtime(),policy(),saved=executor.snapshot(),synthetic=True,read_state=lambda:{},compare=Mock())
+        restarted.run(lambda:restarted.forward({}),{},lambda _:None,Mock(),Mock(),lambda _:False)
+        self.assertEqual(restarted.runtime.calls,['compile_graph','eager','compile_graph','compile_graph'])
 
     def test_numerical_mismatch_reverts_both_accelerated_modes_without_extra_commit(self):
         executor=self.setup_executor(synthetic=True)
@@ -167,6 +201,26 @@ class AccelerationTests(unittest.TestCase):
         selected,receipts,attempts=admit_recovery(original,probe)
         self.assertEqual(calls,['compile_graph','compile']);self.assertEqual(selected['torch_acceleration'],policy('compile'))
         self.assertEqual(original['torch_acceleration'],policy());self.assertEqual(attempts[0]['outcome'],'recovery_mismatch')
+
+    def test_failed_attempt_keeps_compact_diagnostic_even_if_fallback_passes(self):
+        def probe(config):
+            mode=config['torch_acceleration']['mode']
+            if mode=='compile_graph':
+                error=RecoveryMismatch('Recovery tensor differs');error.diagnostic={'control_and_rng_exact':True}
+                raise error
+            return [dict(torch_acceleration=dict(state=dict(mode=mode)))]
+        _,_,attempts=admit_recovery(dict(torch_acceleration=policy()),probe)
+        self.assertEqual(attempts[0]['diagnostic'],{'control_and_rng_exact':True})
+
+    def test_diagnostic_covers_all_fields_caps_detail_and_contains_no_values(self):
+        from experiments.baseline_delivery.runner import recovery_diagnostic
+        def rows(a,b,key):
+            return [dict(path=key+'/'+str(i),exact=key=='rng',max_abs=.001,differing_elements=1) for i in range(40)]
+        with patch('experiments.baseline_delivery.recovery_audit.differences',side_effect=rows):
+            result=recovery_diagnostic([dict(model={},optimizer={},rng={})]*2,['model','optimizer','rng'])
+        self.assertEqual(result['differing_leaves'],80)
+        self.assertEqual(len(result['first_differences']),32);self.assertTrue(result['details_truncated'])
+        self.assertIsNone(result['control_and_rng_exact']);self.assertFalse(result['fields']['optimizer']['exact'])
 
     def test_all_modes_fail_recovery_blocks_formal_run(self):
         probe=Mock(side_effect=RecoveryMismatch('differs'))

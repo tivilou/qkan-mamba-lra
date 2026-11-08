@@ -1,50 +1,59 @@
-# Torch 编译与 CUDA Graph 可选执行路径
+# Torch 编译、CUDA Graph 与进度显示
 
-开启 `--torch-acceleration`（或使用下方迁移入口）时，同时启用之前的FP32预取/锁页复用/性能回传。原始9a147cd实验仍是本次迁移来源，用户确认尚未更新。已完成结果原样保留；未完成任务从完整断点继续，不重新预热样本学习率，不改变逻辑32/64/128和物理档位策略。
+当前训练源是9ce7f00d45d2，不再是原9a目录。2026-11-08截图确认该Suite已恢复训练：两个原9a结果保留，Transformer/Retrieval正在继续。该任务的compile_graph和compile先前均未通过跨进程精确恢复，正式准入为eager。代码已实现这两种后端，不代表该任务已获准使用，也没有证据证明底层差异源于embedding算子。
 
-## 实现范围
+## 先更新显示，无需停止训练
 
-- 对模型原有forward绑定 `torch.compile(backend='inductor', fullgraph=True, dynamic=False)`；不替换原模型对象，模型state_dict键与优化器参数引用保持原样。禁用Inductor隐式cudagraph，随机算子使用fallback_random，以便单独管理图捕获及默认RNG状态。无AMP/TF32或新注意力实现。
-- 使用 `torch.cuda.make_graphed_callables` 捕获一个适配模块的前向/反向，3次预热；优化器、裁剪、样本学习率、采样游标和checkpoint均在图外。动态输入形状变化时释放旧图，最多同时保留一张形状图，每进程最多尝试8次构建，避免无界图池。图池循环引用主动回收。
-- 每个完整更新中，首次图反向后克隆已有参数梯度，防止Autograd累积持有Graph的可复用静态梯度缓冲区。未使用参数的None梯度不被改成零梯度。每个microbatch均完成反向后才复用图输出。
-- 每次新进程首次使用加速后端，先以相同模型/优化器/scheduler/RNG和同一批样本做eager与候选完整更新校验。参数、梯度、优化器浮点/复数状态采用rtol1e-5/atol1e-6；控制值、整数和RNG严格相同。所有试更新随后恢复，不推进样本/Adam计数。校验失败进入下一回退路径，不放宽阈值。后续原生fresh-process恢复canary仍沿用原要求，Transformer不改成近似恢复。
-- 正式worker另执行有界测速：各1次预热、2个交替测量对，包含前向/反向/裁剪/优化器/调度和末尾同步；每次都恢复完整更新前状态。候选中位耗时只要更低就保留，否则选择eager。每个后端选择只测一次；恢复后的进程保留已选后端/测速结论，但重新构建运行时缓存并重新校验数值。此短测速不保证全程最优；未来形状/显存/负载变化可能改变收益。
-- 有限回退顺序为compile_graph → compile → eager。捕获失败、编译器错误、数值不符均恢复相同更新前状态，再重试同一批。图池OOM先释放图，尝试compile；compile/eager的容量OOM交给原有物理batch控制器。非后端模型异常不被吞掉；illegal memory access/device-side assert等失效CUDA上下文明确终止。每种候选最多一轮，避免无限重试。
-- S5继续原生JAX。MEGA复用其已固定环境；没有torch.compile时记录回退eager，不升级旧Torch，不安装依赖。Torch2.7.1/triton3.3.1沿用现有基础环境。Inductor/Triton缓存仅写入各任务compile-cache目录，关闭远程缓存，不引入公网下载。
-
-原生合成canary不根据时间选择后端，强制请求的策略并记录是否回退，检查完整状态的跨进程恢复。canary回退后通过只证明该实际执行路径可恢复，不能宣称Graph已通过。编译/图捕获/丢弃的试更新耗时属于真实入口开销；正式样本只提交一次。前16次性能报告的update_wall含初始化/校验/测速，试更新阶段的CUDA细分计时关闭，不能把初始化wall时间当作稳态samples/s。
-
-## 师弟一次更新入口
-
-在原训练监督入口按一次Ctrl+C，等待保存完毕并返回shell，再执行：
+在**另一个终端**执行。只提取观察脚本，不pull或修改当前执行版本；`--watch-only`不会启动、停止、测速或修改训练。
 
 ```bash
-cd /root/projects/qkan-mamba-lra-adaptive-9a147cd70ced &&
-test -d runs/adaptive-migrated-20261106T111646Z-90465 &&
+cd /root/projects/qkan-mamba-lra-adaptive-9ce7f00d45d2 &&
+git fetch origin research/collaboration-foundation &&
+git show FETCH_HEAD:scripts/formal_progress.py > .bootstrap/formal_progress.py &&
+.venv-baselines/bin/python -B .bootstrap/formal_progress.py \
+  --watch-only --resume runs/adaptive-migrated-20261108T082557Z-145040 \
+  --display inplace --interval 5
+```
+
+短期速度用训练心跳的时间戳和已提交样本差计算，保存近60秒窗口；不足60秒时逐步积累。重复刷新同一心跳保留最近测量值，不反复清成“待测”。长期平均用本次观察期间的实际样本增量除以墙钟时间，包含等待、保存和观察到的验证耗时。旧worker缺少进程起始计数，因此明确标注“本次观察”；新版Torch/S5心跳另记录进程起点与恢复断点的起始样本/step，能够显示“本次进程”平均，不把旧断点样本算入新进程吞吐。
+
+短期、长期速度分别占一行，避免窄终端截掉长期平均。当前任务ETA按长期平均计算，不包含将来的验证、测试、回传和排队任务。超过120秒无新训练心跳时，保留并标明最近测量、暂停ETA估计；这不是失败判定，也不触发重新测速。无训练阶段事件的旧worker不能确定是在保存、验证还是编译，界面不作虚假归因。eager的准入恢复失败原因从原acceleration-admission.json读取，避免仅显示含糊的requested。
+
+## 编译恢复修正
+
+执行策略升级为qkan-torch-acceleration.v2。每个新进程、每个新的micro-batch/完整batch形状，在数值对比前先完整预热一次前向、反向、裁剪、优化器和样本调度，再恢复同一个更新前快照。之后比较eager和候选的稳态完整更新，最后再回滚，实际样本只提交一次。只预热forward不能覆盖延迟反向编译。
+
+编译模式缓存已校验形状；Graph只驻留一张图，切换回来需要重新捕获并复核。每个后端最多8次形状校验，Graph仍最多8次构建，超过预算有限回退，避免无限预热或测速。新进程重新预热；原有已选模式/测速结论在同版本断点恢复中保留。正式worker仍只进行每次后端选择的一轮有界吞吐比较（各一次预热、两个交替测量对），正收益保留；形状复核不重复速度benchmark。合成恢复canary不根据短期速度选择后端。
+
+这是对冷编译、换形状生命周期的修正，**尚未证实它就是旧版跨进程差异的原因，或已使Retrieval通过Graph**。确定性算法、FP32、关闭TF32及fallback_random等设置本来已启用，不把再次设置这些选项宣称为根因修复。实际逐位恢复门槛不变，所有候选均失败就阻止训练。
+
+失败诊断增加逐字段是否完全相同、差异元素数、最大绝对差、控制状态/RNG结果和最多32条差异位置，不包含张量值。即使后续eager准入通过，失败候选的compact诊断仍进入acceleration-admission/gate-evidence并随原回传流程上传，便于判断模型、Adam、RNG或调度从哪里开始分歧。
+
+## 采用新版训练代码
+
+显示更新可以直接使用上一条命令。要采用v2编译逻辑，需要在原训练监督器按**一次Ctrl+C**，等待完整保存并返回shell；以下命令会建立独立新执行目录，对剩余任务重新验收后继续。不要在活跃训练时迁移，也不要再从原9a迁移而丢掉9ce中新训练的进度。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-9ce7f00d45d2 &&
+test -d runs/adaptive-migrated-20261108T082557Z-145040 &&
 git fetch origin research/collaboration-foundation &&
 git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
 bash .bootstrap/prepare-adaptive-checkout.sh &&
 QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
 cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
 bash scripts/migrate_torch_acceleration.sh \
-  --migrate-from /root/projects/qkan-mamba-lra-adaptive-9a147cd70ced/runs/adaptive-migrated-20261106T111646Z-90465 \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-9ce7f00d45d2/runs/adaptive-migrated-20261108T082557Z-145040 \
   --cache /root/qkan-cache --gpus 0
 ```
 
-源目录保持原版本。入口创建独立新版checkout/Suite，保留暂停时所有已完成结果，验证未完成任务的源码机制、恢复/trace以及断点原生零更新还原，然后自动启动监督器。只需这一个入口，无需再单独运行前两个迁移脚本。记下新Suite路径；以后在同一新checkout运行 `scripts/formal_progress.py --resume 新Suite --display inplace --interval 5`。
+迁移支持原9a和当前9ce。9ce来源须通过原策略、证书、gate-evidence及关联文件哈希验证；沿用的原9a完成结果继续验证原迁移谱系并逐字节保留，不重标成9ce或新版结果。剩余任务保留完整模型、Adam、RNG、采样游标、样本学习率时钟、OOM上限和既有迁移历史。只重置旧后端选择元数据以允许新版本重新准入；旧选择写入迁移谱系。先执行零更新原生还原/往返校验，不重启学习率预热。不支持的策略或科学配置变更直接拒绝。
 
-首次编译、图捕获和有界校验/测速可能较慢，界面显示准备状态而非虚报训练进度；首次编译耗时与机器环境有关，代码没有未经验证的固定分钟数承诺。运行期间显示有效的compile_graph/compile/eager及选择原因。`torch-acceleration.json`记录运行时图构建次数和驻留情况，checkpoint仅保存可序列化的策略选择，不保存CUDA指针或编译对象。前16次性能报告附后端状态并提前自动回传；最终套件回传也包含诊断文件和summary的后端信息。
+入口默认执行剩余任务完整fresh-process恢复和trace验收，选择compile_graph→compile→eager中实际共同通过的模式，自动启动监督器；已完成结果不重跑。记下入口生成的新Suite路径，以后续跑该新Suite。当前旧Suite继续保留，不在原执行目录覆盖科学代码或证书。
 
-## 验证边界
+## 实现与验证边界
 
-2026-11-08准入记录修复：旧9ce7f00的readiness再入在报配置冲突之前，已覆盖证书绑定的acceleration-admission.json，所以先前的独立启动入口仍会报Runtime evidence changed。新版run_admitted.py先验证原版本/策略、gate-evidence哈希和全部证书，并检查所有关联文件；只允许从原gate-evidence内嵌记录重建与原证书SHA-256完全相同的准入文件。先备份被覆盖字节，再原子恢复，随后重新执行原有完整证书校验；任何其他文件差异均停止。配置、证书、gate-evidence、已完成结果和完整断点不重写，不重跑canary或迁移。修复摘要及入口失败的阶段/代码位置自动回传admitted-entry，原始备份仅保留服务器本地。入口失败阶段也直接显示在监督器终端。未来readiness再入保留原准入文件的尝试历史及字节，不重新覆盖为仅包含最终后端的一轮记录。
+Inductor绑定原forward，保持模型键及优化器引用。独立Graph捕获前向/反向，优化器留在图外；首次microbatch反向后隔离可复用参数梯度缓冲。禁用隐式cudagraph，最多一张驻留图。图池OOM先退到compile；其余容量OOM进入原batch控制器。失效CUDA上下文立即停止。S5继续原生JAX，旧MEGA环境不升级；无新包、AMP、TF32或注意力替换。依赖和源码沿用本地/认证共享资产，运行时没有公网回退。
 
-2026-11-08启动修复：9ce7f00的全部准入和零更新迁移已在服务器通过，但监督器再入readiness时默认重建compile_graph，与已准入eager配置冲突。新版监督器优先调用同目录run_admitted.py，只校验原执行版本、证据/证书、GPU、数据和配置，再由原runner派发，不重新选择后端或生成配置。脚本可一起提取到旧checkout的.bootstrap，原模型源码、证书、Suite和断点保持原身份；启动记录保存两个显示/入口脚本的hash。当前已准入Suite可直接续跑，无需重迁移或重跑全部canary。readiness本身也修正为保留已选择模式并校验其他字段。
+本机仅标准库/模拟、AST、身份哈希和CLI检查；不导入Torch/JAX、不查GPU、不装包、不训练。真实编译、显存、完整恢复和持续吞吐由师弟服务器验收。代码交付不代表Graph通过或速度收益已测得。源证据与本轮验证见docs/evidence/compiler-warmup-progress-20261108.json。
 
-2026-11-08恢复准入修复：原250f2fd在Transformer/Retrieval跨进程张量完全一致检查中失败。旧回传未包含具体状态路径/后端，不能断言底层差异来自哪一算子。现按任务在所有选定GPU上完整检查compile_graph；若出现恢复状态差异，则用独立目录从头检查compile，再失败则检查eager。worker内部降到更低模式时也从头复核该实际模式。只有共同通过的模式才写入正式config，作为该任务后端上限；所有模式均失败则阻止启动，不放宽恢复阈值。数据/trace错误或失效CUDA上下文不触发这层回退。acceleration-admission.json记录选择及失败轮次，绑定证书并回传；失败报告新增状态字段路径和两边模式。
-
-若已在250f2fd新目录中报错，保留失败Suite。从原9a目录重新执行上方一次更新指令，仍以原9a完整断点为来源，创建新的修复版checkout和Suite；不要对旧失败Suite执行跨版本resume，也无需修改/删除旧结果。新模式及实际加速收益仍需服务器验证。
-
-本机仅标准库/模拟控制流、AST、hash/provenance和CLI检查，不导入Torch/JAX、不查GPU、不装包、不训练。Torch实际编译、CUDA Graph的前向/梯度与RNG行为、显存占用、跨进程恢复及吞吐必须由师弟服务器自动验收；不承诺一定启用Graph、一定提速或保持与eager逐位相同的未来轨迹。已完成的旧版结果不重新标成新版结果。
-
-API设计核对了固定PyTorch v2.7.1源码：[make_graphed_callables](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py)、[Inductor配置](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/config.py)。
+API核对采用固定PyTorch v2.7.1官方源码：[CUDA graphs](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py)、[Inductor配置](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/config.py)、[确定性与自动调优](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/runtime/triton_heuristics.py)。

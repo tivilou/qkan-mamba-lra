@@ -14,9 +14,10 @@ class RecoveryMismatch(ValueError):
 
 def policy(mode='compile_graph'):
     if mode not in MODES: raise ValueError('Unsupported acceleration mode')
-    return dict(schema='qkan-torch-acceleration.v1',mode=mode,backend='inductor',
+    return dict(schema='qkan-torch-acceleration.v2',mode=mode,backend='inductor',
         dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=1,
-        benchmark_pairs=2,precision='fp32',max_builds=8)
+        benchmark_pairs=2,precision='fp32',max_builds=8,
+        update_warmup=1,validation='each_execution_shape')
 
 
 class BackendFailure(RuntimeError): pass
@@ -31,6 +32,7 @@ def admit_recovery(config,probe):
             receipts=probe(candidate)
         except RecoveryMismatch as error:
             attempts.append(dict(mode=mode,outcome='recovery_mismatch',detail=str(error)[:160]))
+            if hasattr(error,'diagnostic'): attempts[-1]['diagnostic']=error.diagnostic
             if mode=='eager': raise
             candidate['torch_acceleration']=policy(MODES[MODES.index(mode)+1]);continue
         actual=[r['torch_acceleration']['state']['mode'] for r in receipts]
@@ -63,7 +65,7 @@ class Executor:
         if MODES.index(self.state['mode'])<MODES.index(config['mode']):
             raise ValueError('Saved mode exceeds recovery-admitted ceiling')
         self.reference=False;self.used=False;self.runtime.set_mode(self.state['mode'])
-        self.read_state=read_state;self.compare=compare;self.validated=False
+        self.read_state=read_state;self.compare=compare;self.validated=set();self.last_key=None;self.checks=0
 
     def snapshot(self): return dict(self.state)
 
@@ -78,24 +80,38 @@ class Executor:
         if old=='eager': return False
         self.state['mode']='compile' if old=='compile_graph' else 'eager'
         self.state.update(benchmarked=False,benchmark=None)
-        self.validated=False
+        self.validated.clear()
+        self.last_key=None;self.checks=0
         self.state['reason']=reason;self.runtime.clear();self.runtime.set_mode(self.state['mode'])
         self.state['eager_agreement']='eager_only' if self.state['mode']=='eager' else 'pending'
         self.publish(self.snapshot());return True
 
-    def run(self,callback,snapshot,restore,clear_grad,synchronize,is_oom):
+    def run(self,callback,snapshot,restore,clear_grad,synchronize,is_oom,execution_key=None):
         def restored():
             clear_grad();restore(snapshot)
         while True:
             try:
-                if self.read_state and not self.validated and self.state['mode']!='eager':
+                key=(self.state['mode'],execution_key)
+                needs_check=key not in self.validated or (self.state['mode']=='compile_graph' and key!=self.last_key)
+                if self.read_state and needs_check and self.state['mode']!='eager':
+                    # Cold compilation includes lazy backward compilation/capture.
+                    # Warm the complete update before comparing two steady calls.
+                    # Cache readiness is process-local: checkpoint restore repeats
+                    # this transaction, without changing optimizer/RNG/sample state.
+                    if self.checks>=self.config['max_builds']:
+                        raise BackendFailure('Execution shape validation budget exhausted')
+                    self.checks+=1
+                    self.publish(dict(self.snapshot(),phase='full_update_warmup'))
+                    self.trial(True);self.reference=False
+                    for _ in range(self.config['update_warmup']):
+                        restored();callback();synchronize()
+                    restored()
                     self.publish(dict(self.snapshot(),phase='eager_numerical_check'))
-                    self.trial(True)
                     self.reference=True;restored();callback();synchronize();baseline=self.read_state()
                     self.reference=False;restored();callback();synchronize();candidate=self.read_state()
                     try: self.compare(baseline,candidate)
                     except (AssertionError,ValueError) as error: raise BackendFailure('NumericalMismatch') from error
-                    restored();self.trial(False);self.validated=True
+                    restored();self.trial(False);self.validated.add(key);self.last_key=key
                     self.state['eager_agreement']='passed_rtol1e-5_atol1e-6_rng_exact'
                 if not self.synthetic and not self.state['benchmarked'] and self.state['mode']!='eager':
                     self.publish(dict(self.snapshot(),phase='bounded_benchmark'))

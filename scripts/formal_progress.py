@@ -4,6 +4,7 @@ This file can be fetched into .bootstrap/ without changing the executor checkout
 Only the original readiness entry owns training, checkpoints and admission.
 """
 import argparse
+from collections import deque
 import csv
 import datetime as dt
 import hashlib
@@ -81,6 +82,63 @@ def duration(seconds):
     return f'{hours:02d}:{minutes:02d}:{seconds:02d}'
 
 
+class Throughput:
+    """Count committed work against worker timestamps, independently of redraws."""
+    def __init__(self,window=60.):
+        self.window=window;self.points=deque(maxlen=256);self.origin=None;self.scope='本次观察'
+        self.short=None
+
+    def observe(self,count,stamp,now,origin=None):
+        if (not isinstance(count,int) or count<0 or not isinstance(stamp,(int,float))
+                or not math.isfinite(stamp) or stamp>now+1): return self.result(now)
+        if self.points and stamp<self.points[-1][0]: return self.result(now)
+        if self.points and count<self.points[-1][1]:
+            self.points.clear();self.origin=None;self.short=None;self.scope='本次观察'
+        if not self.points:
+            self.origin=(stamp,count)
+            if (origin and isinstance(origin[0],(int,float)) and math.isfinite(origin[0])
+                    and isinstance(origin[1],int) and 0<=origin[1]<=count and origin[0]<=stamp):
+                self.origin=origin;self.scope='本次进程'
+        if not self.points or stamp>self.points[-1][0]:
+            self.points.append((stamp,count))
+            cutoff=stamp-self.window
+            while len(self.points)>2 and self.points[1][0]<=cutoff: self.points.popleft()
+            elapsed=stamp-self.points[0][0]
+            if elapsed>0: self.short=(count-self.points[0][1])/elapsed
+        return self.result(now)
+
+    def result(self,now):
+        if not self.points: return dict(short=None,average=None,scope=self.scope,age=None)
+        stamp,count=self.points[-1];elapsed=now-self.origin[0]
+        # Repeated redraws do not erase short throughput. Average includes waits.
+        average=(count-self.origin[1])/elapsed if elapsed>0 and (count>self.origin[1] or self.short is not None) else None
+        return dict(short=self.short,average=average,scope=self.scope,age=max(0,now-stamp))
+
+
+def speed_text(value,unit,precision=2):
+    return f'{value:.{precision}f} {unit}' if value is not None else '采集中'
+
+
+def speed_lines(stats,unit,remaining,precision=2):
+    stale=stats['age'] is not None and stats['age']>120
+    label='最近测量，心跳已过期' if stale else '近60s平滑，窗口逐步积累'
+    lines=[f"  短期平滑速度 {speed_text(stats['short'],unit,precision)}（{label}）",
+           f"  长期平均速度 {speed_text(stats['average'],unit,precision)}（{stats['scope']}，含等待/保存）"]
+    average=stats['average']
+    eta=remaining/average if average and remaining>=0 and not stale else None
+    estimate='暂停估计（心跳已过期）' if stale else (duration(eta) if eta is not None else '采集中')
+    lines.append('  当前任务剩余 ETA '+estimate+'（按长期平均；不含后续验证/测试/回传及排队任务）')
+    return lines
+
+
+def backend_text(acceleration,admission):
+    mode=acceleration['mode'];reason=acceleration.get('reason','unknown')
+    attempts=admission.get('attempts',[]) if isinstance(admission,dict) else []
+    if mode=='eager' and reason=='requested' and any(a.get('outcome')=='recovery_mismatch' for a in attempts):
+        reason='编译/Graph未通过恢复校验，按已准入eager执行'
+    return mode+' | '+reason
+
+
 def gpu_usage():
     """One bounded, read-only board query per frame; no CUDA/framework import."""
     try:
@@ -113,7 +171,7 @@ def gpu_line(index,metrics,error):
 
 class Dashboard:
     def __init__(self, root, suite):
-        self.root=Path(root);self.suite=Path(suite);self.samples={}
+        self.root=Path(root);self.suite=Path(suite);self.rates={}
         self.launch=None
         build=read(self.root/'docs/evidence/mega-document-v3-build.json',{})
         self.rows={t['task']:t['splits']['train']['arrays']['labels']['shape'][0]
@@ -186,7 +244,7 @@ class Dashboard:
                     lines.append(f"  逻辑 batch：本步 {adaptive['used_logical_batch']} | 下一步 {adaptive['logical_batch']} | 按样本调度学习率")
                 acceleration=adaptive.get('torch_acceleration')
                 if acceleration:
-                    lines.append('  编译/Graph：'+acceleration['mode']+' | '+acceleration['reason'])
+                    lines.append('  编译/Graph：'+backend_text(acceleration,read(folder/'acceleration-admission.json',{})))
             step=hb.get('optimizer_step');epoch=hb.get('epoch');epochs=config.get('epochs')
             n=self.rows.get(config.get('task'));batch_size=config.get('batch_size')
             batches=math.ceil(n/batch_size) if n and batch_size else None
@@ -194,15 +252,15 @@ class Dashboard:
             dynamic=isinstance(hb.get('samples_seen'),int) and isinstance(hb.get('sample_budget'),int)
             if dynamic:
                 seen=hb['samples_seen'];budget=hb['sample_budget']
-                key=(job,state.get('pid'),started,'samples');previous=self.samples.get(key)
-                rate=(seen-previous[1])/(now-previous[0]) if previous and seen>previous[1] and now>previous[0] else None
-                if previous is None or seen>previous[1]: self.samples[key]=(now,seen)
-                eta=(budget-seen)/rate if rate and budget>=seen else None
+                key=(job,state.get('pid'),started,'samples')
+                meter=self.rates.setdefault(key,Throughput())
+                origin=(hb.get('run_started_at'),hb.get('run_samples_start')) if 'run_samples_start' in hb else None
+                stats=meter.observe(seen,hb.get('updated_at'),now,origin)
                 loss=hb.get('loss');loss_text=f'{loss:.6g}' if isinstance(loss,(float,int)) else '?'
                 lines.append(f'  训练更新 | Epoch {epoch+1 if isinstance(epoch,int) else "?"}/{epochs or "?"} | '
                     f'样本 {seen}/{budget} ({100*seen/budget:.2f}%) | 实际 Step {step}')
-                lines.append(f'  loss {loss_text} | 速度 {f"{rate:.2f} samples/s" if rate else "待测"} | 心跳 {int(age)}s 前')
-                lines.append(f'  剩余训练样本 ETA {duration(eta)}（不含后续验证/测试/回传）')
+                lines.append(f'  loss {loss_text} | 心跳 {int(age)}s 前')
+                lines.extend(speed_lines(stats,'samples/s',budget-seen))
                 if age>120: lines.append('  提示：超过120s无新训练心跳；可能在编译/验证/保存，不能据此判定失败。')
                 continue
             batch=step-epoch*batches if batches and isinstance(step,int) and isinstance(epoch,int) else None
@@ -214,16 +272,13 @@ class Dashboard:
             progress=f'{100*step/total:.2f}%' if total and isinstance(step,int) else '待测'
             lines.append(f'  {phase} | Epoch {epoch+1 if isinstance(epoch,int) else "?"}/{epochs or "?"} | '
                          f'Batch {batch if batch is not None else "?"}/{batches or "?"} | Step {step if step is not None else "?"}/{total or "?"} ({progress})')
-            key=(job,state.get('pid'),started);previous=self.samples.get(key)
-            rate=None
-            if previous and isinstance(step,int) and step>previous[1] and now>previous[0]:
-                rate=(step-previous[1])/(now-previous[0])
-            if isinstance(step,int):
-                if previous is None or step>previous[1]: self.samples[key]=(now,step)
-            eta=(total-step)/rate if rate and total and step<=total else None
+            key=(job,state.get('pid'),started,'steps')
+            meter=self.rates.setdefault(key,Throughput())
+            origin=(hb.get('run_started_at'),hb.get('run_optimizer_step_start')) if 'run_optimizer_step_start' in hb else None
+            stats=meter.observe(step,hb.get('updated_at'),now,origin)
             loss=hb.get('loss');loss_text=f'{loss:.6g}' if isinstance(loss,(float,int)) else '?'
-            lines.append(f'  loss {loss_text} | 速度 {f"{rate:.3f} step/s" if rate else "待测"} | 心跳 {int(age)}s 前')
-            lines.append(f'  剩余训练更新 ETA {duration(eta)}（不含后续验证/测试/回传）')
+            lines.append(f'  loss {loss_text} | 心跳 {int(age)}s 前')
+            lines.extend(speed_lines(stats,'step/s',total-step if total and isinstance(step,int) else -1,3))
             if age>120:
                 lines.append('  提示：超过 120s 无新训练心跳；可能在编译/验证/保存，不能据此判定失败。')
         for label,key in (('已计算','computed'),('排队','pending'),('失败','failed'),('暂停','paused')):

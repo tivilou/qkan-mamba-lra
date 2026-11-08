@@ -112,7 +112,7 @@ def execute(args,suite):
             if migration and migration['jobs'][job_id].get('completion'):
                 from .migration import preserve_completed
                 jobs.append(preserve_completed(suite,job_id));statuses[job_id]=dict(state='computed',preserved=True)
-                print('Preserved completed result: '+job_id+' | original revision '+migration['source_revision'],flush=True)
+                print('Preserved completed result: '+job_id+' | original revision '+jobs[-1]['preserved_completion']['source_revision'],flush=True)
                 continue
             config=config_for(task,model,42,data,source);cfg=job/'config.json'
             if args.adaptive_memory:

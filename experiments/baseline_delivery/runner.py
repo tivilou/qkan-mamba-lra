@@ -102,6 +102,24 @@ def compare_states(left,right,path='state'):
         raise RecoveryMismatch('Recovery scalar differs at '+path)
 
 
+def recovery_diagnostic(states,keys):
+    from .recovery_audit import differences
+    summary={};details=[];total=0
+    for key in keys:
+        rows=differences(states[0][key],states[1][key],key)
+        failed=[row for row in rows if not row['exact']]
+        total+=len(failed)
+        summary[key]=dict(exact=not failed,differing_leaves=len(failed),
+            differing_elements=sum(row.get('differing_elements',0) for row in failed),
+            max_abs=max((row.get('max_abs',0.) for row in failed),default=0.))
+        details.extend(failed[:max(0,32-len(details))])
+    control=('scheduler','rng','permutation','cursor','step','epoch')
+    return dict(fields=summary,differing_leaves=total,first_differences=details,
+        details_truncated=total>len(details),
+        control_fields_checked=[key for key in control if key in summary],
+        control_and_rng_exact=(all(summary[key]['exact'] for key in control) if all(key in summary for key in control) else None))
+
+
 def compare_recovery(states,keys,folder,config):
     try:
         for key in keys: compare_states(states[0][key],states[1][key],key)
@@ -111,10 +129,15 @@ def compare_recovery(states,keys,folder,config):
             if states[0]['torch_acceleration']!=states[1]['torch_acceleration']:
                 raise RecoveryMismatch('Compiler/graph recovery mode differs')
     except RecoveryMismatch as error:
-        atomic_json(Path(folder)/'recovery-validation.json',dict(passed=False,
+        try: diagnostic=recovery_diagnostic(states,keys)
+        except Exception as diagnostic_error:
+            diagnostic=dict(unavailable=type(diagnostic_error).__name__)
+        report=dict(passed=False,
             schema='qkan-exact-recovery-diagnostic.v1',model=config['model'],task=config['task'],
             difference=str(error),agreement='exact',threshold_relaxed=False,
-            torch_acceleration=[s.get('torch_acceleration') for s in states]))
+            torch_acceleration=[s.get('torch_acceleration') for s in states],diagnostic=diagnostic)
+        atomic_json(Path(folder)/'recovery-validation.json',report)
+        error.diagnostic=report
         raise
 
 

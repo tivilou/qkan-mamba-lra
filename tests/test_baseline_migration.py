@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 from experiments.baseline_delivery.common import atomic_json,digest,fingerprint,read
-from experiments.baseline_delivery.migration import SOURCE_REVISION,compatible,snapshot,load_state,admit
+from experiments.baseline_delivery.migration import SOURCE_REVISION,ACCELERATION_REVISION,compatible,snapshot,load_state,admit
 
 
 class MigrationTests(unittest.TestCase):
@@ -50,6 +50,44 @@ class MigrationTests(unittest.TestCase):
 
     def test_wrong_source_revision_rejected(self):
         with self.assertRaises(ValueError): compatible({**self.config,'source_revision':'other'},self.target)
+
+    def compiler_configs(self,model='transformer'):
+        from experiments.baseline_delivery.torch_acceleration import policy
+        from experiments.baseline_delivery.performance import policy as performance
+        from experiments.baseline_delivery.logical_batch import policy as logical
+        old=dict(self.config,source_revision=ACCELERATION_REVISION,model=model,
+            performance=performance(),adaptive_memory=logical(32))
+        new=dict(old,source_revision='next')
+        if model!='s5':
+            previous=policy('eager');previous.pop('update_warmup');previous.pop('validation')
+            previous['schema']='qkan-torch-acceleration.v1';old['torch_acceleration']=previous
+            new['torch_acceleration']=policy()
+        return old,new
+
+    def test_latest9ce_migration_preserves_scientific_fields_for_torch_and_s5(self):
+        for model in ('transformer','s5'):
+            old,new=self.compiler_configs(model);compatible(old,new)
+            for changed in (dict(lr=.2),dict(batch_size=64),dict(performance={}),dict(adaptive_memory={})):
+                with self.assertRaises(ValueError): compatible(old,dict(new,**changed))
+        old,new=self.compiler_configs();old['torch_acceleration']['max_builds']=99
+        with self.assertRaises(ValueError): compatible(old,new)
+
+    def test_latest9ce_backend_selection_is_recertified_without_training_reset(self):
+        old,new=self.compiler_configs();self.stage()
+        folder=self.new/'migration-source'/self.name;atomic_json(folder/'config.json',old)
+        plan=read(self.new/'migration-source/plan.json');plan['source_revision']=ACCELERATION_REVISION
+        plan['jobs'][self.name]['config_sha256']=fingerprint(old);atomic_json(self.new/'migration-source/plan.json',plan)
+        previous=dict(mode='eager',benchmarked=True,reason='NumericalMismatch')
+        original=dict(contract='original',step=12,cursor=100,epoch=3,
+            model={'weight':9},optimizer={'moment':8},rng=[7],scheduler={'progress':1000},
+            sample_clock={'progress':1000},adaptive_memory={'oom_count':5,'failed_ceiling':16},
+            migration={'source':'9a'},torch_acceleration=previous)
+        loaded=load_state(self.new/'jobs'/self.name,new,'new',lambda _:'original',lambda *_:copy.deepcopy(original))
+        for key in ('step','cursor','epoch','model','optimizer','rng','scheduler','sample_clock','adaptive_memory'):
+            self.assertEqual(loaded[key],original[key])
+        self.assertNotIn('torch_acceleration',loaded)
+        self.assertEqual(loaded['migration']['previous_torch_acceleration'],previous)
+        self.assertEqual(loaded['migration']['previous_migration'],{'source':'9a'})
 
     def test_corrupt_checkpoint_never_staged(self):
         (self.old/'jobs'/self.name/'checkpoints/state.pt').write_bytes(b'changed')
