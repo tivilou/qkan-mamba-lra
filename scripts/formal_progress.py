@@ -352,6 +352,12 @@ def main():
                 terminal.close()
                 print(dashboard.render(),flush=True)
                 code=child.returncode
+                entry_status=read(suite/'entry-status.json',{})
+                if (code not in (0,75) and entry_status.get('state')=='failed'
+                        and entry_status.get('updated_at',0)>=started):
+                    stage=entry_status.get('stage','unknown')
+                    kind=entry_status.get('error_type','Exception')
+                    print('入口失败阶段：'+stage+' | '+kind+' | 诊断：'+str(entry_status.get('diagnostic','entry-status.json')),flush=True)
                 print('入口已退出：'+str(code)+'；'+('已完成计算与回传。' if code==0 and (suite/'delivery-complete.json').exists()
                       else '检查 progress-parent.log；退出/暂停不代表实验完成。'),flush=True)
                 return code if code>=0 else 128-code

@@ -164,11 +164,19 @@ def execute(args,suite):
                 return receipts
             if config.get('torch_acceleration'):
                 from .torch_acceleration import admit_recovery
-                config,receipts,attempts=admit_recovery(config,recovery_probe)
                 admission=job/'acceleration-admission.json'
-                atomic_json(admission,dict(schema='qkan-acceleration-admission.v1',attempts=attempts,
-                    selected_mode=config['torch_acceleration']['mode'],config_sha256=fingerprint(config),
-                    devices=gpus,agreement='existing recovery standard unchanged',passed=True))
+                if cfg.exists():
+                    recorded=read(admission)
+                    if (not recorded.get('passed') or recorded.get('config_sha256')!=fingerprint(config)
+                            or recorded.get('selected_mode')!=config['torch_acceleration']['mode']
+                            or recorded.get('devices')!=gpus): raise ValueError('Recorded acceleration admission changed')
+                    # Preserve the original fallback attempts and certificate-bound bytes.
+                    receipts=recovery_probe(config)
+                else:
+                    config,receipts,attempts=admit_recovery(config,recovery_probe)
+                    atomic_json(admission,dict(schema='qkan-acceleration-admission.v1',attempts=attempts,
+                        selected_mode=config['torch_acceleration']['mode'],config_sha256=fingerprint(config),
+                        devices=gpus,agreement='existing recovery standard unchanged',passed=True))
                 probe_evidence[model][admission.relative_to(ROOT).as_posix()]=digest(admission)
                 print('Recovery-admitted backend: '+job_id+' | '+config['torch_acceleration']['mode'],flush=True)
             else: receipts=recovery_probe(config)

@@ -37,6 +37,8 @@ bash scripts/migrate_torch_acceleration.sh \
 
 ## 验证边界
 
+2026-11-08准入记录修复：旧9ce7f00的readiness再入在报配置冲突之前，已覆盖证书绑定的acceleration-admission.json，所以先前的独立启动入口仍会报Runtime evidence changed。新版run_admitted.py先验证原版本/策略、gate-evidence哈希和全部证书，并检查所有关联文件；只允许从原gate-evidence内嵌记录重建与原证书SHA-256完全相同的准入文件。先备份被覆盖字节，再原子恢复，随后重新执行原有完整证书校验；任何其他文件差异均停止。配置、证书、gate-evidence、已完成结果和完整断点不重写，不重跑canary或迁移。修复摘要及入口失败的阶段/代码位置自动回传admitted-entry，原始备份仅保留服务器本地。入口失败阶段也直接显示在监督器终端。未来readiness再入保留原准入文件的尝试历史及字节，不重新覆盖为仅包含最终后端的一轮记录。
+
 2026-11-08启动修复：9ce7f00的全部准入和零更新迁移已在服务器通过，但监督器再入readiness时默认重建compile_graph，与已准入eager配置冲突。新版监督器优先调用同目录run_admitted.py，只校验原执行版本、证据/证书、GPU、数据和配置，再由原runner派发，不重新选择后端或生成配置。脚本可一起提取到旧checkout的.bootstrap，原模型源码、证书、Suite和断点保持原身份；启动记录保存两个显示/入口脚本的hash。当前已准入Suite可直接续跑，无需重迁移或重跑全部canary。readiness本身也修正为保留已选择模式并校验其他字段。
 
 2026-11-08恢复准入修复：原250f2fd在Transformer/Retrieval跨进程张量完全一致检查中失败。旧回传未包含具体状态路径/后端，不能断言底层差异来自哪一算子。现按任务在所有选定GPU上完整检查compile_graph；若出现恢复状态差异，则用独立目录从头检查compile，再失败则检查eager。worker内部降到更低模式时也从头复核该实际模式。只有共同通过的模式才写入正式config，作为该任务后端上限；所有模式均失败则阻止启动，不放宽恢复阈值。数据/trace错误或失效CUDA上下文不触发这层回退。acceleration-admission.json记录选择及失败轮次，绑定证书并回传；失败报告新增状态字段路径和两边模式。

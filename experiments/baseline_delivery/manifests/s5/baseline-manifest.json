@@ -65,7 +65,7 @@
       },
       {
         "path": "experiments/baseline_delivery/readiness.py",
-        "sha256": "18a518e4edd8309723c41c31b8760a09c25abb06dd9eb636791e7fe5720f83c2"
+        "sha256": "bbd06c205f17319f3876e1c0239cae640511210bec26b3a32ddb387ce3aa3b83"
       },
       {
         "path": "experiments/baseline_delivery/logical_batch.py",
@@ -81,7 +81,7 @@
       },
       {
         "path": "scripts/formal_progress.py",
-        "sha256": "20edea52963440777312c6d2676553fb7706c18106ff69cc3d71abf5295dfcbc"
+        "sha256": "17ff28f75fd7521fbc663af3ff2b5b407b3db93fd0cd6381b2ed81b5cdaadfb6"
       },
       {
         "path": "scripts/migrate_dynamic_logical.sh",
@@ -117,7 +117,7 @@
       },
       {
         "path": "tests/test_baseline_torch_acceleration.py",
-        "sha256": "035c00f4ef2c83aacdcaecbb79f63bbfe64ddd9440c0f9df89d824950f0c9535"
+        "sha256": "473cb5736c20c6386642b115bb997a29d463029c65acb24ec2c0e034eeda4bb0"
       },
       {
         "path": "scripts/migrate_torch_acceleration.sh",
@@ -125,15 +125,15 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "cd120f9b80c8aafb9f71fc17b54ae583f12d9f4b4e9cc8a1247bd6b64dc89a52"
+        "sha256": "c0811ebe6982ab4796fb30ffe413e58014b09d93b53404ad4b780261274c2b39"
       },
       {
         "path": "scripts/run_admitted.py",
-        "sha256": "6f8d23b28ee055e34f8d289b618b0729b45004291450a373ee4e953602a2e22c"
+        "sha256": "00481d965c9c4eaa316d63a56c6c24c466cd7436ff583ac1b6cd5fc0fcd3ed7e"
       },
       {
         "path": "tests/test_baseline_admitted_entry.py",
-        "sha256": "c7c449fdedd30c05b162f4480df388c3a835de6679fcda60f2a2f4509fb09660"
+        "sha256": "a2296a34f0a2bbec0191bc8021df392ead115080ca7c9b528188be946ee16c74"
       }
     ]
   },
