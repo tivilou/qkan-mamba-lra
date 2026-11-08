@@ -15,6 +15,7 @@ import uuid
 
 from .common import ROOT, atomic_json, child_spec, dictionary_path, digest, fingerprint, lock, read, revision, run_child, spawn, stop_child
 from .sync import prepare, verify_data
+from .torch_acceleration import RecoveryMismatch
 
 
 def check_release(config=None):
@@ -84,21 +85,37 @@ def config_for(task,model,seed,data,source):
     return config
 
 
-def compare_states(left,right):
+def compare_states(left,right,path='state'):
     import numpy as np
     import torch
     if isinstance(left,torch.Tensor):
-        if not torch.equal(left,right): raise ValueError('Recovery tensor differs')
+        if not torch.equal(left,right): raise RecoveryMismatch('Recovery tensor differs at '+path)
     elif isinstance(left,np.ndarray):
-        if not np.array_equal(left,right): raise ValueError('Recovery numpy state differs')
+        if not np.array_equal(left,right): raise RecoveryMismatch('Recovery numpy state differs at '+path)
     elif isinstance(left,dict):
-        if left.keys()!=right.keys(): raise ValueError('Recovery state keys differ')
-        for key in left: compare_states(left[key],right[key])
+        if left.keys()!=right.keys(): raise RecoveryMismatch('Recovery state keys differ at '+path)
+        for key in left: compare_states(left[key],right[key],path+'.'+str(key))
     elif isinstance(left,(list,tuple)):
-        if len(left)!=len(right): raise ValueError('Recovery state lengths differ')
-        for a,b in zip(left,right): compare_states(a,b)
+        if len(left)!=len(right): raise RecoveryMismatch('Recovery state lengths differ at '+path)
+        for i,(a,b) in enumerate(zip(left,right)): compare_states(a,b,path+'.'+str(i))
     elif left!=right:
-        raise ValueError('Recovery scalar differs')
+        raise RecoveryMismatch('Recovery scalar differs at '+path)
+
+
+def compare_recovery(states,keys,folder,config):
+    try:
+        for key in keys: compare_states(states[0][key],states[1][key],key)
+        if config.get('torch_acceleration'):
+            if any(not s.get('torch_acceleration') for s in states):
+                raise RecoveryMismatch('Compiler/graph checkpoint metadata missing')
+            if states[0]['torch_acceleration']!=states[1]['torch_acceleration']:
+                raise RecoveryMismatch('Compiler/graph recovery mode differs')
+    except RecoveryMismatch as error:
+        atomic_json(Path(folder)/'recovery-validation.json',dict(passed=False,
+            schema='qkan-exact-recovery-diagnostic.v1',model=config['model'],task=config['task'],
+            difference=str(error),agreement='exact',threshold_relaxed=False,
+            torch_acceleration=[s.get('torch_acceleration') for s in states]))
+        raise
 
 
 def canary(config,data,cache,output,device='cpu'):
@@ -167,6 +184,8 @@ def canary(config,data,cache,output,device='cpu'):
         recovery=validate(states[0],states[1])
         atomic_json(folder/'recovery-validation.json',recovery)
         if not recovery['passed']:
+            if config.get('torch_acceleration'):
+                raise RecoveryMismatch('Numerical recovery contract failed; inspect recovery-validation.json')
             raise ValueError('Numerical recovery contract failed; inspect recovery-validation.json')
         agreement='mamba1-cuda-fp32-v1'
     elif config['model']=='s5':
@@ -176,17 +195,13 @@ def canary(config,data,cache,output,device='cpu'):
         if not recovery['passed']:
             raise ValueError('S5 exact recovery failed; inspect recovery-validation.json')
     else:
-        for key in ('model','optimizer','scheduler','rng','permutation','cursor','step','epoch',
-                    'best_weights','best_accuracy','best_epoch','history','update_trace'):
-            compare_states(states[0][key],states[1][key])
+        compare_recovery(states,('model','optimizer','scheduler','rng','permutation','cursor','step','epoch',
+                    'best_weights','best_accuracy','best_epoch','history','update_trace'),folder,config)
     for name in ('uninterrupted','interrupted'):
         if not read(folder/name/'trace-validation.json')['passed']:
             raise ValueError('Trace semantic/replay gate failed')
     if config.get('torch_acceleration'):
-        if any(not s.get('torch_acceleration') for s in states):
-            raise ValueError('Compiler/graph checkpoint metadata missing')
-        if states[0]['torch_acceleration']!=states[1]['torch_acceleration']:
-            raise ValueError('Compiler/graph recovery mode differs')
+        compare_recovery(states,(),folder,config)
     report={'schema':'qkan-baseline-recovery-canary.v1','passed':True,'device':device,'model':config['model'],
             'task':task,'fresh_process':True,'updates':states[0]['step'],'agreement':agreement,
             'config_sha256':fingerprint(config),'source_revision':config['source_revision'],
@@ -292,6 +307,8 @@ def deliver(suite):
                 raise ValueError('Compiler/graph return evidence missing')
             if (job/'torch-acceleration.json').exists():
                 files.extend(return_files(job/'torch-acceleration.json','jobs/'+job.name+'/torch-acceleration.json'))
+            if (job/'acceleration-admission.json').exists():
+                files.extend(return_files(job/'acceleration-admission.json','jobs/'+job.name+'/acceleration-admission.json'))
             pointer=read(job/'checkpoints/latest.json')
             for name in ('latest.json',pointer['file']):
                 path=job/'checkpoints'/name

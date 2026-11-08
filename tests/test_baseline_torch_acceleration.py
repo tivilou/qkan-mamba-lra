@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock,patch
 
-from experiments.baseline_delivery.torch_acceleration import Executor,BackendFailure,policy,torch_runtime
+from experiments.baseline_delivery.torch_acceleration import Executor,BackendFailure,policy,torch_runtime,admit_recovery,RecoveryMismatch
 from experiments.baseline_delivery.migration import compatible,DYNAMIC_REVISION
 from experiments.baseline_delivery.performance import policy as performance_policy
 from experiments.baseline_delivery.logical_batch import policy as logical_policy
@@ -157,6 +157,116 @@ class AccelerationTests(unittest.TestCase):
         def restore(value): state.clear();state.update(value)
         self.assertEqual(executor.run(callback,snapshot,restore,Mock(),Mock(),lambda _:False),5)
         self.assertEqual(state,{'optimizer':5,'rng':9});self.assertEqual(attempts,['compile_graph','compile'])
+
+    def test_full_recovery_mismatch_restarts_next_backend_without_relaxing_check(self):
+        original=dict(torch_acceleration=policy(),lr=.001);calls=[]
+        def probe(config):
+            mode=config['torch_acceleration']['mode'];calls.append(mode)
+            if mode=='compile_graph': raise RecoveryMismatch('Recovery tensor differs at model.encoder')
+            return [dict(torch_acceleration=dict(state=dict(mode=mode)))]
+        selected,receipts,attempts=admit_recovery(original,probe)
+        self.assertEqual(calls,['compile_graph','compile']);self.assertEqual(selected['torch_acceleration'],policy('compile'))
+        self.assertEqual(original['torch_acceleration'],policy());self.assertEqual(attempts[0]['outcome'],'recovery_mismatch')
+
+    def test_all_modes_fail_recovery_blocks_formal_run(self):
+        probe=Mock(side_effect=RecoveryMismatch('differs'))
+        with self.assertRaises(RecoveryMismatch): admit_recovery(dict(torch_acceleration=policy()),probe)
+        self.assertEqual(probe.call_count,3)
+
+    def test_worker_fallback_is_retested_from_beginning_at_actual_shared_mode(self):
+        probe=Mock(side_effect=[
+            [dict(torch_acceleration=dict(state=dict(mode='compile'))),dict(torch_acceleration=dict(state=dict(mode='eager')))],
+            [dict(torch_acceleration=dict(state=dict(mode='eager')))]])
+        selected,_,attempts=admit_recovery(dict(torch_acceleration=policy()),probe)
+        self.assertEqual(selected['torch_acceleration'],policy('eager'))
+        self.assertEqual(probe.call_count,2);self.assertEqual(attempts[0]['outcome'],'worker_fallback')
+
+    def test_data_trace_and_poisoned_context_errors_never_trigger_admission_fallback(self):
+        for error in (ValueError('Trace semantic/replay gate failed'),RuntimeError('CUDA illegal memory access')):
+            probe=Mock(side_effect=error)
+            with self.assertRaises(type(error)): admit_recovery(dict(torch_acceleration=policy()),probe)
+            self.assertEqual(probe.call_count,1)
+
+    def test_admitted_mode_is_formal_worker_start_and_checkpoint_ceiling(self):
+        executor=Executor(Runtime(),policy('compile'))
+        self.assertEqual(executor.state['mode'],'compile')
+        with self.assertRaises(ValueError): Executor(Runtime(),policy('compile'),saved=dict(mode='compile_graph'))
+        self.assertEqual(Executor(Runtime(),policy('eager')).state['mode'],'eager')
+
+    def test_9a_migration_allows_only_declared_recovery_mode_selection(self):
+        old=dict(source_revision=DYNAMIC_REVISION,model='transformer',batch_size=32,adaptive_memory=logical_policy(32))
+        for mode in ('compile_graph','compile','eager'):
+            new=dict(old,source_revision='next',performance=performance_policy(),torch_acceleration=policy(mode))
+            compatible(old,new)
+            with self.assertRaises(ValueError): compatible(old,dict(new,torch_acceleration=dict(policy(mode),precision='bf16')))
+
+    def test_exact_diagnostic_returns_state_path_and_modes_without_tensor_values(self):
+        import sys,tempfile
+        from pathlib import Path
+        from experiments.baseline_delivery.runner import compare_recovery
+        from experiments.baseline_delivery.common import read
+        class Tensor:
+            def __init__(self,value): self.value=value
+        fake_torch=SimpleNamespace(Tensor=Tensor,equal=lambda a,b:a.value==b.value)
+        fake_numpy=SimpleNamespace(ndarray=type('Array',(),{}))
+        states=[dict(model={'weight':Tensor(n)},torch_acceleration={'mode':'compile'}) for n in (1,2)]
+        with tempfile.TemporaryDirectory() as folder,patch.dict(sys.modules,torch=fake_torch,numpy=fake_numpy):
+            with self.assertRaisesRegex(RecoveryMismatch,'model.weight'):
+                compare_recovery(states,['model'],Path(folder),dict(model='transformer',task='retrieval',torch_acceleration=policy()))
+            report=read(Path(folder)/'recovery-validation.json')
+            self.assertFalse(report['passed']);self.assertFalse(report['threshold_relaxed'])
+            self.assertEqual(report['torch_acceleration'],[dict(mode='compile')]*2)
+
+    def test_invalid_receipt_cannot_become_recovery_admission(self):
+        for receipts in ([],[dict(torch_acceleration=dict(state=dict(mode='unknown')))]):
+            with self.assertRaises(ValueError): admit_recovery(dict(torch_acceleration=policy()),lambda _:receipts)
+
+    def test_real_readiness_route_binds_selected_mode_to_config_manifest_and_certificate(self):
+        from contextlib import ExitStack
+        from pathlib import Path
+        import os,tempfile
+        from experiments.baseline_delivery import readiness
+        from experiments.baseline_delivery.common import atomic_json,read,fingerprint
+        with tempfile.TemporaryDirectory() as temporary,ExitStack() as stack:
+            root=Path(temporary);suite=root/'runs/suite';suite.mkdir(parents=True)
+            atomic_json(root/'experiments/baseline_delivery/protocol.json',{})
+            atomic_json(suite/'transformer-source-probe.json',dict(passed=True,implementation_sha256='impl'))
+            args=SimpleNamespace(migrate_from=None,adaptive_memory=True,dynamic_logical_batch=True,
+                performance=True,torch_acceleration=True,cache=root/'cache',gpus='0,1',gates_only=True)
+            calls=[]
+            def canary(config,data,cache,folder,device):
+                mode=config['torch_acceleration']['mode'];gpu=os.environ['CUDA_VISIBLE_DEVICES'];calls.append((mode,gpu))
+                if mode=='compile_graph' and gpu=='1': raise RecoveryMismatch('Recovery tensor differs at model.weight')
+                for name in ('uninterrupted','interrupted'): atomic_json(folder/name/'trace-validation.json',dict(passed=True))
+                return dict(passed=True,trace_semantic_and_replay=True,fresh_process=True,test_access=False,
+                    config_sha256=fingerprint(config),torch_acceleration=dict(state=dict(mode=mode)))
+            patches={
+                'experiments.baseline_delivery.readiness.ROOT':root,
+                'experiments.baseline_delivery.readiness.MODELS':('transformer',),
+                'experiments.baseline_delivery.readiness.TASKS':('retrieval',),
+                'experiments.baseline_delivery.readiness.revision':lambda:'new',
+                'experiments.baseline_delivery.readiness.policy_check':lambda:('impl','policy'),
+                'experiments.baseline_delivery.readiness.validate_runtime_release':lambda *a:None,
+                'experiments.baseline_delivery.readiness.run_child':lambda *a:0,
+                'experiments.baseline_delivery.runner.canary':canary,
+                'experiments.baseline_delivery.runner.config_for':lambda *a:dict(model='transformer',task='retrieval',seed=42,batch_size=32),
+                'experiments.baseline_delivery.runner.discover_gpus':lambda *a:(['0','1'],{'0':'gpu0','1':'gpu1'}),
+                'experiments.baseline_delivery.sync.prepare':lambda *a:root/'data',
+                'experiments.baseline_delivery.bootstrap.check_core':lambda:None,
+                'experiments.baseline_delivery.bootstrap.check_mamba':lambda:None,
+                'experiments.baseline_delivery.migration.plan_for':lambda *a:None,
+                'experiments.baseline_delivery.migration.admit':lambda *a:None,
+                'experiments.baseline_delivery.return_artifacts.upload_declared':lambda *a:None}
+            for target,value in patches.items(): stack.enter_context(patch(target,value))
+            stack.enter_context(patch.dict(os.environ,{},clear=False))
+            readiness.execute(args,suite)
+            self.assertEqual(calls,[('compile_graph','0'),('compile_graph','1'),('compile','0'),('compile','1')])
+            job=suite/'jobs/transformer-retrieval-s42';config=read(job/'config.json')
+            self.assertEqual(config['torch_acceleration'],policy('compile'))
+            self.assertEqual(read(suite/'suite.json')['jobs'][0]['config_sha256'],fingerprint(config))
+            certificate=read(suite/'transformer-certificate.json')
+            self.assertIn((job/'acceleration-admission.json').relative_to(root).as_posix(),certificate['evidence'])
+            self.assertFalse(any('compile_graph' in name for name in certificate['evidence']))
 
 
 if __name__=='__main__': unittest.main()

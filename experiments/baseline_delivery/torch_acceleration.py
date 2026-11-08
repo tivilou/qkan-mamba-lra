@@ -2,15 +2,46 @@
 import statistics
 import time
 import gc
+import copy
+
+MODES=('compile_graph','compile','eager')
 
 
-def policy():
-    return dict(schema='qkan-torch-acceleration.v1',mode='compile_graph',backend='inductor',
+class RecoveryMismatch(ValueError):
+    """An observed recovery disagreement, not permission to relax equality."""
+    pass
+
+
+def policy(mode='compile_graph'):
+    if mode not in MODES: raise ValueError('Unsupported acceleration mode')
+    return dict(schema='qkan-torch-acceleration.v1',mode=mode,backend='inductor',
         dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=1,
         benchmark_pairs=2,precision='fp32',max_builds=8)
 
 
 class BackendFailure(RuntimeError): pass
+
+
+def admit_recovery(config,probe):
+    """All devices must pass fresh-process recovery at one shared mode ceiling."""
+    candidate=copy.deepcopy(config);attempts=[]
+    while True:
+        mode=candidate['torch_acceleration']['mode']
+        try:
+            receipts=probe(candidate)
+        except RecoveryMismatch as error:
+            attempts.append(dict(mode=mode,outcome='recovery_mismatch',detail=str(error)[:160]))
+            if mode=='eager': raise
+            candidate['torch_acceleration']=policy(MODES[MODES.index(mode)+1]);continue
+        actual=[r['torch_acceleration']['state']['mode'] for r in receipts]
+        if not actual or any(value not in MODES for value in actual):
+            raise ValueError('Missing or invalid acceleration admission receipt')
+        ceiling=max([MODES.index(mode)]+[MODES.index(value) for value in actual])
+        if ceiling>MODES.index(mode):
+            attempts.append(dict(mode=mode,outcome='worker_fallback',selected=MODES[ceiling]))
+            candidate['torch_acceleration']=policy(MODES[ceiling]);continue
+        attempts.append(dict(mode=mode,outcome='passed'))
+        return candidate,receipts,attempts
 
 
 def fatal_cuda(error):
@@ -25,10 +56,12 @@ def fatal_cuda(error):
 class Executor:
     """Framework-free control plane; all trial optimizer updates are rolled back."""
     def __init__(self,runtime,config,saved=None,synthetic=False,publish=lambda _:None,clock=time.perf_counter,trial=lambda _:None,read_state=None,compare=None):
-        if config!=policy(): raise ValueError('Unsupported Torch acceleration policy')
+        if config!=policy(config.get('mode')): raise ValueError('Unsupported Torch acceleration policy')
         self.runtime=runtime;self.config=config;self.synthetic=synthetic;self.publish=publish;self.clock=clock;self.trial=trial
-        self.state=dict(saved) if saved else dict(mode='compile_graph',benchmarked=False,reason='requested',benchmark=None)
+        self.state=dict(saved) if saved else dict(mode=config['mode'],benchmarked=False,reason='requested',benchmark=None)
         if self.state['mode'] not in ('compile_graph','compile','eager'): raise ValueError('Invalid saved acceleration mode')
+        if MODES.index(self.state['mode'])<MODES.index(config['mode']):
+            raise ValueError('Saved mode exceeds recovery-admitted ceiling')
         self.reference=False;self.used=False;self.runtime.set_mode(self.state['mode'])
         self.read_state=read_state;self.compare=compare;self.validated=False
 

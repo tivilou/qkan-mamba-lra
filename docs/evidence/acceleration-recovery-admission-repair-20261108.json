@@ -1,0 +1,35 @@
+{
+  "schema": "qkan-acceleration-recovery-repair.v1",
+  "date": "2026-11-08",
+  "observed_failure": {
+    "revision": "250f2fd1cff751012d3c223e3c545e350241c642",
+    "job": "transformer-retrieval-s42",
+    "exchange_run": "failure-b081e1c5452b",
+    "report_sha256": "0d2c86cd85419dfff13a7db37e9a86029604bd6f79520995b1dc4d63c2c70f5c",
+    "phase": "Exact cross-process checkpoint tensor comparison; child exits successful",
+    "underlying_operator_cause": "Unknown: old report omitted mismatch path and backend",
+    "formal_resumed": false
+  },
+  "repair": "Repeat full fresh-process recovery at descending per-task mode ceilings on all devices; bind accepted mode in config and certificate",
+  "thresholds_relaxed": false,
+  "completed_results_preserved": true,
+  "original9a_checkpoint_source_unchanged": true,
+  "validation": {
+    "stdlib_mock_checks": 122,
+    "new_regressions": 9,
+    "real_parent_route_mocked": true,
+    "owner_framework_import": false,
+    "owner_gpu_query": false,
+    "owner_training": false,
+    "native_repair_verified": false,
+    "speedup_measured": false
+  },
+  "artifacts": {
+    "experiments/baseline_delivery/runner.py": "5396e667cfd7818de6c2826b380e814d92b1de8ca6d42c862e75852bccc105c0",
+    "experiments/baseline_delivery/readiness.py": "ac6a4aff16d24b2d40677fa2271563ef0ed07401195a370cd44ce3dc5741aea8",
+    "experiments/baseline_delivery/torch_acceleration.py": "ce3f222236ef6bb0ade8dc160c2a6be4f2b658472f02e94c4543053e4e259fab",
+    "experiments/baseline_delivery/migration.py": "df0cb5c9ebb51a5bf36f60361cb8c4dea626d7fdbca4f31b641abf132bf9fb29",
+    "tests/test_baseline_torch_acceleration.py": "380feafcb75b0f5371cd8e22bb3e294698ba3f24d36bee46b91e98901ea9d2fb",
+    "docs/baselines/torch-acceleration.md": "c26a27df3a3268e9cc9203083dc53f06353cb77106b08d4092f6a1b7d9e36d99"
+  }
+}

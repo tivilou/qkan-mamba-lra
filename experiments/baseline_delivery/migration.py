@@ -25,7 +25,7 @@ def compatible(old,new):
                 or old.get('adaptive_memory')!=logical_policy(old['batch_size']) or old['model']=='s5'):
             raise ValueError('Acceleration migration requires the dynamic9a Torch executor')
         expected={**old,'source_revision':new['source_revision'],'performance':performance_policy(),
-            'torch_acceleration':acceleration_policy()}
+            'torch_acceleration':acceleration_policy(new['torch_acceleration'].get('mode'))}
         if expected!=new: raise ValueError('Acceleration migration changed scientific configuration')
         return
     if new.get('performance'):

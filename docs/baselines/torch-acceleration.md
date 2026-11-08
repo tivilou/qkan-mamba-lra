@@ -37,6 +37,10 @@ bash scripts/migrate_torch_acceleration.sh \
 
 ## 验证边界
 
+2026-11-08恢复准入修复：原250f2fd在Transformer/Retrieval跨进程张量完全一致检查中失败。旧回传未包含具体状态路径/后端，不能断言底层差异来自哪一算子。现按任务在所有选定GPU上完整检查compile_graph；若出现恢复状态差异，则用独立目录从头检查compile，再失败则检查eager。worker内部降到更低模式时也从头复核该实际模式。只有共同通过的模式才写入正式config，作为该任务后端上限；所有模式均失败则阻止启动，不放宽恢复阈值。数据/trace错误或失效CUDA上下文不触发这层回退。acceleration-admission.json记录选择及失败轮次，绑定证书并回传；失败报告新增状态字段路径和两边模式。
+
+若已在250f2fd新目录中报错，保留失败Suite。从原9a目录重新执行上方一次更新指令，仍以原9a完整断点为来源，创建新的修复版checkout和Suite；不要对旧失败Suite执行跨版本resume，也无需修改/删除旧结果。新模式及实际加速收益仍需服务器验证。
+
 本机仅标准库/模拟控制流、AST、hash/provenance和CLI检查，不导入Torch/JAX、不查GPU、不装包、不训练。Torch实际编译、CUDA Graph的前向/梯度与RNG行为、显存占用、跨进程恢复及吞吐必须由师弟服务器自动验收；不承诺一定启用Graph、一定提速或保持与eager逐位相同的未来轨迹。已完成的旧版结果不重新标成新版结果。
 
 API设计核对了固定PyTorch v2.7.1源码：[make_graphed_callables](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py)、[Inductor配置](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/config.py)。

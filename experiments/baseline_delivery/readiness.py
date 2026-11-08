@@ -129,28 +129,50 @@ def execute(args,suite):
                 config['torch_acceleration']=acceleration_policy()
             if migration:
                 compatible(read(suite/'migration-source'/job_id/'config.json'),config)
+            folders={}
+            def recovery_probe(config):
+                receipts=[]
+                for gpu in gpus:
+                    mode=(config.get('torch_acceleration') or {}).get('mode')
+                    folder=suite/'preflight'/(fingerprint(inventory[gpu])[:12]+('-'+mode if mode else ''))/job_id
+                    folders[gpu]=folder
+                    if not (folder/'canary.json').exists():
+                        print('Recovery/trace gate: '+job_id+' GPU '+gpu+
+                            (' | logical32/64/128; fresh-process restore' if args.dynamic_logical_batch else '')+
+                            (' | '+mode if mode else ''),flush=True)
+                        if folder.exists(): folder.rename(folder.with_name(folder.name+'.failed-'+uuid.uuid4().hex[:8]))
+                        previous=os.environ.get('CUDA_VISIBLE_DEVICES');os.environ['CUDA_VISIBLE_DEVICES']=gpu
+                        try:
+                            receipt=canary(config,data,args.cache,folder,'cuda:0')
+                            receipt.update(gpu_identity=inventory[gpu],implementation_sha256=implementation)
+                            atomic_json(folder/'canary.json',receipt)
+                        finally:
+                            if previous is None: os.environ.pop('CUDA_VISIBLE_DEVICES',None)
+                            else: os.environ['CUDA_VISIBLE_DEVICES']=previous
+                    receipt=read(folder/'canary.json')
+                    if (not receipt['passed'] or not receipt['trace_semantic_and_replay'] or not receipt['fresh_process']
+                        or receipt['test_access'] or receipt['config_sha256']!=fingerprint(config)
+                        or receipt.get('implementation_sha256')!=implementation or receipt.get('gpu_identity')!=inventory[gpu]):
+                        raise ValueError('Recovery/trace gate does not bind job/device: '+job_id)
+                    receipts.append(receipt)
+                return receipts
+            if config.get('torch_acceleration'):
+                from .torch_acceleration import admit_recovery
+                config,receipts,attempts=admit_recovery(config,recovery_probe)
+                admission=job/'acceleration-admission.json'
+                atomic_json(admission,dict(schema='qkan-acceleration-admission.v1',attempts=attempts,
+                    selected_mode=config['torch_acceleration']['mode'],config_sha256=fingerprint(config),
+                    devices=gpus,agreement='existing recovery standard unchanged',passed=True))
+                probe_evidence[model][admission.relative_to(ROOT).as_posix()]=digest(admission)
+                print('Recovery-admitted backend: '+job_id+' | '+config['torch_acceleration']['mode'],flush=True)
+            else: receipts=recovery_probe(config)
+            if migration:
+                compatible(read(suite/'migration-source'/job_id/'config.json'),config)
             if cfg.exists() and read(cfg)!=config: raise ValueError('Job configuration changed')
             atomic_json(cfg,config)
             jobs.append(dict(id=job_id,config_sha256=fingerprint(config)));statuses[job_id]=dict(state='pending')
-            for gpu in gpus:
-                folder=suite/'preflight'/fingerprint(inventory[gpu])[:12]/job_id
-                if not (folder/'canary.json').exists():
-                    print('Recovery/trace gate: '+job_id+' GPU '+gpu+
-                        (' | logical32/64/128; fresh-process restore' if args.dynamic_logical_batch else ''),flush=True)
-                    if folder.exists(): folder.rename(folder.with_name(folder.name+'.failed-'+uuid.uuid4().hex[:8]))
-                    previous=os.environ.get('CUDA_VISIBLE_DEVICES');os.environ['CUDA_VISIBLE_DEVICES']=gpu
-                    try:
-                        receipt=canary(config,data,args.cache,folder,'cuda:0')
-                        receipt.update(gpu_identity=inventory[gpu],implementation_sha256=implementation)
-                        atomic_json(folder/'canary.json',receipt)
-                    finally:
-                        if previous is None: os.environ.pop('CUDA_VISIBLE_DEVICES',None)
-                        else: os.environ['CUDA_VISIBLE_DEVICES']=previous
-                receipt=read(folder/'canary.json')
-                if (not receipt['passed'] or not receipt['trace_semantic_and_replay'] or not receipt['fresh_process']
-                    or receipt['test_access'] or receipt['config_sha256']!=fingerprint(config)
-                    or receipt.get('implementation_sha256')!=implementation or receipt.get('gpu_identity')!=inventory[gpu]):
-                    raise ValueError('Recovery/trace gate does not bind job/device: '+job_id)
+            for gpu,receipt in zip(gpus,receipts):
+                folder=folders[gpu]
                 for name in ('canary.json','uninterrupted/trace-validation.json','interrupted/trace-validation.json'):
                     path=folder/name;probe_evidence[model][path.relative_to(ROOT).as_posix()]=digest(path)
                 if model=='s5':
@@ -187,6 +209,8 @@ def execute(args,suite):
     # Compact evidence returned before long jobs start. No private inputs/traces.
     compact=dict(context=identity,source_probes={m:read(suite/(m+'-source-probe.json')) for m in MODELS},
         recovery=[read(p) for p in sorted((suite/'preflight').glob('*/*/canary.json'))],
+        acceleration_admissions=[dict(job=p.parent.name,report=read(p))
+            for p in sorted((suite/'jobs').glob('*/acceleration-admission.json'))],
         certificates={m:read(suite/(m+'-certificate.json')) for m in MODELS})
     if migration_report: compact['migration']=migration_report
     atomic_json(suite/'gate-evidence.json',compact)
@@ -237,7 +261,9 @@ def main():
                 recovery_diagnostics=[read(p) for p in sorted((suite/'preflight').glob('*/*/child-failure.json'))],
                 recovery_comparisons=[dict(job=p.parent.name,report=read(p))
                     for p in sorted((suite/'preflight').glob('*/*/recovery-validation.json'))
-                    if p.parent.name.startswith('s5-')],
+                    ],
+                acceleration_diagnostics=[dict(job=p.parent.parent.name,report=read(p))
+                    for p in sorted((suite/'preflight').glob('*/*/*/torch-acceleration.json'))],
                 setup_diagnostic=summarize(suite/'setup.log'),formal_release_allowed=False))
             if args.adaptive_memory:
                 failure_report=read(failure/'failure.json')

@@ -27,3 +27,5 @@ FP32 performance opt-in: bounded ID-prefix CPU lookahead for both workers; reusa
 Completed-result preservation: original source/config/result/checkpoint/trace-readiness bytes are hash-verified and retained, never relaunched or recertified as the new executor. Only remaining jobs use new recovery gates and workers. Final delivery declares each result source revision; no whole-suite single-revision equivalence claim.
 
 Optional Torch Inductor plus bounded forward/backward CUDA Graph: canonical model/optimizer keys preserved, same-snapshot numerical agreement and rollback-only speed trials, finite compile_graph/compile/eager fallback. Sample clock/batch policy remains explicit; no eager bitwise-trajectory or speed claim. S5 retains native JAX; unsupported Torch environments record eager fallback. New mode requires its own native recovery/trace admission. See docs/baselines/torch-acceleration.md.
+
+Recovery admission now certifies one common acceleration mode across devices, rerunning full canaries at lower ceilings after observed recovery disagreement; existing exact/numerical recovery thresholds are unchanged.
