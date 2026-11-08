@@ -37,6 +37,8 @@ bash scripts/migrate_torch_acceleration.sh \
 
 ## 验证边界
 
+2026-11-08启动修复：9ce7f00的全部准入和零更新迁移已在服务器通过，但监督器再入readiness时默认重建compile_graph，与已准入eager配置冲突。新版监督器优先调用同目录run_admitted.py，只校验原执行版本、证据/证书、GPU、数据和配置，再由原runner派发，不重新选择后端或生成配置。脚本可一起提取到旧checkout的.bootstrap，原模型源码、证书、Suite和断点保持原身份；启动记录保存两个显示/入口脚本的hash。当前已准入Suite可直接续跑，无需重迁移或重跑全部canary。readiness本身也修正为保留已选择模式并校验其他字段。
+
 2026-11-08恢复准入修复：原250f2fd在Transformer/Retrieval跨进程张量完全一致检查中失败。旧回传未包含具体状态路径/后端，不能断言底层差异来自哪一算子。现按任务在所有选定GPU上完整检查compile_graph；若出现恢复状态差异，则用独立目录从头检查compile，再失败则检查eager。worker内部降到更低模式时也从头复核该实际模式。只有共同通过的模式才写入正式config，作为该任务后端上限；所有模式均失败则阻止启动，不放宽恢复阈值。数据/trace错误或失效CUDA上下文不触发这层回退。acceleration-admission.json记录选择及失败轮次，绑定证书并回传；失败报告新增状态字段路径和两边模式。
 
 若已在250f2fd新目录中报错，保留失败Suite。从原9a目录重新执行上方一次更新指令，仍以原9a完整断点为来源，创建新的修复版checkout和Suite；不要对旧失败Suite执行跨版本resume，也无需修改/删除旧结果。新模式及实际加速收益仍需服务器验证。

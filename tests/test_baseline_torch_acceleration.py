@@ -267,6 +267,11 @@ class AccelerationTests(unittest.TestCase):
             certificate=read(suite/'transformer-certificate.json')
             self.assertIn((job/'acceleration-admission.json').relative_to(root).as_posix(),certificate['evidence'])
             self.assertFalse(any('compile_graph' in name for name in certificate['evidence']))
+            # The real second readiness entry must consume its selected config,
+            # not reconstruct compile_graph and reject the admitted suite.
+            readiness.execute(args,suite)
+            self.assertEqual(len(calls),4)
+            self.assertEqual(read(job/'config.json')['torch_acceleration'],policy('compile'))
 
 
 if __name__=='__main__': unittest.main()

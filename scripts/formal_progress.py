@@ -19,6 +19,17 @@ import time
 import unicodedata
 
 
+def resume_command(root,suite,context,cache):
+    entry=Path(__file__).resolve().with_name('run_admitted.py')
+    if entry.is_file():
+        return [sys.executable,'-B',str(entry),'--root',str(root),'--resume',str(suite)]
+    command=['bash',str(root/'scripts/run_formal_readiness.sh'),'--cache',str(cache),
+             '--gpus',context['gpus'],'--resume',str(suite)]
+    for key in ('adaptive_memory','dynamic_logical_batch','performance','torch_acceleration'):
+        if context.get(key): command.append('--'+key.replace('_','-'))
+    return command
+
+
 def fit_line(text, columns):
     """Bound terminal cells, including Chinese, so redraw never wraps/scrolls."""
     output=[];used=0;limit=max(1,columns-1)
@@ -303,15 +314,12 @@ def main():
             with lock(suite/'suite.lock'): pass
         except OSError:
             parser.error('Original runner is still active; safely pause it and wait for the shell prompt first')
-        command=['bash',str(root/'scripts/run_formal_readiness.sh'),'--cache',str(cache),
-                 '--gpus',context['gpus'],'--resume',str(suite)]
-        if context.get('adaptive_memory'): command.append('--adaptive-memory')
-        if context.get('dynamic_logical_batch'): command.append('--dynamic-logical-batch')
-        if context.get('performance'): command.append('--performance')
-        if context.get('torch_acceleration'): command.append('--torch-acceleration')
+        command=resume_command(root,suite,context,cache)
         atomic_json(suite/('progress-launch-'+str(time.time_ns())+'.json'),dict(
             schema='qkan-progress-supervisor.v1',executor_revision=expected,
             display_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            admitted_entry_sha256=(hashlib.sha256(Path(command[2]).read_bytes()).hexdigest()
+                if len(command)>2 and Path(command[2]).name=='run_admitted.py' else None),
             cwd=str(root),argv=command,started_at=time.time()))
         child=None;pause_requested=False
         def pause(*_):

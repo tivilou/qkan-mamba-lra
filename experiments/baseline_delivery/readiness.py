@@ -127,6 +127,12 @@ def execute(args,suite):
             if args.torch_acceleration and model!='s5':
                 from .torch_acceleration import policy as acceleration_policy
                 config['torch_acceleration']=acceleration_policy()
+                if cfg.exists():
+                    saved=read(cfg)
+                    selected=saved.get('torch_acceleration',{}).get('mode')
+                    expected={**config,'torch_acceleration':acceleration_policy(selected)}
+                    if saved!=expected: raise ValueError('Job configuration changed')
+                    config=expected
             if migration:
                 compatible(read(suite/'migration-source'/job_id/'config.json'),config)
             folders={}

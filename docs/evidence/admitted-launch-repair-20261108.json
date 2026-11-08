@@ -1,0 +1,28 @@
+{
+  "schema": "qkan-admitted-launch-repair.v1",
+  "date": "2026-11-08",
+  "source_revision": "9ce7f00d45d2e38b73194ca7dfbf379fc05fd5fb",
+  "suite": "runs/adaptive-migrated-20261108T082557Z-145040",
+  "failure_return": "failure-b397b3a661eb",
+  "evidence": "Authenticated gate evidence confirms all gates and migration passed; later entry ValueError before workers. Source reconstruction replaces selected eager with compile_graph.",
+  "admitted_modes": {
+    "transformer_retrieval": "eager",
+    "transformer_image": "compile_graph",
+    "transformer_pathfinder": "compile_graph",
+    "mamba1": "eager",
+    "mega": "eager",
+    "s4d_minimal": "eager",
+    "s5": "native_jax"
+  },
+  "repair": "Separate source-pinned admitted-only scheduler entry; preserve selected configs and existing migration receipts. Readiness reentry also retains saved mode.",
+  "checks": 130,
+  "native_relaunch_verified": false,
+  "framework_import": false,
+  "training": false,
+  "artifacts": {
+    "scripts/run_admitted.py": "6f8d23b28ee055e34f8d289b618b0729b45004291450a373ee4e953602a2e22c",
+    "tests/test_baseline_admitted_entry.py": "c7c449fdedd30c05b162f4480df388c3a835de6679fcda60f2a2f4509fb09660",
+    "scripts/formal_progress.py": "20edea52963440777312c6d2676553fb7706c18106ff69cc3d71abf5295dfcbc",
+    "experiments/baseline_delivery/readiness.py": "18a518e4edd8309723c41c31b8760a09c25abb06dd9eb636791e7fe5720f83c2"
+  }
+}
