@@ -172,6 +172,8 @@ def execute(args,suite):
                         or receipt.get('implementation_sha256')!=implementation or receipt.get('gpu_identity')!=inventory[gpu]):
                         raise ValueError('Recovery/trace gate does not bind job/device: '+job_id)
                     if migration and config.get('torch_acceleration'):
+                        from .torch_acceleration import require_actual_backend
+                        require_actual_backend(receipt,config)
                         from .acceleration_calibration import calibrate
                         from .common import child_spec
                         calibrate(suite,job_id,config,data,args.cache,gpu,inventory[gpu],

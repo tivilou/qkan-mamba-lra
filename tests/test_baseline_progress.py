@@ -66,6 +66,8 @@ class ProgressRateTests(unittest.TestCase):
         text=backend_text(dict(mode='eager',reason='requested'),dict(attempts=[dict(outcome='recovery_mismatch')]))
         self.assertIn('未通过恢复校验',text)
         self.assertIn('benchmark_gain',backend_text(dict(mode='compile',reason='benchmark_gain'),{}))
+        graph=backend_text(dict(mode='compile_graph',reason='benchmark_gain'),dict(selected_backend='eager',required='graph'))
+        self.assertIn('Dynamo原生autograd＋CUDA Graph',graph);self.assertIn('必须启用Graph',graph)
 
     def test_dashboard_wait_does_not_reset_or_launch_training(self):
         with tempfile.TemporaryDirectory() as temporary:

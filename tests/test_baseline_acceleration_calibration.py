@@ -96,16 +96,27 @@ class CalibrationTests(unittest.TestCase):
         calls=[]
         def probe(config):
             selected=config['torch_acceleration'];calls.append((selected['mode'],selected['backend']))
-            if selected['backend']=='inductor': raise RecoveryMismatch('model')
+            if selected['backend'] in ('eager','inductor'): raise RecoveryMismatch('model')
             return [dict(torch_acceleration=dict(state=dict(mode='compile_graph')))]
         chosen,_,attempts=admit_recovery(self.config,probe)
-        self.assertEqual(calls,[('compile_graph','inductor'),('compile_graph','aot_eager_default_partitioner')])
+        self.assertEqual(calls,[('compile_graph','eager'),('compile_graph','inductor'),('compile_graph','aot_eager_default_partitioner')])
         self.assertEqual(chosen['torch_acceleration']['required'],'graph');self.assertEqual(attempts[-1]['outcome'],'passed')
 
     def test_graph_requirement_never_admits_compile_or_eager(self):
         probe=Mock(side_effect=RecoveryMismatch('differs'))
         with self.assertRaises(AccelerationRequired) as caught: admit_recovery(self.config,probe)
-        self.assertEqual(probe.call_count,2);self.assertEqual(len(caught.exception.diagnostic['attempts']),2)
+        self.assertEqual(probe.call_count,3);self.assertEqual(len(caught.exception.diagnostic['attempts']),3)
+
+    def test_native_autograd_fx_graph_is_first_but_never_used_as_compile_only_candidate(self):
+        calls=[]
+        def probe(config):
+            selected=config['torch_acceleration'];calls.append((selected['mode'],selected['backend']))
+            if selected['mode']=='compile_graph': raise RecoveryMismatch('observed recovery mismatch')
+            return [dict(torch_acceleration=dict(state=dict(mode=selected['mode']))) ]
+        chosen,_,_=admit_recovery(dict(torch_acceleration=policy()),probe)
+        self.assertEqual(calls[0],('compile_graph','eager'))
+        self.assertNotIn(('compile','eager'),calls)
+        self.assertEqual(chosen['torch_acceleration']['backend'],'inductor')
 
     def test_required_runtime_mismatch_restores_before_lower_backend_or_commit(self):
         runtime=Mock();runtime.backend_error=lambda _:False
@@ -203,12 +214,89 @@ class CalibrationTests(unittest.TestCase):
             def clone(self): return self
         class Module:
             def __init__(self): pass
-        model=Mock();torch=SimpleNamespace(nn=SimpleNamespace(Module=Module),compile=Mock(return_value=model.forward),
+        model=Mock();model.parameters.return_value=[]
+        torch=SimpleNamespace(nn=SimpleNamespace(Module=Module),compile=Mock(return_value=model.forward),
             cuda=SimpleNamespace(OutOfMemoryError=OOM,make_graphed_callables=Mock(side_effect=OOM('allocation')),
                 synchronize=Mock(),empty_cache=Mock()))
         runtime=torch_runtime(torch,model,Mock(),Mock(),policy(required='graph'));runtime.set_mode('compile_graph')
         with patch('experiments.baseline_delivery.torch_acceleration.gc.collect'),self.assertRaises(OOM):
             runtime.forward({'inputs':Tensor()},'compile_graph')
+
+    def test_fx_native_autograd_warms_backward_before_graph_capture_and_restores_rng(self):
+        class Tensor:
+            shape=(4,10);dtype='float32';device='cuda:0'
+            def detach(self): return self
+            def clone(self): return self
+        class Module:
+            def __init__(self): pass
+        events=[];parameter=SimpleNamespace(requires_grad=True,grad=None)
+        model=Mock();model.parameters.return_value=[parameter]
+        model.forward=Mock(side_effect=lambda *a,**kw:events.append('forward') or 'logits')
+        def capture(*args,**kwargs):
+            self.assertEqual(events,['forward','backward'])
+            events.append('capture');return lambda *args:events.append('replay') or 'graph'
+        torch=SimpleNamespace(nn=SimpleNamespace(Module=Module),compile=Mock(return_value=model.forward),
+            autograd=SimpleNamespace(grad=Mock(side_effect=lambda *a,**kw:events.append('backward') or ('gradient',))),
+            ones_like=lambda _: 'upstream',cuda=SimpleNamespace(make_graphed_callables=capture,synchronize=Mock(),empty_cache=Mock()))
+        restore=Mock();runtime=torch_runtime(torch,model,lambda:{'rng':7},restore,policy(backend='eager',required='graph'))
+        runtime.set_mode('compile_graph')
+        with patch('experiments.baseline_delivery.torch_acceleration.gc.collect'):
+            self.assertEqual(runtime.forward({'inputs':Tensor()},'compile_graph'),'graph')
+        self.assertEqual(events,['forward','backward','capture','replay']);self.assertIsNone(parameter.grad)
+        torch.autograd.grad.assert_called_once_with('logits',(parameter,),'upstream',allow_unused=True)
+        self.assertEqual(torch.compile.call_args.kwargs,dict(backend='eager',fullgraph=True,dynamic=False))
+        restore.assert_called_once_with({'rng':7});self.assertEqual(runtime.status()['compiler_warmups'],1)
+        self.assertEqual(runtime.status()['graph_replays'],1)
+        self.assertEqual(torch.cuda.empty_cache.call_count,2)
+
+    def test_capture_error_returns_stage_and_category_without_raw_message(self):
+        import json
+        from experiments.baseline_delivery.torch_acceleration import BackendFailure
+        class Tensor:
+            shape=(4,10);dtype='float32';device='cuda:0'
+            def detach(self): return self
+            def clone(self): return self
+        class Module:
+            def __init__(self): pass
+        model=Mock();model.parameters.return_value=[]
+        torch=SimpleNamespace(nn=SimpleNamespace(Module=Module),compile=Mock(return_value=model.forward),
+            cuda=SimpleNamespace(make_graphed_callables=Mock(side_effect=RuntimeError(
+                'operation not permitted when stream is capturing SECRET_INPUT_VALUE')),
+                synchronize=Mock(),empty_cache=Mock()))
+        restore=Mock();runtime=torch_runtime(torch,model,lambda:{},restore,policy(backend='eager',required='graph'))
+        runtime.set_mode('compile_graph');runtime.begin_update(4)
+        with patch('experiments.baseline_delivery.torch_acceleration.gc.collect'),self.assertRaises(BackendFailure) as caught:
+            runtime.forward({'inputs':Tensor()},'compile_graph')
+        report=caught.exception.diagnostic
+        self.assertEqual(report['stage'],'graph_capture');self.assertEqual(report['expected_rows'],4)
+        self.assertEqual(report['exceptions'][0]['category'],'capture_unsupported')
+        self.assertNotIn('SECRET_INPUT_VALUE',json.dumps(report));restore.assert_called_once()
+        frames=report['exceptions'][0]['frames']
+        self.assertTrue(any(row['file']=='experiments/baseline_delivery/torch_acceleration.py' for row in frames))
+
+    def test_lazy_backward_oom_in_compiler_wrapper_preserves_native_retry_and_rng(self):
+        class OOM(RuntimeError): pass
+        class Tensor:
+            shape=(4,10);dtype='float32';device='cuda:0'
+            def detach(self): return self
+            def clone(self): return self
+        class Module:
+            def __init__(self): pass
+        native=OOM('out of memory')
+        def backward(*args,**kwargs):
+            try: raise native
+            except OOM as error: raise RuntimeError('compiler wrapper') from error
+        model=Mock();model.parameters.return_value=[SimpleNamespace(requires_grad=True)]
+        torch=SimpleNamespace(nn=SimpleNamespace(Module=Module),compile=Mock(return_value=model.forward),
+            autograd=SimpleNamespace(grad=backward),ones_like=Mock(),cuda=SimpleNamespace(OutOfMemoryError=OOM,
+                make_graphed_callables=Mock(),synchronize=Mock(),empty_cache=Mock()))
+        restore=Mock();runtime=torch_runtime(torch,model,lambda:{},restore,policy(required='graph'))
+        runtime.set_mode('compile_graph')
+        with patch('experiments.baseline_delivery.torch_acceleration.gc.collect'),self.assertRaises(OOM) as caught:
+            runtime.forward({'inputs':Tensor()},'compile_graph')
+        self.assertIs(caught.exception,native)
+        self.assertEqual(native.diagnostic['stage'],'compile_forward_backward_warmup')
+        torch.cuda.make_graphed_callables.assert_not_called();restore.assert_called_once()
 
     def test_graph_rebuild_invalidates_agreement_but_cached_epoch_tail_does_not(self):
         runtime=Mock();runtime.backend_error=lambda _:False;generation=[1];runtime.generation=lambda:generation[0]

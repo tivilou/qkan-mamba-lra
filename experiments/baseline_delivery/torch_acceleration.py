@@ -12,7 +12,7 @@ class RecoveryMismatch(ValueError):
     pass
 
 
-BACKENDS=('inductor','aot_eager_default_partitioner')
+BACKENDS=('eager','inductor','aot_eager_default_partitioner')
 
 
 def policy(mode='compile_graph',backend='inductor',required=None):
@@ -32,11 +32,54 @@ def legacy_policy(mode,version):
     return value
 
 
-class BackendFailure(RuntimeError): pass
+class BackendFailure(RuntimeError):
+    def __init__(self,message,diagnostic=None):
+        super().__init__(message)
+        if diagnostic is not None: self.diagnostic=diagnostic
 class AccelerationRequired(RuntimeError): pass
 class NumericalMismatch(BackendFailure):
     def __init__(self,report):
         super().__init__('NumericalMismatch');self.report=report
+
+
+def backend_diagnostic(error,stage,backend):
+    """Bounded error structure, without exception text, inputs or frame locals."""
+    chain=[];seen=set();current=error
+    categories=(('out_of_memory',('out of memory','cuda_error_out_of_memory')),
+        ('capture_unsupported',('not permitted when stream is capturing','operation not permitted when stream is capturing',
+                                'not supported during capture','cudaerrorstreamcaptureunsupported')),
+        ('capture_invalidated',('capture was invalidated','cudaerrorstreamcaptureinvalidated')),
+        ('rng_capture',('rng state','generator','philox')),
+        ('data_dependent',('data dependent','data-dependent','tensor.item')),
+        ('autograd_version',('modified by an inplace operation','version counter')),
+        ('recompile_budget',('recompile_limit','cache_size_limit')))
+    while current is not None and id(current) not in seen and len(chain)<4:
+        seen.add(id(current));message=str(current).lower();frames=[];trace=current.__traceback__
+        while trace:
+            name=trace.tb_frame.f_code.co_filename.replace('\\','/')
+            for prefix in ('experiments/baseline_delivery/','torch/','functorch/'):
+                marker='/'+prefix
+                if marker in name or name.startswith(prefix):
+                    frames.append(dict(file=prefix+name.rsplit(marker,1)[-1]
+                        if marker in name else name,line=trace.tb_lineno))
+                    break
+            trace=trace.tb_next
+        category=next((name for name,terms in categories if any(term in message for term in terms)),'unclassified')
+        chain.append(dict(type=type(current).__name__,category=category,frames=frames[-8:]))
+        current=current.__cause__ or (None if current.__suppress_context__ else current.__context__)
+    return dict(schema='qkan-backend-error.v1',stage=stage,backend=backend,exceptions=chain)
+
+
+def require_actual_backend(receipt,config):
+    """A same-eager canary pass cannot authorize real Graph calibration."""
+    requested=config.get('torch_acceleration')
+    if not requested: return
+    state=(receipt.get('torch_acceleration') or {}).get('state') or {}
+    if state.get('mode')!=requested['mode']:
+        error=RecoveryMismatch('Synthetic worker did not retain requested accelerated mode')
+        error.diagnostic=dict(requested_mode=requested['mode'],backend=requested['backend'],
+            actual_mode=state.get('mode'),reason=state.get('reason'))
+        raise error
 
 
 def compare_update(left,right,tensor_compare,array_compare):
@@ -90,7 +133,10 @@ def admit_recovery(config,probe):
     """All devices must pass fresh-process recovery at one shared mode ceiling."""
     candidate=copy.deepcopy(config);attempts=[]
     requested=config['torch_acceleration'];start=MODES.index(requested['mode'])
+    # Native autograd FX + explicit Graph first: no AOT decomposition or fusion.
+    # The pass-through FX backend has no standalone compiler speed claim.
     choices=[(mode,backend) for mode in MODES[start:] for backend in BACKENDS
+             if (mode=='compile_graph' or backend!='eager')
              if (mode!='eager' or backend=='inductor') and allowed(mode,requested.get('required'))]
     for mode,backend in choices:
         candidate['torch_acceleration']=policy(mode,backend,requested.get('required'))
@@ -216,6 +262,14 @@ class Executor:
                 self.trial(False)
                 self.reference=False
                 if fatal_cuda(error): raise
+                if isinstance(error,AccelerationRequired): raise
+                if isinstance(error,NumericalMismatch):
+                    diagnostic=dict(mode=self.state['mode'],backend=self.config['backend'],report=error.report)
+                else:
+                    diagnostic=dict(mode=self.state['mode'],backend=self.config['backend'],
+                        error=getattr(error,'diagnostic',None) or backend_diagnostic(error,'update',self.config['backend']))
+                self.diagnostics.append(diagnostic);self.diagnostics=self.diagnostics[-8:]
+                self.publish(dict(self.snapshot(),diagnostics=self.diagnostics))
                 if is_oom(error) and self.state['mode']=='compile_graph' and self.config.get('required')=='graph':
                     # Let the existing finite OOM transaction shrink the physical
                     # batch, keeping the requested backend and original samples.
@@ -226,10 +280,6 @@ class Executor:
                 recover=(isinstance(error,BackendFailure) or self.runtime.backend_error(error)
                     or (is_oom(error) and self.state['mode']=='compile_graph'))
                 if not recover: raise
-                if isinstance(error,NumericalMismatch):
-                    self.diagnostics.append(dict(mode=self.state['mode'],backend=self.config['backend'],report=error.report))
-                    self.diagnostics=self.diagnostics[-8:]
-                    self.publish(dict(self.snapshot(),diagnostics=self.diagnostics))
                 reason=str(error)[:100] if isinstance(error,BackendFailure) else type(error).__name__
                 error.__traceback__=None;error.__cause__=None
                 if not self.downgrade(reason): raise
@@ -242,13 +292,14 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
         def __init__(self):
             self.compiled=None;self.graph=None;self.key=None;self.builds=0;self.mode=None
             self.expected_rows=None;self.replays=0;self.tail_calls=0
+            self.stage='idle';self.compiler_warmups=0
         def set_mode(self,mode): self.mode=mode
         def begin_update(self,micro_batch): self.expected_rows=micro_batch
         def generation(self): return self.builds
         def status(self):
             return dict(graph_builds=self.builds,graph_resident=self.graph is not None,
                 compiled_callable_created=self.compiled is not None,graph_replays=self.replays,
-                eager_tail_calls=self.tail_calls)
+                eager_tail_calls=self.tail_calls,stage=self.stage,compiler_warmups=self.compiler_warmups)
         def clear(self):
             self.graph=None;self.key=None
             if self.mode=='compile': self.compiled=None
@@ -260,21 +311,40 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
                 if parameter.grad is not None: parameter.grad=parameter.grad.clone()
         def backend_error(self,error):
             return type(error).__module__.startswith(('torch._dynamo','torch._inductor'))
+        def attempt(self,stage,callback,wrap=True):
+            self.stage=stage
+            try: return callback()
+            except Exception as error:
+                if fatal_cuda(error): raise
+                diagnostic=backend_diagnostic(error,stage,config['backend'])
+                diagnostic['graph_builds']=self.builds
+                diagnostic['expected_rows']=self.expected_rows
+                error.diagnostic=diagnostic
+                # Compiler wrappers can retain a native allocation error as cause.
+                current=error;seen=set()
+                while current is not None and id(current) not in seen:
+                    seen.add(id(current))
+                    if isinstance(current,getattr(torch.cuda,'OutOfMemoryError',())):
+                        current.diagnostic=diagnostic
+                        if current is error: raise
+                        raise current from None
+                    current=current.__cause__
+                if not wrap and not self.backend_error(error): raise
+                raise BackendFailure(type(error).__name__,diagnostic) from error
         def eager(self,batch): return model(batch,validated_inputs=True)
         def forward(self,batch,mode):
             if mode=='eager': return self.eager(batch)
             if self.compiled is None:
                 if not hasattr(torch,'compile'): raise BackendFailure('Compiler unavailable')
-                try:
+                def compile_forward():
                     kwargs=dict(backend=config['backend'],fullgraph=True,dynamic=False)
                     if config['backend']=='inductor':
                         kwargs['options']={'fallback_random':True,'triton.cudagraphs':False,
                             'epilogue_fusion':False,'shape_padding':False,'layout_optimization':False}
-                    self.compiled=torch.compile(model.forward,**kwargs)
-                except Exception as error:
-                    if isinstance(error,getattr(torch.cuda,'OutOfMemoryError',())): raise
-                    raise BackendFailure(type(error).__name__) from error
-            if mode=='compile': return self.compiled(batch,validated_inputs=True)
+                    return torch.compile(model.forward,**kwargs)
+                self.compiled=self.attempt('compile_creation',compile_forward)
+            if mode=='compile':
+                return self.attempt('compiled_forward',lambda:self.compiled(batch,validated_inputs=True),wrap=False)
             keys=tuple(sorted(batch));values=tuple(batch[k] for k in keys)
             signature=tuple((k,tuple(v.shape),str(v.dtype),str(v.device)) for k,v in zip(keys,values))
             if self.expected_rows is not None and values[0].shape[0]<self.expected_rows:
@@ -292,14 +362,28 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
                 rng=get_rng()
                 try:
                     static=tuple(value.detach().clone() for value in values)
+                    adapter=Adapter()
+                    def warm_compiler():
+                        # Resolve Dynamo tracing and lazy AOT backward outside
+                        # make_graphed_callables' side-stream warmup/capture.
+                        output=runtime.compiled(dict(zip(keys,static)),validated_inputs=True)
+                        parameters=tuple(p for p in model.parameters() if p.requires_grad)
+                        if parameters:
+                            gradients=torch.autograd.grad(output,parameters,torch.ones_like(output),allow_unused=True)
+                            del gradients
+                        del output
+                        torch.cuda.synchronize()
+                        # Capture uses its own pool; return only unused cold
+                        # warmup cache before allocating that pool.
+                        torch.cuda.empty_cache()
+                        self.compiler_warmups+=1
+                    self.attempt('compile_forward_backward_warmup',warm_compiler)
                     # Private graph pool; at most one live shape. Optimizer excluded.
-                    self.graph=torch.cuda.make_graphed_callables(Adapter(),static,
-                        num_warmup_iters=config['graph_warmup'],allow_unused_input=True)
+                    self.graph=self.attempt('graph_capture',lambda:torch.cuda.make_graphed_callables(adapter,static,
+                        num_warmup_iters=config['graph_warmup'],allow_unused_input=True))
                     self.key=signature
-                except Exception as error:
-                    if isinstance(error,getattr(torch.cuda,'OutOfMemoryError',())): raise
-                    raise BackendFailure(type(error).__name__) from error
                 finally:
                     torch.cuda.synchronize();set_rng(rng)
-            value=self.graph(*values);self.replays+=1;return value
+            value=self.attempt('graph_replay',lambda:self.graph(*values));self.replays+=1
+            self.stage='ready';return value
     return Runtime()

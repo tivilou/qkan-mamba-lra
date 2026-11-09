@@ -139,6 +139,7 @@ def backend_text(acceleration,admission):
     if mode=='eager' and reason=='requested' and any(a.get('outcome')=='recovery_mismatch' for a in attempts):
         reason='编译/Graph未通过恢复校验，按已准入eager执行'
     compiler=admission.get('selected_backend') if isinstance(admission,dict) else None
+    if compiler=='eager' and mode=='compile_graph': compiler='eager（Dynamo原生autograd＋CUDA Graph）'
     required=admission.get('required') if isinstance(admission,dict) else None
     return mode+(' / '+compiler if compiler and mode!='eager' else '')+' | '+reason+(' | 必须启用Graph' if required=='graph' else '')
 

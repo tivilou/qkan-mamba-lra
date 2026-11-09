@@ -46,7 +46,7 @@
       },
       {
         "path": "experiments/baseline_delivery/readiness.py",
-        "sha256": "69770b48f63fefa9208084a2c6900d5b2e421aa6a71f395cca5392ea9097e0cd"
+        "sha256": "cb26d7e0efafe23028aeb0f8f071823e6a2b27627b6d49558d799c96ee8983fe"
       },
       {
         "path": "experiments/baseline_delivery/logical_batch.py",
@@ -62,7 +62,7 @@
       },
       {
         "path": "scripts/formal_progress.py",
-        "sha256": "fb0cc553c3a3ff89fb975827c98aa229f7ab4eb28c3f785256737a70e369a68f"
+        "sha256": "85c5e1a68ba400b621faab13568709cce2878b068e510e73377b6dd4c1e61469"
       },
       {
         "path": "scripts/migrate_dynamic_logical.sh",
@@ -94,11 +94,11 @@
       },
       {
         "path": "experiments/baseline_delivery/torch_acceleration.py",
-        "sha256": "975a70b9d504fc69000651fe676cf91e2ab7a605ba6ed6c34fb578259b59c9ec"
+        "sha256": "b96745ca97d3db06bc807781b9bc7547ab88b4eeb0127ec4c85aa3f70029d925"
       },
       {
         "path": "tests/test_baseline_torch_acceleration.py",
-        "sha256": "5a3fb92419e0d1dc4b81c690446f24bd100ff7e31e43e0ad1fdf09776c4cfb72"
+        "sha256": "2eddefe5a456b017f5b5fb04dbbced4186b16135a3f6085c6278ef71516b1c2f"
       },
       {
         "path": "scripts/migrate_torch_acceleration.sh",
@@ -106,7 +106,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "7765b81a81f2301feeb734ef807d6e1dbeb465232b52ab2cd0c6bfefd1b39ac3"
+        "sha256": "bab484f73eb9f510dd7d61ca99330d553251a6f7df71e30ee371c3c0c6532b51"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -118,7 +118,7 @@
       },
       {
         "path": "tests/test_baseline_progress.py",
-        "sha256": "ad92b9f951f067f9cfd7d41bcd8d5747c1724e73ce3e588bba6c51139c3f6bb4"
+        "sha256": "271cc1442b19bc4efbb9f5730422ca2078332360793377cdad15393c9dd48acc"
       },
       {
         "path": "experiments/baseline_delivery/acceleration_calibration.py",
@@ -126,7 +126,7 @@
       },
       {
         "path": "tests/test_baseline_acceleration_calibration.py",
-        "sha256": "ea1d830222953dac5b2cf5f367832a6a29f979f6177c4bdb1a822a0e3e033d3b"
+        "sha256": "6c882b37fa29b20ea32ce69eac37f2f13b15f98f5fa842fab98f0586c941f0cb"
       }
     ]
   },

@@ -1,0 +1,95 @@
+{
+  "schema": "qkan-compiler-native-graph-repair.v1",
+  "date": "2026-11-09",
+  "status": "implemented_stdlib_mock_verified_native_pending",
+  "authentic_return": {
+    "namespace": "formal-readiness/failure-6a19c1276349",
+    "sha256": "43ec4cb228bd41d9961b66be12e4ffea8a6704dfc546cbca6cc14fd06fdd7019",
+    "source_revision": "912797a2f5293fa5a5d48d8c9f03a84f5fe8cc3a",
+    "suite": "runs/adaptive-migrated-20261109T111447Z-218281",
+    "error_type": "AccelerationRequired",
+    "graph_attempts": [
+      "inductor",
+      "aot_eager_default_partitioner"
+    ],
+    "formal_training_started": false
+  },
+  "observed_failure": {
+    "inductor": "Fresh-process recovery mismatch; uninterrupted Graph versus resumed eager NumericalMismatch",
+    "exact_controls": [
+      "scheduler",
+      "RNG",
+      "permutation",
+      "cursor",
+      "step",
+      "epoch"
+    ],
+    "model_max_abs": 2.169747e-06,
+    "adam_max_abs": 1.117587e-08,
+    "aot_synthetic": "Some updates fell back after numerical/RNG disagreement; two eager endpoints are not Graph admission",
+    "aot_real_calibration": "RuntimeError before first graph replay; old report omitted cause/stage",
+    "operator_root_cause_confirmed": false,
+    "oom_confirmed": false
+  },
+  "migration_source": {
+    "revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+    "suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "restored_step": 12683,
+    "checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "completed_jobs": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ],
+    "original_completion_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+    "full_scientific_state_preserved": true
+  },
+  "changes": [
+    "Native-autograd Dynamo FX plus explicit forward/backward CUDA Graph first",
+    "Cold compiler forward and lazy backward warmup outside Graph capture; RNG rollback and no parameter.grad accumulation",
+    "Reject synthetic actual-mode fallback before real-checkpoint calibration",
+    "Bounded exception type/category/project-framework locations/stage; no raw error text or locals",
+    "Preserve native OOM inside compiler cause chain; fatal CUDA errors never retried",
+    "Display distinguishes backend=eager native-autograd Graph from actual eager execution"
+  ],
+  "candidate_order": [
+    "compile_graph/eager",
+    "compile_graph/inductor",
+    "compile_graph/aot_eager_default_partitioner",
+    "compile/inductor",
+    "compile/aot_eager_default_partitioner",
+    "eager"
+  ],
+  "required_graph_job": "transformer-retrieval-s42",
+  "admission": "Unchanged exact fresh-process recovery, real-update numerics, exact zero-commit rollback, actual replay and measured positive complete-update gain",
+  "validation": {
+    "standard_library_mock_checks": 188,
+    "framework_imported": false,
+    "gpu_queried": false,
+    "dependencies_installed": false,
+    "training_executed": false,
+    "thresholds_relaxed": false,
+    "native_graph_passed": false,
+    "sustained_speedup_established": false
+  },
+  "primary_sources": [
+    {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.7.1/torch/_dynamo/backends/debugging.py",
+      "sha256": "4e761fe35829d1f9908fb6a51431b41ce784e6fe30ee1da812a35fb96a2c2a0b",
+      "check": "existing official pinned source cache inspected; no framework imported"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.7.1/torch/cuda/graphs.py",
+      "sha256": "4729ca4d7cc5981778c869aab462e5bc4eceabb0b1c40dc3609fa568fd957d71",
+      "check": "existing official pinned source cache inspected; no framework imported"
+    }
+  ],
+  "artifacts": {
+    "experiments/baseline_delivery/torch_acceleration.py": "b96745ca97d3db06bc807781b9bc7547ab88b4eeb0127ec4c85aa3f70029d925",
+    "experiments/baseline_delivery/readiness.py": "cb26d7e0efafe23028aeb0f8f071823e6a2b27627b6d49558d799c96ee8983fe",
+    "scripts/formal_progress.py": "85c5e1a68ba400b621faab13568709cce2878b068e510e73377b6dd4c1e61469",
+    "docs/baselines/torch-acceleration.md": "bab484f73eb9f510dd7d61ca99330d553251a6f7df71e30ee371c3c0c6532b51",
+    "tests/test_baseline_torch_acceleration.py": "2eddefe5a456b017f5b5fb04dbbced4186b16135a3f6085c6278ef71516b1c2f",
+    "tests/test_baseline_acceleration_calibration.py": "6c882b37fa29b20ea32ce69eac37f2f13b15f98f5fa842fab98f0586c941f0cb",
+    "tests/test_baseline_progress.py": "271cc1442b19bc4efbb9f5730422ca2078332360793377cdad15393c9dd48acc"
+  }
+}

@@ -199,7 +199,7 @@ class AccelerationTests(unittest.TestCase):
             if mode=='compile_graph': raise RecoveryMismatch('Recovery tensor differs at model.encoder')
             return [dict(torch_acceleration=dict(state=dict(mode=mode)))]
         selected,receipts,attempts=admit_recovery(original,probe)
-        self.assertEqual(calls,['compile_graph','compile_graph','compile']);self.assertEqual(selected['torch_acceleration'],policy('compile'))
+        self.assertEqual(calls,['compile_graph']*3+['compile']);self.assertEqual(selected['torch_acceleration'],policy('compile'))
         self.assertEqual(original['torch_acceleration'],policy());self.assertEqual(attempts[0]['outcome'],'recovery_mismatch')
 
     def test_failed_attempt_keeps_compact_diagnostic_even_if_fallback_passes(self):
@@ -225,13 +225,13 @@ class AccelerationTests(unittest.TestCase):
     def test_all_modes_fail_recovery_blocks_formal_run(self):
         probe=Mock(side_effect=RecoveryMismatch('differs'))
         with self.assertRaises(RecoveryMismatch): admit_recovery(dict(torch_acceleration=policy()),probe)
-        self.assertEqual(probe.call_count,5)
+        self.assertEqual(probe.call_count,6)
 
     def test_worker_fallback_is_retested_from_beginning_at_actual_shared_mode(self):
         probe=Mock(return_value=[dict(torch_acceleration=dict(state=dict(mode='eager')))])
         selected,_,attempts=admit_recovery(dict(torch_acceleration=policy()),probe)
         self.assertEqual(selected['torch_acceleration'],policy('eager'))
-        self.assertEqual(probe.call_count,5);self.assertEqual(attempts[0]['outcome'],'worker_fallback')
+        self.assertEqual(probe.call_count,6);self.assertEqual(attempts[0]['outcome'],'worker_fallback')
 
     def test_data_trace_and_poisoned_context_errors_never_trigger_admission_fallback(self):
         for error in (ValueError('Trace semantic/replay gate failed'),RuntimeError('CUDA illegal memory access')):
@@ -279,7 +279,10 @@ class AccelerationTests(unittest.TestCase):
     def test_migrated_readiness_requires_real_checkpoint_graph_and_binds_report_to_certificate(self):
         self.readiness_route(migrated=True)
 
-    def readiness_route(self,migrated=False):
+    def test_same_eager_canary_never_starts_real_graph_calibration(self):
+        self.readiness_route(migrated=True,synthetic_fallback=True)
+
+    def readiness_route(self,migrated=False,synthetic_fallback=False):
         from contextlib import ExitStack
         from pathlib import Path
         import os,tempfile
@@ -296,19 +299,23 @@ class AccelerationTests(unittest.TestCase):
             if migrated:
                 atomic_json(suite/'migration-source/plan.json',migration)
                 atomic_json(suite/'migration-source/transformer-retrieval-s42/config.json',{})
-            calls=[]
+            calls=[];calibrated_backends=[]
             def canary(config,data,cache,folder,device):
                 mode=config['torch_acceleration']['mode'];gpu=os.environ['CUDA_VISIBLE_DEVICES'];calls.append((mode,gpu))
-                if mode=='compile_graph' and gpu=='1' and (not migrated or config['torch_acceleration']['backend']=='inductor'):
+                backend=config['torch_acceleration']['backend']
+                if mode=='compile_graph' and gpu=='1' and (not migrated or backend in ('eager','inductor')):
                     raise RecoveryMismatch('Recovery tensor differs at model.weight')
                 for name in ('uninterrupted','interrupted'): atomic_json(folder/name/'trace-validation.json',dict(passed=True))
                 return dict(passed=True,trace_semantic_and_replay=True,fresh_process=True,test_access=False,
-                    config_sha256=fingerprint(config),torch_acceleration=dict(state=dict(mode=mode)))
+                    config_sha256=fingerprint(config),torch_acceleration=dict(state=dict(
+                        mode='eager' if synthetic_fallback and backend=='eager' else mode,
+                        reason='NumericalMismatch' if synthetic_fallback and backend=='eager' else 'requested')))
             def child(spec,log,env=None):
                 argv=spec['argv']
                 if '--acceleration-probe-source' in argv:
                     from experiments.baseline_delivery.acceleration_calibration import finish_probe
                     cfg=read(argv[argv.index('--config')+1]);output=Path(argv[argv.index('--output')+1])
+                    calibrated_backends.append(cfg['torch_acceleration']['backend'])
                     value=finish_probe(cfg,dict(step=12,migration=dict(source_checkpoint_sha256='native-checkpoint')),
                         dict(mode='compile_graph',benchmarked=True,reason='benchmark_gain',
                             benchmark=dict(eager_seconds=2.,accelerated_seconds=1.)),[],lambda:None,dict(graph_replays=7))
@@ -335,7 +342,8 @@ class AccelerationTests(unittest.TestCase):
             for target,value in patches.items(): stack.enter_context(patch(target,value))
             stack.enter_context(patch.dict(os.environ,{},clear=False))
             readiness.execute(args,suite)
-            expected_calls=[('compile_graph','0'),('compile_graph','1')]*2+([] if migrated else [('compile','0'),('compile','1')])
+            expected_calls=([('compile_graph','0')] if synthetic_fallback else [('compile_graph','0'),('compile_graph','1')])
+            expected_calls+=[('compile_graph','0'),('compile_graph','1')]*2+([] if migrated else [('compile','0'),('compile','1')])
             self.assertEqual(calls,expected_calls)
             job=suite/'jobs/transformer-retrieval-s42';config=read(job/'config.json')
             selected_policy=policy('compile_graph','aot_eager_default_partitioner','graph') if migrated else policy('compile')
@@ -344,7 +352,8 @@ class AccelerationTests(unittest.TestCase):
             certificate=read(suite/'transformer-certificate.json')
             self.assertIn((job/'acceleration-admission.json').relative_to(root).as_posix(),certificate['evidence'])
             if migrated:
-                self.assertEqual(len(read(suite/'gate-evidence.json')['real_checkpoint_calibrations']),3)
+                self.assertEqual(len(read(suite/'gate-evidence.json')['real_checkpoint_calibrations']),3 if synthetic_fallback else 4)
+                if synthetic_fallback: self.assertNotIn('eager',calibrated_backends)
                 self.assertTrue(any('/calibration/' in name for name in certificate['evidence']))
             else: self.assertFalse(any('compile_graph' in name for name in certificate['evidence']))
             # The real second readiness entry must consume its selected config,
