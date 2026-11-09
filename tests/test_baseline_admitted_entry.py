@@ -184,4 +184,19 @@ class AdmittedEntryTests(unittest.TestCase):
             entry.return_repair(Path('repair'))
             upload.assert_called_once_with(Path('repair'),'admitted-entry',['entry-repair.json'])
 
+    def test_failed_required_graph_returns_worker_numerics_without_raw_logs(self):
+        with tempfile.TemporaryDirectory() as tmp,patch('experiments.baseline_delivery.return_artifacts.upload_declared') as upload:
+            root=Path(tmp);suite=root/'runs/suite';job=suite/'jobs/transformer-retrieval-s42'
+            atomic_json(suite/'status.json',{'transformer-retrieval-s42':dict(state='failed',exit_code=1)})
+            atomic_json(job/'torch-acceleration.json',dict(state=dict(mode='compile',reason='NumericalMismatch'),
+                diagnostics=[dict(report=dict(first_differences=[dict(path='state/observations/raw_gradients/w')]))]))
+            atomic_json(job/'worker-error.json',dict(error_type='AccelerationRequired',project_frames=[]))
+            (job/'worker.log').write_text('private input and raw exception',encoding='utf8')
+            entry.return_failure(root,suite,dict(stage='scheduler',error_type='ValueError'))
+            report=read(upload.call_args.args[0]/'entry-failure.json')
+            item=report['worker_diagnostics'][0]
+            self.assertEqual(item['worker-error.json']['report']['error_type'],'AccelerationRequired')
+            self.assertIn('raw_gradients',json.dumps(item));self.assertNotIn('private input',json.dumps(report))
+            self.assertEqual(upload.call_args.args[2],['entry-failure.json'])
+
 if __name__=='__main__': unittest.main()

@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 from experiments.baseline_delivery.common import atomic_json,digest,fingerprint,read
-from experiments.baseline_delivery.migration import SOURCE_REVISION,ACCELERATION_REVISION,compatible,snapshot,load_state,admit
+from experiments.baseline_delivery.migration import SOURCE_REVISION,ACCELERATION_REVISION,WARMUP_REVISION,compatible,snapshot,load_state,admit
 
 
 class MigrationTests(unittest.TestCase):
@@ -51,16 +51,15 @@ class MigrationTests(unittest.TestCase):
     def test_wrong_source_revision_rejected(self):
         with self.assertRaises(ValueError): compatible({**self.config,'source_revision':'other'},self.target)
 
-    def compiler_configs(self,model='transformer'):
-        from experiments.baseline_delivery.torch_acceleration import policy
+    def compiler_configs(self,model='transformer',revision=ACCELERATION_REVISION):
+        from experiments.baseline_delivery.torch_acceleration import policy,legacy_policy
         from experiments.baseline_delivery.performance import policy as performance
         from experiments.baseline_delivery.logical_batch import policy as logical
-        old=dict(self.config,source_revision=ACCELERATION_REVISION,model=model,
+        old=dict(self.config,source_revision=revision,model=model,
             performance=performance(),adaptive_memory=logical(32))
         new=dict(old,source_revision='next')
         if model!='s5':
-            previous=policy('eager');previous.pop('update_warmup');previous.pop('validation')
-            previous['schema']='qkan-torch-acceleration.v1';old['torch_acceleration']=previous
+            old['torch_acceleration']=legacy_policy('eager',1 if revision==ACCELERATION_REVISION else 2)
             new['torch_acceleration']=policy()
         return old,new
 
@@ -88,6 +87,30 @@ class MigrationTests(unittest.TestCase):
         self.assertNotIn('torch_acceleration',loaded)
         self.assertEqual(loaded['migration']['previous_torch_acceleration'],previous)
         self.assertEqual(loaded['migration']['previous_migration'],{'source':'9a'})
+
+    def test_current840_migration_preserves_full_state_and_recertifies_backend_only(self):
+        from experiments.baseline_delivery.torch_acceleration import policy
+        old,new=self.compiler_configs(revision=WARMUP_REVISION)
+        new['torch_acceleration']=policy('compile_graph','aot_eager_default_partitioner','graph')
+        compatible(old,new);self.stage()
+        folder=self.new/'migration-source'/self.name;atomic_json(folder/'config.json',old)
+        plan=read(self.new/'migration-source/plan.json');plan['source_revision']=WARMUP_REVISION
+        plan['jobs'][self.name]['config_sha256']=fingerprint(old);atomic_json(self.new/'migration-source/plan.json',plan)
+        original=dict(contract='original',step=12,cursor=100,epoch=3,permutation=[4,3,2,1],
+            model={'weight':9},optimizer={'moment':8},rng=[7],scheduler={'progress':1000},
+            sample_clock={'progress':1000},adaptive_memory={'oom_count':3,'micro_batch':16},
+            migration={'source':'9ce'},torch_acceleration={'mode':'eager','reason':'NumericalMismatch'})
+        before=(folder/'checkpoints/state.pt').read_bytes()
+        # Calibration lives outside jobs/, but reads the exact same source suite.
+        loaded=load_state(self.new/'calibration/key'/self.name,new,'new',lambda _:'original',
+            lambda *_:copy.deepcopy(original),migration_suite=self.new)
+        for key in original.keys()-{'contract','migration','torch_acceleration'}:
+            self.assertEqual(loaded[key],original[key])
+        self.assertEqual(loaded['migration']['previous_torch_acceleration'],original['torch_acceleration'])
+        self.assertNotIn('torch_acceleration',loaded)
+        self.assertEqual((folder/'checkpoints/state.pt').read_bytes(),before)
+        old['torch_acceleration']['update_warmup']=2
+        with self.assertRaises(ValueError): compatible(old,new)
 
     def test_corrupt_checkpoint_never_staged(self):
         (self.old/'jobs'/self.name/'checkpoints/state.pt').write_bytes(b'changed')

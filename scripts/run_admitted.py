@@ -130,10 +130,25 @@ def failure_report(error,stage):
 
 
 def return_failure(root,suite,report):
-    from experiments.baseline_delivery.common import atomic_json
+    from experiments.baseline_delivery.common import atomic_json,read,digest
     from experiments.baseline_delivery.return_artifacts import upload_declared
     suite=Path(suite).resolve();root=Path(root).resolve()
     if not suite.is_relative_to(root/'runs'): raise ValueError('Invalid failure directory')
+    diagnostics=[]
+    if (suite/'status.json').exists():
+        for name,status in read(suite/'status.json').items():
+            if status.get('state')!='failed': continue
+            job=(suite/'jobs'/name).resolve()
+            if Path(name).name!=name or not job.is_relative_to(suite/'jobs'):
+                raise ValueError('Invalid failed job directory')
+            item=dict(job=name,exit_code=status.get('exit_code'))
+            # These worker-owned summaries exclude inputs, raw exception values,
+            # tensors and checkpoint contents. Never attach training logs.
+            for filename in ('torch-acceleration.json','worker-error.json'):
+                path=job/filename
+                if path.exists(): item[filename]=dict(sha256=digest(path),report=read(path))
+            diagnostics.append(item)
+    if diagnostics: report=dict(report,worker_diagnostics=diagnostics)
     folder=suite/('entry-failure-'+uuid.uuid4().hex[:12])
     atomic_json(folder/'entry-failure.json',report)
     atomic_json(suite/'entry-status.json',dict(report,state='failed',updated_at=time.time(),pid=os.getpid(),

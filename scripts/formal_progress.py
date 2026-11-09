@@ -28,6 +28,8 @@ def resume_command(root,suite,context,cache):
              '--gpus',context['gpus'],'--resume',str(suite)]
     for key in ('adaptive_memory','dynamic_logical_batch','performance','torch_acceleration'):
         if context.get(key): command.append('--'+key.replace('_','-'))
+    for key in ('require_graph','require_acceleration'):
+        for job in context.get(key,[]): command.extend(['--'+key.replace('_','-'),job])
     return command
 
 
@@ -136,7 +138,9 @@ def backend_text(acceleration,admission):
     attempts=admission.get('attempts',[]) if isinstance(admission,dict) else []
     if mode=='eager' and reason=='requested' and any(a.get('outcome')=='recovery_mismatch' for a in attempts):
         reason='编译/Graph未通过恢复校验，按已准入eager执行'
-    return mode+' | '+reason
+    compiler=admission.get('selected_backend') if isinstance(admission,dict) else None
+    required=admission.get('required') if isinstance(admission,dict) else None
+    return mode+(' / '+compiler if compiler and mode!='eager' else '')+' | '+reason+(' | 必须启用Graph' if required=='graph' else '')
 
 
 def gpu_usage():

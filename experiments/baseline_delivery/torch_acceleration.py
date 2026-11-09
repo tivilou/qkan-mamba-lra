@@ -12,38 +12,106 @@ class RecoveryMismatch(ValueError):
     pass
 
 
-def policy(mode='compile_graph'):
+BACKENDS=('inductor','aot_eager_default_partitioner')
+
+
+def policy(mode='compile_graph',backend='inductor',required=None):
     if mode not in MODES: raise ValueError('Unsupported acceleration mode')
-    return dict(schema='qkan-torch-acceleration.v2',mode=mode,backend='inductor',
+    if backend not in BACKENDS or required not in (None,'compile','graph'):
+        raise ValueError('Unsupported compiler requirement')
+    return dict(schema='qkan-torch-acceleration.v3',mode=mode,backend=backend,required=required,
         dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=1,
         benchmark_pairs=2,precision='fp32',max_builds=8,
         update_warmup=1,validation='each_execution_shape')
 
 
+def legacy_policy(mode,version):
+    value=policy(mode);value.pop('required');value['schema']='qkan-torch-acceleration.v'+str(version)
+    if version==1: value.pop('update_warmup');value.pop('validation')
+    if version not in (1,2): raise ValueError('Unsupported historical compiler policy')
+    return value
+
+
 class BackendFailure(RuntimeError): pass
+class AccelerationRequired(RuntimeError): pass
+class NumericalMismatch(BackendFailure):
+    def __init__(self,report):
+        super().__init__('NumericalMismatch');self.report=report
+
+
+def compare_update(left,right,tensor_compare,array_compare):
+    """Framework adapters report numeric summaries, never array values."""
+    failures=[];leaves=0;fields={};differing=0
+    def record(path,result):
+        nonlocal differing
+        name=path.split('/')[1] if '/' in path else path
+        entry=fields.setdefault(name,dict(exact=True,differing_leaves=0,max_abs=None))
+        if result:
+            differing+=1;entry['exact']=False;entry['differing_leaves']+=1
+            if result.get('max_abs') is not None:
+                entry['max_abs']=max(entry['max_abs'] or 0,result['max_abs'])
+            if len(failures)<32: failures.append(dict(path=path,**result))
+    def visit(a,b,path):
+        nonlocal leaves
+        for adapter in (tensor_compare,array_compare):
+            result=adapter(a,b,path)
+            if result is not None:
+                leaves+=1
+                record(path,result)
+                return
+        if type(a)!=type(b):
+            record(path,dict(kind='type'))
+            return
+        if isinstance(a,dict):
+            if a.keys()!=b.keys():
+                record(path,dict(kind='keys'))
+                return
+            for key in a: visit(a[key],b[key],path+'/'+str(key))
+        elif isinstance(a,(list,tuple)):
+            if len(a)!=len(b):
+                record(path,dict(kind='length'))
+                return
+            for i,(x,y) in enumerate(zip(a,b)): visit(x,y,path+'/'+str(i))
+        else:
+            leaves+=1
+            record(path,dict(kind='control') if a!=b else {})
+    visit(left,right,'state')
+    if failures: raise NumericalMismatch(dict(schema='qkan-update-agreement.v1',passed=False,
+        threshold_relaxed=False,rtol=1e-5,atol=1e-6,control_rng='exact',
+        checked_leaves=leaves,differing_leaves=differing,fields=fields,
+        first_differences=failures,details_truncated=differing>len(failures)))
+
+
+def allowed(mode,required):
+    return required is None or mode=='compile_graph' or (required=='compile' and mode=='compile')
 
 
 def admit_recovery(config,probe):
     """All devices must pass fresh-process recovery at one shared mode ceiling."""
     candidate=copy.deepcopy(config);attempts=[]
-    while True:
-        mode=candidate['torch_acceleration']['mode']
+    requested=config['torch_acceleration'];start=MODES.index(requested['mode'])
+    choices=[(mode,backend) for mode in MODES[start:] for backend in BACKENDS
+             if (mode!='eager' or backend=='inductor') and allowed(mode,requested.get('required'))]
+    for mode,backend in choices:
+        candidate['torch_acceleration']=policy(mode,backend,requested.get('required'))
         try:
             receipts=probe(candidate)
         except RecoveryMismatch as error:
-            attempts.append(dict(mode=mode,outcome='recovery_mismatch',detail=str(error)[:160]))
+            attempts.append(dict(mode=mode,backend=backend,outcome='recovery_mismatch',detail=str(error)[:160]))
             if hasattr(error,'diagnostic'): attempts[-1]['diagnostic']=error.diagnostic
             if mode=='eager': raise
-            candidate['torch_acceleration']=policy(MODES[MODES.index(mode)+1]);continue
+            continue
         actual=[r['torch_acceleration']['state']['mode'] for r in receipts]
         if not actual or any(value not in MODES for value in actual):
             raise ValueError('Missing or invalid acceleration admission receipt')
         ceiling=max([MODES.index(mode)]+[MODES.index(value) for value in actual])
         if ceiling>MODES.index(mode):
-            attempts.append(dict(mode=mode,outcome='worker_fallback',selected=MODES[ceiling]))
-            candidate['torch_acceleration']=policy(MODES[ceiling]);continue
-        attempts.append(dict(mode=mode,outcome='passed'))
+            attempts.append(dict(mode=mode,backend=backend,outcome='worker_fallback',selected=MODES[ceiling]))
+            continue
+        attempts.append(dict(mode=mode,backend=backend,outcome='passed'))
         return candidate,receipts,attempts
+    error=AccelerationRequired('No requested accelerated backend passed native admission')
+    error.diagnostic=dict(attempts=attempts);raise error
 
 
 def fatal_cuda(error):
@@ -58,14 +126,15 @@ def fatal_cuda(error):
 class Executor:
     """Framework-free control plane; all trial optimizer updates are rolled back."""
     def __init__(self,runtime,config,saved=None,synthetic=False,publish=lambda _:None,clock=time.perf_counter,trial=lambda _:None,read_state=None,compare=None):
-        if config!=policy(config.get('mode')): raise ValueError('Unsupported Torch acceleration policy')
+        if config!=policy(config.get('mode'),config.get('backend'),config.get('required')): raise ValueError('Unsupported Torch acceleration policy')
         self.runtime=runtime;self.config=config;self.synthetic=synthetic;self.publish=publish;self.clock=clock;self.trial=trial
         self.state=dict(saved) if saved else dict(mode=config['mode'],benchmarked=False,reason='requested',benchmark=None)
         if self.state['mode'] not in ('compile_graph','compile','eager'): raise ValueError('Invalid saved acceleration mode')
         if MODES.index(self.state['mode'])<MODES.index(config['mode']):
             raise ValueError('Saved mode exceeds recovery-admitted ceiling')
         self.reference=False;self.used=False;self.runtime.set_mode(self.state['mode'])
-        self.read_state=read_state;self.compare=compare;self.validated=set();self.last_key=None;self.checks=0
+        self.read_state=read_state;self.compare=compare;self.validated=set();self.checks=0
+        self.enforce=not synthetic;self.diagnostics=[];self.validating=False
 
     def snapshot(self): return dict(self.state)
 
@@ -81,7 +150,7 @@ class Executor:
         self.state['mode']='compile' if old=='compile_graph' else 'eager'
         self.state.update(benchmarked=False,benchmark=None)
         self.validated.clear()
-        self.last_key=None;self.checks=0
+        self.checks=0
         self.state['reason']=reason;self.runtime.clear();self.runtime.set_mode(self.state['mode'])
         self.state['eager_agreement']='eager_only' if self.state['mode']=='eager' else 'pending'
         self.publish(self.snapshot());return True
@@ -91,8 +160,12 @@ class Executor:
             clear_grad();restore(snapshot)
         while True:
             try:
-                key=(self.state['mode'],execution_key)
-                needs_check=key not in self.validated or (self.state['mode']=='compile_graph' and key!=self.last_key)
+                if self.enforce and not allowed(self.state['mode'],self.config.get('required')):
+                    restored();raise AccelerationRequired('Required acceleration is unavailable; no training update committed')
+                def check_key():
+                    generation=getattr(self.runtime,'generation',lambda:0)() if self.state['mode']=='compile_graph' else 0
+                    return (self.state['mode'],execution_key,generation)
+                key=check_key();needs_check=key not in self.validated
                 if self.read_state and needs_check and self.state['mode']!='eager':
                     # Cold compilation includes lazy backward compilation/capture.
                     # Warm the complete update before comparing two steady calls.
@@ -107,11 +180,13 @@ class Executor:
                         restored();callback();synchronize()
                     restored()
                     self.publish(dict(self.snapshot(),phase='eager_numerical_check'))
+                    self.validating=True
                     self.reference=True;restored();callback();synchronize();baseline=self.read_state()
                     self.reference=False;restored();callback();synchronize();candidate=self.read_state()
                     try: self.compare(baseline,candidate)
+                    except NumericalMismatch: raise
                     except (AssertionError,ValueError) as error: raise BackendFailure('NumericalMismatch') from error
-                    restored();self.trial(False);self.validated.add(key);self.last_key=key
+                    self.validating=False;restored();self.trial(False);self.validated.add(check_key())
                     self.state['eager_agreement']='passed_rtol1e-5_atol1e-6_rng_exact'
                 if not self.synthetic and not self.state['benchmarked'] and self.state['mode']!='eager':
                     self.publish(dict(self.snapshot(),phase='bounded_benchmark'))
@@ -133,15 +208,28 @@ class Executor:
                     else: self.state['reason']='benchmark_gain'
                     self.publish(self.snapshot())
                 self.reference=False
+                if self.enforce and not allowed(self.state['mode'],self.config.get('required')):
+                    restored();raise AccelerationRequired('Required acceleration is unavailable; no training update committed')
                 return callback()
             except Exception as error:
+                self.validating=False
                 self.trial(False)
                 self.reference=False
                 if fatal_cuda(error): raise
+                if is_oom(error) and self.state['mode']=='compile_graph' and self.config.get('required')=='graph':
+                    # Let the existing finite OOM transaction shrink the physical
+                    # batch, keeping the requested backend and original samples.
+                    clear_grad();self.runtime.clear();self.validated.clear()
+                    self.state.update(benchmarked=False,benchmark=None,reason='graph_oom_retry_smaller_microbatch')
+                    self.publish(self.snapshot());raise
                 # A graph pool can cause OOM. Release it before shrinking batches.
                 recover=(isinstance(error,BackendFailure) or self.runtime.backend_error(error)
                     or (is_oom(error) and self.state['mode']=='compile_graph'))
                 if not recover: raise
+                if isinstance(error,NumericalMismatch):
+                    self.diagnostics.append(dict(mode=self.state['mode'],backend=self.config['backend'],report=error.report))
+                    self.diagnostics=self.diagnostics[-8:]
+                    self.publish(dict(self.snapshot(),diagnostics=self.diagnostics))
                 reason=str(error)[:100] if isinstance(error,BackendFailure) else type(error).__name__
                 error.__traceback__=None;error.__cause__=None
                 if not self.downgrade(reason): raise
@@ -153,10 +241,14 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
     class Runtime:
         def __init__(self):
             self.compiled=None;self.graph=None;self.key=None;self.builds=0;self.mode=None
+            self.expected_rows=None;self.replays=0;self.tail_calls=0
         def set_mode(self,mode): self.mode=mode
+        def begin_update(self,micro_batch): self.expected_rows=micro_batch
+        def generation(self): return self.builds
         def status(self):
             return dict(graph_builds=self.builds,graph_resident=self.graph is not None,
-                compiled_callable_created=self.compiled is not None)
+                compiled_callable_created=self.compiled is not None,graph_replays=self.replays,
+                eager_tail_calls=self.tail_calls)
         def clear(self):
             self.graph=None;self.key=None
             if self.mode=='compile': self.compiled=None
@@ -174,12 +266,21 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
             if self.compiled is None:
                 if not hasattr(torch,'compile'): raise BackendFailure('Compiler unavailable')
                 try:
-                    self.compiled=torch.compile(model.forward,backend='inductor',fullgraph=True,dynamic=False,
-                        options={'fallback_random':True,'triton.cudagraphs':False})
-                except Exception as error: raise BackendFailure(type(error).__name__) from error
+                    kwargs=dict(backend=config['backend'],fullgraph=True,dynamic=False)
+                    if config['backend']=='inductor':
+                        kwargs['options']={'fallback_random':True,'triton.cudagraphs':False,
+                            'epilogue_fusion':False,'shape_padding':False,'layout_optimization':False}
+                    self.compiled=torch.compile(model.forward,**kwargs)
+                except Exception as error:
+                    if isinstance(error,getattr(torch.cuda,'OutOfMemoryError',())): raise
+                    raise BackendFailure(type(error).__name__) from error
             if mode=='compile': return self.compiled(batch,validated_inputs=True)
             keys=tuple(sorted(batch));values=tuple(batch[k] for k in keys)
             signature=tuple((k,tuple(v.shape),str(v.dtype),str(v.device)) for k,v in zip(keys,values))
+            if self.expected_rows is not None and values[0].shape[0]<self.expected_rows:
+                # Preserve the full-microbatch graph across rare epoch tails.
+                # The complete mixed update still passes numerical validation.
+                self.tail_calls+=1;return self.eager(batch)
             if signature!=self.key:
                 self.clear()
                 if self.builds>=config['max_builds']: raise BackendFailure('Graph build budget exhausted')
@@ -196,8 +297,9 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
                         num_warmup_iters=config['graph_warmup'],allow_unused_input=True)
                     self.key=signature
                 except Exception as error:
+                    if isinstance(error,getattr(torch.cuda,'OutOfMemoryError',())): raise
                     raise BackendFailure(type(error).__name__) from error
                 finally:
                     torch.cuda.synchronize();set_rng(rng)
-            return self.graph(*values)
+            value=self.graph(*values);self.replays+=1;return value
     return Runtime()

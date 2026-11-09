@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import Mock,patch
 
 from experiments.baseline_delivery.common import atomic_json,digest,fingerprint,read
-from experiments.baseline_delivery.migration import SOURCE_REVISION,ACCELERATION_REVISION,snapshot,preserve_completed,verify_completed,admit,validate_source_admission
+from experiments.baseline_delivery.migration import SOURCE_REVISION,ACCELERATION_REVISION,WARMUP_REVISION,snapshot,preserve_completed,verify_completed,admit,validate_source_admission
 
 
 class CompletedMigrationTests(unittest.TestCase):
@@ -45,21 +45,21 @@ class CompletedMigrationTests(unittest.TestCase):
         with patch('experiments.baseline_delivery.migration.subprocess.check_output',side_effect=[SOURCE_REVISION,'']):
             return snapshot(self.source,self.target,self.cache)
 
-    def latest_admission(self):
+    def latest_admission(self,revision=ACCELERATION_REVISION):
         root=self.source.parent.parent
         policy_path=root/'experiments/baseline_delivery/fidelity-policy.json'
         atomic_json(policy_path,dict(models=['transformer'],reviewed_artifacts={}))
         policy_sha=digest(policy_path)
-        context=dict(source_revision=ACCELERATION_REVISION,cache=str(self.cache.resolve()),
+        context=dict(source_revision=revision,cache=str(self.cache.resolve()),
             policy_sha256=policy_sha,implementation_sha256='impl')
         atomic_json(self.source/'context.json',context)
-        manifest=read(self.source/'suite.json');manifest['source_revision']=ACCELERATION_REVISION
+        manifest=read(self.source/'suite.json');manifest['source_revision']=revision
         # First preserve the9a-style original completion inside an existing fork.
         from experiments.baseline_delivery.migration import completed_files
         entry=completed_files(self.folders[self.done],self.config)
         manifest['jobs'][0]['preserved_completion']=entry
         atomic_json(self.source/'migration-source/plan.json',dict(jobs={self.done:dict(completion=entry)}))
-        cfg=read(self.folders[self.waiting]/'config.json');cfg['source_revision']=ACCELERATION_REVISION
+        cfg=read(self.folders[self.waiting]/'config.json');cfg['source_revision']=revision
         atomic_json(self.folders[self.waiting]/'config.json',cfg)
         manifest['jobs'][1]['config_sha256']=fingerprint(cfg)
         atomic_json(self.source/'suite.json',manifest)
@@ -67,11 +67,11 @@ class CompletedMigrationTests(unittest.TestCase):
         cert=dict(model='transformer',policy_sha256=policy_sha,
             evidence={artifact.relative_to(root).as_posix():digest(artifact)})
         certificate=self.source/'transformer-certificate.json';atomic_json(certificate,cert)
-        atomic_json(self.source/'runtime-release.json',dict(source_revision=ACCELERATION_REVISION,
+        atomic_json(self.source/'runtime-release.json',dict(source_revision=revision,
             formal_run_allowed=True,policy_sha256=policy_sha,implementation_sha256='impl',
             certificates=dict(transformer=dict(path=certificate.relative_to(root).as_posix(),sha256=digest(certificate)))))
         atomic_json(self.source/'gate-evidence.json',dict(context=context,certificates=dict(transformer=cert)))
-        atomic_json(self.source/'gate-report.json',dict(status='passed',source_revision=ACCELERATION_REVISION,
+        atomic_json(self.source/'gate-report.json',dict(status='passed',source_revision=revision,
             evidence_sha256=digest(self.source/'gate-evidence.json')))
         return entry
 
@@ -89,6 +89,17 @@ class CompletedMigrationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'runtime evidence changed'):
             validate_source_admission(self.source,ACCELERATION_REVISION)
         self.assertEqual(artifact.read_bytes(),b'changed')
+
+    def test_current840_preserves_inherited_original_result_bytes(self):
+        expected=self.latest_admission(WARMUP_REVISION)
+        before={name:(self.folders[self.done]/name).read_bytes() for name in expected['files']}
+        with patch('experiments.baseline_delivery.migration.subprocess.check_output',side_effect=[WARMUP_REVISION,'']):
+            plan=snapshot(self.source,self.target,self.cache)
+        self.assertEqual(plan['source_revision'],WARMUP_REVISION)
+        preserve_completed(self.target,self.done)
+        for name,value in before.items(): self.assertEqual((self.target/'jobs'/self.done/name).read_bytes(),value)
+        (self.source/'proof.json').write_bytes(b'changed')
+        with self.assertRaises(ValueError): validate_source_admission(self.source,WARMUP_REVISION)
 
     def test_latest9ce_inherited_completion_requires_original_provenance(self):
         self.latest_admission();path=self.source/'migration-source/plan.json'

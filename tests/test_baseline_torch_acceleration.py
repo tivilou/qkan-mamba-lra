@@ -155,7 +155,7 @@ class AccelerationTests(unittest.TestCase):
                 Mock(),Mock(),lambda _:False,execution_key=key)
         for key in ((16,128),(16,128),(32,128),(32,128),(16,128)):
             update(key)
-        self.assertEqual(executor.compare.call_count,3)  # Graph recaptured on return to16.
+        self.assertEqual(executor.compare.call_count,2)  # Revalidate only if graph generation changes.
         self.assertFalse(any(e.get('phase')=='bounded_benchmark' for e in self.events))
 
     def test_shape_validation_budget_falls_back_instead_of_endless_trials(self):
@@ -199,7 +199,7 @@ class AccelerationTests(unittest.TestCase):
             if mode=='compile_graph': raise RecoveryMismatch('Recovery tensor differs at model.encoder')
             return [dict(torch_acceleration=dict(state=dict(mode=mode)))]
         selected,receipts,attempts=admit_recovery(original,probe)
-        self.assertEqual(calls,['compile_graph','compile']);self.assertEqual(selected['torch_acceleration'],policy('compile'))
+        self.assertEqual(calls,['compile_graph','compile_graph','compile']);self.assertEqual(selected['torch_acceleration'],policy('compile'))
         self.assertEqual(original['torch_acceleration'],policy());self.assertEqual(attempts[0]['outcome'],'recovery_mismatch')
 
     def test_failed_attempt_keeps_compact_diagnostic_even_if_fallback_passes(self):
@@ -225,15 +225,13 @@ class AccelerationTests(unittest.TestCase):
     def test_all_modes_fail_recovery_blocks_formal_run(self):
         probe=Mock(side_effect=RecoveryMismatch('differs'))
         with self.assertRaises(RecoveryMismatch): admit_recovery(dict(torch_acceleration=policy()),probe)
-        self.assertEqual(probe.call_count,3)
+        self.assertEqual(probe.call_count,5)
 
     def test_worker_fallback_is_retested_from_beginning_at_actual_shared_mode(self):
-        probe=Mock(side_effect=[
-            [dict(torch_acceleration=dict(state=dict(mode='compile'))),dict(torch_acceleration=dict(state=dict(mode='eager')))],
-            [dict(torch_acceleration=dict(state=dict(mode='eager')))]])
+        probe=Mock(return_value=[dict(torch_acceleration=dict(state=dict(mode='eager')))])
         selected,_,attempts=admit_recovery(dict(torch_acceleration=policy()),probe)
         self.assertEqual(selected['torch_acceleration'],policy('eager'))
-        self.assertEqual(probe.call_count,2);self.assertEqual(attempts[0]['outcome'],'worker_fallback')
+        self.assertEqual(probe.call_count,5);self.assertEqual(attempts[0]['outcome'],'worker_fallback')
 
     def test_data_trace_and_poisoned_context_errors_never_trigger_admission_fallback(self):
         for error in (ValueError('Trace semantic/replay gate failed'),RuntimeError('CUDA illegal memory access')):
@@ -276,6 +274,12 @@ class AccelerationTests(unittest.TestCase):
             with self.assertRaises(ValueError): admit_recovery(dict(torch_acceleration=policy()),lambda _:receipts)
 
     def test_real_readiness_route_binds_selected_mode_to_config_manifest_and_certificate(self):
+        self.readiness_route()
+
+    def test_migrated_readiness_requires_real_checkpoint_graph_and_binds_report_to_certificate(self):
+        self.readiness_route(migrated=True)
+
+    def readiness_route(self,migrated=False):
         from contextlib import ExitStack
         from pathlib import Path
         import os,tempfile
@@ -286,14 +290,30 @@ class AccelerationTests(unittest.TestCase):
             atomic_json(root/'experiments/baseline_delivery/protocol.json',{})
             atomic_json(suite/'transformer-source-probe.json',dict(passed=True,implementation_sha256='impl'))
             args=SimpleNamespace(migrate_from=None,adaptive_memory=True,dynamic_logical_batch=True,
-                performance=True,torch_acceleration=True,cache=root/'cache',gpus='0,1',gates_only=True)
+                performance=True,torch_acceleration=True,cache=root/'cache',gpus='0,1',gates_only=True,
+                require_graph=['transformer-retrieval-s42'] if migrated else [])
+            migration=dict(jobs={'transformer-retrieval-s42':dict(checkpoint=dict(sha256='native-checkpoint',step=12))}) if migrated else None
+            if migrated:
+                atomic_json(suite/'migration-source/plan.json',migration)
+                atomic_json(suite/'migration-source/transformer-retrieval-s42/config.json',{})
             calls=[]
             def canary(config,data,cache,folder,device):
                 mode=config['torch_acceleration']['mode'];gpu=os.environ['CUDA_VISIBLE_DEVICES'];calls.append((mode,gpu))
-                if mode=='compile_graph' and gpu=='1': raise RecoveryMismatch('Recovery tensor differs at model.weight')
+                if mode=='compile_graph' and gpu=='1' and (not migrated or config['torch_acceleration']['backend']=='inductor'):
+                    raise RecoveryMismatch('Recovery tensor differs at model.weight')
                 for name in ('uninterrupted','interrupted'): atomic_json(folder/name/'trace-validation.json',dict(passed=True))
                 return dict(passed=True,trace_semantic_and_replay=True,fresh_process=True,test_access=False,
                     config_sha256=fingerprint(config),torch_acceleration=dict(state=dict(mode=mode)))
+            def child(spec,log,env=None):
+                argv=spec['argv']
+                if '--acceleration-probe-source' in argv:
+                    from experiments.baseline_delivery.acceleration_calibration import finish_probe
+                    cfg=read(argv[argv.index('--config')+1]);output=Path(argv[argv.index('--output')+1])
+                    value=finish_probe(cfg,dict(step=12,migration=dict(source_checkpoint_sha256='native-checkpoint')),
+                        dict(mode='compile_graph',benchmarked=True,reason='benchmark_gain',
+                            benchmark=dict(eager_seconds=2.,accelerated_seconds=1.)),[],lambda:None,dict(graph_replays=7))
+                    atomic_json(output/'acceleration-probe.json',value)
+                return 0
             patches={
                 'experiments.baseline_delivery.readiness.ROOT':root,
                 'experiments.baseline_delivery.readiness.MODELS':('transformer',),
@@ -301,33 +321,39 @@ class AccelerationTests(unittest.TestCase):
                 'experiments.baseline_delivery.readiness.revision':lambda:'new',
                 'experiments.baseline_delivery.readiness.policy_check':lambda:('impl','policy'),
                 'experiments.baseline_delivery.readiness.validate_runtime_release':lambda *a:None,
-                'experiments.baseline_delivery.readiness.run_child':lambda *a:0,
+                'experiments.baseline_delivery.readiness.run_child':child,
                 'experiments.baseline_delivery.runner.canary':canary,
-                'experiments.baseline_delivery.runner.config_for':lambda *a:dict(model='transformer',task='retrieval',seed=42,batch_size=32),
+                'experiments.baseline_delivery.runner.config_for':lambda *a:dict(model='transformer',task='retrieval',seed=42,batch_size=32,source_revision='new'),
                 'experiments.baseline_delivery.runner.discover_gpus':lambda *a:(['0','1'],{'0':'gpu0','1':'gpu1'}),
                 'experiments.baseline_delivery.sync.prepare':lambda *a:root/'data',
                 'experiments.baseline_delivery.bootstrap.check_core':lambda:None,
                 'experiments.baseline_delivery.bootstrap.check_mamba':lambda:None,
-                'experiments.baseline_delivery.migration.plan_for':lambda *a:None,
+                'experiments.baseline_delivery.migration.plan_for':lambda *a:migration,
+                'experiments.baseline_delivery.migration.compatible':lambda *a:None,
                 'experiments.baseline_delivery.migration.admit':lambda *a:None,
                 'experiments.baseline_delivery.return_artifacts.upload_declared':lambda *a:None}
             for target,value in patches.items(): stack.enter_context(patch(target,value))
             stack.enter_context(patch.dict(os.environ,{},clear=False))
             readiness.execute(args,suite)
-            self.assertEqual(calls,[('compile_graph','0'),('compile_graph','1'),('compile','0'),('compile','1')])
+            expected_calls=[('compile_graph','0'),('compile_graph','1')]*2+([] if migrated else [('compile','0'),('compile','1')])
+            self.assertEqual(calls,expected_calls)
             job=suite/'jobs/transformer-retrieval-s42';config=read(job/'config.json')
-            self.assertEqual(config['torch_acceleration'],policy('compile'))
+            selected_policy=policy('compile_graph','aot_eager_default_partitioner','graph') if migrated else policy('compile')
+            self.assertEqual(config['torch_acceleration'],selected_policy)
             self.assertEqual(read(suite/'suite.json')['jobs'][0]['config_sha256'],fingerprint(config))
             certificate=read(suite/'transformer-certificate.json')
             self.assertIn((job/'acceleration-admission.json').relative_to(root).as_posix(),certificate['evidence'])
-            self.assertFalse(any('compile_graph' in name for name in certificate['evidence']))
+            if migrated:
+                self.assertEqual(len(read(suite/'gate-evidence.json')['real_checkpoint_calibrations']),3)
+                self.assertTrue(any('/calibration/' in name for name in certificate['evidence']))
+            else: self.assertFalse(any('compile_graph' in name for name in certificate['evidence']))
             # The real second readiness entry must consume its selected config,
             # retaining original fallback attempts and all certificate-bound bytes.
             original=(job/'acceleration-admission.json').read_bytes()
             sealed=(suite/'gate-evidence.json').read_bytes()
             readiness.execute(args,suite)
-            self.assertEqual(len(calls),4)
-            self.assertEqual(read(job/'config.json')['torch_acceleration'],policy('compile'))
+            self.assertEqual(len(calls),len(expected_calls))
+            self.assertEqual(read(job/'config.json')['torch_acceleration'],selected_policy)
             self.assertEqual((job/'acceleration-admission.json').read_bytes(),original)
             self.assertEqual((suite/'gate-evidence.json').read_bytes(),sealed)
 

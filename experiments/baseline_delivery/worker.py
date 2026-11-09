@@ -96,14 +96,28 @@ def evaluate(model,split,device,microbatch):
     return {'loss':loss/total,'accuracy':correct/total,'samples':total}
 
 
-def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False):
+def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None):
     with ExitStack() as resources:
-        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only)
+        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source)
 
 
-def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only):
+def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None):
     run_started_at=time.time()
     output=Path(output); output.mkdir(parents=True,exist_ok=True)
+    probe=acceleration_probe_source is not None
+    if probe:
+        from .common import ROOT
+        acceleration_probe_source=Path(acceleration_probe_source).resolve()
+        if (resume or synthetic or migration_check_only or stop_after is not None
+                or not acceleration_probe_source.is_relative_to((ROOT/'runs').resolve())
+                or not output.resolve().is_relative_to(acceleration_probe_source/'calibration')
+                or (output/'checkpoints').exists() or not config.get('torch_acceleration')):
+            raise ValueError('Compiler probe requires an isolated calibration directory and original migration snapshot')
+        from .readiness import policy_check
+        from .common import revision
+        from .acceleration_calibration import validate_context
+        implementation,review_policy=policy_check()
+        validate_context(acceleration_probe_source,config,revision(),implementation,review_policy)
     torch.set_num_threads(int(os.environ.get('QKAN_CPU_THREADS','1')))
     seed=config['seed']; random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
     if device.startswith('cuda'):
@@ -148,13 +162,14 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
            'history':[],'epoch_loss':0.,'epoch_correct':0,'epoch_samples':0,'update_trace':[],
            'training_seconds':0.,'training_complete':False,'amp':{'enabled':False,'scaler':None},
            'runtime':{'torch':torch.__version__,'numpy':np.__version__,'device_type':device.split(':')[0]}}
-    if resume or migration_check_only:
-        if migration_check_only:
+    if resume or migration_check_only or probe:
+        if migration_check_only or probe:
             if resume or synthetic or (output/'checkpoints/latest.json').exists():
                 raise ValueError('Migration check requires a new formal job without a target checkpoint')
             from .migration import load_state
             state=load_state(output,config,contract,lambda old:fingerprint(
-                {'config':old,'train':train.identity,'val':val.identity,'dictionary':dict_sha}),load_checkpoint)
+                {'config':old,'train':train.identity,'val':val.identity,'dictionary':dict_sha}),load_checkpoint,
+                migration_suite=acceleration_probe_source)
         else: state=load_checkpoint(output,contract)
         if state['runtime']!={'torch':torch.__version__,'numpy':np.__version__,'device_type':device.split(':')[0]}:
             raise ValueError('Runtime changed; exact resume is not certified across runtimes')
@@ -235,7 +250,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         rates=[group['lr'] for group in opt.param_groups]
         clock=SampleClock(config['epochs']*len(train),min(config['warmup_steps']*config['batch_size'],
             max(0,config['epochs']*len(train)-config['batch_size'])),
-            [group.get('initial_lr',config['lr']) for group in opt.param_groups],position,rates if (resume or migration_check_only) else None,
+            [group.get('initial_lr',config['lr']) for group in opt.param_groups],position,rates if (resume or migration_check_only or probe) else None,
             saved=state.get('sample_clock'),reference_batch=config['batch_size'])
         if clock.state['progress']!=position: raise ValueError('Sample clock and sampler cursor differ')
         schedule=TorchSampleSchedule(opt,clock)
@@ -258,6 +273,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             state_roundtrip='exact before first adaptive optimizer update',
             target_contract=contract,optimizer_steps_performed=0))
         return 0
+    if probe and (state['epoch']>=config['epochs'] or state['cursor']>=len(train)):
+        raise ValueError('Real-checkpoint calibration needs a pending update; validation/test access is forbidden')
     def evaluate_split(split):
         if adaptive:
             return adaptive_evaluate(adaptive,lambda micro:evaluate(model,split,device,micro),
@@ -273,14 +290,15 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         if dynamic: state['sample_clock']=clock.snapshot()
         if acceleration: state['torch_acceleration']=acceleration.snapshot()
         save_checkpoint(output,state);last_save=now
-    acceleration=None;active_snapshot=None
+    acceleration=None;active_snapshot=None;update_observation={}
     if config.get('torch_acceleration'):
         if not adaptive or not device.startswith('cuda'):
             raise ValueError('Torch acceleration requires the recoverable CUDA execution path')
         from .torch_acceleration import Executor,torch_runtime
         def publish_acceleration(value):
             atomic_json(output/'torch-acceleration.json',dict(policy=config['torch_acceleration'],state=value,
-                source_revision=config['source_revision'],step=state['step'],runtime=acceleration.runtime.status() if acceleration else {}))
+                source_revision=config['source_revision'],step=state['step'],runtime=acceleration.runtime.status() if acceleration else {},
+                diagnostics=acceleration.diagnostics if acceleration else []))
         profile_trial_active=None
         def profile_trial(enabled):
             nonlocal profile_trial_active
@@ -296,25 +314,40 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         def acceleration_state():
             return host(dict(model=model.state_dict(),optimizer=opt.state_dict(),
                 scheduler=schedule.state_dict(),rng=rng_state(),
-                gradients={name:p.grad for name,p in model.named_parameters()}))
-        def acceleration_compare(a,b):
-            if isinstance(a,torch.Tensor):
-                numerical=a.is_floating_point() or a.is_complex()
-                torch.testing.assert_close(a,b,rtol=1e-5 if numerical else 0,atol=1e-6 if numerical else 0)
-            elif isinstance(a,dict):
-                if not isinstance(b,dict) or a.keys()!=b.keys(): raise ValueError('Numerical state keys differ')
-                for key in a: acceleration_compare(a[key],b[key])
-            elif isinstance(a,(tuple,list)):
-                if type(a)!=type(b) or len(a)!=len(b): raise ValueError('Numerical state sequence differs')
-                for x,y in zip(a,b): acceleration_compare(x,y)
-            elif isinstance(a,np.ndarray):
-                if not isinstance(b,np.ndarray) or a.dtype!=b.dtype or not np.array_equal(a,b):
-                    raise ValueError('Numerical RNG array differs')
-            elif type(a)!=type(b) or a!=b: raise ValueError('Numerical control state differs')
+                gradients={name:p.grad for name,p in model.named_parameters()},observations=update_observation))
+        from .torch_acceleration import compare_update
+        def tensor_compare(a,b,path):
+            if not isinstance(a,torch.Tensor): return None
+            if not isinstance(b,torch.Tensor) or a.shape!=b.shape or a.dtype!=b.dtype:
+                return dict(kind='tensor_metadata')
+            numerical=(a.is_floating_point() or a.is_complex()) and not path.startswith('state/rng/')
+            close=torch.isclose(a,b,rtol=1e-5,atol=1e-6) if numerical else a==b
+            if bool(close.all()): return {}
+            delta=(a.to(torch.complex128 if a.is_complex() else torch.float64)-b).abs()
+            return dict(kind='floating_tensor' if numerical else 'exact_tensor',
+                finite=bool(torch.isfinite(a).all() and torch.isfinite(b).all()),
+                differing_elements=int((~close).sum()),elements=a.numel(),
+                max_abs=float(delta.max()) if delta.numel() and bool(torch.isfinite(delta).all()) else None)
+        def array_compare(a,b,path):
+            if not isinstance(a,np.ndarray): return None
+            return {} if isinstance(b,np.ndarray) and a.dtype==b.dtype and np.array_equal(a,b) else dict(kind='exact_rng_array')
+        def acceleration_compare(a,b): return compare_update(a,b,tensor_compare,array_compare)
         acceleration=Executor(torch_runtime(torch,model,rng_state,restore_rng,config['torch_acceleration']),
             config['torch_acceleration'],state.get('torch_acceleration'),synthetic,publish_acceleration,
             trial=profile_trial,read_state=acceleration_state,compare=acceleration_compare)
         publish_acceleration(acceleration.snapshot())
+    def finalize_probe():
+        from .runner import compare_states
+        from .acceleration_calibration import finish_probe
+        def verify_rollback():
+            opt.zero_grad(set_to_none=True);restore_update(active_snapshot)
+            for name,value in dict(model=model.state_dict(),optimizer=opt.state_dict(),
+                    scheduler=schedule.state_dict(),rng=rng_state()).items():
+                compare_states(host(active_snapshot[name]),host(value),name)
+        report=finish_probe(config,state,acceleration.snapshot(),acceleration.diagnostics,verify_rollback,
+            acceleration.runtime.status())
+        atomic_json(output/'acceleration-probe.json',report)
+        return 0 if report['passed'] else 76
     while state['epoch']<config['epochs']:
         if state['permutation'] is None:
             state['permutation']=torch.randperm(len(train))
@@ -344,6 +377,10 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     except torch.cuda.OutOfMemoryError:
                         torch.cuda.empty_cache()  # Keep CPU staging for microbatch transfer.
             def update_impl(micro_batch):
+                nonlocal update_observation
+                update_observation={}
+                if acceleration: acceleration.runtime.begin_update(micro_batch)
+                if acceleration and acceleration.validating: update_observation['logits']=[]
                 opt.zero_grad(set_to_none=True); update_loss=0.; update_correct=0;finite=True
                 for start in range(0,len(ids),micro_batch):
                     sub=ids[start:start+micro_batch]
@@ -360,11 +397,15 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                         if not torch.isfinite(loss): raise ValueError('Nonfinite loss')
                         update_loss+=loss.item()*len(ids)
                         update_correct+=int((logits.argmax(-1)==batch['labels']).sum())
+                    if acceleration and acceleration.validating:
+                        update_observation['logits'].append(logits.detach().cpu().clone())
                     with profile.phase('backward'): loss.backward()
                     if (acceleration and start==0 and not acceleration.reference
                             and acceleration.state['mode']=='compile_graph'):
                         acceleration.runtime.isolate_gradients()
                 if adaptive and not bool(finite): raise ValueError('Nonfinite loss')
+                if acceleration and acceleration.validating:
+                    update_observation['raw_gradients']=host({name:p.grad for name,p in model.named_parameters()})
                 with profile.phase('clip_optimizer_schedule'):
                     nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
                     opt.step()
@@ -380,15 +421,23 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             adaptive_status={}
             if adaptive:
                 torch.cuda.reset_peak_memory_stats()
-                (update_loss,update_correct),adaptive_status=transaction(adaptive,update,capture_update,
-                    restore_update,cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
-                    memory,torch.cuda.synchronize,started_at=update_started,samples=len(ids))
+                from .torch_acceleration import AccelerationRequired
+                try:
+                    (update_loss,update_correct),adaptive_status=transaction(adaptive,update,capture_update,
+                        restore_update,cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
+                        memory,torch.cuda.synchronize,started_at=update_started,samples=len(ids))
+                except AccelerationRequired:
+                    if not probe: raise
+                    return finalize_probe()
                 adaptive_status.update(rollback_device='cpu' if rollback.cpu else 'gpu',
                     batch_staging='gpu' if all(value.is_cuda for value in staged.values()) else 'cpu',cpu_prefetch=1)
                 if acceleration:
                     adaptive_status['torch_acceleration']=acceleration.snapshot()
                 state['adaptive_peak_bytes']=max(state.get('adaptive_peak_bytes',0),adaptive_status['peak_bytes'])
             else: update_loss,update_correct=update(config['micro_batch'])
+            if probe:
+                # Discard this real-data update before cursor/sample/step or save.
+                return finalize_probe()
             if profile.finish((adaptive.state['oom_count']-retries_before) if adaptive else 0):
                 atomic_json(output/'performance-profile.json',dict(profile.report(),
                     config_sha256=fingerprint(config),source_revision=config['source_revision'],
@@ -474,15 +523,16 @@ def main():
     parser.add_argument('--device',required=True);parser.add_argument('--resume',action='store_true')
     parser.add_argument('--synthetic',action='store_true');parser.add_argument('--stop-after',type=int)
     parser.add_argument('--migration-check-only',action='store_true')
+    parser.add_argument('--acceleration-probe-source',type=Path)
     args=parser.parse_args()
-    if not args.synthetic:
+    if not args.synthetic and not args.acceleration_probe_source:
         from .runner import check_release
         check_release(read(args.config))
     for sig in (signal.SIGTERM,signal.SIGINT): signal.signal(sig,request_pause)
     if hasattr(signal,'SIGHUP'): signal.signal(signal.SIGHUP,request_pause)
     try:
         with lock(args.output/'worker.lock'):
-            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic,args.migration_check_only)
+            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic,args.migration_check_only,args.acceleration_probe_source)
     except Exception as error:
         from .common import worker_failure
         worker_failure(args.output,error)

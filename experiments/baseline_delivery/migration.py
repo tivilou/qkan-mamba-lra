@@ -15,24 +15,25 @@ SOURCE_REVISION='31639c014a62504f6596e75cf56a1abd5068bce4'
 ADAPTIVE_REVISION='96e542dd527b777d7690f6602fa1d14530957f85'
 DYNAMIC_REVISION='9a147cd70cedf1511de89d0381dfbdabac3274f2'
 ACCELERATION_REVISION='9ce7f00d45d2e38b73194ca7dfbf379fc05fd5fb'
+WARMUP_REVISION='840430a414bcf8bd6eb7c4b9c105e689578b1780'
 
 
 def compatible(old,new):
-    if old.get('source_revision')==ACCELERATION_REVISION:
-        from .torch_acceleration import policy as acceleration_policy
+    if old.get('source_revision') in (ACCELERATION_REVISION,WARMUP_REVISION):
+        from .torch_acceleration import policy as acceleration_policy,legacy_policy
         from .performance import policy as performance_policy
         from .logical_batch import policy as logical_policy
         if (old.get('performance')!=performance_policy()
                 or old.get('adaptive_memory')!=logical_policy(old['batch_size'])):
-            raise ValueError('Compiler migration requires the admitted9ce execution policies')
+            raise ValueError('Compiler migration requires the admitted9ce/840 execution policies')
         expected={**old,'source_revision':new['source_revision']}
         if old['model']!='s5':
             mode=(old.get('torch_acceleration') or {}).get('mode')
-            legacy=acceleration_policy(mode)
-            legacy.pop('update_warmup');legacy.pop('validation');legacy['schema']='qkan-torch-acceleration.v1'
+            legacy=legacy_policy(mode,1 if old['source_revision']==ACCELERATION_REVISION else 2)
             if old.get('torch_acceleration')!=legacy:
-                raise ValueError('Original9ce compiler policy differs')
-            expected['torch_acceleration']=acceleration_policy(new.get('torch_acceleration',{}).get('mode'))
+                raise ValueError('Original9ce/840 compiler policy differs')
+            target=new.get('torch_acceleration',{})
+            expected['torch_acceleration']=acceleration_policy(target.get('mode'),target.get('backend'),target.get('required'))
         elif old.get('torch_acceleration'):
             raise ValueError('S5 cannot inherit a Torch execution policy')
         if new!=expected: raise ValueError('Compiler migration changed scientific configuration')
@@ -45,7 +46,8 @@ def compatible(old,new):
                 or old.get('adaptive_memory')!=logical_policy(old['batch_size']) or old['model']=='s5'):
             raise ValueError('Acceleration migration requires the dynamic9a Torch executor')
         expected={**old,'source_revision':new['source_revision'],'performance':performance_policy(),
-            'torch_acceleration':acceleration_policy(new['torch_acceleration'].get('mode'))}
+            'torch_acceleration':acceleration_policy(new['torch_acceleration'].get('mode'),
+                new['torch_acceleration'].get('backend'),new['torch_acceleration'].get('required'))}
         if expected!=new: raise ValueError('Acceleration migration changed scientific configuration')
         return
     if new.get('performance'):
@@ -207,14 +209,14 @@ def snapshot(source,suite,cache):
     source_root=source.parent.parent
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip()
     dirty=subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=source_root,text=True).strip()
-    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION,DYNAMIC_REVISION,ACCELERATION_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
+    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION,DYNAMIC_REVISION,ACCELERATION_REVISION,WARMUP_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
     destination=suite/'migration-source'
     if destination.exists(): raise ValueError('Migration snapshot already exists; resume the new suite')
     pending=suite/('migration-pending-'+uuid.uuid4().hex)
     with ExitStack() as held:
         for path in (source/'progress-supervisor.lock',source/'suite.lock'):
             held.enter_context(lock(path))
-        if revision==ACCELERATION_REVISION: validate_source_admission(source,revision)
+        if revision in (ACCELERATION_REVISION,WARMUP_REVISION): validate_source_admission(source,revision)
         context=read(source/'context.json');manifest=read(source/'suite.json');gate=read(source/'gate-report.json')
         if (context.get('source_revision')!=revision
                 or manifest.get('source_revision')!=revision or gate.get('status')!='passed'
@@ -281,9 +283,9 @@ def plan_for(suite):
     return read(path) if path.exists() else None
 
 
-def load_state(output,config,contract,original_contract,loader):
+def load_state(output,config,contract,original_contract,loader,migration_suite=None):
     """Native worker rebinds only contract metadata after exact config validation."""
-    output=Path(output);suite=output.parent.parent;plan=plan_for(suite)
+    output=Path(output);suite=Path(migration_suite) if migration_suite else output.parent.parent;plan=plan_for(suite)
     if plan is None: raise ValueError('Missing explicit migration snapshot')
     record=plan['jobs'][output.name];folder=suite/'migration-source'/output.name
     old=read(folder/'config.json');compatible(old,config)
@@ -309,7 +311,7 @@ def load_state(output,config,contract,original_contract,loader):
             if not state.get('sample_clock') or not state.get('adaptive_memory'):
                 raise ValueError('Dynamic source lacks sample clock/controller; refusing schedule reset')
             lineage['execution_policy']='FP32 lookahead/pinned staging; sample clock and controller preserved'
-            if old.get('source_revision')==ACCELERATION_REVISION and config.get('torch_acceleration'):
+            if old.get('source_revision') in (ACCELERATION_REVISION,WARMUP_REVISION) and config.get('torch_acceleration'):
                 lineage['previous_torch_acceleration']=state.pop('torch_acceleration',None)
                 lineage['backend_recertification']='new process-local warmup; fresh recovery admission; no optimizer updates'
         else:

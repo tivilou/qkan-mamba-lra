@@ -79,6 +79,13 @@ def execute(args,suite):
     if args.dynamic_logical_batch: identity['dynamic_logical_batch']=True
     if args.performance: identity['performance']=True
     if args.torch_acceleration: identity['torch_acceleration']=True
+    require_graph=sorted(set(getattr(args,'require_graph',[])))
+    require_compile=sorted(set(getattr(args,'require_acceleration',[])))
+    known={m+'-'+t+'-s42' for m in MODELS if m!='s5' for t in TASKS}
+    if (set(require_graph+require_compile)-known or ((require_graph or require_compile) and not args.torch_acceleration)):
+        raise ValueError('Acceleration requirements need declared Torch jobs and --torch-acceleration')
+    if require_graph: identity['require_graph']=require_graph
+    if require_compile: identity['require_acceleration']=require_compile
     if migration: identity['migration_sha256']=digest(suite/'migration-source/plan.json')
     if context.exists() and read(context)!=identity: raise ValueError('Readiness resume identity changed')
     atomic_json(context,identity)
@@ -110,6 +117,8 @@ def execute(args,suite):
         for task in TASKS:
             job_id=model+'-'+task+'-s42';job=suite/'jobs'/job_id;job.mkdir(parents=True,exist_ok=True)
             if migration and migration['jobs'][job_id].get('completion'):
+                if job_id in require_graph+require_compile:
+                    raise ValueError('Acceleration requirements apply only to unfinished jobs')
                 from .migration import preserve_completed
                 jobs.append(preserve_completed(suite,job_id));statuses[job_id]=dict(state='computed',preserved=True)
                 print('Preserved completed result: '+job_id+' | original revision '+jobs[-1]['preserved_completion']['source_revision'],flush=True)
@@ -126,11 +135,12 @@ def execute(args,suite):
                 config['performance']=performance_policy()
             if args.torch_acceleration and model!='s5':
                 from .torch_acceleration import policy as acceleration_policy
-                config['torch_acceleration']=acceleration_policy()
+                required='graph' if job_id in require_graph else ('compile' if job_id in require_compile else None)
+                config['torch_acceleration']=acceleration_policy(required=required)
                 if cfg.exists():
                     saved=read(cfg)
-                    selected=saved.get('torch_acceleration',{}).get('mode')
-                    expected={**config,'torch_acceleration':acceleration_policy(selected)}
+                    selected=saved.get('torch_acceleration',{})
+                    expected={**config,'torch_acceleration':acceleration_policy(selected.get('mode'),selected.get('backend'),required)}
                     if saved!=expected: raise ValueError('Job configuration changed')
                     config=expected
             if migration:
@@ -140,12 +150,13 @@ def execute(args,suite):
                 receipts=[]
                 for gpu in gpus:
                     mode=(config.get('torch_acceleration') or {}).get('mode')
-                    folder=suite/'preflight'/(fingerprint(inventory[gpu])[:12]+('-'+mode if mode else ''))/job_id
+                    backend=(config.get('torch_acceleration') or {}).get('backend')
+                    folder=suite/'preflight'/(fingerprint(dict(gpu=inventory[gpu],config=config))[:12]+('-'+mode if mode else ''))/job_id
                     folders[gpu]=folder
                     if not (folder/'canary.json').exists():
                         print('Recovery/trace gate: '+job_id+' GPU '+gpu+
                             (' | logical32/64/128; fresh-process restore' if args.dynamic_logical_batch else '')+
-                            (' | '+mode if mode else ''),flush=True)
+                            (' | '+mode+' / '+backend if mode else ''),flush=True)
                         if folder.exists(): folder.rename(folder.with_name(folder.name+'.failed-'+uuid.uuid4().hex[:8]))
                         previous=os.environ.get('CUDA_VISIBLE_DEVICES');os.environ['CUDA_VISIBLE_DEVICES']=gpu
                         try:
@@ -160,6 +171,11 @@ def execute(args,suite):
                         or receipt['test_access'] or receipt['config_sha256']!=fingerprint(config)
                         or receipt.get('implementation_sha256')!=implementation or receipt.get('gpu_identity')!=inventory[gpu]):
                         raise ValueError('Recovery/trace gate does not bind job/device: '+job_id)
+                    if migration and config.get('torch_acceleration'):
+                        from .acceleration_calibration import calibrate
+                        from .common import child_spec
+                        calibrate(suite,job_id,config,data,args.cache,gpu,inventory[gpu],
+                            migration['jobs'][job_id],run_child,child_spec)
                     receipts.append(receipt)
                 return receipts
             if config.get('torch_acceleration'):
@@ -176,10 +192,16 @@ def execute(args,suite):
                     config,receipts,attempts=admit_recovery(config,recovery_probe)
                     atomic_json(admission,dict(schema='qkan-acceleration-admission.v1',attempts=attempts,
                         selected_mode=config['torch_acceleration']['mode'],config_sha256=fingerprint(config),
+                        selected_backend=config['torch_acceleration']['backend'],required=config['torch_acceleration']['required'],
                         devices=gpus,agreement='existing recovery standard unchanged',passed=True))
                 probe_evidence[model][admission.relative_to(ROOT).as_posix()]=digest(admission)
-                print('Recovery-admitted backend: '+job_id+' | '+config['torch_acceleration']['mode'],flush=True)
+                print('Recovery-admitted backend: '+job_id+' | '+config['torch_acceleration']['mode']+
+                    ' / '+config['torch_acceleration']['backend'],flush=True)
             else: receipts=recovery_probe(config)
+            # Retain all immutable profile diagnostics on readiness reentry too;
+            # selected-only reconstruction would change certificate-bound bytes.
+            for calibrated in sorted((suite/'calibration').glob('*/'+job_id+'/acceleration-probe.json')):
+                probe_evidence[model][calibrated.relative_to(ROOT).as_posix()]=digest(calibrated)
             if migration:
                 compatible(read(suite/'migration-source'/job_id/'config.json'),config)
             if cfg.exists() and read(cfg)!=config: raise ValueError('Job configuration changed')
@@ -225,6 +247,8 @@ def execute(args,suite):
         recovery=[read(p) for p in sorted((suite/'preflight').glob('*/*/canary.json'))],
         acceleration_admissions=[dict(job=p.parent.name,report=read(p))
             for p in sorted((suite/'jobs').glob('*/acceleration-admission.json'))],
+        real_checkpoint_calibrations=[dict(job=p.parent.name,report=read(p))
+            for p in sorted((suite/'calibration').glob('*/*/acceleration-probe.json'))],
         certificates={m:read(suite/(m+'-certificate.json')) for m in MODELS})
     if migration_report: compact['migration']=migration_report
     atomic_json(suite/'gate-evidence.json',compact)
@@ -242,10 +266,12 @@ def main():
     p.add_argument('--resume',type=Path);p.add_argument('--gates-only',action='store_true')
     p.add_argument('--output',type=Path,help='Explicit NEW suite path under runs/')
     p.add_argument('--adaptive-memory',action='store_true',help='New adaptive trajectory; cannot resume a fixed-policy suite')
-    p.add_argument('--migrate-from',type=Path,help='Fork paused admitted31639c0/adaptive96e542d, or dynamic9a147cd with --performance, into a new suite')
+    p.add_argument('--migrate-from',type=Path,help='Fork a paused admitted31639c0/96e542d/9a147cd/9ce7f00/840430a suite; preserve completed results and latest full state')
     p.add_argument('--dynamic-logical-batch',action='store_true',help='New sample-scheduled logical32/64/128 trajectory')
     p.add_argument('--performance',action='store_true',help='FP32 bounded lookahead, reusable pinned staging and first16 update profile')
     p.add_argument('--torch-acceleration',action='store_true',help='Optional Inductor plus bounded forward/backward CUDA Graph; S5 keeps native JAX')
+    p.add_argument('--require-graph',action='append',default=[],metavar='JOB_ID',help='Require measured real-checkpoint Graph gain; never silently train this job eager')
+    p.add_argument('--require-acceleration',action='append',default=[],metavar='JOB_ID',help='Require measured compile or Graph gain for this job')
     args=p.parse_args()
     if args.torch_acceleration: args.performance=True
     if args.performance: args.dynamic_logical_batch=True
@@ -278,6 +304,13 @@ def main():
                     ],
                 acceleration_diagnostics=[dict(job=p.parent.parent.name,report=read(p))
                     for p in sorted((suite/'preflight').glob('*/*/*/torch-acceleration.json'))],
+                compiler_admission_diagnostic=getattr(error,'diagnostic',None),
+                real_checkpoint_calibrations=[dict(job=p.parent.name,report=read(p))
+                    for p in sorted((suite/'calibration').glob('*/*/acceleration-probe.json'))],
+                calibration_errors=[dict(job=p.parent.name,report=read(p))
+                    for p in sorted((suite/'calibration').glob('*/*/worker-error.json'))],
+                calibration_runtime_diagnostics=[dict(job=p.parent.name,report=read(p))
+                    for p in sorted((suite/'calibration').glob('*/*/torch-acceleration.json'))],
                 setup_diagnostic=summarize(suite/'setup.log'),formal_release_allowed=False))
             if args.adaptive_memory:
                 failure_report=read(failure/'failure.json')
