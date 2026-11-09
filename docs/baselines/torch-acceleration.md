@@ -1,6 +1,16 @@
 # Torch 编译、CUDA Graph 与真实断点校准
 
-2026-11-09 最新自动回传`failure-580268ade788`确认：e07a91c的Graph/Dynamo原生反向已通过合成数据的精确恢复，实际回放200/224次；真实断点在micro-batch16的注意力Graph捕获处出现`rng_capture`错误，尚未回放，未比较或测速。原断点已精确回滚，准备Suite `runs/adaptive-migrated-20261109T122440Z-221992`没有启动正式训练。Inductor仍有精确恢复差异，AOT仍有数值/RNG差异。原840训练源保持`runs/adaptive-migrated-20261109T045101Z-183941`、Retrieval step12683及两个原9a完成结果。最新边界见`docs/evidence/compiler-graph-rng-capacity-20261109.json`；原生提速尚未成立。
+2026-11-09 最新自动回传`failure-37b2622a59ef`确认：d808f0a的Graph/Dynamo原生反向已通过合成精确恢复及真实断点数值/RNG检查，真实校准实际回放80次，捕获错误已不再出现。这次失败原因是无测速收益：普通执行8.7803204656秒/更新，Graph8.8010682687秒/更新，慢约0.236%。原断点精确回滚，提交样本/更新为0，准备Suite `runs/adaptive-migrated-20261109T134728Z-225944`没有启动正式训练。Inductor仍有精确恢复差异，AOT仍有数值/RNG差异。原840训练源保持`runs/adaptive-migrated-20261109T045101Z-183941`、Retrieval step12683及两个原9a完成结果。最新边界见`docs/evidence/compiler-calibration-measurement-20261109.json`；不能将能回放Graph称为已有加速。
+
+## v5：校准回滚复用与收益诊断
+
+上一版每轮校准回滚清空CUDA缓存，再经CPU复制重建Adam。v5先检查完整优化器状态结构、参数顺序及张量形状/类型；一致时把备份值复制回原有Adam存储，并恢复原参数组控制值。不会把备份张量直接安装到优化器，也不会与备份共享可变存储。CPU备份可复制回原GPU矩；新建/惰性状态等结构不匹配时，仍走原有独立加载路径，真实OOM仍保留CPU回退。模型/Adam/RNG和完整回滚标准不变。这主要减少校准准备开销并保留热分配器状态，尚未证明正式训练每步因此更快。
+
+测速仍为一次预热和两个测量对；每次恢复之后先同步GPU，再开始完整更新计时，结束再同步，排除队列中未完成的回滚复制。两个测量对按普通→Graph、Graph→普通交换顺序，记录每次原始耗时、执行次序、中央值及收益比例。不会重测直到碰巧得到正收益，也不放宽正收益要求。两个短测量对不构成长期或统计显著性证明。
+
+若正确性通过但仍无收益，保留Graph，在同一完整快照上额外剖析一次普通更新和一次候选更新，分别回滚；不访问验证/测试，不提交训练更新。只回传前向/损失、反向、裁剪/优化器/调度的主机与CUDA流计时、更新总耗时和分配器数值摘要。这两次诊断不计入准入测速，峰值显存标明覆盖整个外层更新。报告自动随原failure.json返回；终端明确显示“数值/RNG已通过，但无收益”，避免只看到泛化的加速失败。
+
+纯Graph主要减少提交开销；若实际瓶颈是长序列的GPU计算，本身没有必然提速。只有新的阶段证据才能支持后续具体优化；本版不承诺原生Graph通过收益门槛或大幅加速。
 
 ## v4：Retrieval分图与随机数容量
 
@@ -34,10 +44,10 @@ Graph捕获保留原生OOM类型。任务要求Graph时，OOM先释放图池，�
 
 ## 从当前840断点交付
 
-截图中的e07脚本已经退出，无需再次Ctrl+C。下面从该目录取新版代码，建立独立工作目录，并从原840 Suite最新完整断点迁移，保留其step12683及两个完成结果；通过全部剩余任务验收和真实断点校准后自动启动训练。若后来另行恢复了原840训练，须先安全暂停并等待保存，再执行本组命令。不要把失败的e07准备Suite当作训练源，也不要再次使用历史9ce或原9a Suite。
+截图中的d808脚本已经退出，无需再次Ctrl+C。下面从该目录取新版代码，建立独立工作目录，并从原840 Suite最新完整断点迁移，保留其step12683及两个完成结果；通过全部剩余任务验收和真实断点校准后自动启动训练。若后来另行恢复了原840训练，须先安全暂停并等待保存，再执行本组命令。不要把失败的d808准备Suite当作训练源，也不要再次使用历史9ce或原9a Suite。
 
 ```bash
-cd /root/projects/qkan-mamba-lra-adaptive-e07a91c7876e &&
+cd /root/projects/qkan-mamba-lra-adaptive-d808f0a4dbc8 &&
 test -d /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 &&
 git fetch origin research/collaboration-foundation &&
 git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
@@ -50,7 +60,7 @@ bash scripts/migrate_torch_acceleration.sh \
   --require-graph transformer-retrieval-s42
 ```
 
-原840和e07执行代码保持各自版本；只向被Git忽略的.bootstrap写准备脚本。新版目录共享既有离线环境和源码资产，代码、证书及新Suite独立。迁移认证原policy/certificates/gate-evidence及其哈希，沿用完成结果的原始字节和来源，不重新训练或改称新版结果。模型、Adam、RNG、采样顺序/游标、样本学习率时钟、OOM控制器和迁移历史保留；旧compiler选择归档后重新准入。总计25任务、100epochs和样本预算保持声明值。
+原840和d808执行代码保持各自版本；只向被Git忽略的.bootstrap写准备脚本。新版目录共享既有离线环境和源码资产，代码、证书及新Suite独立。迁移认证原policy/certificates/gate-evidence及其哈希，沿用完成结果的原始字节和来源，不重新训练或改称新版结果。模型、Adam、RNG、采样顺序/游标、样本学习率时钟、OOM控制器和迁移历史保留；旧compiler选择归档后重新准入。总计25任务、100epochs和样本预算保持声明值。
 
 记下新Suite和工作目录；后续普通同版本续跑只用它的`formal_progress.py --resume`入口，不再次迁移。校准失败的报告自动发往`formal-readiness/failure-*`；正式worker因后端要求停止时，紧凑数值和错误类型报告发往`admitted-entry`。数据、权重、原始训练日志、原始trace和凭证不进入这些诊断。
 
@@ -62,7 +72,7 @@ bash scripts/migrate_torch_acceleration.sh \
 
 ## 验证边界
 
-所有权重、数据和原生Torch/JAX运行均留在师弟服务器；本机只运行标准库、注入模拟、AST、CLI与身份哈希检查，不导入模型框架、不查GPU、不安装依赖、不训练。v4代码交付及模拟通过不等于原生Graph通过或持续提速。无AMP、TF32、注意力替换、新依赖或运行时公网fallback。提交的release保持关闭，原生证据只在协作者验收通过后产生。
+所有权重、数据和原生Torch/JAX运行均留在师弟服务器；本机只运行标准库、注入模拟、AST、CLI与身份哈希检查，不导入模型框架、不查GPU、不安装依赖、不训练。v5代码交付及模拟通过不等于原生Graph通过收益门槛或持续提速。无AMP、TF32、注意力替换、新依赖或运行时公网fallback。提交的release保持关闭，原生证据只在协作者验收通过后产生。
 
 固定官方API依据：[PyTorch v2.7.1 AOT后端](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_dynamo/backends/debugging.py)、[CUDA Graph](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py)、[Inductor配置](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/config.py)。后端可用性仍由各自已安装的原生环境判断。
 

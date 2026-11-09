@@ -70,3 +70,38 @@ class RollbackBuffer:
         self.buffer=self._copy(value,self.buffer);return self.buffer
 
     def release(self): self.buffer=None
+
+
+def restore_optimizer_in_place(torch,optimizer,saved):
+    """Reuse live Adam tensor storage when the complete state structure matches.
+
+    Preflight everything before copying. A changed/lazy state uses the existing
+    load_state_dict fallback. Snapshot tensors are never installed into live
+    state, so a later update cannot overwrite the rollback buffer.
+    """
+    current=optimizer.state_dict()
+    def compatible(source,target):
+        if isinstance(source,torch.Tensor):
+            return isinstance(target,torch.Tensor) and source.shape==target.shape and source.dtype==target.dtype
+        if type(source)!=type(target): return False
+        if isinstance(source,dict):
+            return source.keys()==target.keys() and all(compatible(v,target[k]) for k,v in source.items())
+        if isinstance(source,(list,tuple)):
+            return len(source)==len(target) and all(compatible(a,b) for a,b in zip(source,target))
+        return True
+    if not compatible(saved,current): return False
+    if any(a['params']!=b['params'] for a,b in zip(saved['param_groups'],current['param_groups'])): return False
+    def restore(source,target):
+        if isinstance(source,torch.Tensor): target.copy_(source);return target
+        if isinstance(source,dict):
+            for k,v in source.items(): target[k]=restore(v,target[k])
+            return target
+        if isinstance(source,(list,tuple)):
+            items=[restore(a,b) for a,b in zip(source,target)]
+            return tuple(items) if isinstance(source,tuple) else items
+        return copy.deepcopy(source)
+    restore(saved['state'],current['state'])
+    for source,target in zip(saved['param_groups'],optimizer.param_groups):
+        for key,value in source.items():
+            if key!='params': target[key]=copy.deepcopy(value)
+    return True

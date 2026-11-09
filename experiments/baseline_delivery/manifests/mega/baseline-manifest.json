@@ -37,11 +37,11 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "78241681bceb5b742c17c118741fc798f4ef261841f578b0160248162e8757cb"
+        "sha256": "ecd3d974db297f2f673a9e1d7880c1cfbed483e3084e834e130111285da55572"
       },
       {
         "path": "experiments/baseline_delivery/execution.py",
-        "sha256": "9277d9d7e7a81ab96e1480a1ce91e2e5770695f6bb449700738c614fa94da21f"
+        "sha256": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea"
       },
       {
         "path": "experiments/baseline_delivery/data.py",
@@ -101,7 +101,7 @@
       },
       {
         "path": "experiments/baseline_delivery/torch_acceleration.py",
-        "sha256": "0293c964123bc3943dfdc93fe5759980671ad5ed27f986973ec40a306a24cf62"
+        "sha256": "60ea866fa189802edf4fa4aff2215583cdf1809eb1da9e5ee57b7943db7af177"
       },
       {
         "path": "tests/test_baseline_torch_acceleration.py",
@@ -113,7 +113,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "f7456c28c4e3a4252e6276b5e3ffb53d563cb07a6e1565464583a7461f09f7fa"
+        "sha256": "16cc1e1d6a01eeb32b625fdcef5b8ea17a087533af3c2038dfb9d014db772dfe"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -138,6 +138,10 @@
       {
         "path": "tests/test_baseline_graph_rng_capacity.py",
         "sha256": "75acd799016f0c4f04cc14d0e1d5ecd1d4181fbe5e8699385f2d87cdaa38c386"
+      },
+      {
+        "path": "tests/test_baseline_calibration_timing.py",
+        "sha256": "9835d32d2c082c74d60385a0e0a66f866aac40fb66b941adbc19dca287a29b13"
       }
     ]
   },

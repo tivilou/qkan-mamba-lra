@@ -19,15 +19,17 @@ def policy(mode='compile_graph',backend='inductor',required=None):
     if mode not in MODES: raise ValueError('Unsupported acceleration mode')
     if backend not in BACKENDS or required not in (None,'compile','graph'):
         raise ValueError('Unsupported compiler requirement')
-    return dict(schema='qkan-torch-acceleration.v4',mode=mode,backend=backend,required=required,
+    return dict(schema='qkan-torch-acceleration.v5',mode=mode,backend=backend,required=required,
         dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=2,
         benchmark_pairs=2,precision='fp32',max_builds=8,
-        update_warmup=1,validation='each_execution_shape',graph_partition='native_retrieval_documents')
+        update_warmup=1,validation='each_execution_shape',graph_partition='native_retrieval_documents',
+        measurement='balanced_synchronized.v1',no_gain_profile=True)
 
 
 def legacy_policy(mode,version):
     value=policy(mode);value.pop('required');value['schema']='qkan-torch-acceleration.v'+str(version)
     value.pop('graph_partition');value['max_graphs']=1
+    value.pop('measurement');value.pop('no_gain_profile')
     if version==1: value.pop('update_warmup');value.pop('validation')
     if version not in (1,2): raise ValueError('Unsupported historical compiler policy')
     return value
@@ -152,6 +154,18 @@ def allowed(mode,required):
     return required is None or mode=='compile_graph' or (required=='compile' and mode=='compile')
 
 
+def calibration_summary(report):
+    """Explain a measured rejection using bounded numbers, never raw errors."""
+    actual=report.get('actual') or {};benchmark=actual.get('benchmark') or {}
+    if actual.get('reason')!='benchmark_no_gain': return None
+    eager=benchmark.get('eager_seconds');candidate=benchmark.get('accelerated_seconds')
+    if (not isinstance(eager,(int,float)) or not isinstance(candidate,(int,float))
+            or not 0<eager<=candidate<float('inf')): return None
+    agreement='数值/RNG已通过' if actual.get('eager_agreement')=='passed_rtol1e-5_atol1e-6_rng_exact' else '见数值诊断'
+    return (f'真实断点校准：{agreement}；普通执行 {eager:.6f}s，候选 {candidate:.6f}s，'
+        f'慢 {(candidate/eager-1)*100:.3f}%；未达到正收益要求，未启动正式训练。')
+
+
 def admit_recovery(config,probe):
     """All devices must pass fresh-process recovery at one shared mode ceiling."""
     candidate=copy.deepcopy(config);attempts=[]
@@ -168,6 +182,8 @@ def admit_recovery(config,probe):
         except RecoveryMismatch as error:
             attempts.append(dict(mode=mode,backend=backend,outcome='recovery_mismatch',detail=str(error)[:160]))
             if hasattr(error,'diagnostic'): attempts[-1]['diagnostic']=error.diagnostic
+            message=calibration_summary(getattr(error,'diagnostic',{}))
+            if message: print(message,flush=True)
             if mode=='eager': raise
             continue
         actual=[r['torch_acceleration']['state']['mode'] for r in receipts]
@@ -194,7 +210,7 @@ def fatal_cuda(error):
 
 class Executor:
     """Framework-free control plane; all trial optimizer updates are rolled back."""
-    def __init__(self,runtime,config,saved=None,synthetic=False,publish=lambda _:None,clock=time.perf_counter,trial=lambda _:None,read_state=None,compare=None):
+    def __init__(self,runtime,config,saved=None,synthetic=False,publish=lambda _:None,clock=time.perf_counter,trial=lambda _:None,read_state=None,compare=None,diagnose=None):
         if config!=policy(config.get('mode'),config.get('backend'),config.get('required')): raise ValueError('Unsupported Torch acceleration policy')
         self.runtime=runtime;self.config=config;self.synthetic=synthetic;self.publish=publish;self.clock=clock;self.trial=trial
         self.state=dict(saved) if saved else dict(mode=config['mode'],benchmarked=False,reason='requested',benchmark=None)
@@ -204,6 +220,7 @@ class Executor:
         self.reference=False;self.used=False;self.runtime.set_mode(self.state['mode'])
         self.read_state=read_state;self.compare=compare;self.validated=set();self.checks=0
         self.enforce=not synthetic;self.diagnostics=[];self.validating=False
+        self.diagnose=diagnose
 
     def snapshot(self): return dict(self.state)
 
@@ -260,21 +277,33 @@ class Executor:
                 if not self.synthetic and not self.state['benchmarked'] and self.state['mode']!='eager':
                     self.publish(dict(self.snapshot(),phase='bounded_benchmark'))
                     self.trial(True)
-                    samples={True:[],False:[]}
+                    samples={True:[],False:[]};orders=[]
                     # One warmup and two measured pairs. Same RNG/optimizer/samples.
                     for pair in range(self.config['benchmark_pairs']+1):
-                        for reference in (True,False):
-                            self.reference=reference;restored();start=self.clock()
+                        order=(False,True) if pair and pair%2==0 else (True,False)
+                        if pair: orders.append(['eager' if r else self.state['mode'] for r in order])
+                        for reference in order:
+                            self.reference=reference;restored();synchronize();start=self.clock()
                             callback();synchronize()
                             if pair: samples[reference].append(self.clock()-start)
                     restored();self.reference=False
-                    self.trial(False)
                     baseline=statistics.median(samples[True]);candidate=statistics.median(samples[False])
                     self.state.update(benchmarked=True,benchmark=dict(eager_seconds=baseline,accelerated_seconds=candidate,
-                        pairs=self.config['benchmark_pairs'],includes_optimizer=True,training_updates_committed=0))
+                        pairs=self.config['benchmark_pairs'],includes_optimizer=True,training_updates_committed=0,
+                        eager_samples_seconds=samples[True],accelerated_samples_seconds=samples[False],
+                        pair_orders=orders,measurement=self.config['measurement'],
+                        gain_fraction=1-candidate/baseline))
                     if candidate>=baseline:
+                        if self.diagnose:
+                            profiles={}
+                            for reference in (True,False):
+                                self.reference=reference;restored();synchronize()
+                                profiles['eager' if reference else self.state['mode']]=self.diagnose(reference,callback,synchronize)
+                            restored();self.reference=False
+                            self.state['benchmark']['no_gain_phase_profiles']=profiles
                         self.state.update(mode='eager',reason='benchmark_no_gain');self.runtime.clear();self.runtime.set_mode('eager')
                     else: self.state['reason']='benchmark_gain'
+                    self.trial(False)
                     self.publish(self.snapshot())
                 self.reference=False
                 if self.enforce and not allowed(self.state['mode'],self.config.get('required')):

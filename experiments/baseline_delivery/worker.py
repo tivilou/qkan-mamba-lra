@@ -189,7 +189,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     if config.get('adaptive_memory'):
         if not device.startswith('cuda'): raise ValueError('Adaptive memory requires CUDA')
         from .adaptive_memory import Controller,transaction,attach_journal,evaluation as adaptive_evaluate
-        from .execution import BatchPrefetch,RollbackBuffer,StatusWriter
+        from .execution import BatchPrefetch,RollbackBuffer,StatusWriter,restore_optimizer_in_place
         from .logical_batch import make_controller,logical_size,SampleClock,TorchSampleSchedule
         adaptive=make_controller(config['adaptive_memory'],config['batch_size'],state.get('adaptive_memory'))
         prefetch=resources.enter_context((Lookahead if performance else BatchPrefetch)(
@@ -222,11 +222,13 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 return rollback.capture(payload)
         def restore_update(snapshot):
             while True:
-                state.pop('optimizer',None);opt.state.clear();torch.cuda.empty_cache()
+                state.pop('optimizer',None)
                 try:
-                    # Rare rollback uses a host copy to prevent live optimizer
-                    # moments from aliasing the reusable GPU backup tensors.
-                    model.load_state_dict(snapshot['model']);opt.load_state_dict(host(snapshot['optimizer']))
+                    model.load_state_dict(snapshot['model'])
+                    if not restore_optimizer_in_place(torch,opt,snapshot['optimizer']):
+                        # Lazy/new state keeps the original detached host fallback.
+                        opt.state.clear();torch.cuda.empty_cache()
+                        opt.load_state_dict(host(snapshot['optimizer']))
                     schedule.load_state_dict(snapshot['scheduler']);restore_rng(snapshot['rng'])
                     break
                 except torch.cuda.OutOfMemoryError:
@@ -332,9 +334,20 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             if not isinstance(a,np.ndarray): return None
             return {} if isinstance(b,np.ndarray) and a.dtype==b.dtype and np.array_equal(a,b) else dict(kind='exact_rng_array')
         def acceleration_compare(a,b): return compare_update(a,b,tensor_compare,array_compare)
+        def diagnose_acceleration(reference,callback,synchronize):
+            nonlocal profile
+            previous=profile
+            profile=Profile(limit=1,event=lambda:torch.cuda.Event(enable_timing=True))
+            try:
+                profile.begin();callback();synchronize();profile.finish()
+                return dict(profile.report(),memory=memory(),
+                    memory_scope='Allocator snapshot at diagnostic end; peak spans enclosing update',
+                    timing_scope='Separate rollback-only diagnostic; excluded from admission benchmark')
+            finally: profile=previous
         acceleration=Executor(torch_runtime(torch,model,rng_state,restore_rng,config['torch_acceleration']),
             config['torch_acceleration'],state.get('torch_acceleration'),synthetic,publish_acceleration,
-            trial=profile_trial,read_state=acceleration_state,compare=acceleration_compare)
+            trial=profile_trial,read_state=acceleration_state,compare=acceleration_compare,
+            diagnose=diagnose_acceleration)
         publish_acceleration(acceleration.snapshot())
     def finalize_probe():
         from .runner import compare_states
