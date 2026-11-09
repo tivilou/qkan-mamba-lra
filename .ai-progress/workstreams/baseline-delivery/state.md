@@ -6,6 +6,7 @@
 
 ## Current State
 
+- Source repair673d5fc38aa81cd464badbdaa1f09a2c0c66029f published through the authorized3080 development relay; GitHub research/collaboration-foundation HEAD verified equal to the source commit. No native model execution occurred on3080. Subsequent progress-only handoff records do not change reviewed runtime artifacts.
 - Latest native return: formal-readiness/failure-6a19c1276349, failure.json SHA25643ec4cb228bd41d9961b66be12e4ffea8a6704dfc546cbca6cc14fd06fdd7019. Revision912797a2f5293fa5a5d48d8c9f03a84f5fe8cc3a, preparatory Suite runs/adaptive-migrated-20261109T111447Z-218281. Both requested Graph profiles failed; shell returned and no formal continuation started. Screenshot confirms checkout /root/projects/qkan-mamba-lra-adaptive-912797a2f529. No native Graph success or sustained speedup established.
 - Continue from original840430a414bcf8bd6eb7c4b9c105e689578b1780 Suite /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941, cache /root/qkan-cache,GPU0. Latest immutable calibration snapshot restored Retrieval step12683, checkpoint SHA25695b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6. Do not source the failed912 preparation Suite or historical9ce/9a and lose840 progress. Original840 was safely paused before migration; do not remotely interrupt a collaborator.
 - Preserve Transformer/ListOps and Text result bytes and original9a147cd70cedf1511de89d0381dfbdabac3274f2 provenance. Migration retains full model/Adam/RNG/sampler/cursor/sample schedule/OOM controller and lineage; only old compiler choice is archived/reset.25jobs=5models×5tasks seed42,100epochs;20main+5minimalS4Dauxiliary. No scientific budget/cohort change.
@@ -20,7 +21,7 @@
 
 ## Next Actions
 
-- Publish the focused source/manifest/review/evidence/state/session commit through authorized3080 development relay and verify exact GitHub branch HEAD. Handoff command in docs/baselines/torch-acceleration.md starts at current912 checkout, prepares isolated new code, migrates latest840 full state, runs remaining gates/calibration with required Retrieval Graph and auto-starts only after admission. User has not authorized contacting the junior directly; return command to user.
+- Deliver the published handoff command in docs/baselines/torch-acceleration.md: start at current912 checkout, prepare isolated new code, migrate latest840 full state, run remaining gates/calibration with required Retrieval Graph and auto-start only after admission. User has not authorized contacting the junior directly; return command to user.
 - Read automatic native field/stage diagnostics after collaborator execution. Do not call stdlib/mocks, an FX callable, synthetic-only pass or a compile_graph label proof of active beneficial Graph. Current repair needs collaborator native correctness/recovery/actual replay/positive-gain evidence, then sustained short/long throughput.
 
 ## Validation / Evidence
