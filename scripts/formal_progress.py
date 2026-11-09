@@ -244,7 +244,8 @@ class Dashboard:
             adaptive=hb.get('adaptive_memory')
             if adaptive:
                 lines.append(f"  显存适配：本步 micro-batch {adaptive['used_micro_batch']} | 下一步 {adaptive['micro_batch']} | "
-                             f"累计 OOM 重试 {adaptive['oom_retries']} | {adaptive['event']}")
+                             f"累计 OOM 重试 {adaptive['oom_retries']} | "
+                             f"Graph 容量降档 {adaptive.get('graph_capacity_retries',0)} | {adaptive['event']}")
                 if 'logical_batch' in adaptive:
                     lines.append(f"  逻辑 batch：本步 {adaptive['used_logical_batch']} | 下一步 {adaptive['logical_batch']} | 按样本调度学习率")
                 acceleration=adaptive.get('torch_acceleration')

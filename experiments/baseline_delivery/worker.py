@@ -421,11 +421,12 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             adaptive_status={}
             if adaptive:
                 torch.cuda.reset_peak_memory_stats()
-                from .torch_acceleration import AccelerationRequired
+                from .torch_acceleration import AccelerationRequired,CaptureCapacity
                 try:
                     (update_loss,update_correct),adaptive_status=transaction(adaptive,update,capture_update,
                         restore_update,cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
-                        memory,torch.cuda.synchronize,started_at=update_started,samples=len(ids))
+                        memory,torch.cuda.synchronize,started_at=update_started,samples=len(ids),
+                        is_capacity=lambda error:isinstance(error,CaptureCapacity))
                 except AccelerationRequired:
                     if not probe: raise
                     return finalize_probe()

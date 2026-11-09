@@ -73,6 +73,8 @@ class Controller:
         self._event_index=s['index'];self.last_memory={}
         if not 0<=s['index']<=s['ceiling']<len(tiers) or s['oom_count']<0:
             raise ValueError('Invalid saved adaptive controller')
+        if 'capacity_ceiling' in s and not s['ceiling']<=s['capacity_ceiling']<len(tiers):
+            raise ValueError('Invalid saved Graph capacity ceiling')
 
     @property
     def micro_batch(self): return self.policy['tiers'][self.state['index']]
@@ -95,6 +97,16 @@ class Controller:
         s['ceiling']=min(s['ceiling'],s['index']-1);s['index']-=1
         s['baseline']=s['previous']=None;s['trial_windows']=[];s['wait']=self.policy['cooldown']
         self.event('oom_downgrade')
+
+    def capacity(self):
+        """Declared Graph RNG capacity; keep OOM accounting separate."""
+        s=self.state;s['capacity_count']=s.get('capacity_count',0)+1
+        if s['index']==0:
+            self.event('graph_rng_capacity_exhausted');raise Exhausted('Graph RNG capacity tiers exhausted')
+        s['capacity_ceiling']=min(s.get('capacity_ceiling',len(self.policy['tiers'])-1),s['index']-1)
+        s['ceiling']=min(s['ceiling'],s['capacity_ceiling']);s['index']-=1
+        s['baseline']=s['previous']=None;s['trial_windows']=[];s['wait']=self.policy['cooldown']
+        self.event('graph_rng_capacity_downgrade')
 
     def observe(self,seconds,memory):
         """Full logical-update timing includes snapshot/restore and retries."""
@@ -126,7 +138,7 @@ class Controller:
             self.event('throughput_trial_inconclusive');return
         if s['wait']:
             s['wait']=max(0,s['wait']-p['window'])
-            if not s['wait']: s['ceiling']=len(p['tiers'])-1
+            if not s['wait']: s['ceiling']=s.get('capacity_ceiling',len(p['tiers'])-1)
             return
         if s['index']>=s['ceiling']: return
         # No headroom telemetry means no speculative promotion. Free memory is
@@ -141,6 +153,7 @@ class Controller:
 
     def telemetry(self):
         return dict(micro_batch=self.micro_batch,oom_retries=self.state['oom_count'],
+            graph_capacity_retries=self.state.get('capacity_count',0),
             event=self.state['last_event'],transitions=self.state['transitions'])
 
 
@@ -158,30 +171,39 @@ def attach_journal(controller,output,step):
     emit(dict(timestamp=time.time(),**controller.telemetry()))
 
 
-def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchronize,started_at=None,samples=None):
+def validate_capacity_recovery(left,right):
+    """New optional capacity decisions must agree across fresh workers too."""
+    for key in ('capacity_count','capacity_ceiling'):
+        if left.get(key)!=right.get(key):
+            raise ValueError('Graph capacity recovery decision differs: '+key)
+
+
+def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchronize,started_at=None,samples=None,is_capacity=None):
     """Rollback *all* mutable training state before rerunning the same update.
 
     Callbacks must include model buffers, optimizer/scheduler and RNG; caller
     commits the sampler cursor only after this returns. Cleanup runs after the
-    failed traceback is released. Non-OOM errors are never retried.
+    failed traceback is released. Only native OOM or an explicit pre-capture
+    capacity predicate may retry; arbitrary runtime errors propagate.
     """
     started=time.perf_counter() if started_at is None else started_at
-    snapshot=capture();retries=0
+    snapshot=capture();retries=0;oom_retries=0
     while True:
         failed=False
         try:
             result=update(controller.micro_batch)
             synchronize()  # Include asynchronous kernel failures and time.
         except Exception as error:
-            if not is_oom(error): raise
-            failed=True
+            if is_oom(error): failed='oom'
+            elif is_capacity is not None and is_capacity(error): failed='capacity'
+            else: raise
         if not failed:
             used=controller.micro_batch;memory=measure()
             used_logical=getattr(controller,'logical_batch',None)
             transitions=controller.state['transitions']
             if used_logical is not None: controller.used_samples=samples
             if used_logical is not None and retries:
-                controller.committed_oom()
+                if oom_retries: controller.committed_oom()
             else: controller.observe(time.perf_counter()-started,memory)
             if used_logical is not None and transitions!=controller.state['transitions']: controller.publish()
             return result,dict(used_micro_batch=used,**controller.telemetry(),**memory,
@@ -190,8 +212,10 @@ def transaction(controller,update,capture,restore,cleanup,is_oom,measure,synchro
         try: controller.last_memory=measure()
         except (RuntimeError,OSError): controller.last_memory={}
         cleanup();retries+=1
-        if retries>controller.policy['max_oom']: raise Exhausted('Update OOM retry budget exhausted')
-        controller.oom();restore(snapshot)
+        if retries>controller.policy['max_oom']: raise Exhausted('Update resource retry budget exhausted')
+        if failed=='oom': controller.oom();oom_retries+=1
+        else: controller.capacity()
+        restore(snapshot)
 
 
 def evaluation(controller,run,cleanup,is_oom):

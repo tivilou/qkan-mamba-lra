@@ -49,7 +49,7 @@
       },
       {
         "path": "experiments/baseline_delivery/adaptive_memory.py",
-        "sha256": "12a6730a9575a72e0f114323415e7f84b146ca4ca897e2d75b80ed5495958856"
+        "sha256": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584"
       },
       {
         "path": "experiments/baseline_delivery/execution.py",
@@ -69,19 +69,19 @@
       },
       {
         "path": "experiments/baseline_delivery/logical_batch.py",
-        "sha256": "d9906883fc920225c91a1e1621a3c401134d6ad98cf316d9f71b2a8bd28ff4aa"
+        "sha256": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611"
       },
       {
         "path": "experiments/baseline_delivery/runner.py",
-        "sha256": "bd73374b6a17b538ab51cfb3a743bca1a94b36a058c58d99c09135b6780997e9"
+        "sha256": "5a57c27caecb9c1a14f057c9ef7c419f4841598ce202c3fc39ee6a3fcfa5d265"
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "7e5857e987ecd849687ad4f53f295737a22d08ed784a366d697b7f43346a4be1"
+        "sha256": "78241681bceb5b742c17c118741fc798f4ef261841f578b0160248162e8757cb"
       },
       {
         "path": "scripts/formal_progress.py",
-        "sha256": "85c5e1a68ba400b621faab13568709cce2878b068e510e73377b6dd4c1e61469"
+        "sha256": "781aae278db5e6e8404ae2421ff60ce40968057d3159e4dbb97958cf959b4015"
       },
       {
         "path": "scripts/migrate_dynamic_logical.sh",
@@ -113,7 +113,7 @@
       },
       {
         "path": "experiments/baseline_delivery/torch_acceleration.py",
-        "sha256": "b96745ca97d3db06bc807781b9bc7547ab88b4eeb0127ec4c85aa3f70029d925"
+        "sha256": "0293c964123bc3943dfdc93fe5759980671ad5ed27f986973ec40a306a24cf62"
       },
       {
         "path": "tests/test_baseline_torch_acceleration.py",
@@ -125,7 +125,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "bab484f73eb9f510dd7d61ca99330d553251a6f7df71e30ee371c3c0c6532b51"
+        "sha256": "f7456c28c4e3a4252e6276b5e3ffb53d563cb07a6e1565464583a7461f09f7fa"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -146,6 +146,10 @@
       {
         "path": "tests/test_baseline_acceleration_calibration.py",
         "sha256": "6c882b37fa29b20ea32ce69eac37f2f13b15f98f5fa842fab98f0586c941f0cb"
+      },
+      {
+        "path": "tests/test_baseline_graph_rng_capacity.py",
+        "sha256": "75acd799016f0c4f04cc14d0e1d5ecd1d4181fbe5e8699385f2d87cdaa38c386"
       }
     ]
   },

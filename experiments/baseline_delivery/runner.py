@@ -239,6 +239,8 @@ def canary(config,data,cache,output,device='cpu'):
         for key in ('index','ceiling','oom_count','wait','previous','transitions'):
             if states[0]['adaptive_memory'][key]!=states[1]['adaptive_memory'][key]:
                 raise ValueError('Adaptive recovery decision differs: '+key)
+        from .adaptive_memory import validate_capacity_recovery
+        validate_capacity_recovery(states[0]['adaptive_memory'],states[1]['adaptive_memory'])
         if config['adaptive_memory'].get('logical_tiers'):
             for key in ('logical_index','previous_logical'):
                 if states[0]['adaptive_memory'][key]!=states[1]['adaptive_memory'][key]:

@@ -120,10 +120,16 @@ class Classifier(nn.Module):
                                   'encoder':h.detach().cpu()})
         return h.sum(1)/mask.sum(1).unsqueeze(-1)
 
+    def pair_features(self,a,b):
+        return torch.cat(((a-b).abs(),a*b),dim=-1)
+
+    def classify_pair(self,a,b):
+        return self.head(self.pair_features(a,b))
+
     def forward(self,batch,representations=False,validated_inputs=False):
         if self.task=='retrieval':
             a,b=self.encode(batch['inputs1'],validated_inputs),self.encode(batch['inputs2'],validated_inputs)
-            pooled=torch.cat(((a-b).abs(),a*b),dim=-1)
+            pooled=self.pair_features(a,b)
         else:
             pooled=self.encode(batch['inputs'],validated_inputs)
         logits=self.head(pooled)

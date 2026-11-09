@@ -82,6 +82,12 @@ class JointController(Controller):
             s['trial_windows']=[];s['wait']=self.policy['cooldown']
             self.event('logical_oom_cooldown')
 
+    def capacity(self):
+        try: super().capacity()
+        finally:
+            self.state['previous_logical']=None
+            self.publish()
+
     def publish(self):
         previous=self._published
         self._published=(self.micro_batch,self.logical_batch)

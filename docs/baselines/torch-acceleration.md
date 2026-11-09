@@ -1,6 +1,16 @@
 # Torch 编译、CUDA Graph 与真实断点校准
 
-2026-11-09 最新自动回传确认：912797a的两个Graph候选均未通过，准备Suite `runs/adaptive-migrated-20261109T111447Z-218281`没有启动正式训练。原840执行器Suite仍为`runs/adaptive-migrated-20261109T045101Z-183941`，本次快照已恢复到Retrieval step12683。保留两个原9a完成结果。此前真实训练仍发生NumericalMismatch并退回eager；先前交付没有证明该任务获得编译或Graph收益。最新诊断和修复边界见`docs/evidence/compiler-native-graph-repair-20261109.json`。
+2026-11-09 最新自动回传`failure-580268ade788`确认：e07a91c的Graph/Dynamo原生反向已通过合成数据的精确恢复，实际回放200/224次；真实断点在micro-batch16的注意力Graph捕获处出现`rng_capture`错误，尚未回放，未比较或测速。原断点已精确回滚，准备Suite `runs/adaptive-migrated-20261109T122440Z-221992`没有启动正式训练。Inductor仍有精确恢复差异，AOT仍有数值/RNG差异。原840训练源保持`runs/adaptive-migrated-20261109T045101Z-183941`、Retrieval step12683及两个原9a完成结果。最新边界见`docs/evidence/compiler-graph-rng-capacity-20261109.json`；原生提速尚未成立。
+
+## v4：Retrieval分图与随机数容量
+
+固定PyTorch v2.7.1源码表明，CUDA Graph内Philox偏移只有uint32容量。原生efficient/cuDNN注意力dropout每层保留`B×heads×Lq×Lk`计数；Retrieval两个4000-token文档、4层4头、micro16，仅注意力就需8,192,000,000，超过4,294,967,295。合成micro4则可容纳。最新回传的错误阶段、位置及RNG分类与此吻合，但旧诊断没有异常原文，所以这是源码支持的主要原因推断，不将其写成已确认的原始异常。
+
+Graph/Dynamo原生反向候选现在分别捕获两个文档的同一个`encode`，使用两个独立图池，维持两个文档的激活直至共享损失反向。共享参数、先文档1后文档2的顺序、原有`abs(a-b)`/`a*b`配对及分类头均保留；配对和分类头在原生Torch执行。没有更换注意力、关闭dropout或改变精度。编译仍为`torch.compile(backend="eager", fullgraph=True)`加显式前向/反向Graph，不能宣称Inductor融合。
+
+捕获前按实际形状检查保守RNG预算：每文档`layers×B×(heads×L²+6×width×L)`，包含原生前馈与残差dropout的元素数上界。当前配置micro16每图上界4,292,608,000，可容纳；micro32超限，在任何捕获前拒绝。专用容量事件通过完整更新回滚只降低物理micro-batch，保持同一逻辑batch及样本，不计为OOM，不因该事件降低下一逻辑batch。确定的容量档位上限持久化，冷却后也不再重复试探超限档位；真实OOM仍走独立原流程。进度把“Graph容量降档”和OOM重试分别显示。
+
+图池生命周期改变必须重新通过精确跨进程恢复、真实同次更新数值检查和完整更新测速；既有容差及精确RNG/控制标准不变。Graph要求下若无正收益或无法通过，停止并自动回传，不能由这次源码推断或模拟测试宣称成功。
 
 ## v3修正
 
@@ -12,7 +22,7 @@
 
 Inductor候选关闭epilogue fusion、shape padding及layout optimization，保留FP32、fallback_random和显式Graph。另一候选采用PyTorch内置`aot_eager_default_partitioner`：通过torch.compile/AOTAutograd生成前向和反向图，内部保留原生ATen算子，再交给显式CUDA Graph捕获。它没有Inductor/Triton融合，不应宣称为融合编译提速。选择由当前环境上的正确性、恢复性和完整更新测速决定；均未通过时如实返回失败。
 
-真实更新比较现在分别检查logits、裁剪前梯度、裁剪后梯度、模型、Adam、样本调度及RNG，保存各字段差异计数、最大绝对差和最多32条位置；不会上传张量值或输入。每个新进程先完整预热候选前向/反向/裁剪/Adam/调度，再恢复同一快照后比较稳态更新。Graph只保留一张图，改变执行形状后复核；最多8次构建/模式校验，同形状不重复测速。
+真实更新比较现在分别检查logits、裁剪前梯度、裁剪后梯度、模型、Adam、样本调度及RNG，保存各字段差异计数、最大绝对差和最多32条位置；不会上传张量值或输入。每个新进程先完整预热候选前向/反向/裁剪/Adam/调度，再恢复同一快照后比较稳态更新。Retrieval原生反向分图候选保留两个文档图，其他候选保留一个整前向图；改变执行形状后复核，最多8代构建/模式校验，同形状不重复测速。
 
 Graph捕获保留原生OOM类型。任务要求Graph时，OOM先释放图池，交给既有有限重试控制器缩小micro-batch、恢复同一快照后重新捕获，不因为首次OOM放弃Graph。epoch末不足micro-batch的尾块走原生eager，保留整批主图；整个混合更新仍通过数值校验。按图构建代数缓存校验结果，图实际重建才使旧记录失效，同一代中的整批/尾批交替不会反复耗尽预算。校准报告必须证明Graph实际replay次数大于0，不能仅凭模式名称声称Graph生效。
 
@@ -24,10 +34,10 @@ Graph捕获保留原生OOM类型。任务要求Graph时，OOM先释放图池，�
 
 ## 从当前840断点交付
 
-截图中的912脚本已经退出，无需再次Ctrl+C。下面从该目录取新版代码，建立独立工作目录，并从原840 Suite最新完整断点迁移，保留其step12683及两个完成结果；通过全部剩余任务验收和真实断点校准后自动启动训练。若后来另行恢复了原840训练，须先安全暂停并等待保存，再执行本组命令。不要把失败的912准备Suite当作训练源，也不要再次使用历史9ce或原9a Suite。
+截图中的e07脚本已经退出，无需再次Ctrl+C。下面从该目录取新版代码，建立独立工作目录，并从原840 Suite最新完整断点迁移，保留其step12683及两个完成结果；通过全部剩余任务验收和真实断点校准后自动启动训练。若后来另行恢复了原840训练，须先安全暂停并等待保存，再执行本组命令。不要把失败的e07准备Suite当作训练源，也不要再次使用历史9ce或原9a Suite。
 
 ```bash
-cd /root/projects/qkan-mamba-lra-adaptive-912797a2f529 &&
+cd /root/projects/qkan-mamba-lra-adaptive-e07a91c7876e &&
 test -d /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 &&
 git fetch origin research/collaboration-foundation &&
 git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
@@ -40,7 +50,7 @@ bash scripts/migrate_torch_acceleration.sh \
   --require-graph transformer-retrieval-s42
 ```
 
-原840和912执行代码保持各自版本；只向被Git忽略的.bootstrap写准备脚本。新版目录共享既有离线环境和源码资产，代码、证书及新Suite独立。迁移认证原policy/certificates/gate-evidence及其哈希，沿用完成结果的原始字节和来源，不重新训练或改称新版结果。模型、Adam、RNG、采样顺序/游标、样本学习率时钟、OOM控制器和迁移历史保留；旧compiler选择归档后重新准入。总计25任务、100epochs和样本预算保持声明值。
+原840和e07执行代码保持各自版本；只向被Git忽略的.bootstrap写准备脚本。新版目录共享既有离线环境和源码资产，代码、证书及新Suite独立。迁移认证原policy/certificates/gate-evidence及其哈希，沿用完成结果的原始字节和来源，不重新训练或改称新版结果。模型、Adam、RNG、采样顺序/游标、样本学习率时钟、OOM控制器和迁移历史保留；旧compiler选择归档后重新准入。总计25任务、100epochs和样本预算保持声明值。
 
 记下新Suite和工作目录；后续普通同版本续跑只用它的`formal_progress.py --resume`入口，不再次迁移。校准失败的报告自动发往`formal-readiness/failure-*`；正式worker因后端要求停止时，紧凑数值和错误类型报告发往`admitted-entry`。数据、权重、原始训练日志、原始trace和凭证不进入这些诊断。
 
@@ -52,6 +62,8 @@ bash scripts/migrate_torch_acceleration.sh \
 
 ## 验证边界
 
-所有权重、数据和原生Torch/JAX运行均留在师弟服务器；本机只运行标准库、注入模拟、AST、CLI与身份哈希检查，不导入模型框架、不查GPU、不安装依赖、不训练。v3代码交付及模拟通过不等于原生Graph通过或持续提速。无AMP、TF32、注意力替换、新依赖或运行时公网fallback。提交的release保持关闭，原生证据只在协作者验收通过后产生。
+所有权重、数据和原生Torch/JAX运行均留在师弟服务器；本机只运行标准库、注入模拟、AST、CLI与身份哈希检查，不导入模型框架、不查GPU、不安装依赖、不训练。v4代码交付及模拟通过不等于原生Graph通过或持续提速。无AMP、TF32、注意力替换、新依赖或运行时公网fallback。提交的release保持关闭，原生证据只在协作者验收通过后产生。
 
 固定官方API依据：[PyTorch v2.7.1 AOT后端](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_dynamo/backends/debugging.py)、[CUDA Graph](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py)、[Inductor配置](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/config.py)。后端可用性仍由各自已安装的原生环境判断。
+
+随机数容量依据：[CUDAGeneratorImpl](https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CUDAGeneratorImpl.cpp)、[CUDA注意力](https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/transformers/cuda/attention.cu)、[原生dropout](https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/cuda/Dropout.cu)。源码仅作为固定版本行为依据，实际后端与误差仍由师弟环境验证。

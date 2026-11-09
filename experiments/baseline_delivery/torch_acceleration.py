@@ -19,14 +19,15 @@ def policy(mode='compile_graph',backend='inductor',required=None):
     if mode not in MODES: raise ValueError('Unsupported acceleration mode')
     if backend not in BACKENDS or required not in (None,'compile','graph'):
         raise ValueError('Unsupported compiler requirement')
-    return dict(schema='qkan-torch-acceleration.v3',mode=mode,backend=backend,required=required,
-        dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=1,
+    return dict(schema='qkan-torch-acceleration.v4',mode=mode,backend=backend,required=required,
+        dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=2,
         benchmark_pairs=2,precision='fp32',max_builds=8,
-        update_warmup=1,validation='each_execution_shape')
+        update_warmup=1,validation='each_execution_shape',graph_partition='native_retrieval_documents')
 
 
 def legacy_policy(mode,version):
     value=policy(mode);value.pop('required');value['schema']='qkan-torch-acceleration.v'+str(version)
+    value.pop('graph_partition');value['max_graphs']=1
     if version==1: value.pop('update_warmup');value.pop('validation')
     if version not in (1,2): raise ValueError('Unsupported historical compiler policy')
     return value
@@ -37,6 +38,10 @@ class BackendFailure(RuntimeError):
         super().__init__(message)
         if diagnostic is not None: self.diagnostic=diagnostic
 class AccelerationRequired(RuntimeError): pass
+class CaptureCapacity(RuntimeError):
+    """A declared graph RNG budget exceeded before any capture, not an OOM."""
+    def __init__(self,report):
+        super().__init__('Graph RNG capture capacity exceeded');self.diagnostic=report
 class NumericalMismatch(BackendFailure):
     def __init__(self,report):
         super().__init__('NumericalMismatch');self.report=report
@@ -45,7 +50,9 @@ class NumericalMismatch(BackendFailure):
 def backend_diagnostic(error,stage,backend):
     """Bounded error structure, without exception text, inputs or frame locals."""
     chain=[];seen=set();current=error
-    categories=(('out_of_memory',('out of memory','cuda_error_out_of_memory')),
+    categories=(('rng_offset_overflow',('increment causes overflow in the offset value',)),
+        ('rng_offset_alignment',('rng offset must be a multiple of 4',)),
+        ('out_of_memory',('out of memory','cuda_error_out_of_memory')),
         ('capture_unsupported',('not permitted when stream is capturing','operation not permitted when stream is capturing',
                                 'not supported during capture','cudaerrorstreamcaptureunsupported')),
         ('capture_invalidated',('capture was invalidated','cudaerrorstreamcaptureinvalidated')),
@@ -68,6 +75,22 @@ def backend_diagnostic(error,stage,backend):
         chain.append(dict(type=type(current).__name__,category=category,frames=frames[-8:]))
         current=current.__cause__ or (None if current.__suppress_context__ else current.__context__)
     return dict(schema='qkan-backend-error.v1',stage=stage,backend=backend,exceptions=chain)
+
+
+def graph_rng_budget(model_config,rows,length,documents=1):
+    """Conservative v2.7.1 SDPA/native-dropout Philox bound per forward graph.
+
+    Efficient/cuDNN SDPA reserve B*H*Lq*Lk per layer. Native FF/residual
+    dropout reserve at most their element counts (H + 4H + H per token).
+    Backward reuses forward dropout state; each independent capture resets
+    the uint32 intra-graph offset. This is not GPU memory or sample capacity.
+    """
+    if (not isinstance(model_config,dict) or model_config.get('model')!='transformer'
+            or model_config.get('dropout',0)<=0): return None
+    increment=documents*model_config['layers']*rows*(model_config['heads']*length*length+6*model_config['width']*length)
+    return dict(schema='qkan-graph-rng-budget.v1',stage='capture_budget',
+        category='rng_offset_capacity',estimated_increment=increment,limit=2**32-1,
+        rows=rows,length=length,documents_per_graph=documents,passed=increment<=2**32-1)
 
 
 def require_actual_backend(receipt,config):
@@ -270,6 +293,10 @@ class Executor:
                         error=getattr(error,'diagnostic',None) or backend_diagnostic(error,'update',self.config['backend']))
                 self.diagnostics.append(diagnostic);self.diagnostics=self.diagnostics[-8:]
                 self.publish(dict(self.snapshot(),diagnostics=self.diagnostics))
+                if isinstance(error,CaptureCapacity):
+                    clear_grad();self.runtime.clear();self.validated.clear()
+                    self.state.update(benchmarked=False,benchmark=None,reason='graph_rng_capacity_retry_smaller_microbatch')
+                    self.publish(self.snapshot());raise
                 if is_oom(error) and self.state['mode']=='compile_graph' and self.config.get('required')=='graph':
                     # Let the existing finite OOM transaction shrink the physical
                     # batch, keeping the requested backend and original samples.
@@ -293,13 +320,20 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
             self.compiled=None;self.graph=None;self.key=None;self.builds=0;self.mode=None
             self.expected_rows=None;self.replays=0;self.tail_calls=0
             self.stage='idle';self.compiler_warmups=0
+            self.encoder_compiled=None;self.capture_budget=None
+            model_config=getattr(model,'config',None)
+            self.model_config=model_config if isinstance(model_config,dict) else {}
+            self.partitioned=(config['backend']=='eager' and self.model_config.get('model')=='transformer'
+                and self.model_config.get('task')=='retrieval')
         def set_mode(self,mode): self.mode=mode
         def begin_update(self,micro_batch): self.expected_rows=micro_batch
         def generation(self): return self.builds
         def status(self):
             return dict(graph_builds=self.builds,graph_resident=self.graph is not None,
-                compiled_callable_created=self.compiled is not None,graph_replays=self.replays,
-                eager_tail_calls=self.tail_calls,stage=self.stage,compiler_warmups=self.compiler_warmups)
+                compiled_callable_created=self.compiled is not None or self.encoder_compiled is not None,
+                graph_replays=self.replays,eager_tail_calls=self.tail_calls,stage=self.stage,
+                compiler_warmups=self.compiler_warmups,graph_callables=(2 if self.partitioned else 1) if self.graph else 0,
+                capture_partition='retrieval_documents' if self.partitioned else 'whole_forward',capture_budget=self.capture_budget)
         def clear(self):
             self.graph=None;self.key=None
             if self.mode=='compile': self.compiled=None
@@ -332,8 +366,67 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
                 if not wrap and not self.backend_error(error): raise
                 raise BackendFailure(type(error).__name__,diagnostic) from error
         def eager(self,batch): return model(batch,validated_inputs=True)
+        def check_budget(self,batch):
+            inputs=batch.get('inputs1') if 'inputs1' in batch else batch.get('inputs')
+            if inputs is None or len(inputs.shape)<2: return
+            if self.partitioned:
+                budgets=[graph_rng_budget(self.model_config,value.shape[0],value.shape[1])
+                    for value in (batch['inputs1'],batch['inputs2'])]
+                self.capture_budget=max((v for v in budgets if v is not None),
+                    key=lambda v:v['estimated_increment'],default=None)
+            else:
+                self.capture_budget=graph_rng_budget(self.model_config,inputs.shape[0],inputs.shape[1],
+                    2 if 'inputs2' in batch else 1)
+            if self.capture_budget is not None and not self.capture_budget['passed']:
+                self.stage='capture_budget';raise CaptureCapacity(self.capture_budget)
+        def capture(self,adapter,static,forward):
+            def warm_compiler():
+                output=forward(*static)
+                parameters=tuple(p for p in model.parameters() if p.requires_grad)
+                if parameters:
+                    gradients=torch.autograd.grad(output,parameters,torch.ones_like(output),allow_unused=True)
+                    del gradients
+                del output
+                torch.cuda.synchronize();torch.cuda.empty_cache();self.compiler_warmups+=1
+            self.attempt('compile_forward_backward_warmup',warm_compiler)
+            return self.attempt('graph_capture',lambda:torch.cuda.make_graphed_callables(adapter,static,
+                num_warmup_iters=config['graph_warmup'],allow_unused_input=True))
+        def documents(self,batch):
+            self.check_budget(batch)
+            if self.encoder_compiled is None:
+                self.encoder_compiled=self.attempt('compile_creation',lambda:torch.compile(model.encode,
+                    backend='eager',fullgraph=True,dynamic=False))
+            inputs=(batch['inputs1'],batch['inputs2'])
+            signature=tuple((tuple(v.shape),str(v.dtype),str(v.device)) for v in inputs)
+            if self.expected_rows is not None and inputs[0].shape[0]<self.expected_rows:
+                self.tail_calls+=1;return self.eager(batch)
+            if signature!=self.key:
+                self.clear()
+                if self.builds>=config['max_builds']: raise BackendFailure('Graph build budget exhausted')
+                self.builds+=1;runtime=self
+                class Encoder(torch.nn.Module):
+                    def __init__(self): super().__init__();self.base=model
+                    def forward(self,x): return runtime.encoder_compiled(x,validated_inputs=True)
+                rng=get_rng()
+                try:
+                    graphs=[]
+                    for value in inputs:
+                        adapter=Encoder();static=(value.detach().clone(),)
+                        # Independent pools: document2 replay must not overwrite
+                        # document1 activations before the shared loss backward.
+                        graphs.append(self.capture(adapter,static,
+                            lambda x:self.encoder_compiled(x,validated_inputs=True)))
+                    self.graph=tuple(graphs);self.key=signature
+                finally:
+                    torch.cuda.synchronize();set_rng(rng)
+            a=self.attempt('graph_replay',lambda:self.graph[0](inputs[0]));self.replays+=1
+            b=self.attempt('graph_replay',lambda:self.graph[1](inputs[1]));self.replays+=1
+            self.stage='ready'
+            return model.classify_pair(a,b)
         def forward(self,batch,mode):
             if mode=='eager': return self.eager(batch)
+            if mode=='compile_graph' and self.partitioned: return self.documents(batch)
+            if mode=='compile_graph': self.check_budget(batch)
             if self.compiled is None:
                 if not hasattr(torch,'compile'): raise BackendFailure('Compiler unavailable')
                 def compile_forward():
@@ -363,24 +456,8 @@ def torch_runtime(torch,model,get_rng,set_rng,config):
                 try:
                     static=tuple(value.detach().clone() for value in values)
                     adapter=Adapter()
-                    def warm_compiler():
-                        # Resolve Dynamo tracing and lazy AOT backward outside
-                        # make_graphed_callables' side-stream warmup/capture.
-                        output=runtime.compiled(dict(zip(keys,static)),validated_inputs=True)
-                        parameters=tuple(p for p in model.parameters() if p.requires_grad)
-                        if parameters:
-                            gradients=torch.autograd.grad(output,parameters,torch.ones_like(output),allow_unused=True)
-                            del gradients
-                        del output
-                        torch.cuda.synchronize()
-                        # Capture uses its own pool; return only unused cold
-                        # warmup cache before allocating that pool.
-                        torch.cuda.empty_cache()
-                        self.compiler_warmups+=1
-                    self.attempt('compile_forward_backward_warmup',warm_compiler)
-                    # Private graph pool; at most one live shape. Optimizer excluded.
-                    self.graph=self.attempt('graph_capture',lambda:torch.cuda.make_graphed_callables(adapter,static,
-                        num_warmup_iters=config['graph_warmup'],allow_unused_input=True))
+                    self.graph=self.capture(adapter,static,
+                        lambda *args:runtime.compiled(dict(zip(keys,args)),validated_inputs=True))
                     self.key=signature
                 finally:
                     torch.cuda.synchronize();set_rng(rng)
