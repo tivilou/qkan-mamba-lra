@@ -50,7 +50,7 @@
     "experiments/baseline_delivery/sync.py": "63dbb2012baa2efe5a6db8f870ec2790ffadaf37a49f00cde0faeaec19f5d2c3",
     "scripts/migrate_fixed_to_adaptive.sh": "585ad86d78111080ea509c48923e28bd1bdcbc33a286a0b41d8fffdbff9c984b",
     "tests/test_baseline_bootstrap.py": "1a827f511c966c8d0a2c047dd79b21cd1088ec9b9a647e4e847ee3933df0bf9f",
-    "docs/baselines/torch-acceleration.md": "533c2074af626bd470e13555fc34d18de078a01424e5ac6a6963c8db5810576d",
+    "docs/baselines/torch-acceleration.md": "2f7a366ce5fde3fbb01f7605f4fcc303ea2215d0e2ba877c96a3e6d8764ad784",
     "docs/baselines/collaborator-beginner-guide.zh-CN.md": "e7dd3ce82199a996c90c1af4660eb265f3f2f064d51923589f16792dcb7862ad"
   }
 }

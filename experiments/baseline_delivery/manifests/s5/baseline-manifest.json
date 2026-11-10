@@ -125,7 +125,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "533c2074af626bd470e13555fc34d18de078a01424e5ac6a6963c8db5810576d"
+        "sha256": "2f7a366ce5fde3fbb01f7605f4fcc303ea2215d0e2ba877c96a3e6d8764ad784"
       },
       {
         "path": "scripts/run_admitted.py",

@@ -44,6 +44,8 @@ Graph捕获保留原生OOM类型。任务要求Graph时，OOM先释放图池，�
 
 ## 从当前840断点交付
 
+交付状态2026-11-10：私密配置/仅检查修复已在本地提交，但授权3080的SSH直连超时，现有代理路线也未连通；GitHub仍只有14978da。以下自动配置命令须等修复提交成功发布后使用，不能把本地完成当作已经可拉取。
+
 2026-11-10截图中的14978da在检查交换配置时退出，尚未建立本次Suite、运行模型或采集阶段耗时；这只证明新终端没有继承三个环境变量，不证明已有凭证失效。下面从该目录获取修复版，先保存/复用私密配置，再从原840 Suite迁移，保留其step12683及两个完成结果。本组命令只运行验收/校准，不启动正式长训练。若后来另行恢复了原840训练，须先安全暂停并等待保存。不要把失败的准备Suite当作训练源。
 
 ```bash
@@ -69,6 +71,29 @@ bash scripts/migrate_torch_acceleration.sh \
 迁移包装入口现在真正遵守显式`--gates-only`：即使全部验收通过，也不会启动formal_progress训练监督器。无该参数时仍在通过后自动启动训练。此前包装器总会启动监督器，是入口缺陷；本次修正不改模型、校准策略或收益标准。若Graph正确但仍无收益，两次阶段剖析随failure.json自动回传；若测得正收益，则本版不会进入no_gain_phase_profiles分支。
 
 记下新Suite和工作目录；后续普通同版本续跑只用它的`formal_progress.py --resume`入口，不再次迁移。校准失败的报告自动发往`formal-readiness/failure-*`；正式worker因后端要求停止时，紧凑数值和错误类型报告发往`admitted-entry`。数据、权重、原始训练日志、原始trace和凭证不进入这些诊断。
+
+### 发布网络未恢复时：直接使用现有14978da采集
+
+无需等待代码更新。先在当前终端恢复原来的三项交换配置，再直接调用run_formal_readiness.sh；它的--gates-only已经有效，避开旧迁移包装器启动监督器的问题。该入口自动推出adaptive/performance/dynamic选项，保留原840迁移源。已有配置复用，缺少时输入原地址/token；已有CA路径可通过PROJECT_EXCHANGE_CA_FILE保留，默认复用/root/qkan-private/exchange-ca.crt。配置阶段失败时仍不创建Suite，不进入计算。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-14978da5b3cf
+if [[ -z ${PROJECT_EXCHANGE_URL:-} ]]; then
+  read -rp '原文件共享服务 HTTPS 地址: ' PROJECT_EXCHANGE_URL
+fi
+if [[ -z ${PROJECT_EXCHANGE_TOKEN:-} ]]; then
+  read -rsp '原项目 token（隐藏输入）: ' PROJECT_EXCHANGE_TOKEN
+  printf '\n'
+fi
+export PROJECT_EXCHANGE_URL PROJECT_EXCHANGE_TOKEN
+export PROJECT_EXCHANGE_CA_FILE="${PROJECT_EXCHANGE_CA_FILE:-/root/qkan-private/exchange-ca.crt}"
+bash scripts/run_formal_readiness.sh \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 \
+  --cache /root/qkan-cache --gpus 0 \
+  --torch-acceleration --require-graph transformer-retrieval-s42 --gates-only
+```
+
+只需原有凭证，不需要重新申请或把token发到聊天。CA实际位置不同时，在本机终端设置其已有路径。若本轮仍为Graph无收益，阶段耗时将随failure.json自动回传。新私密文件持久化功能在修复发布后启用；临时入口不把凭证写进Git。
 
 ## 进度显示
 
