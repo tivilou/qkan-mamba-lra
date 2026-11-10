@@ -54,7 +54,7 @@
       },
       {
         "path": "experiments/baseline_delivery/runner.py",
-        "sha256": "5a57c27caecb9c1a14f057c9ef7c419f4841598ce202c3fc39ee6a3fcfa5d265"
+        "sha256": "900b33f1589eb107aa1332e9eaf4158816ddc8d141f2fc4e621d815cf4bf1b78"
       },
       {
         "path": "experiments/baseline_delivery/s5_worker.py",
@@ -94,7 +94,7 @@
       },
       {
         "path": "experiments/baseline_delivery/torch_acceleration.py",
-        "sha256": "050d0da46c556eb97563f544b31431913dfb30afa581459df609bdceade62fa6"
+        "sha256": "9bddeabb52ba5ed64dcb693e9537faf0319c992e8d131ab879cae82886d66c7a"
       },
       {
         "path": "tests/test_baseline_torch_acceleration.py",
@@ -106,7 +106,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "04c75c8ca96e02a129d8f6977b371c7d5ea87c229eb6ce8e29a38dffd99220cf"
+        "sha256": "e0b8de7277f0b6a1842d38bb26d6d37b5983a38fe2e8be3c8acae5b854b531ff"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -159,6 +159,22 @@
       {
         "path": "tests/test_baseline_operator_profile.py",
         "sha256": "d0dd4ee3d4003f7d552f27363382b7678b3d075229206cd2ace707a9fd12b2fa"
+      },
+      {
+        "path": "experiments/baseline_delivery/parallel_attention.py",
+        "sha256": "c6e4f02d682e631b963de3e72628bcfb35be93d5545798889b6b7826022db875"
+      },
+      {
+        "path": "experiments/baseline_delivery/attention_diagnostic.py",
+        "sha256": "14639221dfd080f7d5a971d5667955f7f0736d442885daad5b5b5ecd236e6997"
+      },
+      {
+        "path": "scripts/check_parallel_attention.sh",
+        "sha256": "16fe82a2df62eb39627b5d2038d556da75f286cbaff524a1f1138de52e33166c"
+      },
+      {
+        "path": "tests/test_baseline_parallel_attention.py",
+        "sha256": "d286c21ddf27fd19743aee165faa3277af104503e1a2fb4a059093513c581609"
       }
     ]
   },

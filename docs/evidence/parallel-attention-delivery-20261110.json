@@ -1,0 +1,109 @@
+{
+  "schema": "qkan-parallel-attention-delivery.v1",
+  "date": "2026-11-10",
+  "status": "implemented_stdlib_mock_verified_native_candidate_pending",
+  "prior_evidence": "docs/evidence/native-operator-review-20261110.json",
+  "mechanism": {
+    "job": "transformer-retrieval-s42",
+    "backend_label": "eager_parallel",
+    "compiler": "torch.compile backend=eager fullgraph=True; Dynamo FX/native autograd, no Inductor fusion",
+    "execution": "Two CUDA streams, two disjoint encoder replicas, separately captured forward/backward pools",
+    "weights": "Copy canonical model parameters/buffers before each microbatch; original optimizer/state_dict unchanged",
+    "gradients": "Separate replica gradient storage; fixed document2 + document1 merge on caller stream; no concurrent shared AccumulateGrad",
+    "unchanged": [
+      "FP32",
+      "strict deterministic algorithms",
+      "native efficient attention",
+      "dropout",
+      "original pair head",
+      "logical batch/sample budget",
+      "Adam/sample-clock/RNG restore",
+      "two original completed results"
+    ],
+    "limitation": "Concurrency is a candidate; fixed gradient association and RNG/stream behavior must pass native comparison, exact recovery and throughput gates"
+  },
+  "diagnostic": {
+    "entry": "scripts/check_parallel_attention.sh",
+    "explicit_only": true,
+    "default_25_job_backend_sweep_unchanged": true,
+    "stages": [
+      "One candidate/job: synthetic fresh-process logical32/64/128 recovery and trace",
+      "Original-checkpoint full-update numerical/RNG agreement, warmup1 + AB/BA pairs2, exact rollback"
+    ],
+    "numerical": {
+      "rtol": 1e-05,
+      "atol": 1e-06,
+      "control_rng": "exact",
+      "fresh_process_recovery": "exact"
+    },
+    "finite_graph_builds": 8,
+    "per_document_rng_budget": "Existing uint32 preflight",
+    "failure": "Existing finite physical microbatch OOM/capacity retry; no silent eager long run",
+    "no_repeat_operator_or_phase_profile": true,
+    "formal_training_started": false,
+    "formal_release_allowed": false,
+    "report": "parallel-attention/<new Suite>/parallel-attention.json",
+    "automatic_sha256_return": true,
+    "failed_upload_retention": true,
+    "privacy": "Declared compact diagnostics only; no raw logs/traces/tensors/data/weights/credentials"
+  },
+  "source": {
+    "revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+    "suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "step": 12683,
+    "checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "immutable": true,
+    "completed": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ]
+  },
+  "validation": {
+    "stdlib_mock_checks": 277,
+    "passed": 275,
+    "platform_skips": 2,
+    "new_candidate_checks": 11,
+    "dispatched_argv": "Actual common.child_spec and native worker main/parser AST, native body substituted",
+    "stream_dependencies": true,
+    "disjoint_pools_and_parameters": true,
+    "fresh_gradient_storage": true,
+    "original_parameter_refresh": true,
+    "rng_capture_restore": true,
+    "capacity_and_nested_oom": true,
+    "bounded_parent_and_failure_return": true,
+    "python_ast": true,
+    "bash_syntax": true,
+    "cli_help": true,
+    "native_framework_loaded": false,
+    "gpu_queried": false,
+    "native_training_executed": false,
+    "native_numerics_recovery_speedup": "Pending collaborator RTX3090; no success or sustained-gain claim"
+  },
+  "primary_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/docs/source/notes/cuda.rst",
+      "sha256": "99115567af601cb7562e258e313dc97850ea6c305b5d9937448d811020c26361"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py",
+      "sha256": "6582d64b263e2e52e7cbbea482dcf545c21832aae5ee9bba6972ae9864180ef1"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/transformers/cuda/attention_backward.cu",
+      "sha256": "17e9ed81c5de31777bdeb111bfb6a78bffb6e78e337fe63cfc415a707610cf8c"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp",
+      "sha256": "4fdcd6ae3bf92c7dfa73afed5e040e6d50bd0ad8e426b09d71d223138226af39"
+    }
+  ],
+  "artifacts": {
+    "experiments/baseline_delivery/parallel_attention.py": "c6e4f02d682e631b963de3e72628bcfb35be93d5545798889b6b7826022db875",
+    "experiments/baseline_delivery/attention_diagnostic.py": "14639221dfd080f7d5a971d5667955f7f0736d442885daad5b5b5ecd236e6997",
+    "scripts/check_parallel_attention.sh": "16fe82a2df62eb39627b5d2038d556da75f286cbaff524a1f1138de52e33166c",
+    "tests/test_baseline_parallel_attention.py": "d286c21ddf27fd19743aee165faa3277af104503e1a2fb4a059093513c581609",
+    "experiments/baseline_delivery/torch_acceleration.py": "9bddeabb52ba5ed64dcb693e9537faf0319c992e8d131ab879cae82886d66c7a",
+    "experiments/baseline_delivery/runner.py": "900b33f1589eb107aa1332e9eaf4158816ddc8d141f2fc4e621d815cf4bf1b78",
+    "docs/baselines/torch-acceleration.md": "e0b8de7277f0b6a1842d38bb26d6d37b5983a38fe2e8be3c8acae5b854b531ff"
+  }
+}

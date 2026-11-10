@@ -12,7 +12,7 @@ class RecoveryMismatch(ValueError):
     pass
 
 
-BACKENDS=('eager','inductor','aot_eager_default_partitioner')
+BACKENDS=('eager','inductor','aot_eager_default_partitioner','eager_parallel')
 
 
 def policy(mode='compile_graph',backend='inductor',required=None):
@@ -22,8 +22,9 @@ def policy(mode='compile_graph',backend='inductor',required=None):
     return dict(schema='qkan-torch-acceleration.v5',mode=mode,backend=backend,required=required,
         dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=2,
         benchmark_pairs=2,precision='fp32',max_builds=8,
-        update_warmup=1,validation='each_execution_shape',graph_partition='native_retrieval_documents',
-        measurement='balanced_synchronized.v1',no_gain_profile=True)
+        update_warmup=1,validation='each_execution_shape',
+        graph_partition='parallel_retrieval_documents' if backend=='eager_parallel' else 'native_retrieval_documents',
+        measurement='balanced_synchronized.v1',no_gain_profile=backend!='eager_parallel')
 
 
 def legacy_policy(mode,version):
@@ -172,9 +173,10 @@ def admit_recovery(config,probe):
     requested=config['torch_acceleration'];start=MODES.index(requested['mode'])
     # Native autograd FX + explicit Graph first: no AOT decomposition or fusion.
     # The pass-through FX backend has no standalone compiler speed claim.
-    choices=[(mode,backend) for mode in MODES[start:] for backend in BACKENDS
+    choices=[(mode,backend) for mode in MODES[start:] for backend in BACKENDS if backend!='eager_parallel'
              if (mode=='compile_graph' or backend!='eager')
              if (mode!='eager' or backend=='inductor') and allowed(mode,requested.get('required'))]
+    if requested['backend']=='eager_parallel': choices=[(requested['mode'],'eager_parallel')]
     for mode,backend in choices:
         candidate['torch_acceleration']=policy(mode,backend,requested.get('required'))
         try:
@@ -220,7 +222,8 @@ class Executor:
         self.reference=False;self.used=False;self.runtime.set_mode(self.state['mode'])
         self.read_state=read_state;self.compare=compare;self.validated=set();self.checks=0
         self.enforce=not synthetic;self.diagnostics=[];self.validating=False
-        self.diagnose=diagnose;self.operators=operators
+        self.diagnose=diagnose if config['no_gain_profile'] else None
+        self.operators=operators if config['no_gain_profile'] else None
 
     def snapshot(self): return dict(self.state)
 
@@ -357,6 +360,9 @@ class Executor:
 
 def torch_runtime(torch,model,get_rng,set_rng,config):
     """Bind only the forward callable, preserving canonical model state_dict keys."""
+    if config['backend']=='eager_parallel':
+        from .parallel_attention import parallel_runtime
+        return parallel_runtime(torch,model,get_rng,set_rng,config)
     class Runtime:
         def __init__(self):
             self.compiled=None;self.graph=None;self.key=None;self.builds=0;self.mode=None

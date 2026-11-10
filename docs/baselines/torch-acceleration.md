@@ -79,6 +79,33 @@ bash scripts/collect_operator_profile.sh \
 
 若只上传失败，使用终端本次真实Suite路径传给`experiments.baseline_delivery.return_artifacts --directory ... --experiment operator-profile --file operator-profile.json`重传；不要为了重传再次采集。未完训练后续仍从原840正式训练源迁移，不能将`operator-profile-*`当作训练源。
 
+## 原生双文档并行候选（单任务诊断）
+
+RTX3090回传表明，原生`_efficient_attention_forward/backward`合计占本次算子self CUDA总和88.75%；这已经是融合注意力，Graph本身未带来正收益。单次算子总和不能视为关键路径耗时。固定v2.7.1源码中，严格确定性将efficient attention反向的key分片数限制为1，Flash/cuDNN则要求低精度；本候选不改变这些设置。
+
+`eager_parallel`仅由`scripts/check_parallel_attention.sh`显式选择，不加入原25任务后端轮询。它对Transformer/Retrieval创建两个临时编码器副本，各自使用`torch.compile(backend="eager",fullgraph=True)`及独立前向/反向CUDA Graph池，在两个流上提交文档计算。每个micro-batch先同步原模型参数与buffer；副本仅持有独立梯度，按文档2加文档1的固定顺序在调用流上合并，交给原模型和Adam。原参数、checkpoint键、逻辑batch、注意力算子、FP32、dropout与确定性要求均保留。编译后端eager不代表Inductor融合；并行提交也不保证GPU能有效重叠或产生提速。
+
+该梯度合并顺序是必须验证的执行变化，不能从代码或模拟测试推断与旧执行数值相同。专用入口只做这一个候选的logical32/64/128新进程精确恢复与trace检查，再从原840不可变断点进行真实完整更新数值/RNG检查、一次预热与两个AB/BA测量对、精确回滚。单图仍受原uint32 RNG容量约束，超限/OOM走原有限物理降档；不存在无限重试或待测触发重训。此检查不再重复采集算子或无收益分阶段耗时，不启动正式训练、不签release。
+
+当前成功采集目录为`/root/projects/qkan-mamba-lra-adaptive-a8dc703e9f8f`，从此处准备已发布新版本后执行：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-a8dc703e9f8f &&
+git fetch origin research/collaboration-foundation &&
+git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
+bash .bootstrap/prepare-adaptive-checkout.sh &&
+QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure &&
+bash scripts/check_parallel_attention.sh \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 \
+  --cache /root/qkan-cache --gpu 0
+```
+
+原840若已重新训练，先由师弟安全暂停并等待保存；入口会拒绝活跃源锁。仅使用原840训练源，不使用任何失败准备或operator-profile目录。原两个已完成结果和来源记录保留。终端输出每个恢复子进程及真实校准阶段，结束后自动上传`parallel-attention/<本次Suite>/parallel-attention.json`并核验SHA-256。失败也回传紧凑诊断；上传失败保留原报告，按同目录/experiment/file重传即可，不为回传重新计算。只有真实校准报告精确回滚通过后才声明0样本/0更新，合成检查产生的临时更新只在新诊断目录内。
+
+原生通过、正收益和长期持续收益均待师弟实测；任何失败不会静默开启eager长跑。正式迁移仍需后续受审准入，诊断目录不能作为训练源。实现依据为固定官方[CUDA流与反向语义](https://github.com/pytorch/pytorch/blob/v2.7.1/docs/source/notes/cuda.rst)和[独立Graph池/自动求导](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py)，源文件哈希记录于本次交付证据。
+
 ## 进度显示
 
 短期速度是训练心跳时间戳对应的近60秒样本斜率，窗口逐步积累；重复刷新同一心跳保留测量值。长期平均采用本次进程的已提交样本增量除以墙钟耗时，包含等待/保存和已发生的验证，排除旧checkpoint前缀。旧worker无起点信息时标注“本次观察”。当前任务ETA按长期平均估计，不包含后续验证、测试、回传或其他排队任务；启动阶段平均会受编译/校准成本影响。
