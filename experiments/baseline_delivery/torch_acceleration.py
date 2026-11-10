@@ -210,7 +210,7 @@ def fatal_cuda(error):
 
 class Executor:
     """Framework-free control plane; all trial optimizer updates are rolled back."""
-    def __init__(self,runtime,config,saved=None,synthetic=False,publish=lambda _:None,clock=time.perf_counter,trial=lambda _:None,read_state=None,compare=None,diagnose=None):
+    def __init__(self,runtime,config,saved=None,synthetic=False,publish=lambda _:None,clock=time.perf_counter,trial=lambda _:None,read_state=None,compare=None,diagnose=None,operators=None):
         if config!=policy(config.get('mode'),config.get('backend'),config.get('required')): raise ValueError('Unsupported Torch acceleration policy')
         self.runtime=runtime;self.config=config;self.synthetic=synthetic;self.publish=publish;self.clock=clock;self.trial=trial
         self.state=dict(saved) if saved else dict(mode=config['mode'],benchmarked=False,reason='requested',benchmark=None)
@@ -220,7 +220,7 @@ class Executor:
         self.reference=False;self.used=False;self.runtime.set_mode(self.state['mode'])
         self.read_state=read_state;self.compare=compare;self.validated=set();self.checks=0
         self.enforce=not synthetic;self.diagnostics=[];self.validating=False
-        self.diagnose=diagnose
+        self.diagnose=diagnose;self.operators=operators
 
     def snapshot(self): return dict(self.state)
 
@@ -301,6 +301,19 @@ class Executor:
                                 profiles['eager' if reference else self.state['mode']]=self.diagnose(reference,callback,synchronize)
                             restored();self.reference=False
                             self.state['benchmark']['no_gain_phase_profiles']=profiles
+                        if self.operators:
+                            # Exactly one native eager observation, outside timing.
+                            # Graph replay hides CPU operator ancestry; never rank
+                            # its CUDA launch as if it identified backward kernels.
+                            self.reference=True;restored();synchronize()
+                            try:
+                                observation=self.operators(callback,synchronize)
+                            except BaseException as error:
+                                self.reference=False
+                                if not fatal_cuda(error): restored()
+                                raise
+                            restored();synchronize();self.reference=False
+                            self.state['benchmark']['no_gain_operator_profile']=observation
                         self.state.update(mode='eager',reason='benchmark_no_gain');self.runtime.clear();self.runtime.set_mode('eager')
                     else: self.state['reason']='benchmark_gain'
                     self.trial(False)

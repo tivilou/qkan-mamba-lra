@@ -1,5 +1,5 @@
 """Bounded CPU lookahead, pinned staging and numeric timing; no framework import."""
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import time
 import subprocess
 import sys
@@ -45,9 +45,9 @@ class PinnedStaging:
 
 class Profile:
     """First N committed updates only. CUDA events use the existing final sync."""
-    def __init__(self,limit=16,event=None,clock=time.perf_counter):
+    def __init__(self,limit=16,event=None,clock=time.perf_counter,scope=None):
         if not isinstance(limit,int) or not 0<=limit<=64: raise ValueError('Invalid bounded profile limit')
-        self.limit=limit;self.event=event;self.clock=clock;self.count=0;self.records={};self.active=False
+        self.limit=limit;self.event=event;self.clock=clock;self.count=0;self.records={};self.active=False;self.scope=scope
     def begin(self):
         self.active=self.count<self.limit;self.pending=[];self.failed=False;self.started=self.clock()
     @contextmanager
@@ -56,7 +56,8 @@ class Profile:
         started=self.clock();a=b=None
         if device and self.event:
             a=self.event();b=self.event();a.record()
-        try: yield
+        try:
+            with self.scope(name) if self.scope else nullcontext(): yield
         finally:
             if b: b.record()
             self.pending.append((name,self.clock()-started,a,b))

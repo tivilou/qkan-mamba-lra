@@ -37,7 +37,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "ecd3d974db297f2f673a9e1d7880c1cfbed483e3084e834e130111285da55572"
+        "sha256": "f6b717818fed2c22019afe8a82cdf2b590809a6a7a4f616b8e84a8084a271ca8"
       },
       {
         "path": "experiments/baseline_delivery/execution.py",
@@ -81,7 +81,7 @@
       },
       {
         "path": "experiments/baseline_delivery/performance.py",
-        "sha256": "5628ae6fa2c5c5ce280845a19531b23facc8f07ece74eae5e3363c7c5ae68679"
+        "sha256": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53"
       },
       {
         "path": "scripts/migrate_performance.sh",
@@ -101,7 +101,7 @@
       },
       {
         "path": "experiments/baseline_delivery/torch_acceleration.py",
-        "sha256": "60ea866fa189802edf4fa4aff2215583cdf1809eb1da9e5ee57b7943db7af177"
+        "sha256": "050d0da46c556eb97563f544b31431913dfb30afa581459df609bdceade62fa6"
       },
       {
         "path": "tests/test_baseline_torch_acceleration.py",
@@ -113,7 +113,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "2f7a366ce5fde3fbb01f7605f4fcc303ea2215d0e2ba877c96a3e6d8764ad784"
+        "sha256": "04c75c8ca96e02a129d8f6977b371c7d5ea87c229eb6ce8e29a38dffd99220cf"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -150,6 +150,22 @@
       {
         "path": "tests/test_baseline_exchange_config.py",
         "sha256": "216583326ba6acdfb94b9775ec3ba830df7a211b39e7d8f28bbf4931e5925b32"
+      },
+      {
+        "path": "experiments/baseline_delivery/operator_profile.py",
+        "sha256": "e637ab994fc153586bd77c9beeae0418a2a82104884ca3331c7bfee221fff607"
+      },
+      {
+        "path": "experiments/baseline_delivery/operator_diagnostic.py",
+        "sha256": "2dea48d4f14cef03616395606c1e3a8d6588165d184b5e3573530edea8851ba2"
+      },
+      {
+        "path": "scripts/collect_operator_profile.sh",
+        "sha256": "080da9f82edfaa130bc46b90e6c63ad3613e3f31c74df61df957800dbc3e403a"
+      },
+      {
+        "path": "tests/test_baseline_operator_profile.py",
+        "sha256": "d0dd4ee3d4003f7d552f27363382b7678b3d075229206cd2ace707a9fd12b2fa"
       }
     ]
   },

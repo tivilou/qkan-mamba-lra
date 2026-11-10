@@ -96,15 +96,18 @@ def evaluate(model,split,device,microbatch):
     return {'loss':loss/total,'accuracy':correct/total,'samples':total}
 
 
-def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None):
+def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None,operator_profile_only=False):
     with ExitStack() as resources:
-        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source)
+        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source,operator_profile_only)
 
 
-def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None):
+def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False):
     run_started_at=time.time()
     output=Path(output); output.mkdir(parents=True,exist_ok=True)
     probe=acceleration_probe_source is not None
+    if operator_profile_only and (not probe or not config.get('adaptive_memory')
+            or config.get('torch_acceleration',{}).get('mode')!='eager'):
+        raise ValueError('Operator-only observation requires isolated eager checkpoint probe')
     if probe:
         from .common import ROOT
         acceleration_probe_source=Path(acceleration_probe_source).resolve()
@@ -344,20 +347,31 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     memory_scope='Allocator snapshot at diagnostic end; peak spans enclosing update',
                     timing_scope='Separate rollback-only diagnostic; excluded from admission benchmark')
             finally: profile=previous
+        def diagnose_operators(callback,synchronize):
+            nonlocal profile
+            from .operator_profile import OperatorObservation
+            from .torch_acceleration import fatal_cuda
+            observer=OperatorObservation(torch,fatal_cuda);previous=profile
+            profile=Profile(limit=1,scope=observer.phase)
+            def observed():
+                profile.begin();callback();synchronize();profile.finish()
+            try: return observer.collect(observed,synchronize)
+            finally: profile=previous
         acceleration=Executor(torch_runtime(torch,model,rng_state,restore_rng,config['torch_acceleration']),
             config['torch_acceleration'],state.get('torch_acceleration'),synthetic,publish_acceleration,
             trial=profile_trial,read_state=acceleration_state,compare=acceleration_compare,
-            diagnose=diagnose_acceleration)
+            diagnose=diagnose_acceleration,operators=diagnose_operators)
         publish_acceleration(acceleration.snapshot())
-    def finalize_probe():
+    def verify_probe_rollback():
         from .runner import compare_states
+        opt.zero_grad(set_to_none=True);restore_update(active_snapshot)
+        torch.cuda.synchronize()
+        for name,value in dict(model=model.state_dict(),optimizer=opt.state_dict(),
+                scheduler=schedule.state_dict(),rng=rng_state()).items():
+            compare_states(host(active_snapshot[name]),host(value),name)
+    def finalize_probe():
         from .acceleration_calibration import finish_probe
-        def verify_rollback():
-            opt.zero_grad(set_to_none=True);restore_update(active_snapshot)
-            for name,value in dict(model=model.state_dict(),optimizer=opt.state_dict(),
-                    scheduler=schedule.state_dict(),rng=rng_state()).items():
-                compare_states(host(active_snapshot[name]),host(value),name)
-        report=finish_probe(config,state,acceleration.snapshot(),acceleration.diagnostics,verify_rollback,
+        report=finish_probe(config,state,acceleration.snapshot(),acceleration.diagnostics,verify_probe_rollback,
             acceleration.runtime.status())
         atomic_json(output/'acceleration-probe.json',report)
         return 0 if report['passed'] else 76
@@ -432,6 +446,19 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
                     execution_key=(micro_batch,len(ids)))
             adaptive_status={}
+            if operator_profile_only:
+                from .operator_diagnostic import observe_once
+                observation=observe_once(lambda:diagnose_operators(
+                    lambda:update_impl(adaptive.micro_batch),torch.cuda.synchronize),
+                    capture_update,verify_probe_rollback,torch.cuda.synchronize)
+                atomic_json(output/'operator-profile.json',dict(observation,
+                    config_sha256=fingerprint(config),source_revision=config['source_revision'],
+                    source_checkpoint_sha256=state['migration']['source_checkpoint_sha256'],
+                    restored_step=state['step'],samples_committed=0,optimizer_updates_committed=0,
+                    sample_clock_reset=False,rollback_exact=True,
+                    used_micro_batch=adaptive.micro_batch,logical_batch=len(ids),
+                    formal_release_allowed=False))
+                return 0 if observation['status']=='collected' else 76
             if adaptive:
                 torch.cuda.reset_peak_memory_stats()
                 from .torch_acceleration import AccelerationRequired,CaptureCapacity
@@ -538,6 +565,7 @@ def main():
     parser.add_argument('--synthetic',action='store_true');parser.add_argument('--stop-after',type=int)
     parser.add_argument('--migration-check-only',action='store_true')
     parser.add_argument('--acceleration-probe-source',type=Path)
+    parser.add_argument('--operator-profile-only',action='store_true')
     args=parser.parse_args()
     if not args.synthetic and not args.acceleration_probe_source:
         from .runner import check_release
@@ -546,7 +574,7 @@ def main():
     if hasattr(signal,'SIGHUP'): signal.signal(signal.SIGHUP,request_pause)
     try:
         with lock(args.output/'worker.lock'):
-            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic,args.migration_check_only,args.acceleration_probe_source)
+            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic,args.migration_check_only,args.acceleration_probe_source,args.operator_profile_only)
     except Exception as error:
         from .common import worker_failure
         worker_failure(args.output,error)
