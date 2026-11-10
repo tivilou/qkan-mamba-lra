@@ -1,0 +1,147 @@
+{
+  "schema": "qkan-compiler-phase-review.v1",
+  "date": "2026-11-10",
+  "status": "native_v5_phase_collection_passed_graph_correct_no_benefit",
+  "authentic_return": {
+    "namespace": "qkan-mamba/formal-readiness/failure-6c49066ce7ea",
+    "file": "failure.json",
+    "size_bytes": 120528,
+    "sha256": "f1267ba27742bed2a2c137aeb7cea6b84665b3569bdf37e572a2aafa3d85348a",
+    "source_revision": "14978da5b3cf7fb71f0fb55d4c1300634f5942e8",
+    "suite": "runs/adaptive-migrated-20261110T054632Z-229449",
+    "error_type": "AccelerationRequired",
+    "formal_training_started": false
+  },
+  "graph": {
+    "policy": "qkan-torch-acceleration.v5",
+    "backend": "eager",
+    "synthetic_exact_recovery_replays": [
+      400,
+      448
+    ],
+    "real_replays": 96,
+    "runtime_stage": "ready",
+    "real_update_agreement": "passed_rtol1e-5_atol1e-6_rng_exact",
+    "rollback_exact": true,
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0,
+    "execution": "Dynamo FX backend=eager plus explicit CUDA Graph using native operators/autograd; no Inductor fusion claim"
+  },
+  "benchmark": {
+    "eager_seconds": 8.8333376981318,
+    "accelerated_seconds": 8.863158771768212,
+    "pairs": 2,
+    "eager_samples_seconds": [
+      8.828015230596066,
+      8.838660165667534
+    ],
+    "accelerated_samples_seconds": [
+      8.853729713708162,
+      8.872587829828262
+    ],
+    "pair_orders": [
+      [
+        "eager",
+        "compile_graph"
+      ],
+      [
+        "compile_graph",
+        "eager"
+      ]
+    ],
+    "measurement": "balanced_synchronized.v1",
+    "gain_fraction": -0.0033759689321872788
+  },
+  "phase_profiles": {
+    "eager": {
+      "sampled_updates": 1,
+      "forward_calls": 8,
+      "update_wall_seconds": 8.889090325683355,
+      "cuda_stream_seconds": {
+        "forward_loss": 2.213555206298828,
+        "backward": 6.671240234375,
+        "clip_optimizer_schedule": 0.003257280111312866
+      },
+      "host_seconds": {
+        "forward_loss": 2.0072266049683094,
+        "backward": 5.869038663804531,
+        "clip_optimizer_schedule": 0.003339368849992752
+      },
+      "shares_of_recorded_cuda_phases": {
+        "forward_loss": 0.24904838841947033,
+        "backward": 0.7505851330937745,
+        "clip_optimizer_schedule": 0.0003664784867550975
+      }
+    },
+    "compile_graph": {
+      "sampled_updates": 1,
+      "forward_calls": 8,
+      "update_wall_seconds": 8.859507665038109,
+      "cuda_stream_seconds": {
+        "forward_loss": 2.1967503662109373,
+        "backward": 6.658241516113281,
+        "clip_optimizer_schedule": 0.003275871992111206
+      },
+      "host_seconds": {
+        "forward_loss": 0.9524582661688328,
+        "backward": 2.3281584829092026,
+        "clip_optimizer_schedule": 0.0033732950687408447
+      },
+      "shares_of_recorded_cuda_phases": {
+        "forward_loss": 0.24798870695012987,
+        "backward": 0.7516414835021157,
+        "clip_optimizer_schedule": 0.00036980954775441124
+      }
+    }
+  },
+  "other_backends": {
+    "inductor": {
+      "outcome": "exact_recovery_failed",
+      "model": {
+        "exact": false,
+        "differing_leaves": 53,
+        "differing_elements": 761441,
+        "max_abs": 7.572770118713379e-05
+      },
+      "optimizer": {
+        "exact": false,
+        "differing_leaves": 106,
+        "differing_elements": 1610781,
+        "max_abs": 9.428986231796443e-07
+      },
+      "rng_exact": true
+    },
+    "aot_eager_default_partitioner": {
+      "outcome": "synthetic_numerical_rng_failed"
+    }
+  },
+  "migration": {
+    "source_checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "restored_step": 12683,
+    "original_suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "preparation_suite_is_not_a_new_migration_source": true,
+    "preserve_completed_jobs": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ]
+  },
+  "conclusions": [
+    "Phase collection works on the collaborator device; the earlier missing-exchange-environment block has been passed.",
+    "The balanced two-pair complete-update benchmark has no measured positive gain; no admission threshold was weakened.",
+    "Backward accounts for about75percent of recorded CUDA phase time in this one-update profile; forward about25percent; optimizer below0.04percent.",
+    "Graph reduces host-side phase elapsed times, while forward/backward CUDA stream times remain close to eager. Host and device durations overlap and must not be added.",
+    "The separate diagnostic Graph wall time is slightly lower than diagnostic eager, while the admission benchmark is slightly higher; one profile is not a speedup measurement.",
+    "The unchanged Graph wrapper has no established benefit for this workload. Repeating identical readiness is not a new optimization.",
+    "Phase data do not identify a specific attention kernel. Next investigation needs bounded operator-level forward/backward timing before choosing a kernel change."
+  ],
+  "limits": {
+    "phase_samples_per_mode": 1,
+    "benchmark_measured_pairs": 2,
+    "statistical_significance_claimed": false,
+    "operator_level_trace_available": false,
+    "owner_framework_imports": false,
+    "owner_gpu_queries": false,
+    "training_started_by_reviewer": false,
+    "code_or_threshold_changes": false
+  }
+}
