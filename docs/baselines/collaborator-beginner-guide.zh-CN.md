@@ -102,6 +102,14 @@ export PROJECT_EXCHANGE_TOKEN
 
 输入 token 后按回车。输入过程中终端不显示字符。
 
+为避免新终端丢失配置，在项目目录执行一次：
+
+```bash
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure
+```
+
+已有完整环境会直接保存，不再询问；缺少时只在交互终端询问原服务地址、隐藏输入的token及已有CA证书路径。默认私密文件为`~/qkan-private/exchange.json`，Linux权限0600；以后本账户的新终端和隔离工作目录自动加载。配置文件不得放进Git或截图。若使用现成的私密配置，可用`QKAN_EXCHANGE_CONFIG`指定其绝对路径。
+
 ## 8. 启动 GPU 预检并自动获取数据
 
 设置数据缓存目录：

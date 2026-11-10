@@ -113,7 +113,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "16cc1e1d6a01eeb32b625fdcef5b8ea17a087533af3c2038dfb9d014db772dfe"
+        "sha256": "533c2074af626bd470e13555fc34d18de078a01424e5ac6a6963c8db5810576d"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -142,6 +142,14 @@
       {
         "path": "tests/test_baseline_calibration_timing.py",
         "sha256": "9835d32d2c082c74d60385a0e0a66f866aac40fb66b941adbc19dca287a29b13"
+      },
+      {
+        "path": "experiments/baseline_delivery/exchange_config.py",
+        "sha256": "b6ddc412c1920baecf67a9b7f4e29c33bee01f5f9dd9e3d2527f9f0dc43e8dde"
+      },
+      {
+        "path": "tests/test_baseline_exchange_config.py",
+        "sha256": "216583326ba6acdfb94b9775ec3ba830df7a211b39e7d8f28bbf4931e5925b32"
       }
     ]
   },

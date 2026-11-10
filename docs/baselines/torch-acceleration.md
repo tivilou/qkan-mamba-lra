@@ -44,23 +44,29 @@ Graph捕获保留原生OOM类型。任务要求Graph时，OOM先释放图池，�
 
 ## 从当前840断点交付
 
-截图中的d808脚本已经退出，无需再次Ctrl+C。下面从该目录取新版代码，建立独立工作目录，并从原840 Suite最新完整断点迁移，保留其step12683及两个完成结果；通过全部剩余任务验收和真实断点校准后自动启动训练。若后来另行恢复了原840训练，须先安全暂停并等待保存，再执行本组命令。不要把失败的d808准备Suite当作训练源，也不要再次使用历史9ce或原9a Suite。
+2026-11-10截图中的14978da在检查交换配置时退出，尚未建立本次Suite、运行模型或采集阶段耗时；这只证明新终端没有继承三个环境变量，不证明已有凭证失效。下面从该目录获取修复版，先保存/复用私密配置，再从原840 Suite迁移，保留其step12683及两个完成结果。本组命令只运行验收/校准，不启动正式长训练。若后来另行恢复了原840训练，须先安全暂停并等待保存。不要把失败的准备Suite当作训练源。
 
 ```bash
-cd /root/projects/qkan-mamba-lra-adaptive-d808f0a4dbc8 &&
+cd /root/projects/qkan-mamba-lra-adaptive-14978da5b3cf &&
 test -d /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 &&
 git fetch origin research/collaboration-foundation &&
 git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
 bash .bootstrap/prepare-adaptive-checkout.sh &&
 QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
 cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure &&
 bash scripts/migrate_torch_acceleration.sh \
   --migrate-from /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 \
   --cache /root/qkan-cache --gpus 0 \
-  --require-graph transformer-retrieval-s42
+  --require-graph transformer-retrieval-s42 \
+  --gates-only
 ```
 
-原840和d808执行代码保持各自版本；只向被Git忽略的.bootstrap写准备脚本。新版目录共享既有离线环境和源码资产，代码、证书及新Suite独立。迁移认证原policy/certificates/gate-evidence及其哈希，沿用完成结果的原始字节和来源，不重新训练或改称新版结果。模型、Adam、RNG、采样顺序/游标、样本学习率时钟、OOM控制器和迁移历史保留；旧compiler选择归档后重新准入。总计25任务、100epochs和样本预算保持声明值。
+`--configure`优先复用完整环境或已保存私密文件；缺少时在交互终端询问原服务地址和token，token隐藏输入，已有`~/qkan-private/exchange-ca.crt`自动复用，否则询问已有证书路径。一次配置后默认保存到`~/qkan-private/exchange.json`，Linux文件权限0600，新终端及隔离worktree自动读取。支持`QKAN_EXCHANGE_CONFIG`指定绝对私密文件路径；默认还兼容共享`.bootstrap/exchange.json`、`~/qkan-private/exchange.env`及本worktree`.env`的三个字面赋值，不执行source/eval。完整环境优先；部分环境与文件冲突时停止，避免把token发给另一个服务。文件和凭证不得发到Git或截图。
+
+原840和14978da执行代码保持各自版本；只向被Git忽略的.bootstrap写准备脚本。新版目录共享既有离线环境和源码资产，代码、证书及新Suite独立。迁移认证原policy/certificates/gate-evidence及其哈希，沿用完成结果的原始字节和来源，不重新训练或改称新版结果。模型、Adam、RNG、采样顺序/游标、样本学习率时钟、OOM控制器和迁移历史保留；旧compiler选择归档后重新准入。总计25任务、100epochs和样本预算保持声明值。
+
+迁移包装入口现在真正遵守显式`--gates-only`：即使全部验收通过，也不会启动formal_progress训练监督器。无该参数时仍在通过后自动启动训练。此前包装器总会启动监督器，是入口缺陷；本次修正不改模型、校准策略或收益标准。若Graph正确但仍无收益，两次阶段剖析随failure.json自动回传；若测得正收益，则本版不会进入no_gain_phase_profiles分支。
 
 记下新Suite和工作目录；后续普通同版本续跑只用它的`formal_progress.py --resume`入口，不再次迁移。校准失败的报告自动发往`formal-readiness/failure-*`；正式worker因后端要求停止时，紧凑数值和错误类型报告发往`admitted-entry`。数据、权重、原始训练日志、原始trace和凭证不进入这些诊断。
 

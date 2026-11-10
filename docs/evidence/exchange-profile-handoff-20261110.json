@@ -1,0 +1,56 @@
+{
+  "schema": "qkan-exchange-profile-handoff.v1",
+  "date": "2026-11-10",
+  "status": "implemented_stdlib_mock_shell_verified_collaborator_pending",
+  "screenshot_observation": {
+    "source_revision": "14978da5b3cf7fb71f0fb55d4c1300634f5942e8",
+    "failed_stage": "check_exchange_before_suite_creation",
+    "missing_environment_key": "PROJECT_EXCHANGE_URL",
+    "profiling_started": false,
+    "formal_training_started": false,
+    "credential_absence_or_invalidity_established": false
+  },
+  "repairs": {
+    "configuration": "Environment-first validated loading; private account JSON profile, explicit file override and bounded legacy literal assignments; no shell eval",
+    "persistence": "Explicit configure saves a local owner-only profile outside Git; hidden token prompt only if existing settings are incomplete",
+    "scope": "Same-account fresh terminals and isolated executor checkouts; children inherit settings; independent return/preparation checks load profile too",
+    "conflict": "Reject conflicting partial environment; never combine saved token with another inherited origin",
+    "privacy": "Controlled errors, no token output, no secret in public artifacts; POSIX owner/mode validation; existing different profile not overwritten",
+    "gates_only": "Migration wrapper exits after successful readiness when explicitly requested; no formal_progress supervisor launched"
+  },
+  "migration_source": {
+    "revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+    "suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "restored_step": 12683,
+    "completed_jobs": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ],
+    "original_completion_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2"
+  },
+  "validation": {
+    "tests_run": 245,
+    "passed": 243,
+    "skipped": 2,
+    "new_tests": 16,
+    "skipped_scope": "POSIX private file mode check and pre-existing Linux-only missing-config installer test on Windows",
+    "actual_shell_handoff": "Git Bash plus fixture readiness/supervisor: gates-only stops, normal launch exit status preserved, readiness failure stops",
+    "framework_imported": false,
+    "gpu_queried": false,
+    "dependencies_installed": false,
+    "training_executed": false,
+    "native_profiling_completed": false,
+    "positive_graph_gain_established": false
+  },
+  "boundary": "No model equations, compiler policy, checkpoint scientific fields, recovery thresholds or cohort/sample budget changes; actual native stage timing still pending",
+  "artifacts": {
+    "experiments/baseline_delivery/exchange_config.py": "b6ddc412c1920baecf67a9b7f4e29c33bee01f5f9dd9e3d2527f9f0dc43e8dde",
+    "tests/test_baseline_exchange_config.py": "216583326ba6acdfb94b9775ec3ba830df7a211b39e7d8f28bbf4931e5925b32",
+    "experiments/baseline_delivery/bootstrap.py": "42caa5ce9c5e032375632b02b967b2f6a104e7f4f9268818c1539a60cd613c47",
+    "experiments/baseline_delivery/sync.py": "63dbb2012baa2efe5a6db8f870ec2790ffadaf37a49f00cde0faeaec19f5d2c3",
+    "scripts/migrate_fixed_to_adaptive.sh": "585ad86d78111080ea509c48923e28bd1bdcbc33a286a0b41d8fffdbff9c984b",
+    "tests/test_baseline_bootstrap.py": "1a827f511c966c8d0a2c047dd79b21cd1088ec9b9a647e4e847ee3933df0bf9f",
+    "docs/baselines/torch-acceleration.md": "533c2074af626bd470e13555fc34d18de078a01424e5ac6a6963c8db5810576d",
+    "docs/baselines/collaborator-beginner-guide.zh-CN.md": "e7dd3ce82199a996c90c1af4660eb265f3f2f064d51923589f16792dcb7862ad"
+  }
+}

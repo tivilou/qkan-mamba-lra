@@ -10,13 +10,8 @@ MAMBA_COMMIT = '95d8aba8a8c75aedcaa6143713b11e745e7cd0d9'
 
 
 def check_exchange():
-    for key in ('PROJECT_EXCHANGE_URL', 'PROJECT_EXCHANGE_TOKEN', 'PROJECT_EXCHANGE_CA_FILE'):
-        if not os.environ.get(key):
-            raise ValueError(f'Set {key} in this terminal before starting installation')
-    if not os.environ['PROJECT_EXCHANGE_URL'].startswith('https://'):
-        raise ValueError('PROJECT_EXCHANGE_URL must use HTTPS')
-    if not Path(os.environ['PROJECT_EXCHANGE_CA_FILE']).is_file():
-        raise ValueError('PROJECT_EXCHANGE_CA_FILE does not point to a certificate file')
+    from .exchange_config import load
+    load()
 
 
 def check_core():

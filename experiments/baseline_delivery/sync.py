@@ -63,6 +63,8 @@ def download(url, target, size, sha256, *, token=None, ca=None, test_http=False)
 
 
 def asset_sync(cache):
+    from .bootstrap import check_exchange
+    check_exchange()
     manifest = read(ROOT/'experiments/baseline_delivery/assets.json')
     origin = os.environ.get('PROJECT_EXCHANGE_URL','').rstrip('/')
     token = os.environ.get('PROJECT_EXCHANGE_TOKEN','')

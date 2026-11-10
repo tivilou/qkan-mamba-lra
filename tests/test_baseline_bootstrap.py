@@ -98,10 +98,11 @@ class BootstrapTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         env = {k: v for k, v in os.environ.items() if not k.startswith('PROJECT_EXCHANGE_')}
         env['QKAN_PYTHON'] = sys.executable
+        env['QKAN_EXCHANGE_CONFIG'] = str(root/'.bootstrap/missing-test-exchange.json')
         result = subprocess.run(['bash', 'scripts/run_baselines.sh', '--mode', 'preflight'],
                                 cwd=root, env=env, capture_output=True, text=True, timeout=15)
         self.assertEqual(result.returncode, 2)
-        self.assertIn('PROJECT_EXCHANGE_URL', result.stderr)
+        self.assertIn('QKAN_EXCHANGE_CONFIG', result.stderr)
         self.assertNotIn('pip install', result.stdout)
 
 
