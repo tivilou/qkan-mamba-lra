@@ -6,6 +6,8 @@
 
 ## Current State
 
+- 2026-11-10: After the owner rebooted the currently bound development server, strict-key SSH and automatic QKAN exchange startup pass. External HTTPS health returns200 with CA/hostname verification; server-side authenticated namespace read200 and unauthenticated401. Existing failure-37b2622a59ef/failure.json matches its pre-restart SHA256. Shared exchange endpoints also respond. Read-only inspection; no service restart, upload, GPU query or experiment. Evidence: docs/evidence/service-health-20261110.json.
+
 - 2026-11-04: D01 completed. Original IMDb paper recovered from ACL; explicit future-research dataset release plus per-task author-source/acquisition assessment closes use evidence for internal non-commercial research/no-data-redistribution only. docs/evidence/task-internal-use-review-20261104.json and imdb-primary-paper-sources-20261104.json support qualified data; model release remains false. Session: sessions/2026-11/20261104-data-qualified.md.
 
 - GitHub 74acc3d recovered to local branch research/collaboration-foundation; original 3080Ti released, replacement explicitly selected via serverctl development role.
