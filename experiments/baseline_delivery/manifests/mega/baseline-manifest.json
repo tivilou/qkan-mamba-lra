@@ -37,7 +37,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "33452598177b271d05e1796f6ff85094ebfbe6fdf9696f47313e6bab45ab5ccb"
+        "sha256": "2c145e20dc93ee6d37c60e0b5c3fa5f05903523e07fe54f733715b5c4e825dbf"
       },
       {
         "path": "experiments/baseline_delivery/execution.py",
@@ -113,7 +113,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "e7bea968ad565f7235b3ec6f7314a80db658ced80043f04133e4062bfe6b096b"
+        "sha256": "e91048ea6c063f67b1f1fc42e0f7a3ec08620d71f911078df785dec41bc607e2"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -169,11 +169,11 @@
       },
       {
         "path": "experiments/baseline_delivery/parallel_attention.py",
-        "sha256": "412cfe1949ccbc954f4b978e14d7fe376e752176cb590c8057acf58d8cb27ec5"
+        "sha256": "36cc9dbb485e85205dff292cffdfc95ae7997de9571be632ef86c125917391a1"
       },
       {
         "path": "experiments/baseline_delivery/attention_diagnostic.py",
-        "sha256": "fd143d535ad91174f4cd0585b895350843edcde8b9923094752c9f3b76dcfdd8"
+        "sha256": "e355a4df734a4e5679a0b277321d4cf21b55ecd17eafbb7f3f53f0ea9edfce61"
       },
       {
         "path": "scripts/check_parallel_attention.sh",
@@ -181,15 +181,15 @@
       },
       {
         "path": "tests/test_baseline_parallel_attention.py",
-        "sha256": "6a627face7cdacac1e90ba4ecf2d8bd86b745f0eb465c2d81e4351fbaf6d6d39"
+        "sha256": "79e9e81935c4e8d43bd71550ab77953437aca947479949adf5436e8814d69a89"
       },
       {
         "path": "experiments/baseline_delivery/diagnostic_watch.py",
-        "sha256": "d5d6500a2b4e6bd57119c393266293cbea4fecf877ffdefdb16b30a03b4dbeed"
+        "sha256": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004"
       },
       {
         "path": "tests/test_baseline_diagnostic_watch.py",
-        "sha256": "551c599387f5904e97ed52eef8c3285fc17e7f33c266b713ee99446ac16c8184"
+        "sha256": "2b78e547a4dd1eb2d604ec99971120c9480eaf000d29a6791b32b312b4fa0b59"
       }
     ]
   },

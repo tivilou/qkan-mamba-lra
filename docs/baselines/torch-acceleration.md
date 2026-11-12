@@ -83,7 +83,7 @@ bash scripts/collect_operator_profile.sh \
 
 RTX3090回传表明，原生`_efficient_attention_forward/backward`合计占本次算子self CUDA总和88.75%；这已经是融合注意力，Graph本身未带来正收益。单次算子总和不能视为关键路径耗时。固定v2.7.1源码中，严格确定性将efficient attention反向的key分片数限制为1，Flash/cuDNN则要求低精度；本候选不改变这些设置。
 
-`eager_parallel`仅由`scripts/check_parallel_attention.sh`显式选择，不加入原25任务后端轮询。它对Transformer/Retrieval创建两个临时编码器副本，各自使用`torch.compile(backend="eager",fullgraph=True)`及独立前向/反向CUDA Graph池，在两个流上提交文档计算。每个micro-batch先同步原模型参数与buffer；副本仅持有独立梯度，按文档2加文档1的固定顺序在调用流上合并，交给原模型和Adam。原参数、checkpoint键、逻辑batch、注意力算子、FP32、dropout与确定性要求均保留。编译后端eager不代表Inductor融合；并行提交也不保证GPU能有效重叠或产生提速。
+`eager_parallel`仅由`scripts/check_parallel_attention.sh`显式选择，不加入原25任务后端轮询。它对Transformer/Retrieval创建两个临时编码器副本，各自使用`torch.compile(backend="eager",fullgraph=True)`及独立前向/反向CUDA Graph池。两路前向使用设备依赖按文档1、文档2执行，保护默认生成器共享的设备seed/offset；两路反向仍使用独立流。每个micro-batch先同步原模型参数与buffer；副本仅持有独立梯度，按文档2加文档1的固定顺序在调用流上合并，交给原模型和Adam。跨流输入、输出和梯度通过`record_stream`保护存储生命周期。原参数、checkpoint键、逻辑batch、注意力算子、FP32、dropout与确定性要求均保留。编译后端eager不代表Inductor融合；并行提交也不保证GPU能有效重叠或产生提速。
 
 该梯度合并顺序是必须验证的执行变化，不能从代码或模拟测试推断与旧执行数值相同。专用入口只做这一个候选的logical32/64/128新进程精确恢复与trace检查，再从原840不可变断点进行真实完整更新数值/RNG检查、一次预热与两个AB/BA测量对、精确回滚。单图仍受原uint32 RNG容量约束，超限/OOM走原有限物理降档；不存在无限重试或待测触发重训。此检查不再重复采集算子或无收益分阶段耗时，不启动正式训练、不签release。
 
@@ -131,6 +131,32 @@ bash scripts/check_parallel_attention.sh \
 ```
 
 该版本先定位卡点，不宣称已经修复底层CUDA阻塞或获得提速。它仍保留原完整数值/RNG、精确恢复、实际Graph replay及正收益门槛。阶段标记不查询/同步CUDA，不改变权重或RNG；冷构建阶段立即落盘，热执行标记由后台定期落盘。所有恢复/校准子进程的退出记录合入`parallel-attention.json`，失败也用原认证通道自动回传。未通过时不启动正式训练，原840断点和两项已完成结果保持为来源。
+
+## 300秒超时后的GPU阶段定位
+
+2026-11-12的`parallel-attention-20261112T105040Z-c9265218`首次子进程在最后记录`backward_join`后触发阶段超时。认证报告核验39834字节，SHA256为`cad473cf642253a927773dcb65d1684e536401aaaa34895e232cacf844b01e13`。Python栈实际停在更新末尾的`bool(finite)`，即CPU等待读取CUDA标量；此前异步提交了多轮前反向。最后阶段名不能证明阻塞操作就是join。退出码-9，本次进程已回收，Linux进程组核验为空，自动回传成功。
+
+固定v2.7.1的[CUDAGraph::replay](https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CUDAGraph.cpp)与[CUDAGeneratorState::replay_prologue](https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CUDAGeneratorImpl.cpp)显示不同Graph回放会写默认生成器共享的设备seed/offset。修订为第二文档前向流等待第一文档流完成，保证设备执行顺序；仅按CPU提交顺序无法保证这一点。另依官方CUDA流文档补上跨流张量存储记录。这些是代码风险修正，尚无原生证据证明它们解决了本次GPU阻塞。
+
+新增`--stage-fences`仅对本次受监督的合成恢复检查启用：每个文档的前向、反向及梯度合并后，在写出明确阶段后等待当前CUDA流完成；更新末尾也有等待边界。普通模式不增加这些等待。该诊断会串行化被观察的阶段，不能证明双流并发正确或产生收益；通过后仍须无该参数的原生恢复及真实断点校准。它不执行速度校准、不签加速准入，顶层`passed=false`；成功仅标记`stage_observation_passed=true`。真实训练/校准worker拒绝启用该模式。环境标志在父进程中精确恢复。
+
+师弟从当前a36目录准备新工作目录后，先做这次有限定位：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-a36a271fa95b &&
+git fetch origin research/collaboration-foundation &&
+git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
+bash .bootstrap/prepare-adaptive-checkout.sh &&
+QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure &&
+bash scripts/check_parallel_attention.sh \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 \
+  --cache /root/qkan-cache --gpu 0 \
+  --child-timeout 900 --stall-timeout 300 --stage-fences
+```
+
+结束后同样自动回传`parallel-attention.json`；无需为回传重跑计算。原840训练断点及两项已完成结果仍是唯一来源。阶段观察通过后，去掉`--stage-fences`才会执行原有完整恢复和真实断点AB/BA校准；所有数值、RNG、精确恢复、精确回滚与正收益门槛保留。新版本的原生阻塞修复与提速均待验证。
 
 ## 进度显示
 

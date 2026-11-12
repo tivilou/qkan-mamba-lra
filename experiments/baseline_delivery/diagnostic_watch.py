@@ -2,7 +2,8 @@
 
 Used by the parallel candidate diagnostic, never by the formal training runner.
 The bootstrap installs faulthandler before importing the native worker. Phase
-instrumentation does not synchronize CUDA or inspect tensors/RNG/optimizer state.
+marks do not synchronize CUDA or inspect tensors/RNG/optimizer state. Explicit
+synthetic stage-fence observation adds stream waits and cannot admit acceleration.
 """
 from __future__ import annotations
 
@@ -106,6 +107,19 @@ class Recorder:
 
 def mark(phase, *, flush=False, document=None):
     if _recorder is not None: _recorder.mark(phase, flush, document)
+
+
+def cuda_fence(torch, phase, *, document=None):
+    """Opt-in stage localization, never a performance measurement or admission.
+
+    Only the supervised synthetic recovery worker may enable this mode. Publish
+    before waiting so a GPU stall retains the exact stream-completion boundary.
+    Ordinary diagnostics and training add no CUDA synchronization here.
+    """
+    if _recorder is None or os.environ.get('QKAN_DIAGNOSTIC_STAGE_FENCES')!='1': return
+    mark(phase, flush=True, document=document)
+    torch.cuda.current_stream().synchronize()
+    mark(phase+'_complete', flush=True, document=document)
 
 
 def process_group_members(pgid):

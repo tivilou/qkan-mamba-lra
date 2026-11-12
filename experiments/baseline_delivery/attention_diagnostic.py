@@ -62,19 +62,30 @@ def execute(args,suite,report):
         preserved_completed=[name for name,row in plan['jobs'].items() if row.get('completion')])
     atomic_json(suite/'context.json',dict(source_revision=source,implementation_sha256=implementation,
         policy_sha256=review_policy,migration_sha256=digest(suite/'migration-source/plan.json'),
-        purpose='parallel_attention_candidate_only',formal_release_allowed=False))
+        purpose='parallel_attention_candidate_only',formal_release_allowed=False,
+        diagnostic_stage_fences=bool(getattr(args,'stage_fences',False))))
     folder=suite/'preflight'/JOB;previous=os.environ.get('CUDA_VISIBLE_DEVICES')
-    print('Parallel document candidate: one Retrieval recovery/trace check, then original-checkpoint calibration.',flush=True)
+    fence_key='QKAN_DIAGNOSTIC_STAGE_FENCES';previous_fences=os.environ.get(fence_key)
+    fences=bool(getattr(args,'stage_fences',False));report['stage_fences']=fences
+    print('Stage fences: synthetic recovery observation only; no timing or admission.' if fences else
+          'Parallel document candidate: one Retrieval recovery/trace check, then original-checkpoint calibration.',flush=True)
     report['stage']='fresh_process_recovery';os.environ['CUDA_VISIBLE_DEVICES']=gpu
+    os.environ[fence_key]='1' if fences else '0'
     try: receipt=canary(config,data,args.cache,folder,'cuda:0',announce=lambda message:print(message,flush=True),run=supervisor.run)
     finally:
         if previous is None: os.environ.pop('CUDA_VISIBLE_DEVICES',None)
         else: os.environ['CUDA_VISIBLE_DEVICES']=previous
+        if previous_fences is None: os.environ.pop(fence_key,None)
+        else: os.environ[fence_key]=previous_fences
     if (receipt.get('passed') is not True or receipt.get('fresh_process') is not True
             or receipt.get('trace_semantic_and_replay') is not True or receipt.get('test_access') is not False
             or receipt.get('config_sha256')!=fingerprint(config) or receipt.get('source_revision')!=source):
         raise ValueError('Parallel recovery receipt identity or trace differs')
     require_actual_backend(receipt,config)
+    if fences:
+        report.update(stage_observation=receipt,stage='complete',status='stage_fences_passed',
+                      stage_observation_passed=True,passed=False)
+        return
     report['recovery']=receipt;report['stage']='real_checkpoint_calibration'
     print('Exact recovery passed. Calibrating the original full update: numeric/RNG agreement, finite AB/BA timing, exact rollback.',flush=True)
     path=calibrate(suite,JOB,config,data,args.cache,gpu,inventory[gpu],record,supervisor.run,child_spec)
@@ -113,6 +124,7 @@ def main():
     parser.add_argument('--gpu',default='0')
     parser.add_argument('--child-timeout',type=float,default=900,help='Absolute seconds per diagnostic child; never formal training')
     parser.add_argument('--stall-timeout',type=float,default=300,help='Seconds without a new internal phase; heartbeat alone does not reset this')
+    parser.add_argument('--stage-fences',action='store_true',help='Synthetic recovery stage localization only; adds GPU waits, skips calibration and cannot admit acceleration')
     args=parser.parse_args()
     from .diagnostic_watch import Supervisor
     Supervisor(args.child_timeout,args.stall_timeout)  # Reject bad limits before preparing a Suite.
@@ -137,7 +149,8 @@ def main():
             print('Return pending; report and delivery manifest retained. Retry upload only: '+str(suite),flush=True)
             if error is None: raise
         if error is not None: raise error
-    print('Parallel document candidate passed recovery and measured calibration; formal training was not started.',flush=True)
+    print('Stage observation completed; acceleration admission and timing were not performed.' if args.stage_fences else
+          'Parallel document candidate passed recovery and measured calibration; formal training was not started.',flush=True)
     return 0
 
 

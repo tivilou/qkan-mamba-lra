@@ -20,7 +20,7 @@ from torch import nn
 from .common import atomic_json, digest, fingerprint, lock, read
 from .data import Split, vocabulary
 from .models import Classifier, optimizer
-from .diagnostic_watch import mark
+from .diagnostic_watch import mark,cuda_fence
 
 PAUSE = False
 
@@ -103,6 +103,8 @@ def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=F
 
 
 def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False):
+    if os.environ.get('QKAN_DIAGNOSTIC_STAGE_FENCES')=='1' and (not synthetic or acceleration_probe_source is not None):
+        raise ValueError('Stage fences are synthetic diagnostics only; no training or timed calibration')
     run_started_at=time.time()
     output=Path(output); output.mkdir(parents=True,exist_ok=True)
     probe=acceleration_probe_source is not None
@@ -435,6 +437,8 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     if (acceleration and start==0 and not acceleration.reference
                             and acceleration.state['mode']=='compile_graph'):
                         acceleration.runtime.isolate_gradients()
+                mark('update_finite_check')
+                cuda_fence(torch,'update_complete_wait')
                 if adaptive and not bool(finite): raise ValueError('Nonfinite loss')
                 if acceleration and acceleration.validating:
                     update_observation['raw_gradients']=host({name:p.grad for name,p in model.named_parameters()})

@@ -32,6 +32,25 @@ class DiagnosticTests(unittest.TestCase):
                 dict(os.environ,PYTHONDONTWRITEBYTECODE='1'))
         return supervisor,code
 
+    def test_cuda_fences_require_both_supervision_and_explicit_opt_in(self):
+        framework=Mock();recorder=Mock();events=[]
+        recorder.mark.side_effect=lambda phase,*args:events.append(phase)
+        framework.cuda.current_stream.return_value.synchronize.side_effect=lambda:events.append('synchronize')
+        for active,flag,expected in ((None,'1',False),(recorder,'0',False),(recorder,'1',True)):
+            with patch.object(watch,'_recorder',active),patch.dict(os.environ,{'QKAN_DIAGNOSTIC_STAGE_FENCES':flag}):
+                events.clear();watch.cuda_fence(framework,'document_backward_wait',document=1)
+                self.assertEqual(events,['document_backward_wait','synchronize','document_backward_wait_complete'] if expected else [])
+
+    def test_stage_fences_reject_formal_worker_and_real_timing_probe(self):
+        import ast
+        tree=ast.parse((ROOT/'experiments/baseline_delivery/worker.py').read_text(encoding='utf8'))
+        body=next(node.body for node in tree.body if isinstance(node,ast.FunctionDef) and node.name=='_run')
+        guard=ast.If(test=ast.Constant(True),body=[body[0]],orelse=[])
+        snippet=compile(ast.fix_missing_locations(ast.Module(body=[guard],type_ignores=[])),'fence-guard','exec')
+        for synthetic,probe in ((False,None),(True,Path('probe')),(False,Path('probe'))):
+            with patch.dict(os.environ,{'QKAN_DIAGNOSTIC_STAGE_FENCES':'1'}),self.assertRaises(ValueError):
+                exec(snippet,dict(os=os,synthetic=synthetic,acceleration_probe_source=probe))
+
     def test_actual_parent_bootstrap_worker_argv_cwd_and_return(self):
         supervisor,code=self.run_child('success')
         self.assertEqual(code,0);self.assertEqual(len(supervisor.records),1)

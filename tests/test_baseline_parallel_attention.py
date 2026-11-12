@@ -22,6 +22,7 @@ class Tensor:
     def detach(self): return self
     def copy_(self,other): self.value=other.value
     def __add__(self,other): return Tensor(self.value+other.value,self.shape)
+    def record_stream(self,stream): pass
 
 
 class Module:
@@ -109,10 +110,27 @@ class StreamOwnershipTests(unittest.TestCase):
             ('wait',names[1],'main'),('forward',names[1],5),
             ('wait','main',names[0]),('wait','main',names[1]),
             ('wait',names[1],'main')]
-        self.assertEqual(self.events[:7],expected)
+        expected.insert(3,('wait',names[1],names[0]))
+        self.assertEqual(self.events[:8],expected)
         backward=[e for e in self.events if e[0]=='backward']
         self.assertEqual([e[1] for e in backward],list(reversed(names)))
         self.assertEqual(self.events[-2:],[('wait','main',n) for n in names])
+
+    def test_default_rng_writes_are_ordered_and_cross_stream_storage_is_recorded(self):
+        self.runtime.forward(self.batch,'compile_graph')
+        bridge=FakeFunction.__subclasses__()[-1]
+        g1,g2=Tensor(1),Tensor(1)
+        with patch.object(Tensor,'record_stream',autospec=True) as record:
+            self.runtime.forward(self.batch,'compile_graph')
+            bridge.backward(bridge.last_context,g1,g2)
+        recorded=[(id(call.args[0]),call.args[1].name) for call in record.call_args_list]
+        names=[s.name for s in self.runtime.streams]
+        self.assertIn(('wait',names[1],names[0]),self.events)
+        for index,key in enumerate(('inputs1','inputs2')):
+            self.assertIn((id(self.batch[key]),names[index]),recorded)
+            self.assertIn((id(bridge.last_context.outputs[index]),'main'),recorded)
+        self.assertIn((id(g1),names[0]),recorded);self.assertIn((id(g2),names[1]),recorded)
+        self.assertEqual(self.runtime.status()['forward_schedule'],'document1_then_document2_shared_rng')
 
     def test_original_weight_refresh_and_shape_rebuild_tail_do_not_mutate_checkpoint(self):
         self.runtime.forward(self.batch,'compile_graph');self.model.weight.value=4
@@ -178,7 +196,7 @@ class HandoffTests(unittest.TestCase):
             with patch.object(diagnostic.subprocess,'run',return_value=response):
                 with self.assertRaises(ValueError): diagnostic.gpu_preflight('0, GPU-selected, RTX3090, 24576')
 
-    def test_only_one_candidate_recovery_then_actual_calibration_and_no_supervisor(self):
+    def candidate_handoff(self,fences=False):
         with tempfile.TemporaryDirectory() as temp:
             suite=Path(temp)/'suite';data=Path(temp)/'data';data.mkdir()
             old=dict(model='transformer',task='retrieval',source_revision='old',performance={'enabled':True},
@@ -191,6 +209,7 @@ class HandoffTests(unittest.TestCase):
                 self.assertEqual(run.__self__.__class__.__name__,'Supervisor')
                 self.assertEqual(config['torch_acceleration']['backend'],'eager_parallel')
                 self.assertEqual(device,'cuda:0');self.assertEqual(__import__('os').environ['CUDA_VISIBLE_DEVICES'],'2')
+                self.assertEqual(__import__('os').environ['QKAN_DIAGNOSTIC_STAGE_FENCES'],'1' if fences else '0')
                 announce('Recovery child: simulated smoke')
                 return dict(passed=True,fresh_process=True,trace_semantic_and_replay=True,test_access=False,
                     config_sha256=fingerprint(config),source_revision='new',
@@ -220,7 +239,7 @@ class HandoffTests(unittest.TestCase):
                 self.assertEqual(worker.call_args.args[-2],suite)
                 self.assertFalse(worker.call_args.args[5]);self.assertFalse(worker.call_args.args[7])
                 path=suite/'calibration/acceleration-probe.json';atomic_json(path,dict(passed=True));return path
-            report={};args=NS(migrate_from=Path('original'),cache=Path('cache'),gpu='2')
+            report={};args=NS(migrate_from=Path('original'),cache=Path('cache'),gpu='2',stage_fences=fences)
             with patch('experiments.baseline_delivery.readiness.policy_check',return_value=('impl','review')),\
                 patch.object(diagnostic,'revision',return_value='new'),\
                 patch('experiments.baseline_delivery.migration.snapshot',return_value=plan),\
@@ -230,10 +249,25 @@ class HandoffTests(unittest.TestCase):
                 patch('experiments.baseline_delivery.runner.canary',side_effect=canary) as recovery,\
                 patch('experiments.baseline_delivery.acceleration_calibration.calibrate',side_effect=calibration) as real:
                 diagnostic.execute(args,suite,report)
-            self.assertTrue(report['passed']);recovery.assert_called_once();real.assert_called_once();compatible.assert_called_once()
+            self.assertEqual(report['passed'],not fences)
+            recovery.assert_called_once();compatible.assert_called_once()
+            if fences:
+                real.assert_not_called()
+                self.assertEqual(report['status'],'stage_fences_passed');self.assertTrue(report['stage_observation_passed'])
+            else: real.assert_called_once()
             self.assertEqual(report['preserved_completed'],['transformer-listops-s42'])
             self.assertFalse(read(suite/'context.json')['formal_release_allowed'])
             self.assertEqual(read(suite/'migration-source'/diagnostic.JOB/'config.json'),old)
+
+    def test_only_one_candidate_recovery_then_actual_calibration_and_no_supervisor(self):
+        self.candidate_handoff()
+
+    def test_fenced_recovery_is_observation_without_calibration_or_admission(self):
+        import os
+        for fences in (False,True):
+            with patch.dict(os.environ,{'QKAN_DIAGNOSTIC_STAGE_FENCES':'ambient'}):
+                self.candidate_handoff(fences)
+                self.assertEqual(os.environ['QKAN_DIAGNOSTIC_STAGE_FENCES'],'ambient')
 
     def test_generic_backend_sweep_does_not_activate_parallel_candidate(self):
         choices=[]

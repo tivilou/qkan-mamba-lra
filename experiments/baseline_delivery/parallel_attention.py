@@ -8,7 +8,7 @@ import copy
 import gc
 
 from .torch_acceleration import BackendFailure,CaptureCapacity,backend_diagnostic,fatal_cuda,graph_rng_budget
-from .diagnostic_watch import mark
+from .diagnostic_watch import mark,cuda_fence
 
 
 def encoder_parameters(model):
@@ -50,13 +50,23 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                 with torch.cuda.stream(stream):
                     output=ctx.outputs[index]
                     if gradient is None: gradient=torch.zeros_like(output)
+                    # The incoming head gradient was allocated on the caller
+                    # stream. Keep its storage alive through the side-stream copy.
+                    gradient.record_stream(stream)
                     mark('document_backward_replay',document=index,flush=owner.backward_replays==0)
                     values[index]=torch.autograd.grad(output,owner.parameters[index],gradient,
                         allow_unused=True)
+                    cuda_fence(torch,'document_backward_complete_wait',document=index)
             mark('backward_join')
             for stream in owner.streams: main.wait_stream(stream)
+            for gradients in values:
+                for gradient in gradients:
+                    if gradient is not None: gradient.record_stream(main)
+            mark('gradient_merge')
             owner.backward_replays+=2
-            return (None,None,None,*fixed_merge(torch,*values))
+            merged=fixed_merge(torch,*values)
+            cuda_fence(torch,'gradient_merge_complete_wait')
+            return (None,None,None,*merged)
 
     class Runtime:
         def __init__(self):
@@ -77,6 +87,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                 stage=self.stage,compiler_warmups=self.warmups,graph_callables=2 if self.graph else 0,
                 capture_partition='parallel_retrieval_documents',capture_budget=self.capture_budget,
                 execution_streams=2,encoder_replicas=2,gradient_merge='document2_plus_document1_fixed_order',
+                forward_schedule='document1_then_document2_shared_rng',backward_schedule='independent_streams',
                 compiler_backend='eager',inductor_fusion=False)
         def clear(self):
             mark('graph_cleanup',flush=True)
@@ -160,16 +171,23 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
         def encode_pair(self,inputs):
             mark('replica_refresh')
             self.sync_replicas();main=torch.cuda.current_stream();outputs=[]
-            # Submit document1 before document2 to preserve RNG reservation order.
+            # Both graphs use the default generator's shared device seed/offset
+            # tensors (PyTorch v2.7.1 replay_prologue). Host submission order alone
+            # cannot protect them across streams: finish document1 before the
+            # second graph overwrites that state. Backward graphs remain parallel.
             for index,value in enumerate(inputs):
                 mark('document_forward_stream_wait',document=index)
                 stream=self.streams[index];stream.wait_stream(main)
+                if index: stream.wait_stream(self.streams[index-1])
                 with torch.cuda.stream(stream),torch.enable_grad():
+                    value.record_stream(stream)
                     mark('document_forward_replay',document=index)
                     outputs.append(self.graph[index](value))
+                    cuda_fence(torch,'document_forward_complete_wait',document=index)
                 self.replays+=1
             mark('forward_join')
             for stream in self.streams: main.wait_stream(stream)
+            for output in outputs: output.record_stream(main)
             return tuple(outputs)
         def documents(self,batch):
             inputs=(batch['inputs1'],batch['inputs2'])
