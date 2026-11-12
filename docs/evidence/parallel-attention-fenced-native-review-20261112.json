@@ -1,0 +1,98 @@
+{
+  "schema": "qkan-parallel-attention-fenced-native-review.v1",
+  "date": "2026-11-12",
+  "receipt": {
+    "path": "qkan-mamba/parallel-attention/parallel-attention-20261112T122322Z-5f40efea/parallel-attention.json",
+    "size_bytes": 51311,
+    "sha256": "a472af3175dcacd867051b590716bd182be2a5662ab5096ae581706d67baabb8",
+    "authenticated_download_verified": true
+  },
+  "executed_revision": "a39f7637f40e65cd621becbcd56d7499eb3a9169",
+  "status": "stage_fences_passed",
+  "interpretation": "Native stage-fenced synthetic recovery passed. These explicit GPU stream completion waits serialize observed stages, so neither unfenced concurrency nor speedup is established.",
+  "observation": {
+    "passed": true,
+    "fresh_process": true,
+    "agreement": "exact",
+    "trace_semantic_and_replay": true,
+    "test_access": false,
+    "config_sha256": "766a97b41ebc663961fd48950a05ad693d0da4e9e681f08490bd89c6760bfacc",
+    "updates": 6,
+    "logical_batch_validation": {
+      "tiers": [
+        32,
+        64,
+        128
+      ],
+      "forced_sequence": [
+        32,
+        64,
+        128,
+        32,
+        64,
+        128
+      ],
+      "interrupted_after_update": 2,
+      "remaining_tier_after_restore": 128,
+      "scope": "Native variable-shape recovery; throughput decisions tested separately"
+    },
+    "eager_agreement": "passed_rtol1e-5_atol1e-6_rng_exact"
+  },
+  "children": [
+    {
+      "pid": 232883,
+      "outcome": "exited",
+      "exit_code": 0,
+      "elapsed_seconds": 248.57507801800966,
+      "termination": {
+        "parent_reaped": true,
+        "group_verified": true,
+        "remaining_pids": []
+      }
+    },
+    {
+      "pid": 232902,
+      "outcome": "exited",
+      "exit_code": 75,
+      "elapsed_seconds": 92.39089646190405,
+      "termination": {
+        "parent_reaped": true,
+        "group_verified": true,
+        "remaining_pids": []
+      }
+    },
+    {
+      "pid": 232922,
+      "outcome": "exited",
+      "exit_code": 0,
+      "elapsed_seconds": 229.42483952641487,
+      "termination": {
+        "parent_reaped": true,
+        "group_verified": true,
+        "remaining_pids": []
+      }
+    }
+  ],
+  "expected_exit75": "runner.canary intentionally invokes --stop-after 2, expects checkpoint pause code75, then launches a different fresh process with --resume.",
+  "acceleration": {
+    "mode": "compile_graph",
+    "compiler_backend": "eager",
+    "inductor_fusion": false,
+    "stage_fences": true,
+    "benchmarked": false,
+    "admitted": false,
+    "top_level_passed": false,
+    "speedup_established": false
+  },
+  "original": {
+    "checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "step": 12683,
+    "source_immutable": true,
+    "preserved_completed": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ],
+    "formal_training_started": false
+  },
+  "next": "No code update needed. In existing a39f7637f40e executor run the same check_parallel_attention.sh with original840 source and without --stage-fences. Retain900second absolute/300second phase limits. This runs unfenced exact recovery/trace and original-checkpoint numerical/RNG and full-update AB/BA timing with exact rollback; results automatically returned."
+}
