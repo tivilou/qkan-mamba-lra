@@ -21,7 +21,7 @@
 
 ## Next Actions
 
-- Publish reviewed stream/lifetime fix and stage-fence observation through authorized3080 relay. Junior prepares a new worktree from a36, runs --stage-fences on available GPU0 with original840 source, --child-timeout900 --stall-timeout300. Inspect automatic completion-stage/stack report. No broad kill, GPU reset or admission bypass.
+- Code c13d7db47fa6084cca39480eef5f4627753842b1 was published through the authorized3080 relay and GitHub branch ref verified. Publication receipt: docs/evidence/parallel-attention-stream-fence-publication-20261112.json. Junior prepares a new worktree from a36, runs --stage-fences on available GPU0 with original840 source, --child-timeout900 --stall-timeout300. Inspect automatic completion-stage/stack report. No broad kill, GPU reset or admission bypass.
 - A fenced pass only clears serialized observation. Then require unfenced exact recovery/trace, original-checkpoint full-update numerical/RNG agreement, actual Graph replays, exact zero-commit rollback and measured positive gain before admitted continuation. Preserve original840 and both completed results.
 
 ## Validation / Evidence
