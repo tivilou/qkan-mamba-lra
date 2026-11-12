@@ -20,6 +20,7 @@ from torch import nn
 from .common import atomic_json, digest, fingerprint, lock, read
 from .data import Split, vocabulary
 from .models import Classifier, optimizer
+from .diagnostic_watch import mark
 
 PAUSE = False
 
@@ -131,6 +132,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     if device.startswith('cuda'):
         torch.backends.cuda.matmul.allow_tf32=False
         torch.backends.cudnn.allow_tf32=False
+    mark('data_prepare',flush=True)
     train=Split(data,config['task'],'train',cache,config.get('data_hashes',{}).get('train'))
     val=Split(data,config['task'],'val',cache,config.get('data_hashes',{}).get('val'))
     from .logical_batch import canary_rows,canary_tier,planned_batch_size
@@ -144,6 +146,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     if config.get('vocabulary')!=vocab:
         raise ValueError('Vocabulary differs from the model contract')
     contract=fingerprint({'config':config,'train':train.identity,'val':val.identity,'dictionary':dict_sha})
+    mark('model_prepare',flush=True)
     model=Classifier(config,cache).to(device); opt=optimizer(model,config)
     import importlib.metadata
     import platform
@@ -166,6 +169,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
            'training_seconds':0.,'training_complete':False,'amp':{'enabled':False,'scaler':None},
            'runtime':{'torch':torch.__version__,'numpy':np.__version__,'device_type':device.split(':')[0]}}
     if resume or migration_check_only or probe:
+        mark('checkpoint_restore',flush=True)
         if migration_check_only or probe:
             if resume or synthetic or (output/'checkpoints/latest.json').exists():
                 raise ValueError('Migration check requires a new formal job without a target checkpoint')
@@ -375,6 +379,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             acceleration.runtime.status())
         atomic_json(output/'acceleration-probe.json',report)
         return 0 if report['passed'] else 76
+    mark('update_loop',flush=True)
     while state['epoch']<config['epochs']:
         if state['permutation'] is None:
             state['permutation']=torch.randperm(len(train))
@@ -512,6 +517,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 save();atomic_json(output/'status.json',{'state':'paused','step':state['step']});return 75
             if state['step']%config['checkpoint_steps']==0 or time.monotonic()-last_save>=300:
                 save()
+        mark('validation',flush=True)
         metric=evaluate_split(val)
         if metric['accuracy']>state['best_accuracy']:
             state['best_accuracy']=metric['accuracy'];state['best_epoch']=state['epoch']
@@ -536,6 +542,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         test_metric=evaluate_split(test)
     torch.save(state['best_weights'],output/'best-model.pt')
     from .trace import capture
+    mark('trace_capture',flush=True)
     capture(model,val,output,config,digest(output/'best-model.pt'))
     summary={'schema':'qkan-baseline-result.v1','task':config['task'],'model':config['model'],'seed':seed,
              'source_revision':config['source_revision'],'config_sha256':fingerprint(config),'contract':contract,

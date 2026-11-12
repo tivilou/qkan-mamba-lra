@@ -1,0 +1,129 @@
+{
+  "schema": "qkan-parallel-attention-watch-delivery.v1",
+  "date": "2026-11-12",
+  "status": "implemented_stdlib_mock_verified_native_diagnostic_pending",
+  "prior_native_review": "docs/evidence/parallel-attention-native-review-20261112.json",
+  "scope": {
+    "entry": "scripts/check_parallel_attention.sh",
+    "job": "transformer-retrieval-s42",
+    "explicit_only": true,
+    "formal_training_started": false,
+    "formal_release_allowed": false,
+    "underlying_cuda_block_fixed": false,
+    "speedup_established": false
+  },
+  "limits": {
+    "child_timeout_seconds": 900,
+    "unchanged_phase_timeout_seconds": 300,
+    "heartbeat_seconds": 5,
+    "parent_notice_seconds": 15,
+    "term_grace_seconds": 10,
+    "kill_verification_seconds": 5,
+    "heartbeat_resets_phase_timeout": false,
+    "advancing_phases_reset_absolute_timeout": false,
+    "scope": "Each recovery or calibration child individually; not a 900-second cap for the whole multi-child Suite. No new formal-training deadlines."
+  },
+  "observation": {
+    "bootstrap": "Install faulthandler and matching PID/run-ID receipt before importing native worker",
+    "phases": [
+      "worker_import",
+      "data_prepare",
+      "model_prepare",
+      "checkpoint_restore",
+      "replica_create",
+      "replica_initial_sync",
+      "compile_callables",
+      "compile_forward",
+      "warmup_backward",
+      "warmup_synchronize",
+      "graph_capture",
+      "capture_finalize_synchronize",
+      "capture_ready",
+      "document_forward_stream_wait",
+      "document_forward_replay",
+      "document_backward_stream_wait",
+      "document_backward_replay",
+      "backward_join",
+      "validation",
+      "trace_capture"
+    ],
+    "new_cuda_synchronizations": false,
+    "hot_execution": "In-memory phase marks with background bounded publication",
+    "cold_construction": "Immediate phase publication",
+    "ordinary_training": "No recorder thread, heartbeat file or new diagnostic deadline"
+  },
+  "process_control": {
+    "gpu_preflight": "Query selected GPU UUID compute PIDs; fail closed on competing/unknown inventory; never terminate old or unknown jobs",
+    "child_launch": "Same original interpreter, flags, cwd and worker argv behind opt-in stdlib wrapper; fresh process group",
+    "stall": "One receipt-bound SIGUSR2 stack dump, own-group TERM, conditional KILL, Linux non-zombie membership verification",
+    "unverified_cleanup": "Explicit failure with remaining PIDs; no next diagnostic child",
+    "linux_actual_descendant_test": "Included but skipped on owner Windows; mock escalation test passed; native execution still pending"
+  },
+  "return": {
+    "namespace": "parallel-attention/<new Suite>/parallel-attention.json",
+    "all_child_records_merged": true,
+    "automatic_declared_file_sha256_upload": true,
+    "failure_upload": true,
+    "upload_failure_retention": true,
+    "privacy": "Bounded code file/function/line locations, phases, clocks, PIDs and exit verification only. No source lines, locals, raw logs, tensors, weights or inputs. Raw stack stays private.",
+    "max_phase_events": 64,
+    "max_heartbeat_threads": 8,
+    "max_frames_per_thread": 24,
+    "max_signal_stack_read_bytes": 131072,
+    "max_signal_stack_frames": 64
+  },
+  "source": {
+    "revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+    "suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "step": 12683,
+    "checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "immutable": true,
+    "preserved_completed": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ],
+    "failed_diagnostic_is_training_source": false
+  },
+  "validation": {
+    "stdlib_mock_checks": 290,
+    "passed": 287,
+    "platform_skips": 3,
+    "failures": 0,
+    "errors": 0,
+    "native_test_modules_excluded": 4,
+    "framework_modules_loaded": false,
+    "gpu_queried": false,
+    "owner_training_or_dependency_install": false,
+    "python_ast": true,
+    "bash_syntax": true,
+    "policy_and_five_manifest_hashes": true,
+    "five_equivalence_statuses": "not_verifiable",
+    "committed_release": "closed",
+    "coverage": [
+      "actual stdlib parent/bootstrap/worker argv and shared recorder",
+      "phase stall with continuing heartbeat",
+      "absolute deadline with advancing phases",
+      "cleanup after parent failure",
+      "descendant-after-parent-exit TERM/KILL verification mock",
+      "bounded sanitized stack return",
+      "cleanup failure remains failure",
+      "timeout details reach automatic report return",
+      "selected-GPU UUID process attribution mock",
+      "original return code 75 preserved"
+    ],
+    "native_remaining": "Junior Linux process-group/stack test and CUDA phase-location evidence, followed by existing exact recovery/trace, numerical/RNG agreement, actual Graph replay, exact rollback and positive full-update gain gates"
+  },
+  "implementation_sha256": "555ee916404c05ef19ec6da77bd2f041a63a724114ea170d2b7e0d0d829e59fd",
+  "policy_sha256": "2043d224353ed3f18c557bad260d5c44b1433e9cf50cc1a42c54a9d83e54dffd",
+  "artifacts": {
+    "experiments/baseline_delivery/diagnostic_watch.py": "d5d6500a2b4e6bd57119c393266293cbea4fecf877ffdefdb16b30a03b4dbeed",
+    "experiments/baseline_delivery/attention_diagnostic.py": "fd143d535ad91174f4cd0585b895350843edcde8b9923094752c9f3b76dcfdd8",
+    "experiments/baseline_delivery/parallel_attention.py": "412cfe1949ccbc954f4b978e14d7fe376e752176cb590c8057acf58d8cb27ec5",
+    "experiments/baseline_delivery/runner.py": "49d5f7f4afa4deaffdde4019cfb17b0ce95319cb4f8e426ed72016a503209cdd",
+    "experiments/baseline_delivery/worker.py": "33452598177b271d05e1796f6ff85094ebfbe6fdf9696f47313e6bab45ab5ccb",
+    "tests/test_baseline_diagnostic_watch.py": "551c599387f5904e97ed52eef8c3285fc17e7f33c266b713ee99446ac16c8184",
+    "tests/test_baseline_parallel_attention.py": "6a627face7cdacac1e90ba4ecf2d8bd86b745f0eb465c2d81e4351fbaf6d6d39",
+    "docs/baselines/torch-acceleration.md": "e7bea968ad565f7235b3ec6f7314a80db658ced80043f04133e4062bfe6b096b",
+    "scripts/check_parallel_attention.sh": "16fe82a2df62eb39627b5d2038d556da75f286cbaff524a1f1138de52e33166c"
+  }
+}

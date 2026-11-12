@@ -141,7 +141,7 @@ def compare_recovery(states,keys,folder,config):
         raise
 
 
-def canary(config,data,cache,output,device='cpu',announce=lambda _:None):
+def canary(config,data,cache,output,device='cpu',announce=lambda _:None,run=None):
     """Real parent -> fresh child -> checkpoint -> different child -> resume."""
     # Every entry point must configure fresh CUDA workers before torch starts.
     if device.startswith('cuda'):
@@ -178,7 +178,7 @@ def canary(config,data,cache,output,device='cpu',announce=lambda _:None):
     for name,extra,expected in (('uninterrupted',[],0),('interrupted',['--stop-after','2'],75),('interrupted',['--resume'],0)):
         spec=child_spec(*common,'--output',folder/name,*extra)
         announce('Recovery child: '+name+(' resume' if extra==['--resume'] else ''))
-        status=run_child(spec,folder/(name+('-resume' if extra==['--resume'] else '')+'.log'))
+        status=(run or run_child)(spec,folder/(name+('-resume' if extra==['--resume'] else '')+'.log'))
         if status!=expected:
             diagnostic=dict(schema='qkan-recovery-child-failure.v1',model=config['model'],task=task,
                 child=name,resume=extra==['--resume'],returncode=status,expected_returncode=expected)

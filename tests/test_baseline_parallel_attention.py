@@ -166,6 +166,18 @@ class StreamOwnershipTests(unittest.TestCase):
 
 
 class HandoffTests(unittest.TestCase):
+    def test_gpu_preflight_rejects_unknown_inventory_and_attributes_only_selected_gpu(self):
+        with patch.object(diagnostic.subprocess,'run',return_value=NS(returncode=0,
+                stdout='123, GPU-other\n456, GPU-selected\n')) as query:
+            self.assertEqual(diagnostic.gpu_preflight('0, GPU-selected, RTX3090, 24576'),
+                             dict(idle=False,compute_pids=[456]))
+            self.assertEqual(query.call_args.kwargs['timeout'],5)
+        with patch.object(diagnostic.subprocess,'run',return_value=NS(returncode=0,stdout='')):
+            self.assertTrue(diagnostic.gpu_preflight('0, GPU-selected, RTX3090, 24576')['idle'])
+        for response in (NS(returncode=1,stdout=''),NS(returncode=0,stdout='unknown inventory')):
+            with patch.object(diagnostic.subprocess,'run',return_value=response):
+                with self.assertRaises(ValueError): diagnostic.gpu_preflight('0, GPU-selected, RTX3090, 24576')
+
     def test_only_one_candidate_recovery_then_actual_calibration_and_no_supervisor(self):
         with tempfile.TemporaryDirectory() as temp:
             suite=Path(temp)/'suite';data=Path(temp)/'data';data.mkdir()
@@ -175,7 +187,8 @@ class HandoffTests(unittest.TestCase):
             atomic_json(suite/'migration-source/plan.json',{})
             plan=dict(data=str(data),jobs={diagnostic.JOB:dict(checkpoint=dict(sha256='sha',step=12683)),
                 'transformer-listops-s42':dict(completion={'passed':True})})
-            def canary(config,data,cache,folder,device,announce):
+            def canary(config,data,cache,folder,device,announce,run):
+                self.assertEqual(run.__self__.__class__.__name__,'Supervisor')
                 self.assertEqual(config['torch_acceleration']['backend'],'eager_parallel')
                 self.assertEqual(device,'cuda:0');self.assertEqual(__import__('os').environ['CUDA_VISIBLE_DEVICES'],'2')
                 announce('Recovery child: simulated smoke')
@@ -184,6 +197,7 @@ class HandoffTests(unittest.TestCase):
                     torch_acceleration=dict(state=dict(mode='compile_graph')))
             def calibration(*args):
                 config=args[2];record=args[7]
+                self.assertEqual(args[-2].__self__.__class__.__name__,'Supervisor')
                 self.assertEqual(record['checkpoint']['step'],12683)
                 # Use the actual parent builder supplied by the diagnostic.
                 atomic_json(suite/'config.json',config)
@@ -212,6 +226,7 @@ class HandoffTests(unittest.TestCase):
                 patch('experiments.baseline_delivery.migration.snapshot',return_value=plan),\
                 patch('experiments.baseline_delivery.migration.compatible') as compatible,\
                 patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['2'],{'2':{'uuid':'gpu'}})),\
+                patch.object(diagnostic,'gpu_preflight',return_value=dict(idle=True,compute_pids=[])),\
                 patch('experiments.baseline_delivery.runner.canary',side_effect=canary) as recovery,\
                 patch('experiments.baseline_delivery.acceleration_calibration.calibrate',side_effect=calibration) as real:
                 diagnostic.execute(args,suite,report)
@@ -254,6 +269,27 @@ class HandoffTests(unittest.TestCase):
                 self.assertEqual(namespace,'parallel-attention');self.assertEqual(files,['parallel-attention.json'])
                 report=read(suite/files[0]);self.assertFalse(report['passed']);self.assertFalse(report['formal_training_started'])
                 self.assertNotIn('samples_committed',report);self.assertNotIn('private',str(report))
+
+    def test_child_timeout_and_uncertain_cleanup_reach_automatic_failure_return(self):
+        from experiments.baseline_delivery.diagnostic_watch import DiagnosticFailure
+        child=dict(schema='qkan-diagnostic-child.v1',outcome='phase_timeout',
+                   termination=dict(parent_reaped=True,group_verified=False,remaining_pids=[123]))
+        def timeout(args,suite,report):
+            report['child_executions']=[child]
+            raise DiagnosticFailure('phase_timeout',child)
+        with tempfile.TemporaryDirectory() as temp:
+            with patch.object(diagnostic,'ROOT',Path(temp)),\
+                patch('sys.argv',['attention','--migrate-from','original','--cache','cache']),\
+                patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
+                patch.object(diagnostic,'execute',side_effect=timeout),\
+                patch('experiments.baseline_delivery.return_artifacts.upload_declared') as upload:
+                with self.assertRaises(DiagnosticFailure): diagnostic.main()
+                suite,namespace,files=upload.call_args.args
+                report=read(suite/files[0])
+                self.assertEqual(namespace,'parallel-attention')
+                self.assertEqual(report['child_executions'],[child])
+                self.assertEqual(report['diagnostics']['child_execution'],child)
+                self.assertFalse(report['passed']);self.assertFalse(report['formal_training_started'])
 
 
 if __name__=='__main__': unittest.main()

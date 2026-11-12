@@ -106,6 +106,32 @@ bash scripts/check_parallel_attention.sh \
 
 原生通过、正收益和长期持续收益均待师弟实测；任何失败不会静默开启eager长跑。正式迁移仍需后续受审准入，诊断目录不能作为训练源。实现依据为固定官方[CUDA流与反向语义](https://github.com/pytorch/pytorch/blob/v2.7.1/docs/source/notes/cuda.rst)和[独立Graph池/自动求导](https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py)，源文件哈希记录于本次交付证据。
 
+## 并行候选卡点复测
+
+2026-11-12回传的2b3df03尝试在第一次恢复检查中以KeyboardInterrupt结束，旧进度约36.9小时未更新；没有通过恢复或测速，上传成功只表示报告已回传。旧快照不能定位具体阻塞操作。
+
+专用诊断现为每个恢复/校准子进程设置`--child-timeout 900`秒总上限和`--stall-timeout 300`秒无阶段推进上限。普通训练入口不采用这些短时限。每15秒显示PID、阶段和耗时；独立心跳每5秒发布Python栈位置，心跳刷新本身不重置阶段超时。新增阶段覆盖数据/模型准备、断点恢复、副本创建/同步、编译前向、预热反向、同步、Graph捕获、两文档前反向及trace。
+
+启动前按选定GPU的UUID检查compute进程，有占用或无法核验则停止并回传。不得自动结束历史或未知进程。超时先向本次bootstrap已登记的PID请求一次faulthandler栈，再向本次新建进程组发TERM，10秒后必要时发KILL并核验Linux非僵尸成员已清空。无法确认退出会明确记录，不能开始下一子任务。原始栈和完整日志只留在本次私有诊断目录；自动回传只含有界的代码文件/函数/行号、阶段、时间、PID和退出核验，不含源代码行、局部变量或张量。
+
+从师弟当前2b3df03目录准备独立最新版后复测：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-2b3df03a444d &&
+git fetch origin research/collaboration-foundation &&
+git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
+bash .bootstrap/prepare-adaptive-checkout.sh &&
+QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure &&
+bash scripts/check_parallel_attention.sh \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 \
+  --cache /root/qkan-cache --gpu 0 \
+  --child-timeout 900 --stall-timeout 300
+```
+
+该版本先定位卡点，不宣称已经修复底层CUDA阻塞或获得提速。它仍保留原完整数值/RNG、精确恢复、实际Graph replay及正收益门槛。阶段标记不查询/同步CUDA，不改变权重或RNG；冷构建阶段立即落盘，热执行标记由后台定期落盘。所有恢复/校准子进程的退出记录合入`parallel-attention.json`，失败也用原认证通道自动回传。未通过时不启动正式训练，原840断点和两项已完成结果保持为来源。
+
 ## 进度显示
 
 短期速度是训练心跳时间戳对应的近60秒样本斜率，窗口逐步积累；重复刷新同一心跳保留测量值。长期平均采用本次进程的已提交样本增量除以墙钟耗时，包含等待/保存和已发生的验证，排除旧checkpoint前缀。旧worker无起点信息时标注“本次观察”。当前任务ETA按长期平均估计，不包含后续验证、测试、回传或其他排队任务；启动阶段平均会受编译/校准成本影响。

@@ -1,17 +1,34 @@
 """One opt-in parallel document candidate: exact recovery then real calibration.
 
-Uses the immutable original checkpoint; never starts a supervisor or formal job.
+Uses the immutable original checkpoint; never starts formal training.
 """
 import argparse
 import copy
 import datetime as dt
 import os
 from pathlib import Path
+import subprocess
 import uuid
 
-from .common import ROOT,atomic_json,child_spec,digest,fingerprint,lock,read,revision,run_child
+from .common import ROOT,atomic_json,child_spec,digest,fingerprint,lock,read,revision
 
 JOB='transformer-retrieval-s42'
+
+
+def gpu_preflight(identity):
+    """Refuse competing compute processes; never stop an unowned old worker."""
+    uuid=identity.split(',')[1].strip()
+    result=subprocess.run(['nvidia-smi','--query-compute-apps=pid,gpu_uuid',
+                           '--format=csv,noheader,nounits'],capture_output=True,text=True,timeout=5)
+    if result.returncode: raise ValueError('GPU compute-process inventory unavailable')
+    pids=[]
+    for line in result.stdout.splitlines():
+        if not line.strip(): continue
+        fields=[v.strip() for v in line.split(',')]
+        if len(fields)!=2 or not fields[0].isdigit():
+            raise ValueError('GPU compute-process inventory is not verifiable')
+        if fields[1]==uuid: pids.append(int(fields[0]))
+    return dict(idle=not pids,compute_pids=sorted(set(pids)))
 
 
 def execute(args,suite,report):
@@ -20,6 +37,9 @@ def execute(args,suite,report):
     from .runner import canary,discover_gpus
     from .torch_acceleration import policy,require_actual_backend
     from .acceleration_calibration import calibrate
+    from .diagnostic_watch import Supervisor
+    supervisor=Supervisor(getattr(args,'child_timeout',900),getattr(args,'stall_timeout',300))
+    report['child_executions']=supervisor.records
     source=revision();implementation,review_policy=policy_check()
     plan=snapshot(args.migrate_from,suite,args.cache);record=plan['jobs'][JOB]
     if record.get('completion') or not record.get('checkpoint'):
@@ -34,6 +54,9 @@ def execute(args,suite,report):
     gpus,inventory=discover_gpus(args.gpu)
     if len(gpus)!=1: raise ValueError('Choose exactly one physical GPU')
     gpu=gpus[0]
+    report['gpu_preflight']=gpu_preflight(inventory[gpu])
+    if not report['gpu_preflight']['idle']:
+        raise ValueError('Selected GPU still has compute processes; inspect listed PIDs before retrying')
     report.update(source_revision=source,job=JOB,config_sha256=fingerprint(config),gpu_identity=inventory[gpu],
         source_checkpoint_sha256=record['checkpoint']['sha256'],restored_step=record['checkpoint']['step'],
         preserved_completed=[name for name,row in plan['jobs'].items() if row.get('completion')])
@@ -43,7 +66,7 @@ def execute(args,suite,report):
     folder=suite/'preflight'/JOB;previous=os.environ.get('CUDA_VISIBLE_DEVICES')
     print('Parallel document candidate: one Retrieval recovery/trace check, then original-checkpoint calibration.',flush=True)
     report['stage']='fresh_process_recovery';os.environ['CUDA_VISIBLE_DEVICES']=gpu
-    try: receipt=canary(config,data,args.cache,folder,'cuda:0',announce=lambda message:print(message,flush=True))
+    try: receipt=canary(config,data,args.cache,folder,'cuda:0',announce=lambda message:print(message,flush=True),run=supervisor.run)
     finally:
         if previous is None: os.environ.pop('CUDA_VISIBLE_DEVICES',None)
         else: os.environ['CUDA_VISIBLE_DEVICES']=previous
@@ -54,7 +77,7 @@ def execute(args,suite,report):
     require_actual_backend(receipt,config)
     report['recovery']=receipt;report['stage']='real_checkpoint_calibration'
     print('Exact recovery passed. Calibrating the original full update: numeric/RNG agreement, finite AB/BA timing, exact rollback.',flush=True)
-    path=calibrate(suite,JOB,config,data,args.cache,gpu,inventory[gpu],record,run_child,child_spec)
+    path=calibrate(suite,JOB,config,data,args.cache,gpu,inventory[gpu],record,supervisor.run,child_spec)
     report.update(calibration=read(path),stage='complete',status='candidate_passed',passed=True)
 
 
@@ -71,7 +94,9 @@ def failure_details(suite,error):
         except (OSError,ValueError): details[name]=dict(status='compact_report_unreadable')
     for name in ('child-failure.json','recovery-validation.json'):
         compact(suite/'preflight'/JOB/name)
-    if hasattr(error,'diagnostic'): details['calibration']=error.diagnostic
+    if hasattr(error,'diagnostic'):
+        name='child_execution' if error.diagnostic.get('schema')=='qkan-diagnostic-child.v1' else 'calibration'
+        details[name]=error.diagnostic
     for name in ('uninterrupted','interrupted'):
         for filename in ('torch-acceleration.json','worker-error.json'):
             compact(suite/'preflight'/JOB/name/filename)
@@ -86,7 +111,11 @@ def main():
     parser.add_argument('--migrate-from',type=Path,required=True)
     parser.add_argument('--cache',type=Path,required=True)
     parser.add_argument('--gpu',default='0')
+    parser.add_argument('--child-timeout',type=float,default=900,help='Absolute seconds per diagnostic child; never formal training')
+    parser.add_argument('--stall-timeout',type=float,default=300,help='Seconds without a new internal phase; heartbeat alone does not reset this')
     args=parser.parse_args()
+    from .diagnostic_watch import Supervisor
+    Supervisor(args.child_timeout,args.stall_timeout)  # Reject bad limits before preparing a Suite.
     from .bootstrap import check_exchange
     check_exchange()
     suite=ROOT/'runs'/('parallel-attention-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])

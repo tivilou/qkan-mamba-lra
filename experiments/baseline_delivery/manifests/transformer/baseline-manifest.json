@@ -18,7 +18,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "f6b717818fed2c22019afe8a82cdf2b590809a6a7a4f616b8e84a8084a271ca8"
+        "sha256": "33452598177b271d05e1796f6ff85094ebfbe6fdf9696f47313e6bab45ab5ccb"
       },
       {
         "path": "experiments/baseline_delivery/protocol.json",
@@ -54,7 +54,7 @@
       },
       {
         "path": "experiments/baseline_delivery/runner.py",
-        "sha256": "900b33f1589eb107aa1332e9eaf4158816ddc8d141f2fc4e621d815cf4bf1b78"
+        "sha256": "49d5f7f4afa4deaffdde4019cfb17b0ce95319cb4f8e426ed72016a503209cdd"
       },
       {
         "path": "experiments/baseline_delivery/s5_worker.py",
@@ -106,7 +106,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "e0b8de7277f0b6a1842d38bb26d6d37b5983a38fe2e8be3c8acae5b854b531ff"
+        "sha256": "e7bea968ad565f7235b3ec6f7314a80db658ced80043f04133e4062bfe6b096b"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -162,11 +162,11 @@
       },
       {
         "path": "experiments/baseline_delivery/parallel_attention.py",
-        "sha256": "c6e4f02d682e631b963de3e72628bcfb35be93d5545798889b6b7826022db875"
+        "sha256": "412cfe1949ccbc954f4b978e14d7fe376e752176cb590c8057acf58d8cb27ec5"
       },
       {
         "path": "experiments/baseline_delivery/attention_diagnostic.py",
-        "sha256": "14639221dfd080f7d5a971d5667955f7f0736d442885daad5b5b5ecd236e6997"
+        "sha256": "fd143d535ad91174f4cd0585b895350843edcde8b9923094752c9f3b76dcfdd8"
       },
       {
         "path": "scripts/check_parallel_attention.sh",
@@ -174,7 +174,15 @@
       },
       {
         "path": "tests/test_baseline_parallel_attention.py",
-        "sha256": "d286c21ddf27fd19743aee165faa3277af104503e1a2fb4a059093513c581609"
+        "sha256": "6a627face7cdacac1e90ba4ecf2d8bd86b745f0eb465c2d81e4351fbaf6d6d39"
+      },
+      {
+        "path": "experiments/baseline_delivery/diagnostic_watch.py",
+        "sha256": "d5d6500a2b4e6bd57119c393266293cbea4fecf877ffdefdb16b30a03b4dbeed"
+      },
+      {
+        "path": "tests/test_baseline_diagnostic_watch.py",
+        "sha256": "551c599387f5904e97ed52eef8c3285fc17e7f33c266b713ee99446ac16c8184"
       }
     ]
   },

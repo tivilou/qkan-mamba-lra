@@ -8,6 +8,7 @@ import copy
 import gc
 
 from .torch_acceleration import BackendFailure,CaptureCapacity,backend_diagnostic,fatal_cuda,graph_rng_budget
+from .diagnostic_watch import mark
 
 
 def encoder_parameters(model):
@@ -44,12 +45,15 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
             # Independent static gradients/pools: no concurrent AccumulateGrad
             # into shared model parameters, no allocator-reused gradient alias.
             for index,gradient in ((1,g2),(0,g1)):
+                mark('document_backward_stream_wait',document=index,flush=owner.backward_replays==0)
                 stream=owner.streams[index];stream.wait_stream(main)
                 with torch.cuda.stream(stream):
                     output=ctx.outputs[index]
                     if gradient is None: gradient=torch.zeros_like(output)
+                    mark('document_backward_replay',document=index,flush=owner.backward_replays==0)
                     values[index]=torch.autograd.grad(output,owner.parameters[index],gradient,
                         allow_unused=True)
+            mark('backward_join')
             for stream in owner.streams: main.wait_stream(stream)
             owner.backward_replays+=2
             return (None,None,None,*fixed_merge(torch,*values))
@@ -75,6 +79,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                 execution_streams=2,encoder_replicas=2,gradient_merge='document2_plus_document1_fixed_order',
                 compiler_backend='eager',inductor_fusion=False)
         def clear(self):
+            mark('graph_cleanup',flush=True)
             # Complete side-stream accesses before releasing any static buffers.
             if self.streams:
                 main=torch.cuda.current_stream()
@@ -114,12 +119,15 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
             self.clear()
             if self.builds>=config['max_builds']: raise BackendFailure('Parallel graph build budget exhausted')
             self.builds+=1
+            mark('replica_create',flush=True)
             self.replicas=tuple(copy.deepcopy(model) for _ in range(2))
             self.parameters=tuple(tuple(p for _,p in encoder_parameters(replica)) for replica in self.replicas)
             if any(tuple(n for n,_ in encoder_parameters(replica))!=tuple(n for n,_ in self.original)
                     for replica in self.replicas):
                 raise BackendFailure('Replica encoder parameter identity differs')
+            mark('replica_initial_sync',flush=True)
             self.streams=tuple(torch.cuda.Stream() for _ in range(2));self.sync_replicas()
+            mark('compile_callables',flush=True)
             self.compiled=tuple(torch.compile(replica.encode,backend='eager',fullgraph=True,dynamic=False)
                 for replica in self.replicas)
             graphs=[];rng=get_rng()
@@ -132,25 +140,35 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                     adapter=Encoder(replica,compiled);static=(value.detach().clone(),)
                     # Compile and warm native backward before graph capture. The
                     # warmup is excluded from admission timing and RNG progression.
+                    mark('compile_forward',document=index,flush=True)
                     output=compiled(*static,validated_inputs=True)
+                    mark('warmup_backward',document=index,flush=True)
                     gradients=torch.autograd.grad(output,self.parameters[index],torch.ones_like(output),allow_unused=True)
                     del gradients,output
+                    mark('warmup_synchronize',document=index,flush=True)
                     torch.cuda.synchronize();torch.cuda.empty_cache();self.warmups+=1
                     # Separate calls allocate independent pools: both documents'
                     # activations must coexist through their backwards.
+                    mark('graph_capture',document=index,flush=True)
                     graphs.append(torch.cuda.make_graphed_callables(adapter,static,
                         num_warmup_iters=config['graph_warmup'],allow_unused_input=True))
                 self.graph=tuple(graphs)
             finally:
+                mark('capture_finalize_synchronize',flush=True)
                 torch.cuda.synchronize();set_rng(rng)
+            mark('capture_ready',flush=True)
         def encode_pair(self,inputs):
+            mark('replica_refresh')
             self.sync_replicas();main=torch.cuda.current_stream();outputs=[]
             # Submit document1 before document2 to preserve RNG reservation order.
             for index,value in enumerate(inputs):
+                mark('document_forward_stream_wait',document=index)
                 stream=self.streams[index];stream.wait_stream(main)
                 with torch.cuda.stream(stream),torch.enable_grad():
+                    mark('document_forward_replay',document=index)
                     outputs.append(self.graph[index](value))
                 self.replays+=1
+            mark('forward_join')
             for stream in self.streams: main.wait_stream(stream)
             return tuple(outputs)
         def documents(self,batch):
