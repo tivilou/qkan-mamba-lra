@@ -113,7 +113,7 @@
       },
       {
         "path": "docs/baselines/torch-acceleration.md",
-        "sha256": "e91048ea6c063f67b1f1fc42e0f7a3ec08620d71f911078df785dec41bc607e2"
+        "sha256": "c5f0ab3cbd21fcc175113038ebc41d96728a5ec3e9a65d70b0b5bc6bc5dcbab3"
       },
       {
         "path": "scripts/run_admitted.py",
@@ -169,7 +169,7 @@
       },
       {
         "path": "experiments/baseline_delivery/parallel_attention.py",
-        "sha256": "36cc9dbb485e85205dff292cffdfc95ae7997de9571be632ef86c125917391a1"
+        "sha256": "2fa002f6c5b6bb40094778ffce80e8ba7ab139debe60ebf72a6a6984c4f72e43"
       },
       {
         "path": "experiments/baseline_delivery/attention_diagnostic.py",
@@ -181,7 +181,7 @@
       },
       {
         "path": "tests/test_baseline_parallel_attention.py",
-        "sha256": "79e9e81935c4e8d43bd71550ab77953437aca947479949adf5436e8814d69a89"
+        "sha256": "5f9f04e26a1ee7e7689c6cc9f5a368a367074267f0854bed544d2f1a638bcee2"
       },
       {
         "path": "experiments/baseline_delivery/diagnostic_watch.py",

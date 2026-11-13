@@ -11,18 +11,20 @@ from unittest.mock import Mock,patch
 
 from experiments.baseline_delivery import attention_diagnostic as diagnostic
 from experiments.baseline_delivery.common import atomic_json,read,fingerprint,child_spec
-from experiments.baseline_delivery.parallel_attention import parallel_runtime,fixed_merge
+from experiments.baseline_delivery.parallel_attention import parallel_runtime,fixed_merge,stream_graphed_encoder
 from experiments.baseline_delivery.torch_acceleration import policy,torch_runtime,BackendFailure,CaptureCapacity,Executor,admit_recovery,RecoveryMismatch,AccelerationRequired
 
 
 class Tensor:
     dtype='float32';device='cuda:0';requires_grad=True;grad=None
     def __init__(self,value,shape=(16,10)): self.value=value;self.shape=shape
-    def clone(self): return Tensor(self.value,self.shape)
+    def clone(self):
+        result=Tensor(self.value,self.shape);result.requires_grad=self.requires_grad;return result
     def detach(self): return self
     def copy_(self,other): self.value=other.value
     def __add__(self,other): return Tensor(self.value+other.value,self.shape)
     def record_stream(self,stream): pass
+    def data_ptr(self): return id(self)
 
 
 class Module:
@@ -82,6 +84,10 @@ class StreamOwnershipTests(unittest.TestCase):
         self.runtime=torch_runtime(self.torch,self.model,lambda:self.rng[0],lambda value:self.rng.__setitem__(0,value),
             policy('compile_graph','eager_parallel','graph'))
         self.batch=dict(inputs1=Tensor(3),inputs2=Tensor(5))
+        self.capture=Mock(side_effect=lambda torch,call,static,parameters,stream,warmup:
+            torch.cuda.make_graphed_callables(call,static,stream=stream,warmup=warmup))
+        capture_patch=patch('experiments.baseline_delivery.parallel_attention.stream_graphed_encoder',self.capture)
+        capture_patch.start();self.addCleanup(capture_patch.stop)
         self.runtime.begin_update(16)
 
     def test_two_independent_pools_replicas_and_fixed_merge_original_head(self):
@@ -99,6 +105,8 @@ class StreamOwnershipTests(unittest.TestCase):
         self.assertEqual(result[:3],(None,None,None));self.assertEqual(result[3].value,260)
         self.assertEqual(self.model.weight.value,2);self.assertIsNone(self.model.weight.grad)
         self.assertEqual(self.runtime.status()['backward_graph_replays'],2)
+        self.assertEqual(self.runtime.status()['capture_streams'],'per_document_explicit')
+        self.assertEqual([row[2]['stream'] for row in captures],list(self.runtime.streams))
 
     def test_stream_dependencies_surround_forward_backward_and_original_merge(self):
         self.runtime.forward(self.batch,'compile_graph');self.events.clear()
@@ -181,6 +189,67 @@ class StreamOwnershipTests(unittest.TestCase):
         self.assertEqual([v.value if v else None for v in merged],[3,2,1,None])
         for value in merged:
             if value: self.assertIsNot(value,a);self.assertIsNot(value,b)
+
+
+class ExplicitCaptureTests(unittest.TestCase):
+    def setUp(self):
+        self.torch,self.events,self.rng=framework()
+        self.current=self.torch.cuda.current_stream()
+        @contextmanager
+        def switch(stream):
+            before=self.current;self.current=stream
+            try: yield
+            finally: self.current=before
+        self.torch.cuda.stream=switch;self.torch.cuda.current_stream=lambda:self.current
+        events=self.events
+        class Graph:
+            def replay(self): events.append(('replay',id(self)))
+        @contextmanager
+        def capture(graph,pool,stream):
+            with switch(stream):
+                events.append(('explicit_capture',id(graph),pool,stream.name))
+                yield
+        self.torch.cuda.CUDAGraph=Graph
+        self.torch.cuda.graph_pool_handle=lambda:object()
+        self.torch.cuda.graph=capture
+        self.torch.empty_like=lambda t:Tensor(0,t.shape)
+
+    def build(self,stream,value=3):
+        token=Tensor(value);token.requires_grad=False
+        parameter=Tensor(2)
+        return stream_graphed_encoder(self.torch,lambda x:Tensor(x.value*2),
+            (token,),(parameter,),stream,2),parameter
+
+    def test_each_document_captures_both_directions_on_its_own_stream_and_pool(self):
+        streams=[self.torch.cuda.Stream(),self.torch.cuda.Stream()]
+        for stream in streams: self.build(stream)
+        captures=[row for row in self.events if row[0]=='explicit_capture']
+        self.assertEqual([row[3] for row in captures],[s.name for s in streams for _ in range(2)])
+        self.assertEqual(captures[0][2],captures[1][2]);self.assertEqual(captures[2][2],captures[3][2])
+        self.assertIsNot(captures[0][2],captures[2][2])
+        self.torch.cuda.make_graphed_callables.assert_not_called()
+        self.assertEqual(len([e for e in self.events if e[0]=='backward']),6)
+
+    def test_graph_wrapper_binds_replica_parameters_and_returns_detached_gradient_slots(self):
+        stream=self.torch.cuda.Stream();call,parameter=self.build(stream)
+        self.events.clear();value=Tensor(9);value.requires_grad=False
+        with self.torch.cuda.stream(stream): output=call(value)
+        graph=FakeFunction.__subclasses__()[-1]
+        self.assertIs(graph.last_args[-1],parameter)
+        self.assertEqual(output.value,6)  # Static output: fake replay has no CUDA computation.
+        result=graph.backward(graph.last_context,Tensor(4))
+        self.assertEqual(result[0],None);self.assertEqual(len(result),2)
+        self.assertEqual(len([e for e in self.events if e[0]=='replay']),2)
+        # Runtime replay never uses host synchronization or repeats Python encoder.
+        syncs=self.torch.cuda.synchronize.call_count
+        call(value)
+        self.assertEqual(self.torch.cuda.synchronize.call_count,syncs)
+
+    def test_differentiable_or_multiple_token_inputs_are_rejected_before_capture(self):
+        stream=self.torch.cuda.Stream();token=Tensor(1)
+        for static in ((token,),(),(token,token)):
+            with self.assertRaises(BackendFailure):
+                stream_graphed_encoder(self.torch,lambda x:x,static,(Tensor(2),),stream,1)
 
 
 class HandoffTests(unittest.TestCase):

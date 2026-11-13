@@ -158,6 +158,32 @@ bash scripts/check_parallel_attention.sh \
 
 结束后同样自动回传`parallel-attention.json`；无需为回传重跑计算。原840训练断点及两项已完成结果仍是唯一来源。阶段观察通过后，去掉`--stage-fences`才会执行原有完整恢复和真实断点AB/BA校准；所有数值、RNG、精确恢复、精确回滚与正收益门槛保留。新版本的原生阻塞修复与提速均待验证。
 
+## 显式隔离每个文档的Graph捕获流
+
+2026-11-13回传`parallel-attention-20261113T005247Z-6a526c1a`表明，a39在关闭`--stage-fences`后仍于首次恢复子进程超时。最后阶段为`gradient_merge`，信号栈位于`fixed_merge`的张量加法；本次子进程已回收，Linux进程组为空。上次逐阶段等待检查的通过只适用于带额外同步的执行，正常并发与速度仍待验证。
+
+源码复查发现：v2.7.1的`make_graphed_callables`调用`torch.cuda.graph`时未传stream，两个独立内存池仍使用同一个默认捕获流。该版本的[cuBLAS工作区缓存](https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CublasHandlePool.cpp)以(handle, stream)为键；独立副本和Graph池本身没有隔离这个库工作区。因此，捕获在同一流的两个反向图并发回放，存在共享工作区的风险。这是源码支持的风险判断，尚非本次阻塞的原生根因证明。
+
+修订用公开`CUDAGraph`和`torch.cuda.graph(...,stream=本路流,pool=本路池)`分别捕获每个文档的前反向，并用自动求导桥接静态输出/参数梯度。每路内部前向、反向共用本路池；两文档使用不同捕获流。整数输入无梯度，副本参数梯度保持原固定合并顺序；正常回放不增加主机同步。默认生成器的前向设备顺序约束继续保留。没有启用AMP、TF32或替换注意力，也没有将Dynamo eager标记成Inductor融合。
+
+师弟从现有a39目录准备更新后，直接运行关闭逐阶段等待的检查：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-a39f7637f40e &&
+git fetch origin research/collaboration-foundation &&
+git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
+bash .bootstrap/prepare-adaptive-checkout.sh &&
+QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure &&
+bash scripts/check_parallel_attention.sh \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 \
+  --cache /root/qkan-cache --gpu 0 \
+  --child-timeout 900 --stall-timeout 300
+```
+
+本次只检查该修订的精确恢复/trace和真实断点完整更新数值/RNG、速度及精确回滚，结束自动回传。原840断点和两项已完成结果保留，正式训练不在此入口启动。旧a39工作目录仍可用于版本回退；它的未加等待版本已有超时证据，应保留用于审计。新版原生阻塞修复和正收益均待师弟回传。
+
 ## 进度显示
 
 短期速度是训练心跳时间戳对应的近60秒样本斜率，窗口逐步积累；重复刷新同一心跳保留测量值。长期平均采用本次进程的已提交样本增量除以墙钟耗时，包含等待/保存和已发生的验证，排除旧checkpoint前缀。旧worker无起点信息时标注“本次观察”。当前任务ETA按长期平均估计，不包含后续验证、测试、回传或其他排队任务；启动阶段平均会受编译/校准成本影响。

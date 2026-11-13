@@ -24,6 +24,45 @@ def fixed_merge(torch,left,right):
         for a,b in zip(left,right))
 
 
+def stream_graphed_encoder(torch,call,static,parameters,stream,warmup):
+    """One FP32 encoder, explicit capture/replay stream and private graph pool.
+
+    Unlike make_graphed_callables' shared default capture stream, each document
+    captures its library workspace on its own persistent stream. Integer token
+    inputs have no gradient; only the supplied replica parameters are trainable.
+    Forward/backward share this document's pool and execute in that order.
+    """
+    if len(static)!=1 or static[0].requires_grad:
+        raise BackendFailure('Document Graph requires one non-differentiable token input')
+    main=torch.cuda.current_stream();stream.wait_stream(main)
+    with torch.cuda.stream(stream),torch.enable_grad():
+        for _ in range(warmup):
+            output=call(*static)
+            torch.autograd.grad(output,parameters,torch.ones_like(output),allow_unused=True)
+    torch.cuda.synchronize()
+    pool=torch.cuda.graph_pool_handle()
+    forward=torch.cuda.CUDAGraph();backward=torch.cuda.CUDAGraph()
+    with torch.cuda.graph(forward,pool=pool,stream=stream):
+        output=call(*static)
+    gradient=torch.empty_like(output)
+    with torch.cuda.graph(backward,pool=pool,stream=stream):
+        gradients=torch.autograd.grad(output,parameters,gradient,allow_unused=True)
+
+    class GraphedEncoder(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx,value,*replica_parameters):
+            if value.data_ptr()!=static[0].data_ptr(): static[0].copy_(value)
+            forward.replay()
+            return output.detach()
+        @staticmethod
+        @torch.autograd.function.once_differentiable
+        def backward(ctx,incoming):
+            if gradient.data_ptr()!=incoming.data_ptr(): gradient.copy_(incoming)
+            backward.replay()
+            return (None,*(g.detach() if g is not None else None for g in gradients))
+    return lambda value:GraphedEncoder.apply(value,*parameters)
+
+
 def parallel_runtime(torch,model,get_rng,set_rng,config):
     shape=getattr(model,'config',{})
     if (shape.get('model')!='transformer' or shape.get('task')!='retrieval'
@@ -88,6 +127,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                 capture_partition='parallel_retrieval_documents',capture_budget=self.capture_budget,
                 execution_streams=2,encoder_replicas=2,gradient_merge='document2_plus_document1_fixed_order',
                 forward_schedule='document1_then_document2_shared_rng',backward_schedule='independent_streams',
+                capture_streams='per_document_explicit',library_workspace_scope='capture_stream_per_document',
                 compiler_backend='eager',inductor_fusion=False)
         def clear(self):
             mark('graph_cleanup',flush=True)
@@ -161,8 +201,8 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                     # Separate calls allocate independent pools: both documents'
                     # activations must coexist through their backwards.
                     mark('graph_capture',document=index,flush=True)
-                    graphs.append(torch.cuda.make_graphed_callables(adapter,static,
-                        num_warmup_iters=config['graph_warmup'],allow_unused_input=True))
+                    graphs.append(stream_graphed_encoder(torch,adapter,static,self.parameters[index],
+                        self.streams[index],config['graph_warmup']))
                 self.graph=tuple(graphs)
             finally:
                 mark('capture_finalize_synchronize',flush=True)
