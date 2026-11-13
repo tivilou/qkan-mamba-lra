@@ -1,0 +1,18 @@
+{
+  "schema": "qkan-code-publication.v1",
+  "date": "2026-11-13",
+  "status": "remote_ref_verified",
+  "branch": "research/collaboration-foundation",
+  "code_revision": "abe8694cab9e072e53211b513aad21cb9a485b65",
+  "prior_remote_revision": "a39f7637f40e65cd621becbcd56d7499eb3a9169",
+  "relay_role": "authorized_project_development_3080",
+  "bundle_sha256": "7d806f667f8dd68913a44b3d6ebbe8f220057934adead5e4785a05f41c3f4a6e",
+  "remote_bundle_hash_verified": true,
+  "non_force_push": true,
+  "github_branch_ref_verified": true,
+  "executor_checkout_changed": false,
+  "gpu_or_model_test": false,
+  "training_started": false,
+  "delivery": "docs/evidence/parallel-attention-capture-stream-delivery-20261113.json",
+  "native_remaining": "Junior unfenced exact recovery/trace and original-checkpoint numerical/RNG/rollback/positive-gain validation."
+}

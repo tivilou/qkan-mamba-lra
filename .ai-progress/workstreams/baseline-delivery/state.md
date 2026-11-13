@@ -6,6 +6,7 @@
 
 ## Current State
 
+- Published code abe8694cab9e072e53211b513aad21cb9a485b65 through authorized3080 relay; GitHub branch ref verified exactly. Publication receipt: docs/evidence/parallel-attention-capture-stream-publication-20261113.json. No executor checkout or GPU job changed.
 - Latest a39 unfenced native attempt parallel-attention-20261113T005247Z-6a526c1a failed at first recovery child233018: phase_timeout,exit-9,326.49seconds. Last phase gradient_merge/sequence102; signal stack at fixed_merge tensor add. All owned processes reaped; Linux group empty. Authenticated44560byte receipt SHA256a7e48fd0656d28602c0af3b06c5ab4cdebbbac95d08d855cffc3df4ea576af81. Review: docs/evidence/parallel-attention-unfenced-review-20261113.json. Prior fenced a39 suite5f40efea passed exact logical32/64/128 recovery and trace with0/75/0 exits, but serialized observation did not establish unfenced correctness or speedup.
 - Source-supported new finding: PyTorch2.7.1 make_graphed_callables uses shared default capture stream even across independent graph pools; cuBLAS workspace cache key is(handle,stream). Revised candidate uses public explicit CUDAGraph captures on each document's persistent stream, so library workspace stream keys differ. Two directions share only their own document pool. Replica parameter surfaces/static gradients/fixed merge retained; normal replay adds no host wait. This addresses a concrete isolation hazard, not a proven native root cause or speedup. Delivery: docs/evidence/parallel-attention-capture-stream-delivery-20261113.json.
 - Prior a36 suite parallel-attention-20261112T105040Z-c9265218 timed out after300seconds unchanged phase. Last backward_join marker was followed by a host wait at bool(finite); exact faulty kernel remains unlocated. Child232772 reaped and Linux group empty. Immutable prior review: docs/evidence/parallel-attention-phase-review-20261112.json.
@@ -23,7 +24,7 @@
 
 ## Next Actions
 
-- Deliver explicit per-document capture stream fix through3080 relay, then junior prepares new worktree from existing a39 and runs scripts/check_parallel_attention.sh without --stage-fences, using original840 source/GPU0/cache,900/300second limits. Preserve all historical reports,840 checkpoint and two completed results.
+- Junior prepares published abe8694 capture-stream worktree from existing a39 and runs scripts/check_parallel_attention.sh without --stage-fences, using original840 source/GPU0/cache,900/300second limits. Preserve all historical reports,840 checkpoint and two completed results.
 - A fenced pass only clears serialized observation. Then require unfenced exact recovery/trace, original-checkpoint full-update numerical/RNG agreement, actual Graph replays, exact zero-commit rollback and measured positive gain before admitted continuation. Preserve original840 and both completed results.
 
 ## Validation / Evidence
