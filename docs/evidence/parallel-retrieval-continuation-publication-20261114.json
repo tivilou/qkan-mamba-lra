@@ -1,0 +1,19 @@
+{
+  "schema": "qkan-code-publication.v1",
+  "date": "2026-11-14",
+  "status": "remote_ref_verified",
+  "branch": "research/collaboration-foundation",
+  "code_revision": "b07d98e17ad0f996dbd416b0f38e015df6af4f60",
+  "prior_remote_revision": "abe8694cab9e072e53211b513aad21cb9a485b65",
+  "relay_role": "authorized_project_development_3080",
+  "bundle_sha256": "16951c709e8a8f75e2904d45c6088614f194d665e00d58c50db0ad97959d21f8",
+  "remote_bundle_hash_verified": true,
+  "bundle_prerequisite_verified": true,
+  "non_force_push": true,
+  "github_branch_ref_verified": true,
+  "executor_checkout_changed": false,
+  "gpu_or_model_test": false,
+  "training_started": false,
+  "delivery": "docs/evidence/parallel-retrieval-continuation-delivery-20261114.json",
+  "native_remaining": "Junior new-revision cohort admission and checkpoint continuation; sustained gain remains unmeasured."
+}
