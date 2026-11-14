@@ -1,0 +1,92 @@
+{
+  "schema": "qkan-active-parallel-continuation-review.v1",
+  "date": "2026-11-14",
+  "source_revision": "b07d98e17ad0f996dbd416b0f38e015df6af4f60",
+  "suite": "adaptive-migrated-20261114T040717Z-233292",
+  "authentic_exchange_receipts": {
+    "gate-report.json": {
+      "bytes": 307,
+      "sha256": "7195f2c3cbb8240e329c6eead8e334f5876e1b19cd8743b60f0a027e4b62d18a"
+    },
+    "gate-evidence.json": {
+      "bytes": 189875,
+      "sha256": "b229bcbc9efd309c854d5060bc5ac36256c66c06dc0b7102b951e2db634ce721"
+    }
+  },
+  "verified_admission": {
+    "source_probes": 5,
+    "unfinished_recovery_trace": 23,
+    "preserved_completed": 2,
+    "target_job": "transformer-retrieval-s42",
+    "target_mode": "compile_graph",
+    "target_backend": "eager_parallel",
+    "original_step": 12683,
+    "roundtrip": "exact",
+    "sample_prefix": 1596550,
+    "sample_budget": 11779000
+  },
+  "calibration": {
+    "eager_seconds": 8.86125878058374,
+    "accelerated_seconds": 7.878723220899701,
+    "time_reduction_percent": 11.087990814994718,
+    "throughput_gain_percent": 12.470745984294629,
+    "expected_samples_per_second": 16.246287172578604,
+    "graph_forward_replays": 96,
+    "graph_backward_replays": 96,
+    "numerical_rng": "passed unchanged thresholds",
+    "rollback_exact": true,
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0
+  },
+  "user_screenshot_observation": {
+    "timestamp_label": "2026-11-14 13:18:29 CST",
+    "evidence_kind": "User supplied dashboard snapshot, not authenticated live worker telemetry",
+    "formal_training_running": true,
+    "task": "transformer-retrieval-s42",
+    "step": 12839,
+    "samples": 1616518,
+    "sample_budget": 11779000,
+    "short_samples_per_second": 16.02,
+    "long_samples_per_second": 14.06,
+    "micro_batch": 16,
+    "logical_batch": 128,
+    "oom_count_cumulative": 5,
+    "graph_capacity_count_cumulative": 1,
+    "last_event": "graph_rng_capacity_downgrade",
+    "gpu_utilization_percent": 100,
+    "board_used_gib": 11.04,
+    "board_total_gib": 24.0,
+    "eta_label": "200:49:59"
+  },
+  "capacity_interpretation": {
+    "current_declared_policy": "Conservative per-forward-Graph random offset budget",
+    "micro16": {
+      "schema": "qkan-graph-rng-budget.v1",
+      "stage": "capture_budget",
+      "category": "rng_offset_capacity",
+      "estimated_increment": 4292608000,
+      "limit": 4294967295,
+      "rows": 16,
+      "length": 4000,
+      "documents_per_graph": 1,
+      "passed": true
+    },
+    "micro32": {
+      "schema": "qkan-graph-rng-budget.v1",
+      "stage": "capture_budget",
+      "category": "rng_offset_capacity",
+      "estimated_increment": 8585216000,
+      "limit": 4294967295,
+      "rows": 32,
+      "length": 4000,
+      "documents_per_graph": 1,
+      "passed": false
+    },
+    "stopping_reason": "Existing policy rejects micro32 before capture even when memory is available; logical128 uses accumulation",
+    "last_event_semantics": "Last transition persists during stable training; repeated text is not a count of repeated events",
+    "oom_semantics": "Controller count is restored from checkpoint; screenshot alone does not establish how many occurred in this process"
+  },
+  "claim_boundary": "Verified new-revision runtime admission and a user-reported active snapshot; sustained wall-time gain and other-task speedup remain unmeasured",
+  "next": "Keep current admitted run active; compare committed-sample long/short rates and cumulative counter changes without restarting or forcing micro32",
+  "owner_model_or_framework_execution": false
+}
