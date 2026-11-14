@@ -1,0 +1,60 @@
+{
+  "schema": "qkan-parallel-attention-native-review.v1",
+  "date": "2026-11-12",
+  "status": "interrupted_before_recovery_admission",
+  "executed_revision": "2b3df03a444da405ccdf5646e206511aa2ba6366",
+  "artifacts": [
+    {
+      "exchange_path": "qkan-mamba/parallel-attention/parallel-attention-20261110T131518Z-33715e47/parallel-attention.json",
+      "size_bytes": 2652,
+      "sha256": "c9c735892036aef3e323ddd67e39ea40ce3a5df94a300fe1897d1d9f089987bb",
+      "receipt_uploaded_at": "2026-11-12T02:07:09.688385+00:00"
+    },
+    {
+      "exchange_path": "qkan-mamba/parallel-attention-inspection/inspection-fbc73922/inspection.json",
+      "size_bytes": 3476,
+      "sha256": "474bba7a98d2ac3479beea8a3f31e31c486f975b376e37f7989cf7781fd5bf86",
+      "receipt_uploaded_at": "2026-11-12T02:07:23.631677+00:00"
+    }
+  ],
+  "verification": {
+    "read_from_authorized_project_exchange": true,
+    "stored_receipt_size_and_sha256_match": true,
+    "local_download_size_and_sha256_match": true,
+    "native_framework_loaded_on_owner": false,
+    "experiment_started_or_interrupted_by_this_review": false
+  },
+  "observed": {
+    "candidate_passed": false,
+    "candidate_stage": "fresh_process_recovery",
+    "error_type": "KeyboardInterrupt",
+    "last_published_phase": "compile_capture_warmup",
+    "last_published_step": 0,
+    "last_published_graph_builds": 0,
+    "last_published_graph_replays": 0,
+    "last_published_backward_graph_replays": 0,
+    "last_published_benchmarked": false,
+    "status_file_age_seconds_at_inspection": 132721.10686779022,
+    "whole_device_utilization_percent_at_inspection": 100,
+    "whole_device_memory_used_MiB_at_inspection": 2232,
+    "formal_training_started_in_candidate_report": false,
+    "preserved_completed_in_candidate_report": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ]
+  },
+  "source_audit": {
+    "experiments/baseline_delivery/common.py:143": "run_child calls child.wait without a timeout; finally invokes stop_child when the wait exits or is interrupted.",
+    "experiments/baseline_delivery/torch_acceleration.py:231": "Executor publishes compile_capture_warmup before entering runtime.forward; the returned initial snapshot cannot locate an internal blocking operation.",
+    "experiments/baseline_delivery/parallel_attention.py": "Runtime stage/counters are changed in memory, without incremental publication inside replica creation, compile warmup, native backward and make_graphed_callables."
+  },
+  "interpretation": {
+    "report_return": "Verified successful transport, not recovery, benchmark or training completion.",
+    "last_status": "Stale snapshot; zero counters do not prove that the live process never entered graph construction.",
+    "root_cause": "Unresolved: no blocking stack, internal-stage timeline or attributed GPU process returned. Do not assert deadlock, OOM or numerical mismatch.",
+    "interruption": "KeyboardInterrupt is reported; its human or signal origin is not established.",
+    "speedup": "No new numerical/RNG, exact recovery, actual replay, rollback or throughput admission result is available.",
+    "original_source": "The report binds the original checkpoint hash; this review did not independently inspect the collaborator's current source process or checkpoint bytes."
+  },
+  "next_action": "Before another candidate run, add bounded diagnostic-child execution and termination verification plus internal-stage liveness and bounded stack return; retain the original checkpoint and both completed results. Do not repeat the unchanged long wait or launch formal training."
+}

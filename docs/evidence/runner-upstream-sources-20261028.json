@@ -1,0 +1,65 @@
+{
+  "schema": "qkan-primary-source-receipt.v1",
+  "pins": {},
+  "policy": {
+    "requests_max": 3,
+    "retries": 0,
+    "per_origin_concurrency": 1,
+    "minimum_delay_seconds": 1.5,
+    "freshness": "retrieval time or explicitly unvalidated cache age",
+    "purpose": "baseline candidates, upstream protocol, dataset use terms",
+    "allowed_fields": [
+      "public paper metadata",
+      "README",
+      "commit",
+      "public use and license terms"
+    ]
+  },
+  "sources": [
+    {
+      "id": "s4d-module",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/models/s4/s4d.py",
+      "retrieved_at": "2026-10-28T13:14:36.454094+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/models/s4/s4d.py",
+      "cache_state": "miss",
+      "sha256": "4aab484e96dba85b2eba14f54c42df103a314a087ca184bfcca30e77d0faea2c",
+      "size_bytes": 3671,
+      "response_classification": "public_primary_source"
+    },
+    {
+      "id": "s4-license",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/LICENSE",
+      "retrieved_at": "2026-10-28T13:14:36.898924+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/LICENSE",
+      "cache_state": "miss",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "size_bytes": 11357,
+      "response_classification": "public_primary_source"
+    },
+    {
+      "id": "s4-dropout",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/src/models/nn/dropout.py",
+      "retrieved_at": "2026-10-28T13:14:38.849551+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/src/models/nn/dropout.py",
+      "cache_state": "miss",
+      "sha256": "4cbe734786c1149f8ed8d6d2bdced4a519c172afbfc8d369dc7f493cfdde027f",
+      "size_bytes": 3542,
+      "response_classification": "public_primary_source"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "qkan-reviewed-scheduler-receipts.v1",
+  "observed_at": "2026-10-28T09:49:09.903473+00:00",
+  "checkpoints": [
+    {
+      "task": "87b98cf78b1b4fd3b2bc94b45e970251",
+      "attempt": "1eee55f37df8422499d64c7967a3f258",
+      "node": "owner-recovery-3080ti",
+      "revision": "6fd939241d8d1167188d9576a25aaa9c114019a3",
+      "state": "complete",
+      "quiescent": true,
+      "returncode": 0,
+      "finished": 1793180726.5944774,
+      "outputs": {
+        "build-manifest.json": {
+          "bytes": 11020,
+          "sha256": "1877ae821926f0da2322fb2b7ace9277836e4b2afb418abd8688770ff1446d2f"
+        },
+        "checks.json": {
+          "bytes": 276,
+          "sha256": "37efc8fcbe9191bb303f750b29958fef082a025e682443cac077244555463a8d"
+        },
+        "diagnostics.json": {
+          "bytes": 19677,
+          "sha256": "e3a227951652780c5de68de3fc12d556cdd8d3cc2433b2dc84f838245e832eb7"
+        },
+        "document-curation.json": {
+          "bytes": 5565,
+          "sha256": "8cd09ce95d04564fa3395548d3e29626bbf87be78d8e87a60e68c55fcc5ab193"
+        },
+        "pilot.json": {
+          "bytes": 1734,
+          "sha256": "8e405ee16abc85a6288867017778ffa1323f8c81ec7c19c21991f43ed29bde5e"
+        },
+        "relations.json": {
+          "bytes": 2031,
+          "sha256": "aa521f30d8c4a822d154267c61b0ff0c19eb2a3b34422f1a23230b04fdac0436"
+        }
+      }
+    }
+  ]
+}

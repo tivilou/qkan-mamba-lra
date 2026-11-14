@@ -78,40 +78,7 @@ def process_listops(raw_dir: Path, out_dir: Path):
 
 
 def process_text(raw_dir: Path, out_dir: Path, max_len: int = 4096):
-    print("Processing Text (IMDB)...")
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    splits = {
-        "train": "new_aan_pairs.train.tsv",
-        "val": "new_aan_pairs.eval.tsv",
-        "test": "new_aan_pairs.test.tsv",
-    }
-    text_dir = raw_dir / "tsv_data"
-
-    for split, fname in splits.items():
-        path = text_dir / fname
-        if not path.exists():
-            path = raw_dir / "lra_release" / fname
-        if not path.exists():
-            print(f"  SKIP {split}: file not found")
-            continue
-
-        inputs_list, labels_list = [], []
-        with open(path) as f:
-            for line in f:
-                parts = line.strip().split("\t")
-                if len(parts) < 2:
-                    continue
-                text = parts[0]
-                label = int(parts[1])
-                tokens = tokenize_chars(text, max_len)
-                inputs_list.append(tokens)
-                labels_list.append(label)
-
-        inputs = np.array(inputs_list, dtype=np.float32)
-        labels = np.array(labels_list, dtype=np.int64)
-        np.savez(out_dir / f"{split}.npz", inputs=inputs, labels=labels)
-        print(f"  {split}: {len(labels)} samples")
+    raise RuntimeError("Disabled: this legacy IMDB converter reads AAN pairs. Use the audited MEGA rebuild.")
 
 
 def process_retrieval(raw_dir: Path, out_dir: Path, max_len: int = 4000):
@@ -198,23 +165,7 @@ def process_pathfinder(raw_dir: Path, out_dir: Path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Preprocess LRA data to .npz")
-    parser.add_argument("--raw_dir", type=str, required=True,
-                        help="Path to raw LRA data (lra_release/)")
-    parser.add_argument("--out_dir", type=str, default="data/lra",
-                        help="Output directory (default: data/lra)")
-    args = parser.parse_args()
-
-    raw_dir = Path(args.raw_dir)
-    out_dir = Path(args.out_dir)
-
-    process_listops(raw_dir, out_dir / "listops")
-    process_text(raw_dir, out_dir / "text")
-    process_retrieval(raw_dir, out_dir / "retrieval")
-    process_image(raw_dir, out_dir / "image")
-    process_pathfinder(raw_dir, out_dir / "pathfinder")
-
-    print("\nDone! Data saved to:", out_dir)
+    raise SystemExit("Legacy preprocessing disabled: wrong Text source and unqualified conversions. Use scripts/rebuild_mega_lra.py.")
 
 
 if __name__ == "__main__":

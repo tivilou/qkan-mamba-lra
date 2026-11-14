@@ -1,0 +1,32 @@
+{
+  "schema": "qkan-native-orphan-worker-identification.v1",
+  "date": "2026-11-12",
+  "source": "User screenshot codex-clipboard-39b7f55a-1ebb-48d7-acab-b6b9debef50f.png; not an authenticated fresh process inventory",
+  "observed": {
+    "local_pid": 232425,
+    "name": "python",
+    "state": "S (sleeping)",
+    "ppid": 1,
+    "nspid": [
+      232425
+    ],
+    "cwd": "/root/projects/qkan-mamba-lra-adaptive-2b3df03a444d",
+    "module": "experiments.baseline_delivery.worker",
+    "output": "/root/projects/qkan-mamba-lra-adaptive-2b3df03a444d/runs/parallel-attention-20261110T131518Z-33715e47/preflight/transformer-retrieval-s42/uninterrupted",
+    "open_device_handles": [
+      "/dev/nvidia-uvm",
+      "/dev/nvidia4",
+      "/dev/nvidiactl"
+    ]
+  },
+  "conclusion": "The visible local process is the old parallel-attention synthetic uninterrupted recovery worker, not the original formal840 training task. PPid1 is consistent with orphan adoption after its diagnostic parent exited.",
+  "limits": [
+    "Exact host NVML PID3974269 to local PID232425 mapping has not been directly demonstrated",
+    "Sleeping state alone does not locate the CUDA block or establish a driver deadlock",
+    "Exit and GPU clearance still need verification after the junior stops the identified obsolete worker"
+  ],
+  "handoff": "Recheck exact cwd/module/output before signaling only local PID232425. TERM with bounded10second grace, then KILL only if the same identified obsolete worker remains; query GPU process inventory before retrying a36 diagnostic. Do not reset the GPU or terminate unrelated/formal jobs.",
+  "owner_executed_remote_signal": false,
+  "runtime_code_changed": false,
+  "formal_checkpoint_changed": false
+}

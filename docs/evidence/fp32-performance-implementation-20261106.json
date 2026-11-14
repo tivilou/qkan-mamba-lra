@@ -1,0 +1,30 @@
+{
+  "schema": "qkan-fp32-performance.v1",
+  "status": "implemented_pending_native_validation",
+  "source_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+  "source_suite": "adaptive-migrated-20261106T111646Z-90465",
+  "source_observation": "User screenshot, not independent live inspection:126.45samples/s; logical128/physical64; OOM1; GPU85%;21.04GiB",
+  "changes": [
+    "bounded ID-prefix CPU lookahead",
+    "Torch reusable pinned staging",
+    "first16 committed update numeric profile; Torch CUDA events, S5 host wall",
+    "independent early authenticated report return",
+    "9a full-state migration preserving existing sample clock/controller"
+  ],
+  "validation": {
+    "stdlib_mock_tests": 86,
+    "passed": true,
+    "framework_imports": false,
+    "gpu_query": false,
+    "training": false,
+    "dependency_install": false,
+    "native": "pending collaborator"
+  },
+  "claim_limit": "No measured speedup, native pass, accuracy or bitwise future-trajectory claim",
+  "source_sha256": {
+    "experiments/baseline_delivery/performance.py": "5628ae6fa2c5c5ce280845a19531b23facc8f07ece74eae5e3363c7c5ae68679",
+    "scripts/migrate_performance.sh": "c2336b09229eee78768588cd343a74315afb23600dd68fc266a482063a389c16",
+    "tests/test_baseline_performance.py": "005e310f9171974a7f62b9166979c72db7f023207d37a98f5da7fafb1bc48ac1",
+    "docs/baselines/fp32-performance.md": "eb0f0d2bbe4e84830cadacb49de119d68ecc01cd92c709c6f0a2f741b89e26d7"
+  }
+}

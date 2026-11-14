@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-28",
+  "status": "passed",
+  "tool": "existing Playwright CLI 0.1.22",
+  "viewport_widths": [1280, 390],
+  "viewport_height": 900,
+  "checks_passed": 65,
+  "existing_portal_checks": 57,
+  "new_source_projection_checks": 8,
+  "checked": [
+    "six ready routes, registry search, independent document scrolling and no page overflow",
+    "historical five-row baseline table and original report value remain intact",
+    "v3 qualification source is selectable and explicitly insufficient",
+    "recent primary-paper screen is selectable",
+    "collaborator contract explicitly says no full baseline package is ready",
+    "new documents render at both widths",
+    "no JavaScript page errors"
+  ],
+  "health_before_and_after": "HTTP 200; same existing portal process; no restart",
+  "registry_validation": "passed",
+  "scientific_claim": "Portal acceptance only; data diagnostics are not formal baseline results"
+}

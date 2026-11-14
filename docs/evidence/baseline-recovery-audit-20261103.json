@@ -1,0 +1,25 @@
+{
+  "schema": "qkan-recovery-audit-tool-validation.v1",
+  "source_revision": "0102d38",
+  "collaborator_observation": {
+    "model": "mamba1",
+    "task": "listops",
+    "updates_both": 6,
+    "cpu_rng_equal": true,
+    "cuda_rng_equal": true,
+    "reported_parameter_max_abs": 5.960464477539063e-8,
+    "scope": "Screenshot covers only three differing parameters, not full optimizer/history comparisons"
+  },
+  "upstream_evidence": "https://github.com/state-spaces/mamba/blob/95d8aba8a8c75aedcaa6143713b11e745e7cd0d9/csrc/selective_scan/selective_scan_bwd_kernel.cuh",
+  "upstream_observation": "Pinned backward implementation uses gpuAtomicAdd; plausible nondeterminism mechanism, not sole-cause proof for the collaborator mismatch",
+  "tool": "recovery_audit reuses existing bounded canary and adds one uninterrupted fresh-process repeat; compares three pairs across full selected state fields",
+  "scheduler_task": "e015acaa9c81409c8d76e2ad009c7a3b",
+  "scheduler_attempt": "970ae85475fc42b59cb494ddd5b96323",
+  "scheduler_state": "complete",
+  "regression_tests_passed": 20,
+  "coverage": "Tiny tensor noise, optimizer and trajectory leaf coverage, RNG mismatch, nonfinite values, shape/type drift, scientific source drift, mocked child orchestration and no pass receipt",
+  "actual_collaborator_gpu_audit_completed": false,
+  "recovery_gate_changed": false,
+  "numerical_acceptance_criterion": null,
+  "formal": false
+}

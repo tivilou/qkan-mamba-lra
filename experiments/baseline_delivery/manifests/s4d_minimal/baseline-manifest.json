@@ -1,0 +1,271 @@
+{
+  "schema_version": "baseline-reproduction-fidelity.v1",
+  "baseline_id": "s4d_minimal",
+  "provenance": {
+    "mode": "source",
+    "upstream": {
+      "source_url": "https://github.com/state-spaces/s4",
+      "revision": "e757cef57d89e448c413de7325ed5601aceaac13",
+      "license": "Apache-2.0",
+      "entrypoints": [
+        "models/s4/s4d.py:S4D"
+      ]
+    },
+    "artifacts": [
+      {
+        "path": "experiments/baseline_delivery/models.py",
+        "sha256": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386"
+      },
+      {
+        "path": "experiments/baseline_delivery/worker.py",
+        "sha256": "2c145e20dc93ee6d37c60e0b5c3fa5f05903523e07fe54f733715b5c4e825dbf"
+      },
+      {
+        "path": "experiments/baseline_delivery/protocol.json",
+        "sha256": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+      },
+      {
+        "path": "experiments/baseline_delivery/acceptance.py",
+        "sha256": "acf7168b4a7636bc1b370bd81c275f6d2053241fcbf95d42da43e3c208a1eead"
+      },
+      {
+        "path": "experiments/baseline_delivery/adaptive_memory.py",
+        "sha256": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584"
+      },
+      {
+        "path": "experiments/baseline_delivery/execution.py",
+        "sha256": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea"
+      },
+      {
+        "path": "experiments/baseline_delivery/data.py",
+        "sha256": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f"
+      },
+      {
+        "path": "experiments/baseline_delivery/migration.py",
+        "sha256": "e453ef2e006e23daed35fdcbd6d448eb28b4d2f1d3596df2602e9db2bbe62e04"
+      },
+      {
+        "path": "experiments/baseline_delivery/readiness.py",
+        "sha256": "6e03d186976af318da6d92e683e73d40dedc938dcbd3a0303d1d0953198e8328"
+      },
+      {
+        "path": "experiments/baseline_delivery/logical_batch.py",
+        "sha256": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611"
+      },
+      {
+        "path": "experiments/baseline_delivery/runner.py",
+        "sha256": "e5c809533c3d06cfbf8b5de86b9f204d7dd5795c15e89139bc240f81c89dd7e3"
+      },
+      {
+        "path": "experiments/baseline_delivery/s5_worker.py",
+        "sha256": "2fb63a9e316cd3065767794639fb31a97d084b06345e4877e95b4185e5a92afc"
+      },
+      {
+        "path": "scripts/formal_progress.py",
+        "sha256": "432ff8b4f974db33e33036396397493e4a5812613d4f5e33e65501f96cd58109"
+      },
+      {
+        "path": "scripts/migrate_dynamic_logical.sh",
+        "sha256": "5ab0a6782f606b598bacd76f83ce6044208e9a7f8b3063bcfac6c59d066e0eeb"
+      },
+      {
+        "path": "tests/test_baseline_logical_batch.py",
+        "sha256": "b7a753fa8c52f196036b56d317e62c1f4667234bb80a4826802f5eb8c93f1ca8"
+      },
+      {
+        "path": "experiments/baseline_delivery/performance.py",
+        "sha256": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53"
+      },
+      {
+        "path": "scripts/migrate_performance.sh",
+        "sha256": "c2336b09229eee78768588cd343a74315afb23600dd68fc266a482063a389c16"
+      },
+      {
+        "path": "tests/test_baseline_performance.py",
+        "sha256": "005e310f9171974a7f62b9166979c72db7f023207d37a98f5da7fafb1bc48ac1"
+      },
+      {
+        "path": "docs/baselines/fp32-performance.md",
+        "sha256": "b99d750b013b07c10afc626cb18c96d7b48ed463847f5e2ecc9853efd83584ad"
+      },
+      {
+        "path": "tests/test_baseline_completed_migration.py",
+        "sha256": "f84c50e4ed0105e9868ae3a9d485175e1a134ba2416f2012418ca77c6b71ec08"
+      },
+      {
+        "path": "experiments/baseline_delivery/torch_acceleration.py",
+        "sha256": "9bddeabb52ba5ed64dcb693e9537faf0319c992e8d131ab879cae82886d66c7a"
+      },
+      {
+        "path": "tests/test_baseline_torch_acceleration.py",
+        "sha256": "2eddefe5a456b017f5b5fb04dbbced4186b16135a3f6085c6278ef71516b1c2f"
+      },
+      {
+        "path": "scripts/migrate_torch_acceleration.sh",
+        "sha256": "e2d0589d8592268ea7c0c58c009244c143b3297a083cf4704b06f94694230b0c"
+      },
+      {
+        "path": "docs/baselines/torch-acceleration.md",
+        "sha256": "8e6e53c191f1a7d73c5ad2f783ccd4ad184215c088cf11656240d170f6d37e6c"
+      },
+      {
+        "path": "scripts/run_admitted.py",
+        "sha256": "06e09f80bfe1c56993bd391dc727382113cf8d37470e9f98d2b3c85f6e15fe49"
+      },
+      {
+        "path": "tests/test_baseline_admitted_entry.py",
+        "sha256": "bc20f9bd1d98bb821bb9b1feafe1462fdc764a63f171493e16dee6aa53e2ffcf"
+      },
+      {
+        "path": "tests/test_baseline_progress.py",
+        "sha256": "271cc1442b19bc4efbb9f5730422ca2078332360793377cdad15393c9dd48acc"
+      },
+      {
+        "path": "experiments/baseline_delivery/acceleration_calibration.py",
+        "sha256": "e93295ff253691eae6194bea91027840381181e164d171e83b40272fe23661c1"
+      },
+      {
+        "path": "tests/test_baseline_acceleration_calibration.py",
+        "sha256": "6c882b37fa29b20ea32ce69eac37f2f13b15f98f5fa842fab98f0586c941f0cb"
+      },
+      {
+        "path": "tests/test_baseline_graph_rng_capacity.py",
+        "sha256": "75acd799016f0c4f04cc14d0e1d5ecd1d4181fbe5e8699385f2d87cdaa38c386"
+      },
+      {
+        "path": "tests/test_baseline_calibration_timing.py",
+        "sha256": "9835d32d2c082c74d60385a0e0a66f866aac40fb66b941adbc19dca287a29b13"
+      },
+      {
+        "path": "experiments/baseline_delivery/exchange_config.py",
+        "sha256": "b6ddc412c1920baecf67a9b7f4e29c33bee01f5f9dd9e3d2527f9f0dc43e8dde"
+      },
+      {
+        "path": "tests/test_baseline_exchange_config.py",
+        "sha256": "216583326ba6acdfb94b9775ec3ba830df7a211b39e7d8f28bbf4931e5925b32"
+      },
+      {
+        "path": "experiments/baseline_delivery/operator_profile.py",
+        "sha256": "e637ab994fc153586bd77c9beeae0418a2a82104884ca3331c7bfee221fff607"
+      },
+      {
+        "path": "experiments/baseline_delivery/operator_diagnostic.py",
+        "sha256": "2dea48d4f14cef03616395606c1e3a8d6588165d184b5e3573530edea8851ba2"
+      },
+      {
+        "path": "scripts/collect_operator_profile.sh",
+        "sha256": "080da9f82edfaa130bc46b90e6c63ad3613e3f31c74df61df957800dbc3e403a"
+      },
+      {
+        "path": "tests/test_baseline_operator_profile.py",
+        "sha256": "d0dd4ee3d4003f7d552f27363382b7678b3d075229206cd2ace707a9fd12b2fa"
+      },
+      {
+        "path": "experiments/baseline_delivery/parallel_attention.py",
+        "sha256": "2fa002f6c5b6bb40094778ffce80e8ba7ab139debe60ebf72a6a6984c4f72e43"
+      },
+      {
+        "path": "experiments/baseline_delivery/attention_diagnostic.py",
+        "sha256": "e355a4df734a4e5679a0b277321d4cf21b55ecd17eafbb7f3f53f0ea9edfce61"
+      },
+      {
+        "path": "scripts/check_parallel_attention.sh",
+        "sha256": "16fe82a2df62eb39627b5d2038d556da75f286cbaff524a1f1138de52e33166c"
+      },
+      {
+        "path": "tests/test_baseline_parallel_attention.py",
+        "sha256": "5f9f04e26a1ee7e7689c6cc9f5a368a367074267f0854bed544d2f1a638bcee2"
+      },
+      {
+        "path": "experiments/baseline_delivery/diagnostic_watch.py",
+        "sha256": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004"
+      },
+      {
+        "path": "tests/test_baseline_diagnostic_watch.py",
+        "sha256": "2b78e547a4dd1eb2d604ec99971120c9480eaf000d29a6791b32b312b4fa0b59"
+      },
+      {
+        "path": "scripts/migrate_parallel_retrieval.sh",
+        "sha256": "32c092bcef73b182d19f0b296d1e7c10d247b9d5489ee454578dd17e772626c6"
+      },
+      {
+        "path": "tests/test_baseline_parallel_continuation.py",
+        "sha256": "f28568ef9d419598826cd9006f165b7f5126e9275aa270d0d183bea698470532"
+      }
+    ]
+  },
+  "mechanism_contract": {
+    "entrypoints": [
+      "models/s4/s4d.py:S4D",
+      "experiments/baseline_delivery/models.py:Classifier",
+      "experiments/baseline_delivery/worker.py:run"
+    ],
+    "invariants": [
+      "Hash-verified official minimal S4D module; only DropoutNd import path substituted",
+      "Preserve upstream _optim learning-rate and zero-decay metadata",
+      "d_state=64, transposed=False in project protocol",
+      "Integer token embedding with pad=1 and post-block padding mask",
+      "Float32 pixels x/255-.5; row-major sequence; no fitted preprocessing",
+      "Masked mean pool and shared two-document retrieval encoder with abs difference/product pair head",
+      "AdamW, cosine warmup, clipping and FP32 under project common protocol; not upstream paper training recipe",
+      "Validation selects earliest maximal accuracy; test only selected weights; latest full-state checkpoint independent of best weights"
+    ],
+    "assumptions": [
+      "Official pedagogical minimal S4D; does not represent complete S4 or S5 benchmark architecture"
+    ],
+    "unknowns": [
+      "No external upstream fixture in received probe",
+      "S4D GPU full-state recovery not covered by the latest two-canary acceptance"
+    ]
+  },
+  "adaptation": {
+    "allowed_changes": [
+      "Integer token embedding with pad=1 and post-block padding mask",
+      "Float32 pixels x/255-.5; row-major sequence; no fitted preprocessing",
+      "Masked mean pool and shared two-document retrieval encoder with abs difference/product pair head",
+      "AdamW, cosine warmup, clipping and FP32 under project common protocol; not upstream paper training recipe",
+      "Opt-in adaptive physical microbatch with fixed logical batch/FP32; distinct adaptive trajectory, not fixed-policy exact continuation; see docs/baselines/adaptive-memory.md",
+      "Adaptive execution also uses a validated logical-batch staging cache, one CPU batch of prefetch, device-side per-update statistics, five-second advisory status writes and reusable GPU rollback buffers with CPU fallback (immutable candidate state for S5). Positive throughput gains have no percentage floor and require multiple confirmation windows. FP32 and the logical update budget are unchanged; device behavior and speedup remain unverified for this revision.",
+      "Explicit migration may fork a paused admitted31639c0 full-state checkpoint into a separate adaptive suite after new source/recovery/trace admission and a fresh native-worker zero-update restore/roundtrip check. Only revision/contract and controller metadata change; scientific configuration is locked. The fixed prefix and adaptive continuation retain lineage and must not be reported as an uninterrupted fixed-policy baseline. Original checkpoints are preserved; native migration remains executor validation.",
+      "Separately opted-in dynamic logical32/64/128 and physical1..128 policy uses committed samples for LR/progress and samples/s for throughput decisions. It changes optimizer-update count and training trajectory; it is not fixed-batch/common-protocol performance equivalence. FP32, model/data identity and total epoch/sample budget remain declared. Explicit migration from fixed31639c0 or adaptive96e542d preserves parameters, optimizer moments/counters, RNG, sampler, best/history and lineage in a separate suite, anchors LR at the source position, and requires new native admission. Controller timing resets. Native dynamic recovery, OOM behavior, accuracy and speed remain unverified until collaborator execution; owner checks use stdlib/mocks only."
+    ],
+    "forbidden_changes": [
+      "Change upstream active mixer equations or silently substitute architecture",
+      "Discard upstream optimizer metadata",
+      "Use test for model selection or hyperparameter tuning",
+      "Claim original LRA/MEGA scores comparable to document-disjoint-v3"
+    ],
+    "postprocessing_rules": []
+  },
+  "equivalence": {
+    "status": "not_verifiable",
+    "scope": "Audited candidate manifest; received adapter composition is bounded evidence, not a source fixture or formal certificate. See mechanism-contract.md and adaptation-diff.md.",
+    "tolerances": {
+      "adapter_rtol": 1e-05,
+      "adapter_atol": 1e-06
+    }
+  },
+  "validation": {
+    "gates": {
+      "provenance_locked": false,
+      "mechanism_contract_reviewed": true,
+      "adaptation_boundary_reviewed": true,
+      "no_postprocessing_rules": true,
+      "manifest_frozen": false,
+      "upstream_fixture_checked": false,
+      "forward_checked": false,
+      "gradient_checked": false,
+      "optimizer_update_checked": false,
+      "sampler_checked": false,
+      "checkpoint_checked": false,
+      "historical_adapter_composition_observed": true
+    },
+    "commands": [
+      ".venv-baselines/bin/python -B -m experiments.baseline_delivery.acceptance --suite runs/baseline-20261103T115633Z-fa88b308 --cache \"$QKAN_CACHE\" --device cuda:0"
+    ],
+    "evidence_files": [
+      "docs/evidence/baseline-acceptance-received-20261104.json",
+      "docs/evidence/qualification-closeout-sources-20261104.json"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+# Mamba1 mechanism contract
+
+Pinned source: mamba_ssm/modules/mamba_simple.py:Mamba at 95d8aba8a8c75aedcaa6143713b11e745e7cd0d9 (v2.2.4). Independently retrieved SHA-256: a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3. Source receipt: docs/evidence/qualification-closeout-sources-20261104.json.
+
+Keep input projection, causal convolution/SiLU, input-dependent delta/B/C, negative exponential A, D skip, selective scan, output projection and delta initialization. Full-sequence path has no inference cache. Freeze d_state=16, d_conv=4, expand=2, dt_rank=auto. Mamba2/3 are different mechanisms.
+
+Author source lines 111/115 mark A_log/D with _no_weight_decay=True. The old optimizer ignored these flags; the correction assigns zero decay and adds independent group assertions. Received composition evidence used the same defective factory on both sides. The correction and installed-source hash assertion have no runtime receipt yet.
+
+Project training/selection/checkpoint behavior is declared in protocol.json and worker.py, not an upstream language-model recipe. No EMA/AMP. GPU recovery uses a bounded FP32 tolerance; atomic kernels are not claimed bitwise deterministic. Missing source fixture/identity and corrected optimizer evidence remain explicit in baseline-manifest.json; status not_verifiable.
+
+Opt-in adaptive-memory execution changes only physical microbatch partitioning under the same logical update budget. It defines a distinct numerical trajectory; it does not establish equivalence to the fixed-policy run or inherit its checkpoint admission. Source-pinned mixer equations and precision remain unchanged. See `docs/baselines/adaptive-memory.md` for rollback, throughput search, bounded recovery coverage and pending hardware validation.
+
+Adaptive execution also uses a validated logical-batch staging cache, one CPU batch of prefetch, device-side per-update statistics, five-second advisory status writes and reusable GPU rollback buffers with CPU fallback (immutable candidate state for S5). Positive throughput gains have no percentage floor and require multiple confirmation windows. FP32 and the logical update budget are unchanged; device behavior and speedup remain unverified for this revision.
+
+Explicit migration may fork a paused admitted31639c0 full-state checkpoint into a separate adaptive suite after new source/recovery/trace admission and a fresh native-worker zero-update restore/roundtrip check. Only revision/contract and controller metadata change; scientific configuration is locked. The fixed prefix and adaptive continuation retain lineage and must not be reported as an uninterrupted fixed-policy baseline. Original checkpoints are preserved; native migration remains executor validation.
+
+Separately opted-in dynamic logical32/64/128 and physical1..128 policy uses committed samples for LR/progress and samples/s for throughput decisions. It changes optimizer-update count and training trajectory; it is not fixed-batch/common-protocol performance equivalence. FP32, model/data identity and total epoch/sample budget remain declared. Explicit migration from fixed31639c0 or adaptive96e542d preserves parameters, optimizer moments/counters, RNG, sampler, best/history and lineage in a separate suite, anchors LR at the source position, and requires new native admission. Controller timing resets. Native dynamic recovery, OOM behavior, accuracy and speed remain unverified until collaborator execution; owner checks use stdlib/mocks only.
+
+FP32 performance opt-in: bounded ID-prefix CPU lookahead for both workers; reusable pinned host staging for Torch only; first16-update numeric timing. Migration from9a147cd preserves sample clock/controller/optimizer. No AMP/TF32/compiler or batch-policy change; native recovery and throughput pending. See docs/baselines/fp32-performance.md.
+
+Completed-result preservation: original source/config/result/checkpoint/trace-readiness bytes are hash-verified and retained, never relaunched or recertified as the new executor. Only remaining jobs use new recovery gates and workers. Final delivery declares each result source revision; no whole-suite single-revision equivalence claim.
+
+Optional Torch Inductor plus bounded forward/backward CUDA Graph: canonical model/optimizer keys preserved, same-snapshot numerical agreement and rollback-only speed trials, finite compile_graph/compile/eager fallback. Sample clock/batch policy remains explicit; no eager bitwise-trajectory or speed claim. S5 retains native JAX; unsupported Torch environments record eager fallback. New mode requires its own native recovery/trace admission. See docs/baselines/torch-acceleration.md.

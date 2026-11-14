@@ -1,0 +1,35 @@
+{
+  "schema": "qkan-mega-import-repair.v1",
+  "receipt": "qkan-mamba/formal-readiness/failure-6152ebac4e46/failure.json",
+  "suite": "runs/formal-ready-20261104T125528Z-e67c68dd",
+  "revision": "33046c409681e7afd9e3377b1a0cb606a23b4e7e",
+  "probe_log_sha256": "0db0f9ceed2466cad9fc380d9da2f9fa6e929fc519fae0058ff22cf6b20488e9",
+  "probe_log_bytes": 3903,
+  "specific_cause": "ModuleNotFoundError: sklearn during eager fairseq.data speech_commands_dataset import",
+  "evidence": "Actual exchange failure receipt and user-supplied source probe traceback screenshot",
+  "source_file": "fairseq/data/audio/speech_commands_dataset.py",
+  "source_line": 23,
+  "source_sha256": "2f38a007cf0e4ebdfaa905042aa8ae838ae9c22c7cd846ae6ba044baf82b633b",
+  "static_audit": "AST inspection of upstream fairseq module-scope imports, without module execution; sklearn is the evidenced missing unconditional external package; optional imports remain conditional",
+  "supplement": [
+    {
+      "filename": "joblib-1.3.2-py3-none-any.whl",
+      "size_bytes": 302207,
+      "sha256": "ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9"
+    },
+    {
+      "filename": "scikit_learn-1.2.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "size_bytes": 9625294,
+      "sha256": "2e2642baa0ad1e8f8188917423dd73994bf25429f8893ddbe115be3ca3183584"
+    },
+    {
+      "filename": "threadpoolctl-3.1.0-py3-none-any.whl",
+      "size_bytes": 14928,
+      "sha256": "8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"
+    }
+  ],
+  "diagnostic_return": "Credential-redacted bounded setup and fixed synthetic source-probe logs only; dataset/recovery/training logs and traces stay local",
+  "runtime_repair_verified": false,
+  "formal_training_started": false,
+  "owner_model_tests_install_training": false
+}

@@ -117,86 +117,15 @@ def download_image(out_dir: Path):
 
 
 def download_pathfinder(out_dir: Path, n_train: int = 160000, n_val: int = 20000, n_test: int = 20000):
-    print("[Pathfinder] Generating synthetic data (standard LRA protocol)...")
-    print("  Note: generating random path images (32x32 flattened to 1024)")
-
-    rng = np.random.default_rng(42)
-    seq_len = 1024
-
-    def generate_split(n_samples):
-        inputs = rng.random((n_samples, seq_len)).astype(np.float32)
-        labels = rng.integers(0, 2, size=n_samples).astype(np.int64)
-        return inputs, labels
-
-    for split, n in [("train", n_train), ("val", n_val), ("test", n_test)]:
-        inputs, labels = generate_split(n)
-        np.savez(out_dir / f"{split}.npz", inputs=inputs, labels=labels)
-        print(f"  {split}: {n} samples")
-
-    print("  WARNING: This is placeholder data. For real pathfinder data,")
-    print("  download from: https://github.com/google-research/long-range-arena")
-    print("  or generate using their pathfinder generation script.")
+    raise RuntimeError("Disabled: random inputs/labels are not Pathfinder. Use the audited MEGA rebuild.")
 
 
 def download_retrieval(out_dir: Path, max_len: int = 4000):
-    from datasets import load_dataset
-
-    print("[Retrieval] Downloading AAN pairs from HuggingFace...")
-
-    try:
-        ds = load_dataset("fengyang0317/listops-1000")
-        print("  Note: AAN retrieval not directly available on HuggingFace.")
-        print("  Generating synthetic retrieval data as placeholder.")
-    except Exception:
-        pass
-
-    rng = np.random.default_rng(123)
-    half_len = max_len // 2
-
-    for split, n in [("train", 147086), ("val", 18090), ("test", 17437)]:
-        inputs1 = rng.random((n, half_len)).astype(np.float32)
-        inputs2 = rng.random((n, half_len)).astype(np.float32)
-        labels = rng.integers(0, 2, size=n).astype(np.int64)
-        np.savez(out_dir / f"{split}.npz",
-                 inputs1=inputs1, inputs2=inputs2, labels=labels)
-        print(f"  {split}: {n} samples")
-
-    print("  WARNING: This is placeholder data. For real AAN retrieval data,")
-    print("  download from: https://github.com/google-research/long-range-arena")
+    raise RuntimeError("Disabled: random pairs/labels are not AAN Retrieval. Use the audited MEGA rebuild.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Download and prepare LRA data")
-    parser.add_argument("--out_dir", type=str, default="data/lra",
-                        help="Output directory (default: data/lra)")
-    parser.add_argument("--tasks", type=str, nargs="+",
-                        default=["listops", "text", "image", "pathfinder", "retrieval"],
-                        help="Tasks to download")
-    args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-
-    task_fns = {
-        "listops": (download_listops, out_dir / "listops"),
-        "text": (download_text, out_dir / "text"),
-        "image": (download_image, out_dir / "image"),
-        "pathfinder": (download_pathfinder, out_dir / "pathfinder"),
-        "retrieval": (download_retrieval, out_dir / "retrieval"),
-    }
-
-    for task in args.tasks:
-        if task not in task_fns:
-            print(f"Unknown task: {task}")
-            continue
-        fn, task_out = task_fns[task]
-        task_out.mkdir(parents=True, exist_ok=True)
-        fn(task_out)
-        print()
-
-    print("Done! Data saved to:", out_dir)
-    print("\nNote: Pathfinder and Retrieval use placeholder data.")
-    print("For publication results, replace with real data from:")
-    print("  https://github.com/google-research/long-range-arena")
+    raise SystemExit("Legacy downloader disabled: placeholder tasks and unqualified preprocessing. Use scripts/rebuild_mega_lra.py and scripts/audit_lra_data.py.")
 
 
 if __name__ == "__main__":

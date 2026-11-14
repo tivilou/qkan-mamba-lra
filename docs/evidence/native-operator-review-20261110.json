@@ -1,0 +1,97 @@
+{
+  "schema": "qkan-native-operator-review.v1",
+  "date": "2026-11-10",
+  "status": "native_collection_rollback_passed_attention_bottleneck_identified_no_new_speedup",
+  "authentic_return": {
+    "namespace": "qkan-mamba/operator-profile/operator-profile-20261110T110333Z-c28e195b",
+    "file": "operator-profile.json",
+    "bytes": 10723,
+    "sha256": "6c31d19cd70116814541cf1f089537a0212bfdc0bdbdfe42003b9b351efee0d2",
+    "source_revision": "a8dc703e9f8f1fb805fb0709a1d0875fba415f5e",
+    "job": "transformer-retrieval-s42",
+    "device": "NVIDIA GeForce RTX 3090 24GiB"
+  },
+  "native_observation": {
+    "mode": "eager",
+    "updates_observed": 1,
+    "micro_batch": 16,
+    "logical_batch": 128,
+    "source_checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "restored_step": 12683,
+    "rollback_exact": true,
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0,
+    "sample_clock_reset": false,
+    "formal_training_started": false,
+    "events_seen": 62254,
+    "event_limit": 100000,
+    "device_rows_excluded": 10208,
+    "invalid_cpu_events": 0,
+    "recorded_self_cuda_seconds": 8.468907553000085,
+    "attention_operators": [
+      {
+        "operator": "aten::_efficient_attention_forward",
+        "reported_phase": "forward_loss",
+        "calls": 64,
+        "self_cuda_seconds": 1.7521328219999996,
+        "share_of_all_recorded_cuda_percent": 20.68900635689797
+      },
+      {
+        "operator": "aten::_efficient_attention_backward",
+        "reported_phase": "unattributed",
+        "calls": 64,
+        "self_cuda_seconds": 5.7637305219999995,
+        "share_of_all_recorded_cuda_percent": 68.05754444631074
+      }
+    ],
+    "attention_combined_percent": 88.7465508032087,
+    "remaining_operators_percent": 11.253449196791294,
+    "phase_totals_seconds": {
+      "forward_loss": 2.128501012000053,
+      "backward": 1.6862999998149464e-05,
+      "clip_optimizer_schedule": 0.0005056979999952019,
+      "unattributed": 6.339883980000039
+    },
+    "phase_attribution": "Most backward GPU work remains unattributed by CPU range ancestry; explicit backward operator names still identify actual operations"
+  },
+  "conclusions": [
+    "Native efficient attention forward/backward dominate the recorded operator CUDA sum (88.74655percent); backward alone68.05755percent",
+    "The model already uses a fused efficient attention backend. Saying it simply lacks fused attention is contradicted by this return",
+    "Previous Graph/native operator replay does not replace the dominant CUDA kernels; small launch savings cannot establish a large complete-update gain",
+    "Optimizer is not the main measured target; other uninstrumented data/loading/checkpoint stages were not assessed by this one-update capture",
+    "Strict deterministic source branch constrains split-key parallelism, but this single profile does not isolate its causal slowdown",
+    "Pinned Flash/cuDNN low-precision gates mean enabling their switch alone does not provide an eligible unchanged-FP32 replacement"
+  ],
+  "next_action": {
+    "target": "Attention backward kernel and its deterministic FP32 execution configuration",
+    "approach": "Check kernel/layout/physical partition candidates against existing exact recovery, full-update numerical/RNG and positive-benefit gates before formal continuation",
+    "no_repeat_collection_needed": true,
+    "no_unchanged_graph_recalibration": true,
+    "no_precision_or_determinism_change": true,
+    "rationale": "Alternatives requiring mixed precision or nondeterminism need a separately declared protocol and cannot silently replace this existing continuation"
+  },
+  "limitations": [
+    "One eager instrumented update; first-use initialization and profiler overhead may be present",
+    "Self CUDA kernel sums may overlap across streams and are not end-to-end wall time or a critical path",
+    "Unattributed events are preserved rather than reassigned to backward from a name guess",
+    "No new Graph performance benchmark, optimized kernel candidate or measured acceleration was produced by this collection",
+    "Owner ran only stdlib inspection; no native framework/GPU/model execution"
+  ],
+  "primary_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/autograd/profiler_util.py",
+      "sha256": "191d9c88ef8a43506138e40f38b55653b6942f777d053b195ffe23b982db9a0f",
+      "finding": "CPU nesting is grouped by thread/node, so main-thread range ancestry cannot identify all autograd worker events"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/transformers/cuda/attention_backward.cu",
+      "sha256": "17e9ed81c5de31777bdeb111bfb6a78bffb6e78e337fe63cfc415a707610cf8c",
+      "finding": "Strict deterministic efficient attention forces num_splits_key=1; values>1 rejected"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/transformers/cuda/sdp_utils.cpp",
+      "sha256": "4fdcd6ae3bf92c7dfa73afed5e040e6d50bd0ad8e426b09d71d223138226af39",
+      "finding": "Flash and cuDNN SDPA gate through check_dtypes_low_precision; efficient backend permits FP32 on Ampere"
+    }
+  ]
+}

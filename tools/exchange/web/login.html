@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QORE Artifact Exchange</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <p class="eyebrow">Q-DUET-VLM</p>
+    <h1>Artifact exchange</h1>
+    <form class="login-form" method="post" action="/login">
+      <label for="token">Access token</label>
+      <input id="token" name="token" type="password" required autofocus autocomplete="current-password">
+      {{ERROR}}
+      <button type="submit">Sign in</button>
+    </form>
+  </main>
+</body>
+</html>

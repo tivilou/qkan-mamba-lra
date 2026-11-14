@@ -1,0 +1,64 @@
+{
+  "schema": "qkan-task-use-assessment.v1",
+  "date": "2026-11-04",
+  "status": "accepted_for_declared_scope",
+  "scope": "Non-commercial internal research on the pinned author-released MEGA-derived v3 package; cite original creators; do not redistribute raw/derived data or publish reconstructable samples.",
+  "assessment": "Research-use/acquisition scope assessment, not a grant of blanket commercial or redistribution rights. Explicit author research-release intent is adequate evidence for this bounded study; a single unified open license is not required.",
+  "tasks": [
+    {
+      "task": "listops",
+      "decision": "accepted_for_scope",
+      "basis": "LRA authors publish benchmark TSVs and generator, MEGA authors publish the acquired processed package. Record source identities and cite both.",
+      "source": "https://github.com/google-research/long-range-arena/blob/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/README.md",
+      "limitation": "Generator code license is not asserted as a blanket data redistribution license."
+    },
+    {
+      "task": "text",
+      "decision": "accepted_for_scope",
+      "basis": "Original dataset authors explicitly release the 50,000-review collection as a benchmark for future work in section 4.3.2 and for future research in section 5. Identity matches the Stanford dataset used by LRA/MEGA.",
+      "source": "https://aclanthology.org/P11-1015.pdf",
+      "location": "PDF page 8 / proceedings page 149, sections 4.3.2 and 5",
+      "quote": "we release this dataset to the public",
+      "limitation": "Author website remains unavailable; paper release intent supports this internal research scope, not unrestricted reuse."
+    },
+    {
+      "task": "retrieval",
+      "decision": "accepted_for_scope",
+      "basis": "AAN author download page explicitly limits use to research and prohibits redistribution; requires citation and publication notice. Existing acquisition is the hash-pinned public MEGA author processing package.",
+      "source": "https://clair.eecs.umich.edu/aan/download.php",
+      "limitation": "No registration completion attested. If obtaining original AAN separately, follow author registration. This study does not redistribute original text/token arrays or assert author-independent splits."
+    },
+    {
+      "task": "image",
+      "decision": "accepted_for_scope",
+      "basis": "CIFAR author publishes download and expressly requests citation for use; LRA/MEGA authors document the adapted benchmark. Retain citations and no-data-redistribution boundary.",
+      "source": "https://www.cs.toronto.edu/~kriz/cifar.html",
+      "limitation": "No blanket redistribution license inferred."
+    },
+    {
+      "task": "pathfinder",
+      "decision": "accepted_for_scope",
+      "basis": "LRA authors describe generated benchmark, MEGA authors release exact processed package; exhaustive pixel/label audit binds this study to that package.",
+      "source": "https://github.com/facebookresearch/mega/blob/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/README.lra.md",
+      "limitation": "MIT generator license does not prove historical generation revision or authorize arbitrary image redistribution."
+    }
+  ],
+  "acquisition": {
+    "source": "https://dl.fbaipublicfiles.com/mega/data/lra.zip",
+    "sha256": "b141aacd5537ad6108862117597c41d9d2a67d6420c54f74c76df615073fee13",
+    "mode": "Each collaborator acquires directly from author; our service never distributes task arrays"
+  },
+  "evidence": [
+    "docs/evidence/imdb-primary-paper-sources-20261104.json",
+    "docs/evidence/qualification-closeout-sources-20261104.json",
+    "docs/evidence/baseline-primary-sources-20261028.json",
+    "docs/evidence/qualification-sources-20261028.json"
+  ],
+  "conditions": [
+    "Original dataset and benchmark citations retained for every task",
+    "No raw text, derived arrays or reconstructable text traces in Git or exchange",
+    "No commercial deployment, sublicensing or redistribution claim",
+    "Reassess on changed data source, intended use or new conflicting source terms"
+  ],
+  "model_release_allowed": false
+}

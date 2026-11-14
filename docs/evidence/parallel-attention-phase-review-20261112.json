@@ -1,0 +1,54 @@
+{
+  "schema": "qkan-parallel-attention-phase-review.v1",
+  "date": "2026-11-12",
+  "receipt": {
+    "path": "qkan-mamba/parallel-attention/parallel-attention-20261112T105040Z-c9265218/parallel-attention.json",
+    "size_bytes": 39834,
+    "sha256": "cad473cf642253a927773dcb65d1684e536401aaaa34895e232cacf844b01e13",
+    "authenticated_download_verified": true
+  },
+  "executed_revision": "a36a271fa95bb5a7c8deba70f0a68757202adaf5",
+  "status": "native_phase_timeout_not_acceleration_success",
+  "child": {
+    "run_id": "252e83b3425c4629b865abde1eab8de7",
+    "pid": 232772,
+    "outcome": "phase_timeout",
+    "exit_code": -9,
+    "elapsed_seconds": 326.59150230139494,
+    "child_timeout_seconds": 900.0,
+    "stall_timeout_seconds": 300.0,
+    "termination": {
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": [],
+      "escalated": true
+    }
+  },
+  "observation": {
+    "last_phase": "backward_join",
+    "last_progress_sequence": 106,
+    "worker_frame": {
+      "file": "experiments/baseline_delivery/worker.py",
+      "line": 438,
+      "function": "update_impl"
+    },
+    "blocking_expression": "bool(finite)",
+    "interpretation": "CPU read of a CUDA scalar waits for previously enqueued work; last backward_join marker does not establish a join deadlock or identify a faulty GPU kernel."
+  },
+  "resolved_prior_occupancy": {
+    "evidence": "Junior screenshot after guarded cleanup shows compute-app query header with zero entries; this new child passed preflight.",
+    "old_local_pid": 232425,
+    "old_diagnostic": "parallel-attention-20261110T131518Z-33715e47",
+    "host_nvml_pid_mapping_proven": false
+  },
+  "scope": {
+    "original_source_immutable": true,
+    "formal_training_started": false,
+    "completed_results_preserved": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ],
+    "speedup_established": false
+  },
+  "next": "RNG replay ordering and cross-stream storage fixes are hypotheses for this native stall, not proof. Fenced synthetic recovery localizes GPU completion and never performs timing/admission; unfenced native recovery and actual-checkpoint calibration still required."
+}

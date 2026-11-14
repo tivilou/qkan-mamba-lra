@@ -1,0 +1,36 @@
+{
+  "schema": "qkan-baseline-assets.v1",
+  "policy": "No dataset/raw text/checkpoints/credentials in this asset. Task data acquired directly from author URL.",
+  "objects": [
+    {
+      "id": "s4d-e757cef57d89",
+      "filename": "s4d-e757cef57d89.zip",
+      "path": "qkan-mamba/baseline-assets/s4d-e757cef57d89/source.zip",
+      "size_bytes": 7685,
+      "sha256": "8bd3515d8fc5d5a6662521a84497885a298a573c82635ea7b0903e0a7c4d39fa",
+      "license": "Apache-2.0",
+      "upstream_commit": "e757cef57d89e448c413de7325ed5601aceaac13",
+      "members": {
+        "s4d.py": {
+          "size_bytes": 3671,
+          "sha256": "4aab484e96dba85b2eba14f54c42df103a314a087ca184bfcca30e77d0faea2c",
+          "url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/models/s4/s4d.py"
+        },
+        "LICENSE": {
+          "size_bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/LICENSE"
+        },
+        "dropout.py": {
+          "size_bytes": 3542,
+          "sha256": "4cbe734786c1149f8ed8d6d2bdced4a519c172afbfc8d369dc7f493cfdde027f",
+          "url": "https://raw.githubusercontent.com/state-spaces/s4/e757cef57d89e448c413de7325ed5601aceaac13/src/models/nn/dropout.py"
+        },
+        "PROVENANCE.json": {
+          "size_bytes": 1037,
+          "sha256": "6fccd296ba806c2766aeb182e770d9a4e07af74a1d10d71fef348b4359cafb3f"
+        }
+      }
+    }
+  ]
+}
