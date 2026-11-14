@@ -1,0 +1,137 @@
+{
+  "schema": "qkan-parallel-attention-native-gain-review.v1",
+  "date": "2026-11-14",
+  "status": "unfenced_exact_recovery_and_real_checkpoint_positive_gain_verified",
+  "authentic_return": {
+    "namespace": "qkan-mamba/parallel-attention/parallel-attention-20261114T021448Z-8153263a",
+    "file": "parallel-attention.json",
+    "bytes": 69171,
+    "sha256": "f8f9dda4d33a4df662d75ff5bc423b6a0540f910216e6c8a0e647b912fe09565",
+    "source_revision": "abe8694cab9e072e53211b513aad21cb9a485b65",
+    "job": "transformer-retrieval-s42",
+    "device": "NVIDIA GeForce RTX 3090 24GiB"
+  },
+  "checkpoint": {
+    "sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "restored_step": 12683,
+    "immutable": true,
+    "preserved_completed": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ]
+  },
+  "recovery": {
+    "fresh_process": true,
+    "agreement": "exact",
+    "trace_semantic_and_replay": true,
+    "forced_logical_batches": [
+      32,
+      64,
+      128,
+      32,
+      64,
+      128
+    ],
+    "interrupted_after_update": 2,
+    "resumed_next_logical_batch": 128,
+    "controller_restored": true,
+    "stage_fences": false
+  },
+  "calibration": {
+    "backend": "eager_parallel",
+    "actual_mode": "compile_graph",
+    "compiler_backend": "eager",
+    "inductor_fusion": false,
+    "eager_agreement": "passed_rtol1e-5_atol1e-6_rng_exact",
+    "eager_seconds": 8.899130888283253,
+    "accelerated_seconds": 7.899207832291722,
+    "seconds_saved_per_update": 0.9999230559915304,
+    "update_time_reduction_percent": 11.236187764223649,
+    "throughput_multiplier": 1.126585231990463,
+    "throughput_gain_percent": 12.6585231990463,
+    "eager_samples_seconds": [
+      8.861003383994102,
+      8.937258392572403
+    ],
+    "accelerated_samples_seconds": [
+      7.885684318840504,
+      7.912731345742941
+    ],
+    "pair_throughput_gains_percent": [
+      12.368223551928947,
+      12.947830553866325
+    ],
+    "pair_orders": [
+      [
+        "eager",
+        "compile_graph"
+      ],
+      [
+        "compile_graph",
+        "eager"
+      ]
+    ],
+    "includes_optimizer": true,
+    "measurement": "balanced_synchronized.v1",
+    "rollback_exact": true,
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0,
+    "sample_clock_reset": false
+  },
+  "runtime": {
+    "graph_replays": 96,
+    "backward_graph_replays": 96,
+    "graph_builds": 1,
+    "capture_streams": "per_document_explicit",
+    "library_workspace_scope": "capture_stream_per_document",
+    "capture_rows": 16,
+    "document_length": 4000,
+    "execution_streams": 2,
+    "encoder_replicas": 2
+  },
+  "children": [
+    {
+      "pid": 233129,
+      "exit_code": 0,
+      "elapsed_seconds": 157.46552408114076,
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": []
+    },
+    {
+      "pid": 233148,
+      "exit_code": 75,
+      "elapsed_seconds": 63.47084564343095,
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": []
+    },
+    {
+      "pid": 233168,
+      "exit_code": 0,
+      "elapsed_seconds": 149.43232928961515,
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": []
+    },
+    {
+      "pid": 233200,
+      "exit_code": 0,
+      "elapsed_seconds": 100.2105060853064,
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": []
+    }
+  ],
+  "limitations": [
+    "Two synchronized AB/BA full-update pairs at one original checkpoint and device; sustained training and total job wall time remain unmeasured.",
+    "Positive gain applies to this Transformer/Retrieval candidate only, not all25 jobs.",
+    "Explicit capture-stream change passed this formerly stalling route; the exact earlier native fault was not independently isolated.",
+    "Dynamo eager plus CUDA Graph and document execution scheduling; no Inductor fusion speedup claim.",
+    "Diagnostic entry never starts training. Existing general readiness backend sweep excludes eager_parallel and has no explicit targeted selection flag."
+  ],
+  "next_action": "Integrate an explicit Transformer/Retrieval-only eager_parallel selection in the continuation entry, preserve original840 checkpoint and both completed results, retain identity-bound runtime admission and report sustained committed-sample speed. Do not use a diagnostic Suite as a training source or rerun the unchanged general backend sweep.",
+  "formal_training_started": false,
+  "formal_release_allowed": false,
+  "owner_framework_import_or_model_execution": false
+}
