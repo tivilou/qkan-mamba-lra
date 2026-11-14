@@ -15,8 +15,9 @@ from tests import test_baseline_parallel_attention as fake
 from experiments.baseline_delivery import partitioned_diagnostic as diagnostic
 from experiments.baseline_delivery.common import ROOT,atomic_json,read,fingerprint
 from experiments.baseline_delivery.partitioned_attention import stream_graphed_chain,partitioned_encoder
-from experiments.baseline_delivery.partition_comparison import compare_routes,validate_comparison
-from experiments.baseline_delivery.torch_acceleration import policy,torch_runtime,graph_rng_budget,BackendFailure
+from experiments.baseline_delivery.partition_comparison import (compare_routes,validate_comparison,
+    execution_validation,prepare_route)
+from experiments.baseline_delivery.torch_acceleration import policy,torch_runtime,graph_rng_budget,BackendFailure,Executor
 from experiments.baseline_delivery.migration import compatible,PARALLEL_REVISION
 from experiments.baseline_delivery.logical_batch import policy as logical_policy
 from experiments.baseline_delivery.performance import policy as performance_policy
@@ -136,7 +137,9 @@ class ComparisonTests(unittest.TestCase):
             def run():
                 self.assertEqual(resident,{name});events.append(('run',name));clock[0]+=seconds
             def clear(): resident.discard(name);events.append(('clear',name))
-            return dict(prepare=prepare,run=run,clear=clear,reset_peak=Mock())
+            return dict(prepare=prepare,run=run,clear=clear,reset_peak=Mock(),
+                validation=lambda:dict(mode='compile_graph',generation=1,validation_checks=1,
+                    graph_resident=name in resident,validated=True))
         routes=dict(incumbent=route('incumbent',10),candidate=route('candidate',candidate_seconds))
         try: result=compare_routes(routes,restores,Mock(),lambda:dict(allocated_bytes=12),lambda:clock[0])
         finally: self.assertFalse(resident);self.assertGreater(restores.call_count,0)
@@ -147,6 +150,7 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(report['samples_seconds'],dict(incumbent=[10,10],candidate=[6,6]))
         self.assertEqual([e[1] for e in events if e[0]=='run'],['incumbent','candidate','candidate','incumbent'])
         self.assertEqual(report['throughput_gain_fraction'],10/6-1)
+        self.assertTrue(all(row['before']==row['after'] for rows in report['steady_validation'].values() for row in rows))
 
     def test_no_gain_and_tampered_samples_are_rejected(self):
         for value in (10,12):
@@ -155,7 +159,75 @@ class ComparisonTests(unittest.TestCase):
         report,_=self.exercise()
         for key,value in (('candidate_seconds',1),('throughput_gain_fraction',10),('samples_committed',1)):
             with self.assertRaises(ValueError): validate_comparison({**report,key:value})
+        with self.assertRaises(ValueError): validate_comparison({**report,'schema':'qkan-incumbent-graph-comparison.v1'})
+        changed=copy.deepcopy(report);changed['steady_validation']['candidate'][0]['after']['validation_checks']+=1
+        with self.assertRaises(ValueError): validate_comparison(changed)
         with self.assertRaises(ValueError): self.exercise(fail='candidate')
+
+    def executor_routes(self,prepare=True,rebuild_in_timing=False):
+        """Run the actual Executor, including its generation cache and checks."""
+        timer=[0.];state={'weight':0};resident=set();records=[]
+        def restore(): state['weight']=0
+        class Runtime:
+            def __init__(self,name,seconds): self.name=name;self.seconds=seconds;self.builds=1;self.graph=False
+            def set_mode(self,mode): self.mode=mode
+            def generation(self): return self.builds
+            def status(self): return dict(graph_resident=self.graph)
+            def clear(self): self.graph=False;resident.discard(self.name)
+            def backend_error(self,error): return False
+            def forward(self,batch,mode):
+                if mode=='compile_graph' and not self.graph:
+                    assert not resident
+                    resident.add(self.name);self.builds+=1;self.graph=True;timer[0]+=50
+                timer[0]+=10 if mode=='eager' else self.seconds
+                state['weight']+=1
+        routes={}
+        for name,micro,seconds in (('incumbent',16,8),('candidate',32,7.8)):
+            runtime=Runtime(name,seconds)
+            executor=Executor(runtime,policy('compile_graph','eager_partitioned' if micro==32 else 'eager_parallel','graph'),
+                saved=dict(mode='compile_graph',benchmarked=True,reason='prior_gain',benchmark={}),
+                read_state=lambda:dict(state),compare=lambda a,b:self.assertEqual(a,b),trial=Mock())
+            key=(micro,128);executor.validated.add(('compile_graph',key,1));executor.checks=1
+            def route(executor,runtime,key):
+                def run():
+                    return executor.run(lambda:executor.forward({}),{'weight':0},lambda value:state.update(value),
+                        lambda:None,lambda:None,lambda _:False,execution_key=key)
+                validation=lambda:execution_validation(executor,key)
+                def ready():
+                    if prepare: prepare_route(run,validation,restore,lambda:None)
+                    else: run()
+                    if rebuild_in_timing: runtime.clear()
+                return dict(run=run,prepare=ready,validation=validation,clear=runtime.clear,reset_peak=Mock())
+            routes[name]=route(executor,runtime,key);records.append(executor)
+        try: report=compare_routes(routes,restore,lambda:None,lambda:{},lambda:timer[0])
+        finally: self.assertFalse(resident);self.assertEqual(state,{'weight':0})
+        return report,records
+
+    def test_recaptured_generation_is_revalidated_before_clock_starts(self):
+        report,executors=self.executor_routes();validate_comparison(report)
+        self.assertEqual(report['samples_seconds']['incumbent'],[8,8])
+        for value in report['samples_seconds']['candidate']: self.assertAlmostEqual(value,7.8)
+        self.assertGreater(executors[0].checks,1);self.assertGreater(executors[1].checks,1)
+        self.assertEqual(len(report['preparation_memory']['incumbent']),2)
+        self.assertEqual(len(report['preparation_memory']['candidate']),1)
+
+    def test_old_one_call_prepare_and_forced_recapture_are_blocked_before_timing(self):
+        with self.assertRaisesRegex(ValueError,'not resident and validated'):
+            self.executor_routes(prepare=False)
+        with self.assertRaisesRegex(ValueError,'not resident and validated'):
+            self.executor_routes(rebuild_in_timing=True)
+
+    def test_prepare_has_finite_budget_and_timing_cannot_include_new_validation(self):
+        run=Mock();restore=Mock()
+        value=dict(mode='compile_graph',generation=1,validation_checks=1,graph_resident=False,validated=False)
+        with self.assertRaisesRegex(ValueError,'did not reach'):
+            prepare_route(run,lambda:value,restore,lambda:None)
+        self.assertEqual(run.call_count,3)
+        value.update(graph_resident=True,validated=True)
+        def changed(): value['validation_checks']+=1
+        route=dict(prepare=Mock(),validation=lambda:dict(value),run=changed,clear=Mock(),reset_peak=Mock())
+        with self.assertRaisesRegex(ValueError,'changed inside timing'):
+            compare_routes(dict(incumbent=route,candidate=route),lambda:None,lambda:None,lambda:{})
 
     def test_cleanup_failure_still_releases_other_route_and_attempts_rollback(self):
         restore=Mock();clear=Mock()

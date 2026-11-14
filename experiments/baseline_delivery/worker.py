@@ -509,7 +509,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             else: update_loss,update_correct=update(config['micro_batch'])
             if probe:
                 if compare_incumbent:
-                    from .partition_comparison import compare_routes
+                    from .partition_comparison import compare_routes,prepare_route,execution_validation
                     from .torch_acceleration import policy as acceleration_policy
                     candidate=acceleration
                     candidate_micros=set(observed_micros)
@@ -525,7 +525,10 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                             return executor.run(lambda:update_impl(micro),active_snapshot,restore_update,
                                 lambda:opt.zero_grad(set_to_none=True),torch.cuda.synchronize,
                                 lambda error:isinstance(error,torch.cuda.OutOfMemoryError),execution_key=(micro,len(ids)))
-                        return dict(run=run_route,prepare=run_route,clear=executor.runtime.clear,
+                        validation=lambda:execution_validation(executor,(micro,len(ids)))
+                        def prepare():
+                            prepare_route(run_route,validation,lambda:restore_update(active_snapshot),torch.cuda.synchronize)
+                        return dict(run=run_route,prepare=prepare,validation=validation,clear=executor.runtime.clear,
                                     reset_peak=torch.cuda.reset_peak_memory_stats)
                     # Candidate has already passed matched-micro native checks.
                     # Release it before preparing the incumbent's independent pool.

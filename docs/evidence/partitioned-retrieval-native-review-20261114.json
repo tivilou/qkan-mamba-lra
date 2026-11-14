@@ -1,0 +1,150 @@
+{
+  "schema": "qkan-partitioned-retrieval-native-review.v1",
+  "date": "2026-11-14",
+  "status": "native_correctness_passed_incumbent_speed_comparison_tainted_by_revalidation",
+  "authentic_return": {
+    "namespace": "qkan-mamba/partitioned-attention/partitioned-attention-20261114T115417Z-e42ba812",
+    "file": "partitioned-attention.json",
+    "bytes": 118829,
+    "sha256": "e132f8f299e3c31d767a7f070385be6fa9c09b1a5ad80ff7fc7ca87f30bc5caf",
+    "source_revision": "829ed0083ecaa2a685e4f53fb267648e3cc1b05b",
+    "job": "transformer-retrieval-s42",
+    "device": "NVIDIA GeForce RTX 3090 24GiB"
+  },
+  "checkpoint": {
+    "sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9",
+    "restored_step": 14268,
+    "source": "latest b07 full checkpoint",
+    "source_immutable": true,
+    "preserved_completed": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ]
+  },
+  "recovery": {
+    "fixed_micro_batches": [
+      16,
+      32
+    ],
+    "fresh_process": true,
+    "agreement": "exact",
+    "trace_semantic_and_replay": true,
+    "controller_restored": true,
+    "forced_logical_batches": [
+      32,
+      64,
+      128,
+      32,
+      64,
+      128
+    ]
+  },
+  "matched_micro32_calibration": {
+    "eager_seconds": 8.670539623126388,
+    "graph_seconds": 7.768052725121379,
+    "throughput_gain_percent": 11.617929614283184,
+    "eager_samples_seconds": [
+      8.640414327383041,
+      8.700664918869734
+    ],
+    "graph_samples_seconds": [
+      7.7440702728927135,
+      7.792035177350044
+    ],
+    "agreement": "passed_rtol1e-5_atol1e-6_rng_exact",
+    "rollback_exact": true,
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0
+  },
+  "incumbent_comparison": {
+    "reported_passed": true,
+    "accepted_as_net_speed_evidence": false,
+    "measurement": "balanced_synchronized_incumbent_graph.v1",
+    "samples_seconds": {
+      "incumbent": [
+        8.010845832526684,
+        33.26714338362217
+      ],
+      "candidate": [
+        32.342035450041294,
+        7.850375007838011
+      ]
+    },
+    "reported_incumbent_seconds": 20.638994608074427,
+    "reported_candidate_seconds": 20.096205228939652,
+    "reported_throughput_gain_percent": 2.7009545979015392,
+    "diagnosis": "Runtime.clear preserves capture generation and Executor validated keys. First preparation callback after a clear can match the old key, capture a new generation without validation, and return. The following timed callback then runs full-update warmup and eager/numerical validation before its update.",
+    "evidence": "One route sample near8s and another near32/33s; v1 has no before/after generation or validation counter proof.",
+    "action": "Move preparation to a bounded resident-generation validation loop; require unchanged validated generation/check counts before and after every measured update; reject v1 for future admission."
+  },
+  "memory": {
+    "candidate_last_allocator_reserved_gib": 21.82421875,
+    "candidate_last_board_free_gib": 1.41485595703125,
+    "total_visible_gib": 23.69110107421875,
+    "interpretation": "Allocator reservation and board free memory observed during the tainted comparison; not a stable training peak or throughput proof. Graph pools were released before final diagnostic runtime status."
+  },
+  "runtime": {
+    "forward_replays": 176,
+    "backward_replays": 176,
+    "capture_rows": 32,
+    "length": 4000,
+    "rng_budget": {
+      "schema": "qkan-graph-rng-budget.v1",
+      "stage": "capture_budget",
+      "category": "rng_offset_capacity",
+      "estimated_increment": 4292608000,
+      "limit": 4294967295,
+      "rows": 32,
+      "length": 4000,
+      "documents_per_graph": 1,
+      "passed": true
+    },
+    "replica_sync": "per_update",
+    "graph_resident_at_end": false
+  },
+  "children": [
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 83.50073982030153,
+      "clean": true
+    },
+    {
+      "exit_code": 75,
+      "elapsed_seconds": 36.12066687643528,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 77.66262671351433,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 85.91231481730938,
+      "clean": true
+    },
+    {
+      "exit_code": 75,
+      "elapsed_seconds": 39.324981175363064,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 79.47591366246343,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 253.27966276556253,
+      "clean": true
+    }
+  ],
+  "formal_training_started": false,
+  "formal_continuation_approved_by_this_report": false,
+  "owner_framework_imported": false,
+  "limitations": [
+    "Two matched-micro timing pairs at one checkpoint/device; no sustained training result.",
+    "Correctness and matched-micro speed pass survive this measurement issue; relative speed versus current Graph16 must be remeasured.",
+    "No formal partitioned continuation launched. Original b07 Suite remains the training source."
+  ]
+}

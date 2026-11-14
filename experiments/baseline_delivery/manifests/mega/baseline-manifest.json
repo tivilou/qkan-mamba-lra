@@ -37,7 +37,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "9435902a0aa63f57ec5f3eade902d750d3ec24adcde2a7e2872dd102bcca8a53"
+        "sha256": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03"
       },
       {
         "path": "experiments/baseline_delivery/execution.py",
@@ -205,7 +205,7 @@
       },
       {
         "path": "experiments/baseline_delivery/partition_comparison.py",
-        "sha256": "fec7a22ede37b1fe7ea587b7b98781d205600002843d0a5a307e383d00267769"
+        "sha256": "6f66d38a93575fe31d89c55c1e9f92dca073e99a207bfc35cc313741516dd33b"
       },
       {
         "path": "experiments/baseline_delivery/partitioned_diagnostic.py",
@@ -217,7 +217,7 @@
       },
       {
         "path": "tests/test_baseline_partitioned_attention.py",
-        "sha256": "b7b02dbd4f269ccc179e9e308eb4f68048855364b6834eed4623769634dc428e"
+        "sha256": "2da8239d77d0e2249d864339cc2b02253710407a8c88483f17d07fa8ba1f448f"
       }
     ]
   },

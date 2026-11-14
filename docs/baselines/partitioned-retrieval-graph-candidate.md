@@ -1,6 +1,10 @@
 # Retrieval 两层 Graph 候选的验证入口
 
-本版实现隔离候选 `eager_partitioned`，每张 Graph 覆盖连续两层，目标是把物理 micro 从16提高到32。逻辑 batch 维持128，FP32、注意力实现、dropout、样本预算、优化器和学习率时钟保持原配置。代码与控制层检查已经完成；实际 CUDA 捕获、数值一致性、显存峰值和净提速须由协作者验证。
+本版实现隔离候选 `eager_partitioned`，每张 Graph 覆盖连续两层，目标是把物理 micro 从16提高到32。逻辑 batch 维持128，FP32、注意力实现、dropout、样本预算、优化器和学习率时钟保持原配置。
+
+2026-11-14 原生回传已验证：micro16/32 新进程精确恢复、数值/RNG和回滚通过；相同 micro32 的普通执行8.67054秒、分层 Graph7.76805秒，吞吐提升11.62%。但旧 v1 的 Graph16/32 对比混入清图后的重新校验，原报告的2.70%相对提升不作为净收益证据。当前修订仅修复测速：捕获后的版本必须在计时前完成校验，并逐次记录计时前后捕获版本与校验次数；变化则拒绝该次结果。原生修订后计时待回传，正式分层续训尚未接入。
+
+原始回传核查见 [原生结果复核](../evidence/partitioned-retrieval-native-review-20261114.json)。已报告的 allocator reserved21.82GiB、全卡 free1.41GiB 是旧对照中的观察，不作为稳定训练显存峰值。
 
 ## 实现范围
 
@@ -11,6 +15,7 @@
 - 先分别执行 micro16、32 的新进程恢复和 trace 检查，再从最新 b07 完整断点测试 micro32 的完整逻辑128更新。
 - 候选必须通过相同 micro 的普通执行数值/RNG检验，并且同时快于同 micro 普通执行及现有整图 Graph micro16。任意测得正收益均可通过，没有最低百分比门槛。
 - Graph16/32 的 AB/BA 计时包含参数同步、梯度合并、优化器和更新边界等待；各次从同一快照开始。预热、重建和数值校验计时排除，单独记录准备峰值。测速时只驻留一路图池，另记稳定 allocated/reserved/free/peak。
+- Graph16/32 对比使用 `qkan-incumbent-graph-comparison.v2`。清图后执行有界准备，直到当前捕获版本处于 resident/validated 状态；每个计时样本的 `steady_validation.before/after` 必须完全一致。旧 v1 报告不再满足该对照准入。
 - 两种 micro 的随机数与浮点轨迹可能不同，跨 micro 不声明逐位等价。各路线分别通过同 micro 的数值/RNG检查，恢复仍要求精确一致，最终恢复原始模型/Adam/调度器/RNG，样本与更新提交均为0。
 
 当前普通训练入口仍使用已有 `eager_parallel`；新分层候选仅允许隔离诊断。micro20/24/28、步长4、多形状尾批缓存和新的动态升档器不在本版实现范围内，须先依据32的原生结果决定是否需要。
@@ -50,5 +55,7 @@ bash scripts/check_partitioned_attention.sh \
 诊断不会启动正式训练；通过后先审阅原生回传，再决定将分层路线接入续训。五个 baseline 的静态 fidelity 状态仍为 `not_verifiable`，既有正式准入要求保持生效。
 
 当前实验回退就是从原 b07 目录用原入口续跑，它的代码、完整断点及已完成结果保持可用。实现层的逐文件补丁、候选副本、验证记录和可执行回滚另存于本机私有交付目录 `.runtime/partitioned-graph-candidate-20261114/`。
+
+测速修订的独立原件/候选/补丁/执行验证/回滚保存在 `.runtime/partitioned-timing-fix-20261114/`。本修订不改变原生编码器、分层求导、双流或优化器实现；已通过的原生正确性保留为829版本的历史证据，新版本仍从最新 b07 断点重新绑定诊断身份。
 
 研究依据与边界计算见 [分层 Graph 研究](partitioned-retrieval-graph-research-20261114.md)。
