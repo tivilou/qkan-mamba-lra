@@ -26,7 +26,7 @@ def resume_command(root,suite,context,cache):
         return [sys.executable,'-B',str(entry),'--root',str(root),'--resume',str(suite)]
     command=['bash',str(root/'scripts/run_formal_readiness.sh'),'--cache',str(cache),
              '--gpus',context['gpus'],'--resume',str(suite)]
-    for key in ('adaptive_memory','dynamic_logical_batch','performance','torch_acceleration'):
+    for key in ('adaptive_memory','dynamic_logical_batch','performance','torch_acceleration','parallel_retrieval_graph'):
         if context.get(key): command.append('--'+key.replace('_','-'))
     for key in ('require_graph','require_acceleration'):
         for job in context.get(key,[]): command.extend(['--'+key.replace('_','-'),job])

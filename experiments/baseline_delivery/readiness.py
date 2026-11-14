@@ -15,6 +15,30 @@ from .common import ROOT, atomic_json, digest, fingerprint, lock, read, revision
 
 MODELS=('transformer','mamba1','mega','s5','s4d_minimal')
 TASKS=('listops','text','retrieval','image','pathfinder')
+PARALLEL_JOB='transformer-retrieval-s42'
+
+
+def configure_parallel_continuation(args):
+    """Explicit single-job Graph selection; other jobs retain eager execution."""
+    if not getattr(args,'parallel_retrieval_graph',False): return
+    if not (args.migrate_from or getattr(args,'resume',None)):
+        raise ValueError('Parallel Retrieval continuation needs --migrate-from or --resume')
+    if set(getattr(args,'require_graph',[])+getattr(args,'require_acceleration',[]))-{PARALLEL_JOB}:
+        raise ValueError('Parallel Retrieval entry accelerates transformer-retrieval-s42 only')
+    args.require_graph=[PARALLEL_JOB]
+    args.torch_acceleration=args.performance=args.dynamic_logical_batch=args.adaptive_memory=True
+
+
+def acceleration_profile(args,job_id,saved=None):
+    from .torch_acceleration import policy
+    if getattr(args,'parallel_retrieval_graph',False):
+        selected=policy('compile_graph','eager_parallel','graph') if job_id==PARALLEL_JOB else policy('eager')
+        if saved is not None and saved!=selected:
+            raise ValueError('Parallel Retrieval selected backend or requirement changed')
+        return selected
+    required='graph' if job_id in getattr(args,'require_graph',[]) else (
+        'compile' if job_id in getattr(args,'require_acceleration',[]) else None)
+    return policy(saved.get('mode'),saved.get('backend'),required) if saved is not None else policy(required=required)
 
 
 def compare_numpy(a,b):
@@ -65,6 +89,7 @@ def execute(args,suite):
     from .runner import canary,config_for,discover_gpus,implementation_hash,execute as train
     from .sync import prepare
     from .bootstrap import check_core,check_mamba
+    configure_parallel_continuation(args)
     source=revision();implementation,policy=policy_check()
     from .migration import snapshot,plan_for,compatible,admit
     if args.migrate_from:
@@ -72,6 +97,13 @@ def execute(args,suite):
         snapshot(args.migrate_from,suite,args.cache)
     migration=plan_for(suite)
     if migration and not args.adaptive_memory: raise ValueError('Migrated suite requires adaptive memory')
+    parallel=getattr(args,'parallel_retrieval_graph',False)
+    if parallel:
+        record=(migration or {}).get('jobs',{}).get(PARALLEL_JOB,{})
+        if record.get('completion') or not record.get('checkpoint'):
+            raise ValueError('Parallel Retrieval continuation requires an unfinished full checkpoint')
+        from .diagnostic_watch import Supervisor
+        supervisor=Supervisor(900,300)
     context=suite/'context.json'
     identity=dict(source_revision=source,implementation_sha256=implementation,policy_sha256=policy,
                   cache=str(args.cache.resolve()),gpus=args.gpus)
@@ -79,6 +111,7 @@ def execute(args,suite):
     if args.dynamic_logical_batch: identity['dynamic_logical_batch']=True
     if args.performance: identity['performance']=True
     if args.torch_acceleration: identity['torch_acceleration']=True
+    if parallel: identity['parallel_retrieval_graph']=True
     require_graph=sorted(set(getattr(args,'require_graph',[])))
     require_compile=sorted(set(getattr(args,'require_acceleration',[])))
     known={m+'-'+t+'-s42' for m in MODELS if m!='s5' for t in TASKS}
@@ -134,13 +167,11 @@ def execute(args,suite):
                 from .performance import policy as performance_policy
                 config['performance']=performance_policy()
             if args.torch_acceleration and model!='s5':
-                from .torch_acceleration import policy as acceleration_policy
-                required='graph' if job_id in require_graph else ('compile' if job_id in require_compile else None)
-                config['torch_acceleration']=acceleration_policy(required=required)
+                config['torch_acceleration']=acceleration_profile(args,job_id)
                 if cfg.exists():
                     saved=read(cfg)
                     selected=saved.get('torch_acceleration',{})
-                    expected={**config,'torch_acceleration':acceleration_policy(selected.get('mode'),selected.get('backend'),required)}
+                    expected={**config,'torch_acceleration':acceleration_profile(args,job_id,selected)}
                     if saved!=expected: raise ValueError('Job configuration changed')
                     config=expected
             if migration:
@@ -160,7 +191,8 @@ def execute(args,suite):
                         if folder.exists(): folder.rename(folder.with_name(folder.name+'.failed-'+uuid.uuid4().hex[:8]))
                         previous=os.environ.get('CUDA_VISIBLE_DEVICES');os.environ['CUDA_VISIBLE_DEVICES']=gpu
                         try:
-                            receipt=canary(config,data,args.cache,folder,'cuda:0')
+                            supervised=dict(run=supervisor.run,announce=lambda message:print(message,flush=True)) if parallel and job_id==PARALLEL_JOB else {}
+                            receipt=canary(config,data,args.cache,folder,'cuda:0',**supervised)
                             receipt.update(gpu_identity=inventory[gpu],implementation_sha256=implementation)
                             atomic_json(folder/'canary.json',receipt)
                         finally:
@@ -177,7 +209,7 @@ def execute(args,suite):
                         from .acceleration_calibration import calibrate
                         from .common import child_spec
                         calibrate(suite,job_id,config,data,args.cache,gpu,inventory[gpu],
-                            migration['jobs'][job_id],run_child,child_spec)
+                            migration['jobs'][job_id],supervisor.run if parallel and job_id==PARALLEL_JOB else run_child,child_spec)
                     receipts.append(receipt)
                 return receipts
             if config.get('torch_acceleration'):
@@ -253,6 +285,7 @@ def execute(args,suite):
             for p in sorted((suite/'calibration').glob('*/*/acceleration-probe.json'))],
         certificates={m:read(suite/(m+'-certificate.json')) for m in MODELS})
     if migration_report: compact['migration']=migration_report
+    if parallel: compact['parallel_child_executions']=supervisor.records
     atomic_json(suite/'gate-evidence.json',compact)
     atomic_json(suite/'gate-report.json',dict(status='passed',source_revision=source,
         next='formal_training_ready',jobs=len(jobs),
@@ -272,9 +305,11 @@ def main():
     p.add_argument('--dynamic-logical-batch',action='store_true',help='New sample-scheduled logical32/64/128 trajectory')
     p.add_argument('--performance',action='store_true',help='FP32 bounded lookahead, reusable pinned staging and first16 update profile')
     p.add_argument('--torch-acceleration',action='store_true',help='Optional Inductor plus bounded forward/backward CUDA Graph; S5 keeps native JAX')
+    p.add_argument('--parallel-retrieval-graph',action='store_true',help='Explicit checkpoint continuation: require eager_parallel Graph for Transformer/Retrieval; other Torch jobs stay eager')
     p.add_argument('--require-graph',action='append',default=[],metavar='JOB_ID',help='Require measured real-checkpoint Graph gain; never silently train this job eager')
     p.add_argument('--require-acceleration',action='append',default=[],metavar='JOB_ID',help='Require measured compile or Graph gain for this job')
     args=p.parse_args()
+    configure_parallel_continuation(args)
     if args.torch_acceleration: args.performance=True
     if args.performance: args.dynamic_logical_batch=True
     if args.dynamic_logical_batch: args.adaptive_memory=True
@@ -313,6 +348,8 @@ def main():
                     for p in sorted((suite/'calibration').glob('*/*/worker-error.json'))],
                 calibration_runtime_diagnostics=[dict(job=p.parent.name,report=read(p))
                     for p in sorted((suite/'calibration').glob('*/*/torch-acceleration.json'))],
+                parallel_child_executions=[read(p) for p in sorted(suite.rglob('*child-execution.json'))]
+                    if getattr(args,'parallel_retrieval_graph',False) else [],
                 setup_diagnostic=summarize(suite/'setup.log'),formal_release_allowed=False))
             if args.adaptive_memory:
                 failure_report=read(failure/'failure.json')

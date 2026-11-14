@@ -49,6 +49,7 @@ def implementation_hash():
               ROOT/'experiments/baseline_delivery/install-mirror.json', ROOT/'requirements-baseline-install.txt',
               ROOT/'experiments/baseline_delivery/data-content-identities.json',
               ROOT/'tools/sample_trace_contract/validate.py']
+    paths.append(ROOT/'scripts/migrate_parallel_retrieval.sh')
     return fingerprint({p.relative_to(ROOT).as_posix():digest(p) for p in paths})
 
 

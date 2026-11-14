@@ -184,6 +184,31 @@ bash scripts/check_parallel_attention.sh \
 
 本次只检查该修订的精确恢复/trace和真实断点完整更新数值/RNG、速度及精确回滚，结束自动回传。原840断点和两项已完成结果保留，正式训练不在此入口启动。旧a39工作目录仍可用于版本回退；它的未加等待版本已有超时证据，应保留用于审计。新版原生阻塞修复和正收益均待师弟回传。
 
+## 已验证并行Graph路径的正式续跑入口
+
+2026-11-14，`abe8694`的无`--stage-fences`报告已通过精确恢复/trace、原840断点完整更新数值/RNG、实际Graph回放及精确回滚。两组AB/BA更新中位数为普通8.899131秒、候选7.899208秒，更新耗时降低11.2362%，对应吞吐提高12.6585%。[核验记录](../evidence/parallel-attention-native-gain-review-20261114.json)仅支持该断点、设备和候选；持续训练收益仍需观察。
+
+`scripts/migrate_parallel_retrieval.sh`显式启用`--parallel-retrieval-graph`：只有未完成的`transformer-retrieval-s42`选择`compile_graph / eager_parallel`，并要求实际Graph与正收益；其余Torch任务选择普通执行，S5保持原生JAX。不会重复轮询此前无收益的Inductor/AOT后端。两个已完成结果沿用原字节和来源，剩余任务按原25任务队列继续。
+
+师弟从当前abe目录执行：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-abe8694cab9e &&
+git fetch origin research/collaboration-foundation &&
+git show FETCH_HEAD:scripts/prepare_adaptive_checkout.sh > .bootstrap/prepare-adaptive-checkout.sh &&
+bash .bootstrap/prepare-adaptive-checkout.sh &&
+QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure &&
+bash scripts/migrate_parallel_retrieval.sh \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-840430a414bc/runs/adaptive-migrated-20261109T045101Z-183941 \
+  --cache /root/qkan-cache --gpus 0
+```
+
+新目录重新签发与新版本、配置、原断点和设备绑定的检查记录；不会改写abe的通过报告。入口先执行来源、恢复/trace和迁移检查，并对Retrieval做900秒绝对/300秒阶段停滞保护下的恢复及真实断点校准，自动回传紧凑证据；全部通过后自动进入进度界面并训练。其他任务仍通过完整队列的原有校验。加`--gates-only`则检查后停止，不启动训练。任何Graph无收益/数值不符都停止，不把Retrieval静默降成普通训练。
+
+后续中断后，在终端打印的**新训练实验目录**上用同版本`formal_progress.py --resume`续跑；不要把`parallel-attention-*`诊断目录作为训练源。保留原840目录用于原版本回退；新入口仍沿用完整状态恢复和短期/长期速度显示。
+
 ## 进度显示
 
 短期速度是训练心跳时间戳对应的近60秒样本斜率，窗口逐步积累；重复刷新同一心跳保留测量值。长期平均采用本次进程的已提交样本增量除以墙钟耗时，包含等待/保存和已发生的验证，排除旧checkpoint前缀。旧worker无起点信息时标注“本次观察”。当前任务ETA按长期平均估计，不包含后续验证、测试、回传或其他排队任务；启动阶段平均会受编译/校准成本影响。
