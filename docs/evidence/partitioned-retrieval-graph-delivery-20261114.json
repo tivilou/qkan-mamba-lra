@@ -1,0 +1,120 @@
+{
+  "schema": "qkan-partitioned-retrieval-graph-delivery.v1",
+  "date": "2026-11-14",
+  "status": "isolated_candidate_implemented_stdlib_verified_native_pending",
+  "entry": "scripts/check_partitioned_attention.sh",
+  "target_job": "transformer-retrieval-s42",
+  "backend": "eager_partitioned",
+  "compiler_backend": "eager",
+  "inductor_fusion": false,
+  "partition_layers": 2,
+  "logical_batch": 128,
+  "fixed_recovery_micro_batches": [
+    16,
+    32
+  ],
+  "timed_candidate_micro_batch": 32,
+  "incumbent_backend": "eager_parallel",
+  "incumbent_micro_batch": 16,
+  "checkpoint_source": {
+    "revision": "b07d98e17ad0f996dbd416b0f38e015df6af4f60",
+    "suite": "adaptive-migrated-20261114T040717Z-233292",
+    "selection": "latest full checkpoint after normal source pause; exact source admission required"
+  },
+  "semantics": {
+    "precision": "FP32",
+    "model_optimizer_sample_budget": "unchanged",
+    "tf32": false,
+    "parameters": "canonical names preserved; segment input VJP included",
+    "capture_order": "F0,F1,B1,B0 per document private pool",
+    "forward_order": "entire document1 then entire document2; shared default RNG ordered",
+    "gradient_merge": "document2_plus_document1_fixed_order",
+    "replica_sync": "once per complete update callback"
+  },
+  "performance_gate": {
+    "matched_micro_eager": "full update numerical/RNG check and positive speed gain",
+    "incumbent_graph": "two balanced AB/BA pairs at logical128; Graph16 versus partitioned Graph32",
+    "resident_routes": 1,
+    "warmup_capture_validation": "excluded from measured intervals; preparation peak separately recorded",
+    "minimum_gain_percent": 0,
+    "rollback": "exact model/Adam/schedule/RNG; zero samples and updates committed",
+    "fixed_probe_failure": "no micro downgrade; no formal start"
+  },
+  "validation": {
+    "checks": 318,
+    "passed": 315,
+    "skips": 3,
+    "errors": 0,
+    "failures": 0,
+    "framework_modules_loaded": [],
+    "seconds": 24.749189400012256
+  },
+  "static_verification": {
+    "bash_syntax": "passed",
+    "five_equivalence_statuses": {
+      "mamba1": "not_verifiable",
+      "mega": "not_verifiable",
+      "s4d_minimal": "not_verifiable",
+      "s5": "not_verifiable",
+      "transformer": "not_verifiable"
+    },
+    "framework_modules_loaded": [],
+    "implementation_sha256": "1f71859dcbf454597f3590d270cbac480af785b50275108a47d58cb47196c923",
+    "policy_sha256": "16f37687d25f38b5082bee15c087d209347bc79d606d5045f50927c4c6e196cd",
+    "python_ast": "passed",
+    "shell_dispatch_and_exit": "passed"
+  },
+  "baseline_behavior": {
+    "expected": "baseline",
+    "incumbent_micro32_rng_budget_passed": false,
+    "incumbent_policy_preserved": true,
+    "partitioned_backend_accepted": false,
+    "partitioned_micro32_rng_budget_passed": null
+  },
+  "candidate_behavior": {
+    "expected": "candidate",
+    "incumbent_micro32_rng_budget_passed": false,
+    "incumbent_policy_preserved": true,
+    "partitioned_backend_accepted": true,
+    "partitioned_micro32_rng_budget_passed": true
+  },
+  "artifacts_sha256": {
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/worker.py": "9435902a0aa63f57ec5f3eade902d750d3ec24adcde2a7e2872dd102bcca8a53",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/acceleration_calibration.py": "2fcf0a68c91c103c7149bddfe019df13c2bf379cacb6c5954f3ccbe8e4987833",
+    "experiments/baseline_delivery/fidelity-policy.json": "16f37687d25f38b5082bee15c087d209347bc79d606d5045f50927c4c6e196cd",
+    "experiments/baseline_delivery/manifests/transformer/baseline-manifest.json": "cf0ec436a7b687911473a499ded60bb0b1dfb521032ad126087162b4af11e780",
+    "experiments/baseline_delivery/manifests/mamba1/baseline-manifest.json": "6d98820cbebc18472f24ca0e3f02fc8918832c0062077e332679cebd3e0bc91d",
+    "experiments/baseline_delivery/manifests/mega/baseline-manifest.json": "59e21dd5409fa5e9d5fc4c61f183784db46bfc91e272d9e585c4118c32d76f29",
+    "experiments/baseline_delivery/manifests/s5/baseline-manifest.json": "b1fcd5691b432a85f073ce4afa6293fd81a722969ee31869b95078ec595744c0",
+    "experiments/baseline_delivery/manifests/s4d_minimal/baseline-manifest.json": "9de2393c0382aa89d8031a69246b2425e355a05255f5d981115007957b074502",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/partition_comparison.py": "fec7a22ede37b1fe7ea587b7b98781d205600002843d0a5a307e383d00267769",
+    "experiments/baseline_delivery/partitioned_diagnostic.py": "1b32bbb8a2fa7799003349020b10787f1265ff72f70d0160e304f572ede89bc0",
+    "scripts/check_partitioned_attention.sh": "eec1cc97d176c91ae79f7bef651ed85373defc275e5df983c3daed09786329a0",
+    "tests/test_baseline_partitioned_attention.py": "b7b02dbd4f269ccc179e9e308eb4f68048855364b6834eed4623769634dc428e"
+  },
+  "patch_sha256": "05844cc9d966e0b89fb1efbf0f4df56e801b780c832e6d29dcbe155a9f8b9063",
+  "local_delivery": {
+    "modified": ".runtime/partitioned-graph-candidate-20261114/candidate",
+    "patch": ".runtime/partitioned-graph-candidate-20261114/change.patch",
+    "verification": ".runtime/partitioned-graph-candidate-20261114/verification.json",
+    "rollback": ".runtime/partitioned-graph-candidate-20261114/rollback.py"
+  },
+  "rollback_and_patch_reapply": "all sixteen files byte-verified on isolated copy",
+  "automatic_return": "partitioned-attention/<Suite>/partitioned-attention.json with SHA-256 receipts; pending retention on failure",
+  "native_gpu_executed": false,
+  "native_numerical_rng_recovery_passed": null,
+  "native_speed_gain": null,
+  "owner_framework_imported": false,
+  "formal_training_started": false,
+  "active_training_interrupted": false,
+  "deferred": [
+    "micro20/24/28 step4 and tail cache",
+    "general dynamic capacity controller for partitioned graphs",
+    "independent replica-sync speed attribution",
+    "formal continuation integration after native positive evidence"
+  ]
+}

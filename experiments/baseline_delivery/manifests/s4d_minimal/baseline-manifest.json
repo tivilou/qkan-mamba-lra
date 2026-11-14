@@ -18,7 +18,7 @@
       },
       {
         "path": "experiments/baseline_delivery/worker.py",
-        "sha256": "2c145e20dc93ee6d37c60e0b5c3fa5f05903523e07fe54f733715b5c4e825dbf"
+        "sha256": "9435902a0aa63f57ec5f3eade902d750d3ec24adcde2a7e2872dd102bcca8a53"
       },
       {
         "path": "experiments/baseline_delivery/protocol.json",
@@ -42,7 +42,7 @@
       },
       {
         "path": "experiments/baseline_delivery/migration.py",
-        "sha256": "e453ef2e006e23daed35fdcbd6d448eb28b4d2f1d3596df2602e9db2bbe62e04"
+        "sha256": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98"
       },
       {
         "path": "experiments/baseline_delivery/readiness.py",
@@ -94,7 +94,7 @@
       },
       {
         "path": "experiments/baseline_delivery/torch_acceleration.py",
-        "sha256": "9bddeabb52ba5ed64dcb693e9537faf0319c992e8d131ab879cae82886d66c7a"
+        "sha256": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70"
       },
       {
         "path": "tests/test_baseline_torch_acceleration.py",
@@ -122,7 +122,7 @@
       },
       {
         "path": "experiments/baseline_delivery/acceleration_calibration.py",
-        "sha256": "e93295ff253691eae6194bea91027840381181e164d171e83b40272fe23661c1"
+        "sha256": "2fcf0a68c91c103c7149bddfe019df13c2bf379cacb6c5954f3ccbe8e4987833"
       },
       {
         "path": "tests/test_baseline_acceleration_calibration.py",
@@ -162,7 +162,7 @@
       },
       {
         "path": "experiments/baseline_delivery/parallel_attention.py",
-        "sha256": "2fa002f6c5b6bb40094778ffce80e8ba7ab139debe60ebf72a6a6984c4f72e43"
+        "sha256": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3"
       },
       {
         "path": "experiments/baseline_delivery/attention_diagnostic.py",
@@ -191,6 +191,26 @@
       {
         "path": "tests/test_baseline_parallel_continuation.py",
         "sha256": "f28568ef9d419598826cd9006f165b7f5126e9275aa270d0d183bea698470532"
+      },
+      {
+        "path": "experiments/baseline_delivery/partitioned_attention.py",
+        "sha256": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141"
+      },
+      {
+        "path": "experiments/baseline_delivery/partition_comparison.py",
+        "sha256": "fec7a22ede37b1fe7ea587b7b98781d205600002843d0a5a307e383d00267769"
+      },
+      {
+        "path": "experiments/baseline_delivery/partitioned_diagnostic.py",
+        "sha256": "1b32bbb8a2fa7799003349020b10787f1265ff72f70d0160e304f572ede89bc0"
+      },
+      {
+        "path": "scripts/check_partitioned_attention.sh",
+        "sha256": "eec1cc97d176c91ae79f7bef651ed85373defc275e5df983c3daed09786329a0"
+      },
+      {
+        "path": "tests/test_baseline_partitioned_attention.py",
+        "sha256": "b7b02dbd4f269ccc179e9e308eb4f68048855364b6834eed4623769634dc428e"
       }
     ]
   },

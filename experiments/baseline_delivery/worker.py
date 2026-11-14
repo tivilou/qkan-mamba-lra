@@ -97,17 +97,24 @@ def evaluate(model,split,device,microbatch):
     return {'loss':loss/total,'accuracy':correct/total,'samples':total}
 
 
-def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None,operator_profile_only=False):
+def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False):
     with ExitStack() as resources:
-        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source,operator_profile_only)
+        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source,operator_profile_only,probe_micro_batch,compare_incumbent)
 
 
-def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False):
+def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False):
     if os.environ.get('QKAN_DIAGNOSTIC_STAGE_FENCES')=='1' and (not synthetic or acceleration_probe_source is not None):
         raise ValueError('Stage fences are synthetic diagnostics only; no training or timed calibration')
     run_started_at=time.time()
     output=Path(output); output.mkdir(parents=True,exist_ok=True)
     probe=acceleration_probe_source is not None
+    partitioned=config.get('torch_acceleration',{}).get('backend')=='eager_partitioned'
+    if partitioned and not (probe or synthetic):
+        raise ValueError('Partitioned Graph is an isolated diagnostic candidate')
+    if probe_micro_batch is not None and (probe_micro_batch not in (16,32) or not (probe or synthetic) or not partitioned):
+        raise ValueError('Fixed micro override is partitioned diagnostic only')
+    if compare_incumbent and (not probe or probe_micro_batch!=32):
+        raise ValueError('Incumbent comparison requires the isolated micro32 probe')
     if operator_profile_only and (not probe or not config.get('adaptive_memory')
             or config.get('torch_acceleration',{}).get('mode')!='eager'):
         raise ValueError('Operator-only observation requires isolated eager checkpoint probe')
@@ -301,7 +308,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         if dynamic: state['sample_clock']=clock.snapshot()
         if acceleration: state['torch_acceleration']=acceleration.snapshot()
         save_checkpoint(output,state);last_save=now
-    acceleration=None;active_snapshot=None;update_observation={}
+    acceleration=None;active_snapshot=None;update_observation={};observed_micros=set();incumbent_comparison=None
     if config.get('torch_acceleration'):
         if not adaptive or not device.startswith('cuda'):
             raise ValueError('Torch acceleration requires the recoverable CUDA execution path')
@@ -379,6 +386,12 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         from .acceleration_calibration import finish_probe
         report=finish_probe(config,state,acceleration.snapshot(),acceleration.diagnostics,verify_probe_rollback,
             acceleration.runtime.status())
+        if probe_micro_batch is not None:
+            report.update(requested_micro_batch=probe_micro_batch,observed_micro_batches=sorted(observed_micros))
+            report['passed']=report['passed'] and observed_micros=={probe_micro_batch}
+        if compare_incumbent:
+            report['incumbent_comparison']=incumbent_comparison
+            report['passed']=report['passed'] and bool(incumbent_comparison and incumbent_comparison['passed'])
         atomic_json(output/'acceleration-probe.json',report)
         return 0 if report['passed'] else 76
     mark('update_loop',flush=True)
@@ -388,9 +401,17 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         model.train()
         while state['cursor']<len(train):
             canary_tier(adaptive,config,state['step'])
+            if probe_micro_batch is not None:
+                if adaptive is None: raise ValueError('Fixed diagnostic micro requires adaptive controller')
+                target=min(probe_micro_batch,adaptive.logical_batch)
+                adaptive.state['index']=adaptive.policy['tiers'].index(target)
+                adaptive.state['ceiling']=len(adaptive.policy['tiers'])-1
+                adaptive.state.pop('capacity_ceiling',None)
             batch_size=planned_batch_size(adaptive,config,state['step'])
             end=min(len(train),state['cursor']+batch_size)
             ids=state['permutation'][state['cursor']:end].numpy()
+            if compare_incumbent and len(ids)!=128:
+                raise ValueError('Graph comparison requires a complete logical128 update')
             update_started=time.perf_counter()
             profile.begin()
             retries_before=adaptive.state['oom_count'] if adaptive else 0
@@ -412,6 +433,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                         torch.cuda.empty_cache()  # Keep CPU staging for microbatch transfer.
             def update_impl(micro_batch):
                 nonlocal update_observation
+                observed_micros.add(micro_batch)
                 update_observation={}
                 if acceleration: acceleration.runtime.begin_update(micro_batch)
                 if acceleration and acceleration.validating: update_observation['logits']=[]
@@ -473,9 +495,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 from .torch_acceleration import AccelerationRequired,CaptureCapacity
                 try:
                     (update_loss,update_correct),adaptive_status=transaction(adaptive,update,capture_update,
-                        restore_update,cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError),
+                        restore_update,cleanup_update,lambda error:probe_micro_batch is None and isinstance(error,torch.cuda.OutOfMemoryError),
                         memory,torch.cuda.synchronize,started_at=update_started,samples=len(ids),
-                        is_capacity=lambda error:isinstance(error,CaptureCapacity))
+                        is_capacity=lambda error:probe_micro_batch is None and isinstance(error,CaptureCapacity))
                 except AccelerationRequired:
                     if not probe: raise
                     return finalize_probe()
@@ -486,6 +508,36 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 state['adaptive_peak_bytes']=max(state.get('adaptive_peak_bytes',0),adaptive_status['peak_bytes'])
             else: update_loss,update_correct=update(config['micro_batch'])
             if probe:
+                if compare_incumbent:
+                    from .partition_comparison import compare_routes
+                    from .torch_acceleration import policy as acceleration_policy
+                    candidate=acceleration
+                    candidate_micros=set(observed_micros)
+                    incumbent_policy=acceleration_policy('compile_graph','eager_parallel','graph')
+                    incumbent=Executor(torch_runtime(torch,model,rng_state,restore_rng,incumbent_policy),
+                        incumbent_policy,saved=dict(mode='compile_graph',benchmarked=True,
+                            reason='incumbent_comparison_only',benchmark=None),
+                        read_state=acceleration_state,compare=acceleration_compare,trial=profile_trial)
+                    def route(executor,micro):
+                        def run_route():
+                            nonlocal acceleration
+                            acceleration=executor
+                            return executor.run(lambda:update_impl(micro),active_snapshot,restore_update,
+                                lambda:opt.zero_grad(set_to_none=True),torch.cuda.synchronize,
+                                lambda error:isinstance(error,torch.cuda.OutOfMemoryError),execution_key=(micro,len(ids)))
+                        return dict(run=run_route,prepare=run_route,clear=executor.runtime.clear,
+                                    reset_peak=torch.cuda.reset_peak_memory_stats)
+                    # Candidate has already passed matched-micro native checks.
+                    # Release it before preparing the incumbent's independent pool.
+                    candidate.runtime.clear()
+                    try:
+                        incumbent_comparison=compare_routes(dict(incumbent=route(incumbent,16),
+                            candidate=route(candidate,32)),lambda:restore_update(active_snapshot),
+                            torch.cuda.synchronize,memory)
+                    finally:
+                        acceleration=candidate
+                        # Incumbent16 calls are a separately declared comparison.
+                        observed_micros.clear();observed_micros.update(candidate_micros)
                 # Discard this real-data update before cursor/sample/step or save.
                 return finalize_probe()
             if profile.finish((adaptive.state['oom_count']-retries_before) if adaptive else 0):
@@ -577,6 +629,8 @@ def main():
     parser.add_argument('--migration-check-only',action='store_true')
     parser.add_argument('--acceleration-probe-source',type=Path)
     parser.add_argument('--operator-profile-only',action='store_true')
+    parser.add_argument('--probe-micro-batch',type=int,choices=(16,32))
+    parser.add_argument('--compare-incumbent',action='store_true')
     args=parser.parse_args()
     if not args.synthetic and not args.acceleration_probe_source:
         from .runner import check_release
@@ -585,7 +639,8 @@ def main():
     if hasattr(signal,'SIGHUP'): signal.signal(signal.SIGHUP,request_pause)
     try:
         with lock(args.output/'worker.lock'):
-            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic,args.migration_check_only,args.acceleration_probe_source,args.operator_profile_only)
+            return run(read(args.config),args.data,args.cache,args.output,args.device,args.resume,args.stop_after,args.synthetic,args.migration_check_only,args.acceleration_probe_source,args.operator_profile_only,
+                probe_micro_batch=args.probe_micro_batch,compare_incumbent=args.compare_incumbent)
     except Exception as error:
         from .common import worker_failure
         worker_failure(args.output,error)

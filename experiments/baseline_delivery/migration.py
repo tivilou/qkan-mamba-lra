@@ -16,9 +16,24 @@ ADAPTIVE_REVISION='96e542dd527b777d7690f6602fa1d14530957f85'
 DYNAMIC_REVISION='9a147cd70cedf1511de89d0381dfbdabac3274f2'
 ACCELERATION_REVISION='9ce7f00d45d2e38b73194ca7dfbf379fc05fd5fb'
 WARMUP_REVISION='840430a414bcf8bd6eb7c4b9c105e689578b1780'
+PARALLEL_REVISION='b07d98e17ad0f996dbd416b0f38e015df6af4f60'
 
 
 def compatible(old,new):
+    if old.get('source_revision')==PARALLEL_REVISION:
+        from .torch_acceleration import policy
+        from .performance import policy as performance_policy
+        from .logical_batch import policy as logical_policy
+        target=new.get('torch_acceleration',{})
+        if (old.get('model')!='transformer' or old.get('task')!='retrieval'
+                or old.get('torch_acceleration')!=policy('compile_graph','eager_parallel','graph')
+                or old.get('performance')!=performance_policy()
+                or old.get('adaptive_memory')!=logical_policy(old['batch_size'])
+                or target.get('backend') not in ('eager_parallel','eager_partitioned')
+                or target!=policy('compile_graph',target.get('backend'),'graph')
+                or new!={**old,'source_revision':new['source_revision'],'torch_acceleration':target}):
+            raise ValueError('Partition diagnostic changed the admitted b07 Retrieval contract')
+        return
     if old.get('source_revision') in (ACCELERATION_REVISION,WARMUP_REVISION):
         from .torch_acceleration import policy as acceleration_policy,legacy_policy
         from .performance import policy as performance_policy
@@ -209,14 +224,14 @@ def snapshot(source,suite,cache):
     source_root=source.parent.parent
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip()
     dirty=subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=source_root,text=True).strip()
-    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION,DYNAMIC_REVISION,ACCELERATION_REVISION,WARMUP_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
+    if revision not in (SOURCE_REVISION,ADAPTIVE_REVISION,DYNAMIC_REVISION,ACCELERATION_REVISION,WARMUP_REVISION,PARALLEL_REVISION) or dirty: raise ValueError('Original executor revision/files changed')
     destination=suite/'migration-source'
     if destination.exists(): raise ValueError('Migration snapshot already exists; resume the new suite')
     pending=suite/('migration-pending-'+uuid.uuid4().hex)
     with ExitStack() as held:
         for path in (source/'progress-supervisor.lock',source/'suite.lock'):
             held.enter_context(lock(path))
-        if revision in (ACCELERATION_REVISION,WARMUP_REVISION): validate_source_admission(source,revision)
+        if revision in (ACCELERATION_REVISION,WARMUP_REVISION,PARALLEL_REVISION): validate_source_admission(source,revision)
         context=read(source/'context.json');manifest=read(source/'suite.json');gate=read(source/'gate-report.json')
         if (context.get('source_revision')!=revision
                 or manifest.get('source_revision')!=revision or gate.get('status')!='passed'
@@ -311,7 +326,7 @@ def load_state(output,config,contract,original_contract,loader,migration_suite=N
             if not state.get('sample_clock') or not state.get('adaptive_memory'):
                 raise ValueError('Dynamic source lacks sample clock/controller; refusing schedule reset')
             lineage['execution_policy']='FP32 lookahead/pinned staging; sample clock and controller preserved'
-            if old.get('source_revision') in (ACCELERATION_REVISION,WARMUP_REVISION) and config.get('torch_acceleration'):
+            if old.get('source_revision') in (ACCELERATION_REVISION,WARMUP_REVISION,PARALLEL_REVISION) and config.get('torch_acceleration'):
                 lineage['previous_torch_acceleration']=state.pop('torch_acceleration',None)
                 lineage['backend_recertification']='new process-local warmup; fresh recovery admission; no optimizer updates'
         else:

@@ -30,16 +30,23 @@ def finish_probe(config,state,selected,diagnostics,rollback,runtime):
         backend=config['torch_acceleration']['backend'],actual=selected,diagnostics=diagnostics,benchmark=benchmark,runtime=runtime)
 
 
-def calibrate(suite,job_id,config,data,cache,gpu,inventory,record,run,build):
+def calibrate(suite,job_id,config,data,cache,gpu,inventory,record,run,build,probe_micro_batch=None,compare_incumbent=False):
     """One bounded child per profile/device, using an immutable migration snapshot."""
+    if compare_incumbent and (probe_micro_batch!=32 or config['torch_acceleration']['backend']!='eager_partitioned'):
+        raise ValueError('Incumbent comparison requires the partitioned micro32 candidate')
     suite=Path(suite)
     if not record.get('checkpoint') or config['torch_acceleration']['mode']=='eager': return None
-    key=fingerprint(dict(config=config,gpu=inventory,checkpoint=record['checkpoint']))[:20]
+    identity=dict(config=config,gpu=inventory,checkpoint=record['checkpoint'])
+    if probe_micro_batch is not None:
+        identity.update(probe_micro_batch=probe_micro_batch,compare_incumbent=compare_incumbent)
+    key=fingerprint(identity)[:20]
     folder=suite/'calibration'/key/job_id;report=folder/'acceleration-probe.json'
     if not report.exists():
         atomic_json(folder/'config.json',config)
+        extra=[] if probe_micro_batch is None else ['--probe-micro-batch',str(probe_micro_batch)]
+        if compare_incumbent: extra.append('--compare-incumbent')
         spec=build('--config',folder/'config.json','--data',data,'--cache',cache,'--output',folder,
-            '--device','cuda:0','--acceleration-probe-source',suite)
+            '--device','cuda:0','--acceleration-probe-source',suite,*extra)
         code=run(spec,folder/'calibration.log',{**os.environ,'CUDA_VISIBLE_DEVICES':gpu})
         # A model/data/CUDA-context fault without a completed rollback is fatal.
         if code not in (0,76) or not report.exists():
@@ -58,6 +65,14 @@ def calibrate(suite,job_id,config,data,cache,gpu,inventory,record,run,build):
             or value.get('rollback_exact') is not True or value.get('backend')!=config['torch_acceleration']['backend']):
         raise ValueError('Real-checkpoint calibration identity or rollback differs')
     benchmark=value.get('benchmark') or {};actual=value.get('actual') or {}
+    if probe_micro_batch is not None and (value.get('requested_micro_batch')!=probe_micro_batch
+            or value.get('observed_micro_batches')!=[probe_micro_batch]):
+        raise RecoveryMismatch('Fixed diagnostic microbatch was not retained')
+    if compare_incumbent:
+        from .partition_comparison import validate_comparison
+        try: validate_comparison(value.get('incumbent_comparison'))
+        except ValueError as caught:
+            error=RecoveryMismatch(str(caught));error.diagnostic=value;raise error from caught
     if (not value.get('passed') or actual.get('mode')!=config['torch_acceleration']['mode']
             or actual.get('reason')!='benchmark_gain' or actual.get('benchmarked') is not True
             or (actual.get('mode')=='compile_graph' and value.get('runtime',{}).get('graph_replays',0)<=0)

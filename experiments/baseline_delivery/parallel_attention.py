@@ -65,9 +65,12 @@ def stream_graphed_encoder(torch,call,static,parameters,stream,warmup):
 
 def parallel_runtime(torch,model,get_rng,set_rng,config):
     shape=getattr(model,'config',{})
+    partitioned=config.get('backend')=='eager_partitioned'
     if (shape.get('model')!='transformer' or shape.get('task')!='retrieval'
             or config['mode']!='compile_graph' or config['precision']!='fp32'):
         raise BackendFailure('Parallel document candidate supports FP32 Transformer Retrieval Graph only')
+    if partitioned and (shape.get('layers')!=4 or config.get('segment_layers')!=2):
+        raise BackendFailure('Partitioned candidate requires two segments of two layers')
 
     class Bridge(torch.autograd.Function):
         @staticmethod
@@ -102,7 +105,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                 for gradient in gradients:
                     if gradient is not None: gradient.record_stream(main)
             mark('gradient_merge')
-            owner.backward_replays+=2
+            owner.backward_replays+=4 if partitioned else 2
             merged=fixed_merge(torch,*values)
             cuda_fence(torch,'gradient_merge_complete_wait')
             return (None,None,None,*merged)
@@ -114,17 +117,20 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
             self.builds=0;self.replays=0;self.backward_replays=0;self.warmups=0;self.tails=0
             self.stage='idle';self.capture_budget=None
             self.original=encoder_parameters(model)
+            self.synced=False;self.sync_rounds=0
             if not self.original or any(p.dtype!=torch.float32 for _,p in self.original):
                 raise BackendFailure('Parallel candidate requires FP32 encoder parameters')
         def set_mode(self,mode): self.mode=mode
-        def begin_update(self,micro_batch): self.expected_rows=micro_batch
+        def begin_update(self,micro_batch):
+            self.expected_rows=micro_batch;self.synced=False
         def generation(self): return self.builds
         def status(self):
             return dict(graph_builds=self.builds,graph_resident=self.graph is not None,
                 compiled_callable_created=self.compiled is not None,graph_replays=self.replays,
                 backward_graph_replays=self.backward_replays,eager_tail_calls=self.tails,
-                stage=self.stage,compiler_warmups=self.warmups,graph_callables=2 if self.graph else 0,
-                capture_partition='parallel_retrieval_documents',capture_budget=self.capture_budget,
+                stage=self.stage,compiler_warmups=self.warmups,graph_callables=(4 if partitioned else 2) if self.graph else 0,
+                capture_partition=config['graph_partition'],capture_budget=self.capture_budget,
+                replica_sync_rounds=self.sync_rounds,replica_sync='per_update' if partitioned else 'per_microbatch',
                 execution_streams=2,encoder_replicas=2,gradient_merge='document2_plus_document1_fixed_order',
                 forward_schedule='document1_then_document2_shared_rng',backward_schedule='independent_streams',
                 capture_streams='per_document_explicit',library_workspace_scope='capture_stream_per_document',
@@ -137,6 +143,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                 for stream in self.streams: main.wait_stream(stream)
                 torch.cuda.synchronize()
             self.graph=None;self.key=None;self.compiled=None
+            self.synced=False
             self.replicas=None;self.parameters=None;self.streams=None
             gc.collect();torch.cuda.empty_cache()
         def isolate_gradients(self): pass  # Bridge returns fresh merged gradients.
@@ -154,7 +161,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                         if current is error: raise
                         raise current from None
                     current=current.__cause__
-                diagnostic=backend_diagnostic(error,stage,'eager_parallel')
+                diagnostic=backend_diagnostic(error,stage,config['backend'])
                 raise BackendFailure(type(error).__name__,diagnostic) from error
         def sync_replicas(self):
             with torch.no_grad():
@@ -166,6 +173,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                     for (name,target),(original,source) in zip(replica.named_buffers(),model.named_buffers()):
                         if name!=original: raise BackendFailure('Replica buffer identity differs')
                         target.copy_(source)
+            self.synced=True;self.sync_rounds+=1
         def capture(self,inputs):
             self.clear()
             if self.builds>=config['max_builds']: raise BackendFailure('Parallel graph build budget exhausted')
@@ -179,11 +187,16 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
             mark('replica_initial_sync',flush=True)
             self.streams=tuple(torch.cuda.Stream() for _ in range(2));self.sync_replicas()
             mark('compile_callables',flush=True)
-            self.compiled=tuple(torch.compile(replica.encode,backend='eager',fullgraph=True,dynamic=False)
+            self.compiled=() if partitioned else tuple(torch.compile(replica.encode,backend='eager',fullgraph=True,dynamic=False)
                 for replica in self.replicas)
             graphs=[];rng=get_rng()
             try:
                 for index,value in enumerate(inputs):
+                    if partitioned:
+                        from .partitioned_attention import partitioned_encoder
+                        graph,compiled=partitioned_encoder(torch,self.replicas[index],value,self.streams[index],config['graph_warmup'])
+                        graphs.append(graph);self.compiled+=compiled;self.warmups+=2
+                        continue
                     compiled=self.compiled[index];replica=self.replicas[index]
                     class Encoder(torch.nn.Module):
                         def __init__(self,base,call): super().__init__();self.base=base;self.call=call
@@ -210,7 +223,8 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
             mark('capture_ready',flush=True)
         def encode_pair(self,inputs):
             mark('replica_refresh')
-            self.sync_replicas();main=torch.cuda.current_stream();outputs=[]
+            if not partitioned or not self.synced: self.sync_replicas()
+            main=torch.cuda.current_stream();outputs=[]
             # Both graphs use the default generator's shared device seed/offset
             # tensors (PyTorch v2.7.1 replay_prologue). Host submission order alone
             # cannot protect them across streams: finish document1 before the
@@ -224,7 +238,7 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
                     mark('document_forward_replay',document=index)
                     outputs.append(self.graph[index](value))
                     cuda_fence(torch,'document_forward_complete_wait',document=index)
-                self.replays+=1
+                self.replays+=2 if partitioned else 1
             mark('forward_join')
             for stream in self.streams: main.wait_stream(stream)
             for output in outputs: output.record_stream(main)
@@ -233,7 +247,8 @@ def parallel_runtime(torch,model,get_rng,set_rng,config):
             inputs=(batch['inputs1'],batch['inputs2'])
             if self.expected_rows is not None and inputs[0].shape[0]<self.expected_rows:
                 self.tails+=1;return model(batch,validated_inputs=True)
-            budgets=[graph_rng_budget(shape,value.shape[0],value.shape[1]) for value in inputs]
+            budget_shape={**shape,'layers':2} if partitioned else shape
+            budgets=[graph_rng_budget(budget_shape,value.shape[0],value.shape[1]) for value in inputs]
             self.capture_budget=max((v for v in budgets if v is not None),key=lambda v:v['estimated_increment'],default=None)
             if self.capture_budget is not None and not self.capture_budget['passed']:
                 self.stage='capture_budget';raise CaptureCapacity(self.capture_budget)

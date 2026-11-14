@@ -12,19 +12,24 @@ class RecoveryMismatch(ValueError):
     pass
 
 
-BACKENDS=('eager','inductor','aot_eager_default_partitioner','eager_parallel')
+BACKENDS=('eager','inductor','aot_eager_default_partitioner','eager_parallel','eager_partitioned')
 
 
 def policy(mode='compile_graph',backend='inductor',required=None):
     if mode not in MODES: raise ValueError('Unsupported acceleration mode')
     if backend not in BACKENDS or required not in (None,'compile','graph'):
         raise ValueError('Unsupported compiler requirement')
-    return dict(schema='qkan-torch-acceleration.v5',mode=mode,backend=backend,required=required,
+    value=dict(schema='qkan-torch-acceleration.v5',mode=mode,backend=backend,required=required,
         dynamic=False,fullgraph=True,fallback_random=True,graph_warmup=3,max_graphs=2,
         benchmark_pairs=2,precision='fp32',max_builds=8,
         update_warmup=1,validation='each_execution_shape',
         graph_partition='parallel_retrieval_documents' if backend=='eager_parallel' else 'native_retrieval_documents',
-        measurement='balanced_synchronized.v1',no_gain_profile=backend!='eager_parallel')
+        measurement='balanced_synchronized.v1',no_gain_profile=backend not in ('eager_parallel','eager_partitioned'))
+    if backend=='eager_partitioned':
+        if mode!='compile_graph': raise ValueError('Partitioned backend requires CUDA Graphs')
+        value.update(graph_partition='parallel_retrieval_layers_2',segment_layers=2,
+                     replica_sync='per_update',max_graphs=4)
+    return value
 
 
 def legacy_policy(mode,version):
@@ -173,10 +178,10 @@ def admit_recovery(config,probe):
     requested=config['torch_acceleration'];start=MODES.index(requested['mode'])
     # Native autograd FX + explicit Graph first: no AOT decomposition or fusion.
     # The pass-through FX backend has no standalone compiler speed claim.
-    choices=[(mode,backend) for mode in MODES[start:] for backend in BACKENDS if backend!='eager_parallel'
+    choices=[(mode,backend) for mode in MODES[start:] for backend in BACKENDS if backend not in ('eager_parallel','eager_partitioned')
              if (mode=='compile_graph' or backend!='eager')
              if (mode!='eager' or backend=='inductor') and allowed(mode,requested.get('required'))]
-    if requested['backend']=='eager_parallel': choices=[(requested['mode'],'eager_parallel')]
+    if requested['backend'] in ('eager_parallel','eager_partitioned'): choices=[(requested['mode'],requested['backend'])]
     for mode,backend in choices:
         candidate['torch_acceleration']=policy(mode,backend,requested.get('required'))
         try:
@@ -360,7 +365,7 @@ class Executor:
 
 def torch_runtime(torch,model,get_rng,set_rng,config):
     """Bind only the forward callable, preserving canonical model state_dict keys."""
-    if config['backend']=='eager_parallel':
+    if config['backend'] in ('eager_parallel','eager_partitioned'):
         from .parallel_attention import parallel_runtime
         return parallel_runtime(torch,model,get_rng,set_rng,config)
     class Runtime:
