@@ -1,0 +1,313 @@
+{
+  "schema": "qkan-partitioned-retrieval-native-v2-review.v1",
+  "date": "2026-11-15",
+  "status": "native_correctness_and_steady_incumbent_speed_comparison_passed",
+  "authentic_return": {
+    "namespace": "qkan-mamba/partitioned-attention/partitioned-attention-20261114T132757Z-f2941a1d",
+    "file": "partitioned-attention.json",
+    "bytes": 120617,
+    "sha256": "4ff50fb4396209d0333481cc875a4f2a6d660c8d1cec417ca6284b078cdc86d9",
+    "source_revision": "a4403934844b104d700b305ce46c313fe319705d",
+    "job": "transformer-retrieval-s42",
+    "device": "NVIDIA GeForce RTX 3090 24GiB"
+  },
+  "checkpoint": {
+    "sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9",
+    "restored_step": 14268,
+    "source_revision": "b07d98e17ad0f996dbd416b0f38e015df6af4f60",
+    "source_suite": "/root/projects/qkan-mamba-lra-adaptive-b07d98e17ad0/runs/adaptive-migrated-20261114T040717Z-233292",
+    "source_immutable": true,
+    "preserved_completed": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ]
+  },
+  "recovery": {
+    "fixed_micro_batches": [
+      16,
+      32
+    ],
+    "fresh_process": true,
+    "agreement": "exact",
+    "trace_semantic_and_replay": true,
+    "controller_restored": true,
+    "forced_logical_batches": [
+      32,
+      64,
+      128,
+      32,
+      64,
+      128
+    ]
+  },
+  "matched_micro32_calibration": {
+    "eager_seconds": 8.69114589318633,
+    "graph_seconds": 7.764444371685386,
+    "throughput_gain_percent": 11.93519429259291,
+    "update_time_reduction_percent": 10.66259309060108,
+    "eager_samples_seconds": [
+      8.68735358864069,
+      8.694938197731972
+    ],
+    "graph_samples_seconds": [
+      7.7480844631791115,
+      7.78080428019166
+    ],
+    "agreement": "passed_rtol1e-5_atol1e-6_rng_exact",
+    "rollback_exact": true,
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0
+  },
+  "incumbent_comparison": {
+    "accepted_as_net_speed_evidence": true,
+    "measurement": "balanced_synchronized_incumbent_graph.v2",
+    "pairs": 2,
+    "incumbent_micro_batch": 16,
+    "candidate_micro_batch": 32,
+    "logical_batch": 128,
+    "incumbent_seconds": 7.9693116415292025,
+    "candidate_seconds": 7.574752381071448,
+    "incumbent_samples_per_second": 16.061613067429064,
+    "candidate_samples_per_second": 16.89824215506493,
+    "throughput_gain_percent": 5.2088733810456755,
+    "update_time_reduction_percent": 4.950982948158911,
+    "pair_orders": [
+      [
+        "incumbent",
+        "candidate"
+      ],
+      [
+        "candidate",
+        "incumbent"
+      ]
+    ],
+    "samples_seconds": {
+      "incumbent": [
+        8.025764230638742,
+        7.9128590524196625
+      ],
+      "candidate": [
+        7.575961638242006,
+        7.57354312390089
+      ]
+    },
+    "steady_validation": {
+      "incumbent": [
+        {
+          "before": {
+            "mode": "compile_graph",
+            "generation": 1,
+            "validation_checks": 1,
+            "graph_resident": true,
+            "validated": true
+          },
+          "after": {
+            "mode": "compile_graph",
+            "generation": 1,
+            "validation_checks": 1,
+            "graph_resident": true,
+            "validated": true
+          }
+        },
+        {
+          "before": {
+            "mode": "compile_graph",
+            "generation": 2,
+            "validation_checks": 2,
+            "graph_resident": true,
+            "validated": true
+          },
+          "after": {
+            "mode": "compile_graph",
+            "generation": 2,
+            "validation_checks": 2,
+            "graph_resident": true,
+            "validated": true
+          }
+        }
+      ],
+      "candidate": [
+        {
+          "before": {
+            "mode": "compile_graph",
+            "generation": 2,
+            "validation_checks": 2,
+            "graph_resident": true,
+            "validated": true
+          },
+          "after": {
+            "mode": "compile_graph",
+            "generation": 2,
+            "validation_checks": 2,
+            "graph_resident": true,
+            "validated": true
+          }
+        },
+        {
+          "before": {
+            "mode": "compile_graph",
+            "generation": 2,
+            "validation_checks": 2,
+            "graph_resident": true,
+            "validated": true
+          },
+          "after": {
+            "mode": "compile_graph",
+            "generation": 2,
+            "validation_checks": 2,
+            "graph_resident": true,
+            "validated": true
+          }
+        }
+      ]
+    },
+    "timing_scope": "Synchronized full logical128 update includes replica sync, gradient merge, optimizer and update-boundary waits. Capture/warmup/numerical validation and checkpoint restore excluded.",
+    "preparation_memory": {
+      "incumbent": [
+        {
+          "free_bytes": 13219201024,
+          "total_bytes": 25438126080,
+          "peak_bytes": 5586618880,
+          "allocated_bytes": 388503040,
+          "reserved_bytes": 11733565440
+        },
+        {
+          "free_bytes": 12430671872,
+          "total_bytes": 25438126080,
+          "peak_bytes": 5855054336,
+          "allocated_bytes": 656938496,
+          "reserved_bytes": 12522094592
+        }
+      ],
+      "candidate": [
+        {
+          "free_bytes": 1519190016,
+          "total_bytes": 25438126080,
+          "peak_bytes": 11316545536,
+          "allocated_bytes": 1050113536,
+          "reserved_bytes": 23433576448
+        }
+      ]
+    },
+    "memory": {
+      "incumbent": [
+        {
+          "free_bytes": 13219201024,
+          "total_bytes": 25438126080,
+          "peak_bytes": 391749120,
+          "allocated_bytes": 388503040,
+          "reserved_bytes": 11733565440
+        },
+        {
+          "free_bytes": 12430671872,
+          "total_bytes": 25438126080,
+          "peak_bytes": 660184576,
+          "allocated_bytes": 656938496,
+          "reserved_bytes": 12522094592
+        }
+      ],
+      "candidate": [
+        {
+          "free_bytes": 1519190016,
+          "total_bytes": 25438126080,
+          "peak_bytes": 1053376000,
+          "allocated_bytes": 1050113536,
+          "reserved_bytes": 23433576448
+        },
+        {
+          "free_bytes": 1519190016,
+          "total_bytes": 25438126080,
+          "peak_bytes": 1053376000,
+          "allocated_bytes": 1050113536,
+          "reserved_bytes": 23433576448
+        }
+      ]
+    },
+    "simultaneous_resident_routes": 1
+  },
+  "memory": {
+    "candidate_allocator_reserved_gib": 21.82421875,
+    "candidate_allocator_allocated_gib": 0.977994441986084,
+    "candidate_board_used_gib": 22.2762451171875,
+    "candidate_board_free_gib": 1.41485595703125,
+    "total_visible_gib": 23.69110107421875,
+    "interpretation": "Post-update diagnostic snapshots; reservation includes Graph pools. Allocated tensor bytes are not whole-device occupancy. Warmup peaks are separate. No sustained formal-training memory guarantee."
+  },
+  "runtime": {
+    "forward_replays": 192,
+    "backward_replays": 192,
+    "capture_rows": 32,
+    "length": 4000,
+    "rng_budget": {
+      "schema": "qkan-graph-rng-budget.v1",
+      "stage": "capture_budget",
+      "category": "rng_offset_capacity",
+      "estimated_increment": 4292608000,
+      "limit": 4294967295,
+      "rows": 32,
+      "length": 4000,
+      "documents_per_graph": 1,
+      "passed": true
+    },
+    "replica_sync": "per_update",
+    "graph_resident_at_end": false,
+    "cleanup_interpretation": "Both routes intentionally cleared after comparison.",
+    "compiler_backend": "eager",
+    "inductor_fusion": false
+  },
+  "children": [
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 82.08481360599399,
+      "clean": true
+    },
+    {
+      "exit_code": 75,
+      "elapsed_seconds": 36.12569770962,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 78.07350923493505,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 86.69428139552474,
+      "clean": true
+    },
+    {
+      "exit_code": 75,
+      "elapsed_seconds": 40.12277219071984,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 79.68081345036626,
+      "clean": true
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 267.52105478569865,
+      "clean": true
+    }
+  ],
+  "formal_training_started": false,
+  "formal_continuation_integrated": false,
+  "owner_framework_imported": false,
+  "historical_comparison": {
+    "suite": "partitioned-attention-20261114T115417Z-e42ba812",
+    "schema": "qkan-incumbent-graph-comparison.v1",
+    "accepted": false,
+    "review": "docs/evidence/partitioned-retrieval-native-review-20261114.json",
+    "reason": "Historical v1 timings mixed recapture validation into measured updates; v2 proof now excludes that defect."
+  },
+  "next_action": "Integrate fixed-micro32 eager_partitioned into explicit unfinished-Retrieval continuation; preserve completed results and latest b07 full checkpoint. Re-run source-bound readiness/recovery after integration; no training launched by this review.",
+  "limitations": [
+    "Two AB/BA timing pairs at one checkpoint and one RTX3090; no sustained training or other-job speed evidence.",
+    "Changing micro16 to32 changes floating-point/dropout trajectories; each route separately passed same-micro agreement and exact recovery.",
+    "Additional gain5.21percent compares current Graph16 with partitioned Graph32. Same-micro eager gain uses another baseline and must not be added.",
+    "Backend eager is torch.compile eager capture with manual CUDA Graph replay, not Inductor fusion.",
+    "General micro20/24/28 adaptive controller remains deferred; standalone diagnostic is not a formal continuation entry."
+  ]
+}
