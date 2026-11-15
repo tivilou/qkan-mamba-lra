@@ -21,6 +21,7 @@
     "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
   },
   "candidate_files_sha256": {
+    ".gitattributes": "1f4183151aed0dfb6e94023249b0ea9040aef8d31c0862a612bae54cfbb4dd3d",
     "experiments/baseline_delivery/optimization_plugins.py": "eb0dcff76e4eb1ea352a267bb21078a101a0f8deef3a1203e5bc351dc8599b04",
     "experiments/baseline_delivery/attention_update.py": "12a65227b540f7f0040bf7baadd6c3ce68f2332d1066def6cd4c46f9355fa910",
     "experiments/baseline_delivery/attention_update_native.py": "14c98f9a6f170f5b14ed5de921ad15bf54ce23ac07f47a437cc226df37926f8a",
@@ -52,8 +53,8 @@
     "patch": ".runtime/attention-update-20261115/change.patch",
     "verification": ".runtime/attention-update-20261115/verification.json",
     "rollback": ".runtime/attention-update-20261115/rollback.py",
-    "candidate_bytes": 104411,
-    "patch_sha256": "a550de7fbb663b1faa1bc9901c63fb919447ed374d8edb82c51aaf38c301086d",
+    "candidate_bytes": 104809,
+    "patch_sha256": "709c15df353a05758953f89e22cbb7c21348fefb4b410107802c5ba6766f2f6a",
     "rollback_sha256": "f63f445a814e55f85fb02511d196699f44acda9ff4662106b015926b747bc464"
   },
   "verified_behaviors": {
