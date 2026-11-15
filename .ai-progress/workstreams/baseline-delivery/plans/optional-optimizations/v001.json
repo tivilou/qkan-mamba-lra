@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Run the isolated BF16 efficient-attention probe on the idle collaborator GPU and review kernel/numeric/replay/local timing evidence before any full-update candidate.",
+  "next_action": "Prepare a dossier-bound independently switchable BF16 attention full-update candidate and fixed numerical/convergence/recovery/trace protocol before testing end-to-end speed or Graph combination.",
   "blocker": null,
   "steps": [
     {
@@ -140,13 +140,15 @@
       ],
       "evidence_paths": [
         "docs/baselines/attention-precision-diagnostic.md",
-        "docs/baselines/attention-precision-plugin-plan.json"
+        "docs/baselines/attention-precision-plugin-plan.json",
+        "docs/evidence/attention-precision-native-review-20261115.json"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
       "notes": [
         "Unavailable flags reject enabled requests until their implementation and native evidence exist.",
-        "Scoped BF16 mechanism probe implemented behind default-off registry; source FP32 training unchanged. Native trace, full-update recovery and convergence remain pending."
+        "Scoped BF16 mechanism probe implemented behind default-off registry; source FP32 training unchanged. Native trace, full-update recovery and convergence remain pending.",
+        "Authenticated native mechanism return verified: micro16 first-layer/document1 BF16 efficient SDPA 2.936222x vs FP32; output relative L2 0.348621 percent, max gradient0.955918 percent, exact same-route replay/input-RNG rollback. Full-update/convergence/trace admission pending."
       ],
       "supersedes": [],
       "superseded_by": []

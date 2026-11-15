@@ -1,6 +1,22 @@
 # 独立 BF16 注意力诊断
 
-2026-11-15。PAD 固定前缀统计为零收益后，下一项最小实验是 BF16 efficient SDPA。代码已交付，真实 GPU 数据待返回。这是机制筛查，不是完整训练加速或收敛认证。所有选项默认关闭；只在 `attention_probe` 执行域允许 `bf16_amp`，旧训练入口和 PAD 统计入口仍拒绝启用。
+2026-11-15。PAD 固定前缀统计为零收益后，BF16 efficient SDPA 的原生机制诊断已完成并审核。所有选项默认关闭；只在 `attention_probe` 执行域允许 `bf16_amp`，旧训练入口和 PAD 统计入口仍拒绝启用。
+
+## 已返回的原生结果
+
+`attention-precision-20261115T081547Z-39eb773b`，执行版本 `9f34337`，RTX 3090、micro16，第一层/第一篇文档/固定 train 前缀。12181 字节报告的认证目录哈希与下载 SHA-256 一致，代码和预设哈希匹配发布版本，源 checkpoint 与此前已审核的 step14268 相同。
+
+| 注意力前向＋反向 | FP32 | BF16 |
+| --- | ---: | ---: |
+| 4 次测量中位数 | 116.633 ms | 39.722 ms |
+| profiler 时 allocated 峰值 | 458.322 MiB | 442.444 MiB |
+| 相对存活输入的增量峰值 | 225.953 MiB | 210.075 MiB |
+
+局部吞吐为 **2.9362 倍**，耗时下降 **65.94%**；四次 BF16 测量均快于四次 FP32 测量。allocated 峰值减少 15.878 MiB，并非显存减半；两条路线共享预热 allocator，reserved 均为 648 MiB。
+
+dropout=0 时 output/dQ/dK/dV 相对 L2 分别为 0.34862%、0.95592%、0.75255%、0.49734%，全部通过预设筛查。训练 dropout 下每条路线各自的输出、梯度与结束 RNG 精确重放；efficient SDPA 前向/反向算子均被记录，输出 dtype 符合 FP32/BF16 请求。原 QKV/RNG、源 checkpoint 与元数据保持一致，诊断子进程正常退出且进程组已清空。
+
+结果审核见 [attention-precision-native-review-20261115.json](../evidence/attention-precision-native-review-20261115.json)。该结果支持继续开发可关闭的 BF16 注意力完整更新候选；完整模型 loss 梯度、优化器、收敛、恢复、sample-trace.v2 和 BF16＋Graph 组合仍待验证。本次测量已完成，下方命令保留用于复现，无需重复运行。
 
 ## 测什么
 
