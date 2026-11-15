@@ -1,0 +1,6 @@
+{
+  "schema": "qkan-optional-optimizations.v1",
+  "optimizations": {
+    "bf16_amp": {"enabled": true}
+  }
+}

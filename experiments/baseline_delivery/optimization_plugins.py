@@ -23,8 +23,8 @@ REGISTRY = {
             shape_dtype_normalization=['integer token IDs; PAD=1; original absolute positions; FP32 scoring'],
             checks=['complete values and coverage','token/position parity','producer lineage','same-sample replay'],
             deterministic_replay=True)),
-    'bf16_amp': dict(id='precision.bf16_amp', version='1', available=False,available_in=['attention_probe'],
-        type='transformer', insertion_point='isolated attention QKV casts/autocast; training integration pending',
+    'bf16_amp': dict(id='precision.bf16_amp', version='1', available=False,available_in=['attention_probe','attention_update'],
+        type='transformer', insertion_point='isolated attention QKV casts; optional complete-update diagnostic; formal training pending',
         hypothesis='BF16 efficient SDPA may reduce attention forward/backward time.',
         input_schema='FP32 QKV leaves from original first-layer projection; additive FP32 PAD mask',
         output_schema='BF16 attention output; FP32 QKV gradients; no optimizer update',
@@ -68,12 +68,12 @@ class Selection:
         if self.bf16_amp: selected.append(dict(id=REGISTRY['bf16_amp']['id'],version='1'))
         return dict(schema=SCHEMA,selected=selected,baseline_adapter=not selected,scope='diagnostic_only',
             execution_scope=self.scope,graph_compatibility='not_admitted',
-            precision='bf16_autocast_fp32_inputs' if self.bf16_amp else 'fp32',sample_order='preserved')
+            precision=('bf16_sdpa_fp32_master' if self.scope=='attention_update' else 'bf16_autocast_fp32_inputs') if self.bf16_amp else 'fp32',sample_order='preserved')
 
 
 def resolve(config=None,*,scope='padding_profile'):
     """Reject misspellings, incompatible requests, and unimplemented enabled flags."""
-    if scope not in ('padding_profile','attention_probe'): raise ValueError('Unknown optimization scope')
+    if scope not in ('padding_profile','attention_probe','attention_update'): raise ValueError('Unknown optimization scope')
     if config is None: return Selection(scope=scope)
     if not isinstance(config, dict) or set(config)-{'schema', 'optimizations'}:
         raise ValueError('Invalid optional optimization configuration')
@@ -97,7 +97,7 @@ def resolve(config=None,*,scope='padding_profile'):
         if set(metadata['conflicts']) & enabled: raise ValueError('Optimization conflict: '+name)
     unavailable=sorted(name for name in enabled if not REGISTRY[name]['available'] and scope not in REGISTRY[name].get('available_in',[]))
     if unavailable: raise ValueError('Optimization implementation pending: '+','.join(unavailable))
-    if scope=='attention_probe' and 'padding_trim' in enabled: raise ValueError('Attention probe keeps full token positions')
+    if scope in ('attention_probe','attention_update') and 'padding_trim' in enabled: raise ValueError('Attention diagnostics keep full token positions')
     return Selection('padding_trim' in enabled,alignment,'bf16_amp' in enabled,scope)
 
 
