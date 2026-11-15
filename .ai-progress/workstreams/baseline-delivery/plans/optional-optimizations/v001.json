@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "plan_id": "optional-optimizations",
+  "plan_version": 1,
+  "workstream": "baseline-delivery",
+  "status": "active",
+  "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
+  "focus_step_id": "OP03",
+  "next_action": "Collaborator runs bounded CPU train-prefix PAD opportunity entry; review authenticated compact return before choosing native candidate.",
+  "blocker": null,
+  "steps": [
+    {
+      "id": "OP01",
+      "title": "Explicit optional plugin boundary",
+      "status": "done",
+      "objective": "Keep all-off identity and reject unavailable/conflicting requests.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "experiments/baseline_delivery/optimization_plugins.py"
+      ],
+      "depends_on": [],
+      "acceptance_checks": [
+        "Resolver and null adapter tests pass"
+      ],
+      "evidence_paths": [
+        "tests/test_baseline_optional_optimizations.py"
+      ],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP02",
+      "title": "Train-only PAD opportunity tool",
+      "status": "done",
+      "objective": "Deliver bounded statistics and token/position audit without model/device or duplicate arrays.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "experiments/baseline_delivery/padding_profile.py",
+        "scripts/profile_optional_padding.sh"
+      ],
+      "depends_on": [
+        "OP01"
+      ],
+      "acceptance_checks": [
+        "Control-plane tests, actual CLI and Bash dispatch pass",
+        "Protected baseline hashes unchanged"
+      ],
+      "evidence_paths": [
+        "docs/evidence/optional-padding-delivery-20261115.json"
+      ],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP03",
+      "title": "Review collaborator length statistics",
+      "status": "active",
+      "objective": "Measure whether common trailing PAD presents a useful candidate.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Authenticated padding-profile.json review"
+      ],
+      "depends_on": [
+        "OP02"
+      ],
+      "acceptance_checks": [
+        "Train SHA/config/plugin identities and row coverage match",
+        "Review prefix sampling limitation; kill zero-opportunity PAD route"
+      ],
+      "evidence_paths": [],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [
+        "Actual collaborator result pending; no native runtime claim."
+      ],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP04",
+      "title": "Native PAD candidate if warranted",
+      "status": "todo",
+      "objective": "Bind mechanism dossier and v2 plan; implement trace and original checkpoint recovery plus full-update timing.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Optional native PAD adapter and bounded trace fixture"
+      ],
+      "depends_on": [
+        "OP03"
+      ],
+      "acceptance_checks": [
+        "Numerical/RNG/trace/recovery/rollback agreement",
+        "Positive matched AB/BA full-update gain against Graph32"
+      ],
+      "evidence_paths": [],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP05",
+      "title": "Optional precision and attention candidates",
+      "status": "todo",
+      "objective": "Research BF16/Flash or FP32 tuned kernels using measured attention bottleneck.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Separate optional plugin candidate and offline pinned prerequisites"
+      ],
+      "depends_on": [
+        "OP01"
+      ],
+      "acceptance_checks": [
+        "Declare FP32 versus changed-precision comparisons",
+        "Actual kernel trace and convergence/resource/rollback checks"
+      ],
+      "evidence_paths": [],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [
+        "Unavailable flags reject enabled requests until their implementation and native evidence exist."
+      ],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP06",
+      "title": "Combination and formal continuation decision",
+      "status": "todo",
+      "objective": "Test accepted options individually and together before new formal integration.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Matched resource/performance ablations and admitted continuation"
+      ],
+      "depends_on": [
+        "OP04",
+        "OP05"
+      ],
+      "acceptance_checks": [
+        "No regression from all-off baseline",
+        "Preserved completed results/latest original checkpoint",
+        "New final implementation source/recovery/trace/migration admission"
+      ],
+      "evidence_paths": [],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [],
+      "supersedes": [],
+      "superseded_by": []
+    }
+  ],
+  "change_log": [
+    {
+      "from_version": 0,
+      "to_version": 1,
+      "date": "2026-11-15",
+      "reason": "User released design-only mode and authorized optional-plugin implementation.",
+      "trigger": [
+        "docs/baselines/optional-training-optimizations.md"
+      ],
+      "impact": "Deliver phase1 CPU opportunity code now; native and future precision/kernel candidates remain separate.",
+      "cursor_migration": "Design -> OP03"
+    }
+  ]
+}

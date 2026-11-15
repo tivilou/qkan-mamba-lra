@@ -1,0 +1,248 @@
+{
+  "schema_version": "research-plugin-architecture.plugin-plan.v1",
+  "project": "QKAN-Mamba",
+  "authorization": "approved",
+  "baseline": {
+    "entry_point": "transform_batch(tokens,resolve(),ops)",
+    "code_revision": "2c7422156950eb4024597e846b3812abd83d77ec",
+    "equivalence_test": "tests.test_baseline_optional_optimizations.PluginTests.test_presets_and_zero_touch_null"
+  },
+  "core_invariants": [
+    "Fixed source train identities and FP32 protocol; immutable b07 checkpoint/results.",
+    "No labels in transform; original row, document identity and valid-token coordinates retained.",
+    "Owner uses stdlib only; collaborator diagnostics offline with explicit authenticated compact return.",
+    "Opportunity statistics do not admit a native training candidate. New recovery candidate requires a dossier-bound v2 plan."
+  ],
+  "interfaces": [
+    {
+      "id": "token_batch",
+      "type": "transformer",
+      "input_schema": "integer token matrices [B,L]; PAD=1",
+      "output_schema": "same rows and token positions; [B,aligned_max_last_valid]",
+      "invariants": [
+        "PAD=1; trailing-prefix slice only",
+        "null returns same object",
+        "no sample/position compaction"
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "id": "baseline.identity",
+      "version": "1",
+      "insertion_point": "Null adapter at the same CPU token boundary",
+      "hypothesis": "All options off preserves the source object without touching it.",
+      "input_schema": "integer token matrices [B,L]; PAD=1",
+      "output_schema": "same rows and token positions; [B,aligned_max_last_valid]",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "One bounded CPU microbatch; slicing views; no graph cache.",
+      "failure_signatures": [
+        "null_identity_changed"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring"
+        ],
+        "input_fields": [
+          "original_token_ids",
+          "valid_positions",
+          "document_identity"
+        ],
+        "output_fields": [
+          "trimmed_token_ids",
+          "original_position_map",
+          "logits"
+        ],
+        "input_refs": [
+          "pending_native_fixture/original_tokens"
+        ],
+        "output_refs": [
+          "pending_native_fixture/trimmed_tokens",
+          "pending_native_fixture/logits"
+        ],
+        "emitted_fields": [
+          "token_values",
+          "position_map",
+          "input_hash",
+          "execution_shape",
+          "logits"
+        ],
+        "shape_dtype_normalization": [
+          "integer token IDs; PAD=1; original absolute positions; FP32 scoring"
+        ],
+        "checks": [
+          "complete values and coverage",
+          "token/position parity",
+          "producer lineage",
+          "same-sample replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "baseline",
+      "interface": "token_batch"
+    },
+    {
+      "id": "padding.trim_trailing",
+      "version": "1",
+      "insertion_point": "CPU microbatch view before transfer",
+      "hypothesis": "Removing common trailing PAD reduces dense attention work.",
+      "input_schema": "integer token matrices [B,L]; PAD=1",
+      "output_schema": "same rows and token positions; [B,aligned_max_last_valid]",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "One bounded CPU microbatch; slicing views; no graph cache.",
+      "failure_signatures": [
+        "empty_input",
+        "invalid_token_matrix",
+        "valid_token_removed"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring"
+        ],
+        "input_fields": [
+          "original_token_ids",
+          "valid_positions",
+          "document_identity"
+        ],
+        "output_fields": [
+          "trimmed_token_ids",
+          "original_position_map",
+          "logits"
+        ],
+        "input_refs": [
+          "pending_native_fixture/original_tokens"
+        ],
+        "output_refs": [
+          "pending_native_fixture/trimmed_tokens",
+          "pending_native_fixture/logits"
+        ],
+        "emitted_fields": [
+          "token_values",
+          "position_map",
+          "input_hash",
+          "execution_shape",
+          "logits"
+        ],
+        "shape_dtype_normalization": [
+          "integer token IDs; PAD=1; original absolute positions; FP32 scoring"
+        ],
+        "checks": [
+          "complete values and coverage",
+          "token/position parity",
+          "producer lineage",
+          "same-sample replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "idea",
+      "interface": "token_batch"
+    }
+  ],
+  "discovery": {
+    "mode": "explicit_allowlist",
+    "allowlist": [
+      "baseline.identity",
+      "padding.trim_trailing"
+    ]
+  },
+  "composition": {
+    "mode": "single",
+    "order": [
+      "padding.trim_trailing"
+    ],
+    "merge_rule": "One immutable token-prefix view per document; identity is the control.",
+    "interaction_ablations": [
+      "future: PAD alone versus Graph32 alone versus PAD+Graph32 at fixed logical batch and precision"
+    ]
+  },
+  "validation": {
+    "baseline_equivalence": "Null object-identity test passes; native model trajectory equality pending.",
+    "tests": [
+      "baseline_equivalence",
+      "plugin_isolation",
+      "deterministic_replay",
+      "interaction_ablation",
+      "configuration_schema",
+      "train_only_aggregate_coverage",
+      "trace_structural_validation",
+      "trace_semantic_validation",
+      "trace_replay"
+    ]
+  },
+  "reproducibility": {
+    "config_path": "experiments/baseline_delivery/optimization-presets/padding-trim.json",
+    "dataset_identity": "b07 source config data_hashes.train; first4096 train rows, micro32, alignment128",
+    "environment": "Owner QT2 stdlib fakes; collaborator existing offline .venv-baselines NumPy; no package installation.",
+    "seeds": [
+      42
+    ],
+    "output_manifest": "runs/padding-profile-*/padding-profile.json plus artifact-delivery.json"
+  },
+  "case_study_execution": {
+    "mode": "post_training_replay",
+    "checkpoint_policy": "Future final case study uses best-validation selected model; preflight fixture is separate.",
+    "dependency_refs": [
+      "original source train identity",
+      "future selected model and fixed first2 validation row IDs"
+    ],
+    "replay_command": [
+      "PENDING_NATIVE_IMPLEMENTATION",
+      "selected-model",
+      "fixed-first-two-validation-rows"
+    ],
+    "intermediate_policy": "rebuild"
+  },
+  "trace_contract": {
+    "enabled": true,
+    "schema": "sample-trace.v2",
+    "artifact_path": "pending_native_fixture/sample-trace.v2.json",
+    "sample_selection_rule": "Future preflight/replay: first2 validation row IDs in source order, fixed before inspecting values; same samples for both routes.",
+    "target_boundary": "Token inputs/positions and logits only; gold labels never select or transform inputs.",
+    "required_stages": [
+      "data",
+      "preprocess",
+      "scoring"
+    ],
+    "semantic_roles": [
+      "baseline",
+      "intervention"
+    ],
+    "required_representations": [
+      "complete token values",
+      "original position map",
+      "complete logits"
+    ],
+    "producer_owned_lineage": [
+      "dataset SHA to row/document to input/output hashes to model SHA"
+    ],
+    "readiness_checks": [
+      "structural schema",
+      "complete detached values/hash/coverage",
+      "reader slices equal values",
+      "same-sample baseline/intervention replay"
+    ]
+  },
+  "trace_readiness": {
+    "status": "blocked",
+    "fixture_path": "pending_native_fixture/sample-trace.v2.json",
+    "structural_validation": "Pending real producer and fixture; no native run in phase1.",
+    "semantic_validation": "Pending complete detached values, lineage and project reader validation.",
+    "replay_test": "Pending real same-sample numerical/RNG/replay test."
+  },
+  "limitations": [
+    "Phase1 delivers CPU opportunity code only, without native model trace or formal training integration.",
+    "Transformer dropout RNG and kernels may change with execution width; valid-token preservation is not numerical/RNG agreement.",
+    "Fixed train prefix is not a full-corpus estimate; matrix cell savings are not measured GPU speedup.",
+    "BF16/Flash/FP32 tuning are explicit unavailable registry entries, not implemented mechanisms."
+  ]
+}
