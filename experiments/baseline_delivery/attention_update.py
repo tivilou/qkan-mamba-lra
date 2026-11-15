@@ -58,6 +58,10 @@ def attention_route(torch, model, enabled=False, *, fp32_adapter=False, observe=
                 raise ValueError('Original FP32 additive key PAD mask required')
             mask=mask.reshape(batch,1,1,length)
             actual=tuple(value.to(torch.bfloat16) for value in qkv) if enabled else qkv
+            # CUDA efficient SDPA requires bias.dtype == query.dtype. PAD bias
+            # contains only 0/-inf, both represented exactly in BF16; retain the
+            # original coordinates and exclusions without enabling global AMP.
+            if enabled: mask=mask.to(actual[0].dtype)
             backend=torch.nn.attention.SDPBackend.EFFICIENT_ATTENTION
             with torch.nn.attention.sdpa_kernel(backend):
                 attention=torch.nn.functional.scaled_dot_product_attention(*actual,

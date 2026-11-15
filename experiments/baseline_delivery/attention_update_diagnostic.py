@@ -33,6 +33,18 @@ def accept_child(result,request,request_sha,mode,code):
     return result
 
 
+def read_child_result(output,request,request_sha,mode,code,report):
+    output=Path(output);result_path=output/'result.json'
+    failure_path=output/'worker-error.json'
+    if failure_path.is_file(): report['native_failure_locations']=read(failure_path)
+    if code not in (0,76) or not result_path.is_file():
+        report['native_child_failure']=dict(mode=mode,exit_code=code,
+            result_present=result_path.is_file(),failure_locations=report.get('native_failure_locations'))
+        raise RuntimeError('BF16 full-update child '+mode+' exited '+str(code)+
+            '; inspect native_failure_locations and child_executions in attention-update.json')
+    return accept_child(read(result_path),request,request_sha,mode,code)
+
+
 def recovery_agreement(results):
     a,b,c=(results[name] for name in ('uninterrupted','interrupt','resume'))
     if (not all(row['passed'] for row in (a,b,c))
@@ -99,7 +111,7 @@ def execute(args,folder,report):
                 try: code=supervisor.run(dict(target=TARGET,cwd=str(ROOT),argv=argv),folder/(mode+'.log'),env=env)
                 finally:
                     if (output/'worker-error.json').is_file(): report['native_failure_locations']=read(output/'worker-error.json')
-                result=accept_child(read(output/'result.json'),request,request_sha,mode,code)
+                result=read_child_result(output,request,request_sha,mode,code,report)
                 results[mode]=result;report['results']=results
                 if mode=='resume':
                     report['recovery']=recovery_agreement(results)
@@ -109,8 +121,9 @@ def execute(args,folder,report):
             report['status']='diagnostic_passed' if report['passed'] else 'diagnostic_rejected'
             report['native_trace_ready']=bool(results.get('benchmark',{}).get('trace',{}).get('passed'))
             report['architecture_status']='native_diagnostic_passed_formal_pending' if report['passed'] else 'approved_pending_native_checks'
-        finally: unchanged(binding)
-        report['original_checkpoint_and_metadata_unchanged']=True
+        finally:
+            unchanged(binding)
+            report['original_checkpoint_and_metadata_unchanged']=True
 
 
 def main():

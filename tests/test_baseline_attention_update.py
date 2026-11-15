@@ -85,6 +85,18 @@ class StrategyTests(unittest.TestCase):
         self.assertIn(('sdpa',(2,4,4000,32),'fp32',(2,1,1,4000),0.,False),events)
         self.assertFalse(any(event[-1]=='bf16' for event in events))
 
+    def test_efficient_kernel_requires_mask_dtype_to_match_qkv(self):
+        # Torch 2.7.1 CUDA efficient attention checks bias/query scalar types.
+        for enabled in (False,True):
+            runtime,model,events=adapter_fixture()
+            original=runtime.nn.functional.scaled_dot_product_attention
+            def checked(q,k,v,**kwargs):
+                self.assertEqual(kwargs['attn_mask'].dtype,q.dtype)
+                return original(q,k,v,**kwargs)
+            runtime.nn.functional.scaled_dot_product_attention=checked
+            with strategy.attention_route(runtime,model,enabled,fp32_adapter=not enabled):
+                model.encoder.layers[0]._sa_block(View(events=events),None,View((2,4000)))
+
     def test_exception_restores_owned_attribute_and_other_model(self):
         runtime,model,_=adapter_fixture();other=adapter_fixture()[1];old=object();model.encoder.layers[0]._sa_block=old
         with self.assertRaisesRegex(RuntimeError,'injected'):
@@ -136,6 +148,34 @@ def child(request,mode,passed=True):
 
 
 class ControllerTests(unittest.TestCase):
+    def test_failed_child_without_result_preserves_native_failure_and_exit_code(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp);report={}
+            failure=dict(schema='qkan-worker-error.v1',error_type='RuntimeError',
+                project_frames=[dict(file='experiments/baseline_delivery/attention_update.py',line=63)])
+            atomic_json(output/'worker-error.json',failure)
+            with self.assertRaisesRegex(RuntimeError,'uninterrupted exited 1'):
+                entry.read_child_result(output,{},'request','uninterrupted',1,report)
+            self.assertEqual(report['native_failure_locations'],failure)
+            self.assertEqual(report['native_child_failure']['exit_code'],1)
+            self.assertFalse(report['native_child_failure']['result_present'])
+
+    def test_missing_success_result_and_stale_failed_result_never_admit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp)
+            with self.assertRaisesRegex(RuntimeError,'exited 0'):
+                entry.read_child_result(output,{},'request','benchmark',0,{})
+            atomic_json(output/'result.json',{'passed':True})
+            with self.assertRaisesRegex(RuntimeError,'exited 1'):
+                entry.read_child_result(output,{},'request','benchmark',1,{})
+
+    def test_completed_child_rejection_remains_a_valid_diagnostic_result(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp);request=dict(checkpoint={'sha256':'original'},optimization_config=read(PRESET))
+            result=child(request,'benchmark',passed=False)
+            atomic_json(output/'result.json',result)
+            self.assertEqual(entry.read_child_result(output,request,'request','benchmark',76,{}),result)
+
     def test_child_identity_rollbacks_and_exit_status_are_required(self):
         request=dict(checkpoint={'sha256':'original'},optimization_config=read(PRESET));result=child(request,'benchmark')
         self.assertIs(entry.accept_child(result,request,'request','benchmark',0),result)

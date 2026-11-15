@@ -2,7 +2,9 @@
 
 这版把已实测有效的局部 BF16 注意力扩展到四层、双文档的真实训练更新。它是独立诊断候选，默认关闭；原训练入口与两个已完成结果保留。上一轮第一层、单文档、Gaussian cotangent 的约 2.94 倍收益仅是机制证据。本版整步收益、数值和恢复状态要以新的服务器报告为准。
 
-`bf16_amp` 是沿用的配置键，本版实际只将 SDPA 的 Q/K/V 转为 BF16。原 FP32 QKV 投影、输出投影、残差、FFN、LayerNorm、pair head、交叉熵、master 参数和 Adam 状态继续用 FP32。每个模型实例临时替换自己的 `_sa_block`，退出恢复属性；没有全局方法替换或新参数命名。`false` 的空策略直接保留原实例。现有 formal worker 不接入此候选。
+`bf16_amp` 是沿用的配置键，本版实际将 SDPA 的 Q/K/V 与对应 PAD bias 转为 BF16。bias 仅含 `0/-∞`，转换精确保留 PAD 排除和坐标，满足 Torch 2.7.1 CUDA efficient SDPA 的 bias/query 同类型要求。原 FP32 QKV 投影、输出投影、残差、FFN、LayerNorm、pair head、交叉熵、master 参数和 Adam 状态继续用 FP32。每个模型实例临时替换自己的 `_sa_block`，退出恢复属性；没有全局方法替换或新参数命名。`false` 的空策略直接保留原实例。现有 formal worker 不接入此候选。
+
+2026-11-15 首次完整更新诊断在首个恢复子进程失败：回传报告记录 SDPA 处 RuntimeError，旧父进程随后读取缺失的 result.json，遮住原故障。已修复上述类型不匹配，并在子进程失败时优先保留退出码、native_failure_locations 和进程组清理证据。请从原 b07 目录重新执行下面的完整命令，拉取修复版独立 checkout；保留旧失败目录，不将其当作恢复源。新版原生恢复、数值、trace 和速度仍待重新执行。
 
 配置入口为 `optimization-presets/bf16-attention-update.json`，只允许 `attention_update` 诊断作用域。PAD、Flash、Graph 组合会被拒绝。关闭候选即使用原 b07 训练入口；这不需要修改原 checkpoint 或迁移已完成任务。
 
