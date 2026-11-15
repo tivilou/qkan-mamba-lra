@@ -1,0 +1,88 @@
+{
+  "schema": "qkan-padding-opportunity-review.v1",
+  "date": "2026-11-15",
+  "status": "verified_zero_observed_trailing_pad_opportunity",
+  "authentic_return": {
+    "namespace": "qkan-mamba/padding-profile/padding-profile-20261115T051621Z-bd10a820",
+    "file": "padding-profile.json",
+    "bytes": 3783,
+    "sha256": "ca7ff5defc7b45c747ba8573dd4defaadcd834770da18b3f45d7e1bbbc97c95b"
+  },
+  "execution_revision": "4866493f288b3c1cc206659d252f4de1e84daec2",
+  "source_suite": "/root/projects/qkan-mamba-lra-adaptive-b07d98e17ad0/runs/adaptive-migrated-20261114T040717Z-233292",
+  "source_config_sha256": "ceb240c82cac61863a5793a70d2e641259462606c7c043f88b6b0c947d023434",
+  "dataset": {
+    "split": "train",
+    "identity": "15ebe5d8dc3364238aeadd8119ae6dd1b3c0a3e4c8dddaf0b960b8339d88ff39",
+    "total_rows": 117790,
+    "observed_rows": 4096,
+    "selection": "first min(max_rows,train_rows) rows in source order; no reordering",
+    "max_rows": 4096,
+    "full_corpus": false,
+    "label_values_used": false,
+    "test_access": false
+  },
+  "plugin_tree_sha256": "166d0cae0be2043fa0ba733e2b265654d2e20789763041c40ffd6f9d96477a27",
+  "observation": {
+    "rows": 4096,
+    "document_sequences": 8192,
+    "train_coverage_percent": 3.4773749893878936,
+    "micro_batch": 32,
+    "batches": 128,
+    "last_valid_positions_quantiles": {
+      "inputs1": {
+        "p50": 4000,
+        "p90": 4000,
+        "p99": 4000
+      },
+      "inputs2": {
+        "p50": 4000,
+        "p90": 4000,
+        "p99": 4000
+      }
+    },
+    "execution_width_histograms": {
+      "inputs1": {
+        "4000": 4096
+      },
+      "inputs2": {
+        "4000": 4096
+      }
+    },
+    "span_histogram_bucket_upper_bound": 4096,
+    "actual_execution_width": 4000,
+    "attention_cells_before": 131072000000,
+    "attention_cells_after": 131072000000,
+    "attention_cells_saved": 0,
+    "attention_cells_reduction_fraction": 0,
+    "diagnostic_transform_seconds": 0.04697907343506813
+  },
+  "checks": {
+    "authenticated_size_sha256": true,
+    "published_plugin_bytes_and_preset": true,
+    "source_suite_expected": true,
+    "producer_verified_frozen_train_sha": true,
+    "aggregate_rows_batches_histograms_and_cells": true,
+    "null_identity_and_token_coordinates_producer_checked": true,
+    "owner_native_framework_imports": 0
+  },
+  "decision": {
+    "padding_candidate": "skip native training integration for this observed source/scope",
+    "default": "Keep padding_trim disabled; retain diagnostic implementation for other data.",
+    "reason": "Both documents execute width4000 in all128 observed microbatches; zero workload removed.",
+    "redundant_rerun_needed": false,
+    "next_focus": "OP05: optional precision/attention mechanism design using the established native attention bottleneck."
+  },
+  "formal_training_started": false,
+  "source_checkpoint_accessed": false,
+  "model_executed": false,
+  "gpu_accessed": false,
+  "native_gpu_speedup": null,
+  "limitations": [
+    "Only the fixed first4096 train pairs (3.477percent) were observed; no full-corpus claim.",
+    "Last non-PAD position4000 does not prove absence of internal PAD or prove exact individual length counts from bucketed data.",
+    "The4096 histogram key is the128-token bucket upper edge; original/execution width remains4000.",
+    "Source suite/config bytes and train hash were checked by the pinned collaborator producer; owner did not obtain raw source config or dataset bytes.",
+    "Token-prefix audit and matrix cell counts are not logits/gradients/RNG/trace equivalence or measured GPU speedup."
+  ]
+}

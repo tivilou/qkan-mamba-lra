@@ -5,8 +5,8 @@
   "workstream": "baseline-delivery",
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
-  "focus_step_id": "OP03",
-  "next_action": "Collaborator runs bounded CPU train-prefix PAD opportunity entry; review authenticated compact return before choosing native candidate.",
+  "focus_step_id": "OP05",
+  "next_action": "Design the smallest independently switchable precision/attention diagnostic from the established native attention bottleneck; declare changed-precision versus FP32 comparison and offline prerequisites.",
   "blocker": null,
   "steps": [
     {
@@ -64,7 +64,7 @@
     {
       "id": "OP03",
       "title": "Review collaborator length statistics",
-      "status": "active",
+      "status": "done",
       "objective": "Measure whether common trailing PAD presents a useful candidate.",
       "inputs": [
         "Current source/evidence and user-approved optional-plugin design"
@@ -79,11 +79,14 @@
         "Train SHA/config/plugin identities and row coverage match",
         "Review prefix sampling limitation; kill zero-opportunity PAD route"
       ],
-      "evidence_paths": [],
+      "evidence_paths": [
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ],
       "owner": "baseline-delivery",
       "blocker": null,
       "notes": [
-        "Actual collaborator result pending; no native runtime claim."
+        "Actual collaborator result pending; no native runtime claim.",
+        "Authenticated report verified:4096pairs/128micro32 batches, alignment128; both execution widths4000 throughout, attention cells reduction0. Fixed-prefix scope only; skip native PAD integration under this observed setting."
       ],
       "supersedes": [],
       "superseded_by": []
@@ -91,7 +94,7 @@
     {
       "id": "OP04",
       "title": "Native PAD candidate if warranted",
-      "status": "todo",
+      "status": "skipped",
       "objective": "Bind mechanism dossier and v2 plan; implement trace and original checkpoint recovery plus full-update timing.",
       "inputs": [
         "Current source/evidence and user-approved optional-plugin design"
@@ -106,17 +109,21 @@
         "Numerical/RNG/trace/recovery/rollback agreement",
         "Positive matched AB/BA full-update gain against Graph32"
       ],
-      "evidence_paths": [],
+      "evidence_paths": [
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ],
       "owner": "baseline-delivery",
       "blocker": null,
-      "notes": [],
+      "notes": [
+        "Predeclared kill criterion met: zero matrix-cell reduction at micro32/alignment128 in the fixed train prefix. No native PAD candidate or expensive GPU check; retain disabled diagnostic for other future data/settings."
+      ],
       "supersedes": [],
       "superseded_by": []
     },
     {
       "id": "OP05",
       "title": "Optional precision and attention candidates",
-      "status": "todo",
+      "status": "active",
       "objective": "Research BF16/Flash or FP32 tuned kernels using measured attention bottleneck.",
       "inputs": [
         "Current source/evidence and user-approved optional-plugin design"
@@ -180,5 +187,6 @@
       "impact": "Deliver phase1 CPU opportunity code now; native and future precision/kernel candidates remain separate.",
       "cursor_migration": "Design -> OP03"
     }
-  ]
+  ],
+  "updated_at": "2026-11-15"
 }
