@@ -1,0 +1,76 @@
+{
+  "schema": "qkan-attention-update-native-review.v1",
+  "date": "2026-11-15",
+  "status": "recovery_verified_numerical_rejected",
+  "source": {
+    "revision": "c6398e34b89c11b7967378c54dbc0534df4cff5e",
+    "suite": "attention-update-20261115T132955Z-1ba0ff60",
+    "authenticated_report_bytes": 57855,
+    "authenticated_report_sha256": "49c2c21059e6d48776f9a15469eb5b60d074cdd7e0a6d0ff17ab42538b696d13",
+    "module_plan_preset_hashes_verified": true,
+    "checkpoint_step": 14268,
+    "checkpoint_sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9"
+  },
+  "recovery": {
+    "passed": true,
+    "continuous_vs_fresh_process_full_state_sha256": "23f0a8272b25c5dff826ffe9a39911deec306205a1dcd6c224db829f380b25b2",
+    "two_update_lists_exact": true,
+    "step_start": 14268,
+    "step_end": 14270,
+    "cursor_end": 32640,
+    "sample_clock_end": 1799490,
+    "scope": "Model/gradients/Adam/sample schedule/sampler cursor/permutation/epoch statistics/RNG/precision policy"
+  },
+  "fp32_adapter_parity": {
+    "logits_relative_l2": 0.0,
+    "loss_absolute": 0.0,
+    "gradient_relative_l2": 0.0,
+    "adam_delta_relative_l2": 0.0
+  },
+  "numerical_checks": {
+    "logits_relative_l2": {
+      "measured": 0.002006039511795308,
+      "limit": 0.02,
+      "passed": true
+    },
+    "loss_absolute": {
+      "measured": 0.0003707408905029297,
+      "limit": 0.02,
+      "passed": true
+    },
+    "gradient_relative_l2": {
+      "measured": 0.040851755119082934,
+      "limit": 0.05,
+      "passed": true
+    },
+    "adam_delta_relative_l2": {
+      "measured": 0.2105257684201854,
+      "limit": 0.2,
+      "passed": false
+    }
+  },
+  "rejected_by": [
+    "adam_delta_relative_l2"
+  ],
+  "adam_delta_excess_percentage_points": 1.0525768420185377,
+  "downstream": {
+    "trajectory": "not_run",
+    "complete_trace": "not_run",
+    "kernel_profile": "not_run",
+    "full_update_timing": "not_run",
+    "convergence": "not_certified",
+    "graph_composition": "not_admitted",
+    "formal_training": "not_admitted"
+  },
+  "protection": {
+    "original_checkpoint_and_metadata_unchanged": true,
+    "training_committed_samples": 0,
+    "training_committed_updates": 0,
+    "owned_children_clean": 4,
+    "disposable_checkpoint_removed_reported": true,
+    "disposable_checkpoint_reclaimed_bytes": 15998872
+  },
+  "validation_scope": "QT2 stdlib/import-guard review of authenticated compact report, pinned Git blobs, recovery hashes/update lists, fixed numerical thresholds and child cleanup. Raw tensors are private; owner did not independently recompute numerical metrics from tensors or execute any model/GPU.",
+  "interpretation": "The runtime mask fix and exact within-BF16 recovery pass on this checkpoint. BF16 versus FP32 complete-update numerical gate fails at Adam delta; no complete-update speed or convergence conclusion.",
+  "next_action": "Keep BF16 default off, preserve thresholds, do not repeat unchanged diagnostic. Before designing another candidate, localize parameter-wise/absolute gradient and Adam delta sensitivity using a bounded diagnostic design; existing compact report does not identify contributing parameters. No automatic Graph/formal integration."
+}
