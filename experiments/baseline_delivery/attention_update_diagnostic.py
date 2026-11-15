@@ -14,7 +14,7 @@ from .attention_precision_diagnostic import JOB,bind_source,unchanged
 
 TARGET='experiments.baseline_delivery.attention_update_native'
 FILES=('optimization_plugins.py','attention_update.py','attention_update_native.py',
-    'attention_update_trace.py','attention_update_diagnostic.py')
+    'attention_update_trace.py','attention_update_diagnostic.py','attention_attribution.py')
 DOSSIER=ROOT/'docs/baselines/attention-update-mechanism-recovery.json'
 PLAN=ROOT/'docs/baselines/attention-update-plugin-plan.json'
 
@@ -94,16 +94,21 @@ def execute(args,folder,report):
         for path in (source/'progress-supervisor.lock',source/'suite.lock',source/'jobs'/JOB/'worker.lock'):
             held.enter_context(lock(path))
         binding=bind_source(source,args.cache)
+        attribution_from=getattr(args,'attribution_from',None)
         request=dict(schema='qkan-attention-update-input.v1',**binding,source_revision=report['source_revision'],
             optimization_config=read(args.optimizations),optimization_config_sha256=digest(args.optimizations),
             policy=POLICY,dossier_sha256=digest(DOSSIER),plugin_plan_sha256=digest(PLAN))
+        if attribution_from is not None:
+            from .attention_attribution import bind_prior
+            request['attribution_binding']=bind_prior(attribution_from,binding)
+            report['attribution_binding']=request['attribution_binding']
         validate_request(request,report['source_revision']);request_path=folder/'update-input.json';atomic_json(request_path,request)
         request_sha=digest(request_path);supervisor=Supervisor(args.child_timeout,args.stall_timeout)
         report['child_executions']=supervisor.records;results={}
         env=dict(os.environ,CUDA_VISIBLE_DEVICES=gpu,PYTHONDONTWRITEBYTECODE='1',PYTHONUNBUFFERED='1',
             CUBLAS_WORKSPACE_CONFIG=':4096:8',QKAN_DIAGNOSTIC_STAGE_FENCES='0')
         try:
-            for mode in ('uninterrupted','interrupt','resume','benchmark'):
+            for mode in (('attribution',) if attribution_from is not None else ('uninterrupted','interrupt','resume','benchmark')):
                 output=folder/mode
                 argv=[sys.executable,'-B','-m',TARGET,'--request',str(request_path),'--output',str(output),'--mode',mode]
                 if mode=='resume': argv+=['--recovery-state',str(folder/'interrupt/diagnostic-state.pt')]
@@ -117,6 +122,15 @@ def execute(args,folder,report):
                     report['recovery']=recovery_agreement(results)
                     report['disposable_checkpoint']=remove_disposable_checkpoint(folder/'interrupt',results['interrupt'])
                 if code!=0: break
+            if attribution_from is not None:
+                result=results['attribution']
+                if (result.get('attribution_complete') is not True or result.get('candidate_admitted') is not False
+                        or result.get('updates_per_route')!=1 or result.get('routes')!=['fp32','bf16']):
+                    raise ValueError('Attribution result scope/completeness differs')
+                report.update(passed=False,attribution_complete=True,candidate_admitted=False,
+                    status='attribution_complete',native_trace_ready=False,
+                    architecture_status='numerical_gate_unchanged_no_admission')
+                return
             report['passed']=bool(report.get('recovery',{}).get('passed') and results.get('benchmark',{}).get('passed'))
             report['status']='diagnostic_passed' if report['passed'] else 'diagnostic_rejected'
             report['native_trace_ready']=bool(results.get('benchmark',{}).get('trace',{}).get('passed'))
@@ -131,11 +145,13 @@ def main():
     parser.add_argument('--source-suite',type=Path,required=True);parser.add_argument('--cache',type=Path,required=True)
     parser.add_argument('--gpu',default='0');parser.add_argument('--optimizations',type=Path,required=True)
     parser.add_argument('--child-timeout',type=float,default=900);parser.add_argument('--stall-timeout',type=float,default=300)
+    parser.add_argument('--attribution-from',type=Path,help='Reviewed rejected diagnostic Suite; run one FP32/BF16 pair without repeating recovery or timing')
     args=parser.parse_args();selected=resolve(read(args.optimizations),scope='attention_update')
     if not selected.bf16_amp: parser.error('Explicit BF16 update preset required')
     from .bootstrap import check_exchange
     check_exchange();source=revision()
-    folder=ROOT/'runs'/('attention-update-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
+    experiment='attention-attribution' if args.attribution_from is not None else 'attention-update'
+    folder=ROOT/'runs'/(experiment+'-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
     folder.mkdir(parents=True,exist_ok=False)
     report=dict(schema='qkan-attention-update.v1',source_revision=source,policy=POLICY,passed=False,status='failed',
         formal_training_started=False,training_samples_committed=0,optimizer_updates_committed=0,
@@ -144,18 +160,25 @@ def main():
         dossier_sha256=digest(DOSSIER),plugin_plan_sha256=digest(PLAN),optimization_config_sha256=digest(args.optimizations),
         plugin_files={name:digest(Path(__file__).parent/name) for name in FILES})
     report['plugin_tree_sha256']=fingerprint(report['plugin_files']);error=None
+    if args.attribution_from is not None:
+        report.update(schema='qkan-attention-attribution.v1',attribution_complete=False,candidate_admitted=False,
+            comparison='One dropout0 FP32/BF16 update each, reviewed original checkpoint/cursor; parameter diagnostics only, fixed gates unchanged')
     print('BF16 full-update diagnostic Suite: '+str(folder),flush=True)
     try: execute(args,folder,report)
     except BaseException as caught:
         error=caught;report.update(passed=False,status='failed',error_type=type(caught).__name__)
         worker_failure(folder,caught);report['failure_locations']=read(folder/'worker-error.json')
-    atomic_json(folder/'attention-update.json',report)
+    filename=experiment+'.json'
+    atomic_json(folder/filename,report)
     from .return_artifacts import upload_declared
-    try: upload_declared(folder,'attention-update',['attention-update.json'])
+    try: upload_declared(folder,experiment,[filename])
     except Exception:
         print('Compact report return pending; retry manifest retained: '+str(folder),flush=True)
         if error is None: raise
     if error is not None: raise error
+    if args.attribution_from is not None:
+        print('Parameter attribution complete; candidate admission unchanged. See '+filename,flush=True)
+        return 0 if report['attribution_complete'] else 76
     print('Full-update diagnostic complete; formal queue unchanged. See attention-update.json.',flush=True)
     return 0 if report['passed'] else 76
 

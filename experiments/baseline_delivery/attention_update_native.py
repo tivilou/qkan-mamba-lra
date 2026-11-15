@@ -242,6 +242,14 @@ def execute(request_path,output,mode,recovery_path=None):
     from .attention_precision_diagnostic import unchanged,SOURCE_REVISION,JOB
     from .diagnostic_watch import mark
     request=read(request_path);selection=validate_request(request,revision())
+    if mode=='attribution':
+        from .attention_attribution import bind_prior
+        keys=('source_suite','source_config','source_config_sha256','checkpoint','source_metadata_sha256','data','cache')
+        prior=request['attribution_binding']
+        if bind_prior(prior['prior_suite'],{k:request[k] for k in keys})!=prior:
+            raise ValueError('Attribution binding changed before native execution')
+    elif 'attribution_binding' in request:
+        raise ValueError('Attribution request cannot enter another native mode')
     source=Path(request['source_suite']);p=request['checkpoint'];config=request['source_config']
     if (source.parent.name!='runs' or config.get('source_revision')!=SOURCE_REVISION
             or read(source/'jobs'/JOB/'config.json')!=config
@@ -261,7 +269,10 @@ def execute(request_path,output,mode,recovery_path=None):
     runtime=None;result={}
     try:
         mark('attention_update_source_load',flush=True);runtime=NativeUpdate(torch,np,request)
-        if mode=='benchmark': result=benchmark(runtime,output)
+        if mode=='attribution':
+            from .attention_attribution import run
+            result=run(runtime,output)
+        elif mode=='benchmark': result=benchmark(runtime,output)
         else:
             if mode=='resume':
                 if (recovery_path is None or recovery_path.is_symlink()
@@ -308,10 +319,10 @@ def execute(request_path,output,mode,recovery_path=None):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--request',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--mode',choices=('uninterrupted','interrupt','resume','benchmark'),required=True)
+    parser.add_argument('--mode',choices=('uninterrupted','interrupt','resume','benchmark','attribution'),required=True)
     parser.add_argument('--recovery-state',type=Path)
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
-    if any((args.output/name).exists() for name in ('result.json','benchmark.json','diagnostic-state.pt')):
+    if any((args.output/name).exists() for name in ('result.json','benchmark.json','diagnostic-state.pt','attribution.json','paired-parameters.pt')):
         parser.error('Use a fresh private diagnostic output directory')
     if (args.mode=='resume')!=(args.recovery_state is not None): parser.error('Recovery state only for fresh-process resume')
     try: return execute(args.request,args.output,args.mode,args.recovery_state)

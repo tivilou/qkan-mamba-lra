@@ -1,0 +1,17 @@
+{
+  "schema": "qkan-attention-attribution-contract.v1",
+  "purpose": "Measure the source of the rejected Adam delta without changing the intervention, optimizer, sample population or numerical gates.",
+  "prior_report_sha256": "49c2c21059e6d48776f9a15469eb5b60d074cdd7e0a6d0ff17ab42538b696d13",
+  "evidence": "docs/evidence/attention-update-native-review-20261115.json",
+  "population": "Exactly the next logical128 train rows at the reviewed original b07 checkpoint permutation/cursor; micro16 and full4000 positions; same rows for both routes; dropout0.",
+  "routes": ["fp32", "bf16"],
+  "updates_per_route": 1,
+  "capture": ["all parameter gradients before clip", "all parameter gradients after clip", "actual optimizer group settings before step", "actual Adam step counters before and after", "existing exp_avg/exp_avg_sq before and after", "all parameter deltas", "logits/loss and row-identity hash"],
+  "summary": ["per-parameter shape/numel", "reference/candidate/difference L2 and squared L2", "relative L2 with explicit1e-12 denominator flag", "maximum absolute difference", "cosine and sign disagreements", "zero counts", "global squared-error contributions", "complete module groups", "reconstructed original aggregate metrics", "observed clip norm ratios"],
+  "privacy": "Complete paired detached values stored privately as paired-parameters.pt, capped128MiB and reopened with exact full-value hash; only scalar summaries/metadata/hash receipts automatically returned.",
+  "rollback": "Restore original model/gradients/optimizer/sample clock/permutation/cursor/epoch statistics/RNG and verify exact hash; remove instance optimizer-step hook in finally.",
+  "admission": "No new candidate, recovery repeat, threshold tuning, trajectory, timing, Graph, sample-trace.v2 certification, convergence claim or formal training.",
+  "resource": "One fresh supervised native child; two complete updates total; existing offline environments/cache; no source checkpoint copies or new dataset caches;900s child/300s stall limits.",
+  "interpretation": "All parameters retained. Error-contribution ranking is post-hoc descriptive, not a causal ablation. Missing preexisting Adam slots remain explicitly missing. Private tensors are not uploaded.",
+  "status": "approved_diagnostic_native_measurement_pending"
+}

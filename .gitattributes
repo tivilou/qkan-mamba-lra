@@ -11,3 +11,4 @@ tests/*.py text eol=lf
 requirements*.txt text eol=lf
 docs/evidence/*.json text eol=lf
 docs/baselines/attention-update-*.json text eol=lf
+docs/baselines/attention-attribution-*.json text eol=lf
