@@ -21,15 +21,22 @@
 
 ## 交给师弟执行
 
-在准备好的新版独立 checkout 中运行以下命令，无需打断正在训练的 Python 进程。它只读固定 train 数据，既不访问 GPU，也不读取 checkpoint；初次校验会完整读取 train 文件及其已提取缓存的哈希，可能产生短时磁盘竞争，可选 I/O 空闲时执行。
+在服务器的 Bash/tmux 终端完整执行下面这一组命令。它准备新版独立 checkout、复用账号已有私密配置，然后进行统计；无需打断正在训练的 Python 进程。它只读固定 train 数据，既不访问 GPU，也不读取 checkpoint；初次校验会完整读取 train 文件及其已提取缓存的哈希，可能产生短时磁盘竞争，可选 I/O 空闲时执行。
 
 ```bash
+cd /root/projects/qkan-mamba-lra-adaptive-b07d98e17ad0 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+QKAN_PROFILE_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_PROFILE_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure &&
 bash scripts/profile_optional_padding.sh \
   --source-suite /root/projects/qkan-mamba-lra-adaptive-b07d98e17ad0/runs/adaptive-migrated-20261114T040717Z-233292 \
   --cache /root/qkan-cache \
   --optimizations experiments/baseline_delivery/optimization-presets/padding-trim.json \
   --micro-batch 32 --max-rows 4096
 ```
+
+`prepare_adaptive_checkout.sh` 的末尾会打印通用 GPU readiness 示例；本次继续执行上面给定的 `profile_optional_padding.sh` 即可。原训练 checkout 的 HEAD 保持原版本，统计输出单独存放于新 checkout。
 
 入口复用原 b07 Suite 的数据目录、原 train SHA 和现有数组缓存；缓存缺失直接报错，避免生成第二份大数组。只观察 train 前 4096 行及其连续微批，不读取 val/test，不按标签选样，不排序、不增添采样随机数，也不外推为整个数据集的长度分布。`--max-rows` 硬上限 16384；微批只接受当前关心的 16/32。需要对照时可单独换用全关预设；通常先运行一次裁剪预设即可，它已经检查全关路径的对象一致性。
 
