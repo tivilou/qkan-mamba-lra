@@ -9,13 +9,15 @@
 | 配置项 | 本版能力 | 默认 | 后续条件 |
 | --- | --- | --- | --- |
 | `padding_trim` | 已实现 CPU token 边界及统计，可独立启用 | 关 | 真实裁剪空间、数值/RNG/恢复/trace、完整更新计时 |
-| `bf16_amp` | 已登记，启用会明确报错 | 关 | 精度协议单列、离线环境、原生收敛及数值评估 |
+| `bf16_amp` | 仅独立 `attention_probe` 诊断可启用；训练入口仍拒绝 | 关 | 精度协议单列、完整更新/恢复/trace/收敛评估 |
 | `flash_attention` | 已登记，依赖 BF16，启用会明确报错 | 关 | 离线固定内核、真实 kernel 证明、确定性反向验证 |
 | `fp32_attention_tuned` | 已登记，启用会明确报错 | 关 | 新内核及其正确性/收益证据 |
 
 显式注册表位于 `experiments/baseline_delivery/optimization_plugins.py`，没有动态扫描或静默降级。拼写错误、非法字段、依赖缺失和冲突均提前拒绝。`deterministic` 是拟要求的合约，不是原生认证结果。BF16 与 FP32 定制路线互斥。
 
-两个预设位于 `experiments/baseline_delivery/optimization-presets/`：`baseline.json` 全关，`padding-trim.json` 只开裁剪。全关时适配器返回同一输入对象，不检查、不复制、不改变 batch。默认对齐长度为 128，可配置为 1–4000；该参数是序列长度对齐，不是 micro-batch 的步长。
+预设位于 `experiments/baseline_delivery/optimization-presets/`：`baseline.json` 全关，`padding-trim.json` 只开裁剪，`bf16-attention-probe.json` 只开独立 BF16 注意力诊断。全关时适配器返回同一输入对象，不检查、不复制、不改变 batch。默认对齐长度为 128，可配置为 1–4000；该参数是序列长度对齐，不是 micro-batch 的步长。
+
+BF16 下一步已补齐可执行入口，见 [注意力精度诊断](attention-precision-diagnostic.md)。它在新进程中对原 checkpoint 的第一层、第一篇文档及固定 train 前缀做 efficient SDPA 前向/反向对比，明确强制 BF16 QKV，并自动回传内核证明、数值筛查、确定性重放、局部计时和显存观察。它没有改变现有正式 worker 或 FP32 协议，也没有完成 BF16 正式训练准入。Flash 仍保持关闭。
 
 裁剪分别对两篇文档计算当前微批中最后一个非 PAD（ID=1）的位置，向上对齐后截断共同尾部。保留行顺序、文档身份、内部 PAD、有效 token 的绝对位置。标签不进入插件接口。示例：长度 4000 的微批最大有效末位置为 1500，按 128 对齐后执行宽度为 1536；只估算注意力矩阵单元减少，不把它换算成 GPU 提速。
 

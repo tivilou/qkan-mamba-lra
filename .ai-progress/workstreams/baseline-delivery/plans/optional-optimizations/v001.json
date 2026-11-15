@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Design the smallest independently switchable precision/attention diagnostic from the established native attention bottleneck; declare changed-precision versus FP32 comparison and offline prerequisites.",
+  "next_action": "Run the isolated BF16 efficient-attention probe on the idle collaborator GPU and review kernel/numeric/replay/local timing evidence before any full-update candidate.",
   "blocker": null,
   "steps": [
     {
@@ -138,11 +138,15 @@
         "Declare FP32 versus changed-precision comparisons",
         "Actual kernel trace and convergence/resource/rollback checks"
       ],
-      "evidence_paths": [],
+      "evidence_paths": [
+        "docs/baselines/attention-precision-diagnostic.md",
+        "docs/baselines/attention-precision-plugin-plan.json"
+      ],
       "owner": "baseline-delivery",
       "blocker": null,
       "notes": [
-        "Unavailable flags reject enabled requests until their implementation and native evidence exist."
+        "Unavailable flags reject enabled requests until their implementation and native evidence exist.",
+        "Scoped BF16 mechanism probe implemented behind default-off registry; source FP32 training unchanged. Native trace, full-update recovery and convergence remain pending."
       ],
       "supersedes": [],
       "superseded_by": []

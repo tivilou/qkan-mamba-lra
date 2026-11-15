@@ -1,0 +1,255 @@
+{
+  "schema_version": "research-plugin-architecture.plugin-plan.v1",
+  "project": "QKAN-Mamba",
+  "authorization": "approved",
+  "baseline": {
+    "entry_point": "attention_precision.forward(torch,resolve(scope=\"attention_probe\"),qkv,mask,dropout)",
+    "code_revision": "06ec42acc6939dd16a027190729989ce7e9df230",
+    "equivalence_test": "tests.test_baseline_attention_precision.PrecisionTests.test_null_precision_context_does_not_touch_runtime"
+  },
+  "core_invariants": [
+    "Original b07 weights/checkpoint and completed results immutable; FP32 training unchanged.",
+    "Explicit isolated BF16 efficient SDPA QKV cast/autocast; default off; no Flash or training admission.",
+    "Fixed first micro16 train rows, document1, original first-layer QKV projection, original PAD mask/positions; no labels or test.",
+    "Owner stdlib/fakes only; collaborator existing pinned offline environment; compact authenticated return.",
+    "Mechanism triage only. Future full-update recovery candidate requires dossier-bound v2 plan and native trace/convergence evidence."
+  ],
+  "interfaces": [
+    {
+      "id": "attention_probe",
+      "type": "transformer",
+      "input_schema": "FP32 QKV leaves [B,4,4000,32], FP32 additive PAD mask, fixed FP32 Gaussian cotangent",
+      "output_schema": "attention output and FP32 dQ/dK/dV",
+      "invariants": [
+        "original values/positions/mask unchanged",
+        "same-route RNG exact replay",
+        "no optimizer update"
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "id": "baseline.fp32_attention",
+      "version": "1",
+      "insertion_point": "isolated forced efficient SDPA",
+      "hypothesis": "Control for attention precision comparison",
+      "input_schema": "FP32 QKV leaves [B,4,4000,32], FP32 additive PAD mask, fixed FP32 Gaussian cotangent",
+      "output_schema": "attention output and FP32 dQ/dK/dV",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "one layer/document fixed train microbatch; no checkpoint copy",
+      "failure_signatures": [
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring"
+        ],
+        "input_fields": [
+          "original_tokens",
+          "position_map",
+          "QKV",
+          "checkpoint_hash"
+        ],
+        "output_fields": [
+          "attention_output",
+          "QKV_gradients"
+        ],
+        "input_refs": [
+          "pending_native_fixture/tokens",
+          "pending_native_fixture/QKV"
+        ],
+        "output_refs": [
+          "pending_native_fixture/attention",
+          "pending_native_fixture/gradients"
+        ],
+        "emitted_fields": [
+          "token_values",
+          "position_map",
+          "QKV",
+          "attention_output",
+          "QKV_gradients",
+          "kernel_provenance"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 QKV reference; BF16 QKV intervention; FP32 leaf gradients; original positions"
+        ],
+        "checks": [
+          "complete values and lineage",
+          "kernel/dtype observations",
+          "same-sample deterministic replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "baseline",
+      "interface": "attention_probe"
+    },
+    {
+      "id": "precision.bf16_amp",
+      "version": "1",
+      "insertion_point": "isolated forced efficient SDPA",
+      "hypothesis": "BF16 QKV efficient attention may reduce forward/backward time",
+      "input_schema": "FP32 QKV leaves [B,4,4000,32], FP32 additive PAD mask, fixed FP32 Gaussian cotangent",
+      "output_schema": "attention output and FP32 dQ/dK/dV",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "one layer/document fixed train microbatch; no checkpoint copy",
+      "failure_signatures": [
+        "numerical_screen_failed",
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring"
+        ],
+        "input_fields": [
+          "original_tokens",
+          "position_map",
+          "QKV",
+          "checkpoint_hash"
+        ],
+        "output_fields": [
+          "attention_output",
+          "QKV_gradients"
+        ],
+        "input_refs": [
+          "pending_native_fixture/tokens",
+          "pending_native_fixture/QKV"
+        ],
+        "output_refs": [
+          "pending_native_fixture/attention",
+          "pending_native_fixture/gradients"
+        ],
+        "emitted_fields": [
+          "token_values",
+          "position_map",
+          "QKV",
+          "attention_output",
+          "QKV_gradients",
+          "kernel_provenance"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 QKV reference; BF16 QKV intervention; FP32 leaf gradients; original positions"
+        ],
+        "checks": [
+          "complete values and lineage",
+          "kernel/dtype observations",
+          "same-sample deterministic replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "idea",
+      "interface": "attention_probe"
+    }
+  ],
+  "discovery": {
+    "mode": "explicit_allowlist",
+    "allowlist": [
+      "baseline.fp32_attention",
+      "precision.bf16_amp"
+    ]
+  },
+  "composition": {
+    "mode": "single",
+    "order": [
+      "precision.bf16_amp"
+    ],
+    "merge_rule": "Single scoped BF16 context; no PAD, Flash or Graph composition.",
+    "interaction_ablations": [
+      "Future complete-update BF16 alone versus Graph32 alone versus BF16+Graph32; not performed by this probe."
+    ]
+  },
+  "validation": {
+    "baseline_equivalence": "Null precision context does not touch runtime; original training/core hashes unchanged. Cross-precision equality is not claimed.",
+    "tests": [
+      "baseline_equivalence",
+      "plugin_isolation",
+      "deterministic_replay",
+      "interaction_ablation",
+      "configuration_schema",
+      "train_only_aggregate_coverage",
+      "trace_structural_validation",
+      "trace_semantic_validation",
+      "trace_replay"
+    ]
+  },
+  "reproducibility": {
+    "config_path": "experiments/baseline_delivery/optimization-presets/bf16-attention-probe.json",
+    "dataset_identity": "Original b07 train SHA; first16 rows/document1, full4000 positions, first-layer original weights.",
+    "environment": "Existing Torch2.7.1/NumPy2.2.6/CUDA BF16 support; deterministic true, TF32 false; no installs.",
+    "seeds": [
+      42
+    ],
+    "output_manifest": "runs/attention-precision-*/attention-precision.json plus receipt"
+  },
+  "case_study_execution": {
+    "mode": "post_training_replay",
+    "checkpoint_policy": "Final case study remains best-validation selected model. This mechanism probe uses unfinished original latest checkpoint only.",
+    "dependency_refs": [
+      "original source train identity",
+      "future selected model and fixed first2 validation row IDs"
+    ],
+    "replay_command": [
+      "PENDING_NATIVE_IMPLEMENTATION",
+      "selected-model",
+      "fixed-first-two-validation-rows"
+    ],
+    "intermediate_policy": "rebuild"
+  },
+  "trace_contract": {
+    "enabled": true,
+    "schema": "sample-trace.v2",
+    "artifact_path": "pending_native_fixture/attention-sample-trace.v2.json",
+    "sample_selection_rule": "Fixed first2 train IDs/document1 selected before values; complete detached native trace pending full-update candidate.",
+    "target_boundary": "Original tokens/positions, QKV, attention/gradients; later complete-update logits/loss/RNG.",
+    "required_stages": [
+      "data",
+      "preprocess",
+      "scoring"
+    ],
+    "semantic_roles": [
+      "baseline",
+      "intervention"
+    ],
+    "required_representations": [
+      "complete original token values",
+      "original position map",
+      "complete QKV",
+      "complete attention and QKV gradients"
+    ],
+    "producer_owned_lineage": [
+      "original train SHA/row/document -> original checkpoint SHA -> QKV -> attention/gradients"
+    ],
+    "readiness_checks": [
+      "structural schema",
+      "complete detached values/hash/coverage",
+      "reader slices equal values",
+      "same-sample baseline/intervention replay"
+    ]
+  },
+  "trace_readiness": {
+    "status": "blocked",
+    "fixture_path": "pending_native_fixture/attention-sample-trace.v2.json",
+    "structural_validation": "Pending complete native trace; aggregate kernel metrics are not sample-trace.v2.",
+    "semantic_validation": "Pending original-coordinate and complete-value reader checks.",
+    "replay_test": "Native same-route mechanism replay pending; full-update trace replay not implemented."
+  },
+  "limitations": [
+    "Architecture approved pending native structural/semantic/replay fixture.",
+    "This is a mechanism diagnostic, not a recovery candidate or full training implementation.",
+    "Local tests use injected fakes; native determinism/numerics/kernel evidence pending.",
+    "BF16 changes precision; dropout-off tolerance screen is not convergence or full-update agreement.",
+    "One first-layer/document Gaussian-cotangent timing does not estimate end-to-end training speed.",
+    "Peak memory shares warmed allocator; reserved bytes are not isolated-route minimum."
+  ]
+}

@@ -23,13 +23,17 @@ REGISTRY = {
             shape_dtype_normalization=['integer token IDs; PAD=1; original absolute positions; FP32 scoring'],
             checks=['complete values and coverage','token/position parity','producer lineage','same-sample replay'],
             deterministic_replay=True)),
-    'bf16_amp': dict(id='precision.bf16_amp', version='1', available=False,
-        type='transformer', insertion_point='future compute context',
-        hypothesis='Lower precision may accelerate eligible compute.',
-        input_schema='FP32 master parameters', output_schema='declared mixed precision context',
+    'bf16_amp': dict(id='precision.bf16_amp', version='1', available=False,available_in=['attention_probe'],
+        type='transformer', insertion_point='isolated attention QKV casts/autocast; training integration pending',
+        hypothesis='BF16 efficient SDPA may reduce attention forward/backward time.',
+        input_schema='FP32 QKV leaves from original first-layer projection; additive FP32 PAD mask',
+        output_schema='BF16 attention output; FP32 QKV gradients; no optimizer update',
         requires=[], conflicts=['fp32_attention_tuned'], deterministic=True,
-        resource_estimate='Native numerical/recovery evaluation pending.',
-        failure_signatures=['plugin_not_implemented']),
+        resource_estimate='One fixed train microbatch, one layer/document, two AB/BA pairs; no checkpoint copies.',
+        failure_signatures=['numerical_screen_failed','same_route_replay_differs','requested_kernel_not_used'],
+        observability_contract=dict(trace_schema='sample-trace.v2',status='pending_full_update_candidate',
+            required=['original tokens/positions/document identity','QKV values/shapes/dtypes','attention outputs and gradients',
+                'kernel provenance','full-update loss/logits/RNG','same-sample deterministic replay'])),
     'flash_attention': dict(id='attention.flash_varlen', version='1', available=False,
         type='transformer', insertion_point='future attention adapter',
         hypothesis='Packed Flash attention may accelerate padded sequence attention.',
@@ -56,17 +60,21 @@ class TokenOps(Protocol):
 class Selection:
     padding_trim: bool = False
     length_alignment: int = 128
+    bf16_amp: bool = False
+    scope: str = 'padding_profile'
 
     def manifest(self):
-        return dict(schema=SCHEMA, selected=[dict(id=REGISTRY['padding_trim']['id'],
-            version='1', length_alignment=self.length_alignment)] if self.padding_trim else [],
-            baseline_adapter=not self.padding_trim, scope='diagnostic_only',
-            graph_compatibility='not_admitted', precision='fp32', sample_order='preserved')
+        selected=[dict(id=REGISTRY['padding_trim']['id'],version='1',length_alignment=self.length_alignment)] if self.padding_trim else []
+        if self.bf16_amp: selected.append(dict(id=REGISTRY['bf16_amp']['id'],version='1'))
+        return dict(schema=SCHEMA,selected=selected,baseline_adapter=not selected,scope='diagnostic_only',
+            execution_scope=self.scope,graph_compatibility='not_admitted',
+            precision='bf16_autocast_fp32_inputs' if self.bf16_amp else 'fp32',sample_order='preserved')
 
 
-def resolve(config=None):
+def resolve(config=None,*,scope='padding_profile'):
     """Reject misspellings, incompatible requests, and unimplemented enabled flags."""
-    if config is None: return Selection()
+    if scope not in ('padding_profile','attention_probe'): raise ValueError('Unknown optimization scope')
+    if config is None: return Selection(scope=scope)
     if not isinstance(config, dict) or set(config)-{'schema', 'optimizations'}:
         raise ValueError('Invalid optional optimization configuration')
     if config.get('schema') != SCHEMA: raise ValueError('Unknown optimization schema')
@@ -87,9 +95,10 @@ def resolve(config=None):
         metadata=REGISTRY[name]
         if not set(metadata['requires'])<=enabled: raise ValueError('Missing optimization dependency: '+name)
         if set(metadata['conflicts']) & enabled: raise ValueError('Optimization conflict: '+name)
-    unavailable=sorted(name for name in enabled if not REGISTRY[name]['available'])
+    unavailable=sorted(name for name in enabled if not REGISTRY[name]['available'] and scope not in REGISTRY[name].get('available_in',[]))
     if unavailable: raise ValueError('Optimization implementation pending: '+','.join(unavailable))
-    return Selection('padding_trim' in enabled,alignment)
+    if scope=='attention_probe' and 'padding_trim' in enabled: raise ValueError('Attention probe keeps full token positions')
+    return Selection('padding_trim' in enabled,alignment,'bf16_amp' in enabled,scope)
 
 
 def transform_batch(tokens: Mapping, selection: Selection, ops: TokenOps):
