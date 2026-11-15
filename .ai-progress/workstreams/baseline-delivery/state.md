@@ -18,7 +18,7 @@ Deliver faithful, recoverable baselines and measured acceleration; preserve orig
 
 ## Plan Control
 
-- BF16 full-update candidate delivered: docs/evidence/attention-update-delivery-20261115.json, docs/baselines/attention-update-diagnostic.md. Publication receipt attention-update-publication-20261115.json records verified GitHub HEAD. Prior mechanism publication remains attention-precision-publication-20261115.json. Authorized development relay only; no remote model/device work.
+- BF16 full-update candidate delivered: docs/evidence/attention-update-delivery-20261115.json, docs/baselines/attention-update-diagnostic.md. Publication repaired and verified at638a488; receipt docs/evidence/attention-update-publication-20261115.json now exists. Windows serverctl.cmd resolution fixed;12candidate/8core hashes match. Prior mechanism publication remains attention-precision-publication-20261115.json. Authorized development relay only; no remote model/device work.
 - Current plan: plans/optional-optimizations/v001.json; OP01/OP02/OP03 done, OP04 skipped under observed zero-opportunity criterion, OP05 active: BF16 mechanism measured and complete-update diagnostic code/control delivered; native checks and convergence pending. OP06 combinations/formal admission todo. Architecture approved; aggregate kernel diagnostics do not replace full sample-trace.v2.
 - PAD fixed first4096train pairs/micro32/alignment128: execution widths4000 throughout, zero measured cell reduction; closed for this setting only. Review padding-opportunity-review-20261115.json; no unchanged rerun.
 
