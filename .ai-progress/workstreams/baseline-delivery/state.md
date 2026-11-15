@@ -18,6 +18,7 @@ Deliver faithful, recoverable baselines and measured acceleration; preserve orig
 
 ## Plan Control
 
+- Implementation af3bf80862af1201f184130854c5d66a47b0e5d4 published to research/collaboration-foundation and remote HEAD verified. Publication used the same authorized development relay directly after the local proxy refused connection; no remote model/device work. Receipt: docs/evidence/optional-padding-publication-20261115.json.
 - Current plan: plans/optional-optimizations/v001.json; OP01/OP02 done, focus OP03 collaborator CPU length-statistics review. Future native PAD candidate must bind an actual mechanism dossier in a v2 plan. BF16/Flash candidates are separate future steps, with changed-precision protocol explicit.
 
 ## Next Actions
