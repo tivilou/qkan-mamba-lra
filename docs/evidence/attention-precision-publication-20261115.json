@@ -1,0 +1,12 @@
+{
+  "schema": "qkan-attention-precision-publication.v1",
+  "date": "2026-11-15",
+  "implementation_revision": "0846e2b1ca035f01af4f6512e4afc71664ff7b2d",
+  "branch": "research/collaboration-foundation",
+  "remote_head_equals_implementation_verified": true,
+  "publication": "existing authorized development SSH SOCKS relay; existing private credential; strict host verification",
+  "native_model_or_gpu_work_started": false,
+  "delivery_evidence": "docs/evidence/attention-precision-delivery-20261115.json",
+  "collaborator_handoff": "docs/baselines/attention-precision-diagnostic.md",
+  "next_action": "Single isolated BF16 mechanism probe on idle collaborator GPU; original b07 source locks free."
+}
