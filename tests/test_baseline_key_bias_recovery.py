@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import pickle
 import sys
@@ -228,6 +229,53 @@ class EntryTests(unittest.TestCase):
 
 
 class OrchestrationTests(unittest.TestCase):
+    def test_real_supervisor_precreated_directory_reaches_worker_without_frameworks(self):
+        child='''import importlib.abc,sys
+from pathlib import Path
+class Guard(importlib.abc.MetaPathFinder):
+ def find_spec(self,name,*args):
+  if name.split('.')[0] in ('torch','numpy','jax','tensorflow'):raise AssertionError('Native import '+name)
+sys.meta_path.insert(0,Guard())
+from experiments.baseline_delivery import key_bias_recovery as r
+def stub(request,output,mode,recovery_path):
+ r.atomic_json(Path(output)/'result.json',dict(worker_reached=True,mode=mode,framework_imports=0))
+r.native=stub
+raise SystemExit(r.main())
+'''
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp);(folder/'preflight_child.py').write_text(child,encoding='utf8',newline='\n')
+            output=folder/'uninterrupted';log=folder/'child.log'
+            argv=[sys.executable,'-B','-m','preflight_child','--worker','--request',str(folder/'request.json'),
+                '--output',str(output),'--mode','uninterrupted']
+            env=dict(os.environ,PYTHONPATH=os.pathsep.join([str(folder),str(ROOT)]),PYTHONDONTWRITEBYTECODE='1')
+            supervisor=diagnostic_watch.Supervisor(15,10,announce=lambda *a,**k:None)
+            code=supervisor.run(dict(target='preflight_child',cwd=str(ROOT),argv=argv),log,env)
+            self.assertEqual(code,0,log.read_text(encoding='utf8',errors='replace'))
+            self.assertEqual(read(output/'result.json'),dict(worker_reached=True,mode='uninterrupted',framework_imports=0))
+            self.assertTrue((output/'diagnostics').is_dir());self.assertTrue(supervisor.records[0]['termination']['parent_reaped'])
+
+    def test_worker_output_preserves_supervisor_tree_and_rejects_stale_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp)/'output';r.prepare_worker_output(output)
+            diagnostic=output/'diagnostics/run';diagnostic.mkdir(parents=True)
+            marker=diagnostic/'progress.json';atomic_json(marker,dict(phase='worker_import'));original=marker.read_bytes()
+            r.prepare_worker_output(output);self.assertEqual(marker.read_bytes(),original)
+            for name in ('result.json','recovery.json','diagnostic-state.pt','worker-error.json'):
+                path=output/name;path.write_bytes(b'preserve')
+                with self.subTest(name=name),self.assertRaises(ValueError): r.prepare_worker_output(output)
+                self.assertEqual(path.read_bytes(),b'preserve');path.unlink()
+            extra=output/'trace-fp32';extra.mkdir()
+            with self.assertRaises(ValueError): r.prepare_worker_output(output)
+            self.assertTrue(extra.is_dir());self.assertEqual(marker.read_bytes(),original)
+
+    def test_worker_output_rejects_symlink_or_non_directory_diagnostics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp)/'output';output.mkdir();diagnostic=output/'diagnostics';diagnostic.write_bytes(b'preserve')
+            with self.assertRaises(ValueError): r.prepare_worker_output(output)
+            self.assertEqual(diagnostic.read_bytes(),b'preserve')
+            with patch.object(Path,'is_symlink',return_value=True):
+                with self.assertRaises(ValueError): r.prepare_worker_output(output)
+
     def test_four_distinct_children_resume_exact_sibling_and_failure_keeps_partial_results(self):
         from experiments.baseline_delivery import attention_precision_diagnostic as source_module,runner,attention_diagnostic
         for fail_mode in (None,'resume'):

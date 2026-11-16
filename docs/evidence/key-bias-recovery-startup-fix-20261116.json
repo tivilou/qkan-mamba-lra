@@ -1,0 +1,80 @@
+{
+  "schema": "qkan-key-bias-recovery-startup-fix.v1",
+  "date": "2026-11-16",
+  "status": "startup_defect_reproduced_and_fixed_native_recovery_pending",
+  "baseline_revision": "3980019ad8133fbb989a2cd91edd927bcd50308f",
+  "failed_native_review": {
+    "schema": "qkan-key-bias-recovery-startup-review.v1",
+    "source_revision": "3980019ad8133fbb989a2cd91edd927bcd50308f",
+    "source_report": {
+      "suite": "key-bias-recovery-20261116T111848Z-993e447c",
+      "bytes": 6918,
+      "sha256": "a70162e3b5217ba8c7edbefb350db2ecb61db3613d6bcdc402ad24fc1eeaca64",
+      "authenticated": true,
+      "git_bindings_verified": 16
+    },
+    "native_child_failure": {
+      "mode": "uninterrupted",
+      "exit_code": 1,
+      "result_present": false
+    },
+    "child_elapsed_seconds": 0.20366517454385757,
+    "last_phase": "worker_import",
+    "owned_child_reaped_and_group_clean": true,
+    "results_present": 0,
+    "original_checkpoint_and_metadata_unchanged": true,
+    "training_samples_committed": 0,
+    "formal_training_started": false,
+    "candidate_admitted": false,
+    "native_trace_ready": false,
+    "root_cause": {
+      "status": "reproduced_without_native_frameworks",
+      "type": "FileExistsError",
+      "supervisor": "Supervisor.run creates output/diagnostics/run-id before spawning the worker.",
+      "worker": "main then calls output.mkdir(exist_ok=False) before native() and its failure handler.",
+      "consequence": "First child exits before native(),model load or update;parent returns generic missing-result RuntimeError.",
+      "evidence": "Actual supervisor/worker stdlib probe reproduces exit1/no stub result;patched probe reaches stub with exit0 and retained diagnostics."
+    },
+    "limitation": "No real model/recovery/trace ran;compact report contains parent failure only. Cause established from executed code and actual supervised startup reproduction,not an unreturned private native traceback."
+  },
+  "changed_behavior": {
+    "function": "prepare_worker_output",
+    "old": "Require non-existent output despite supervisor precreation",
+    "new": "Accept empty output or only existing real diagnostics directory;retain supervisor files;reject stale results/state/errors/other subdirectories/symlinks"
+  },
+  "modified_sha256": {
+    "experiments/baseline_delivery/key_bias_recovery.py": "26e5eba051162c21fb28ef483c5f06d11f57eeb97f940d48797c529fadc7c6c0",
+    "tests/test_baseline_key_bias_recovery.py": "cd5e29a5c94e924c2931a7f5bceebd584404cf649a0feaa4ed23479232b01d2a",
+    "docs/baselines/attention-key-bias-recovery.md": "566d059c2351db0f25a44638d17973d8aeaf1e5021b76209bdec8c3ed9c4b16f"
+  },
+  "controls": {
+    "total": 445,
+    "passed": 442,
+    "skipped": 3,
+    "new_tests": 3,
+    "native_framework_imports": 0,
+    "actual_supervisor_worker_startup": true,
+    "supervisor_files_preserved": true,
+    "stale_output_rejected": true,
+    "original_files_restored_exactly": true,
+    "patch_apply_rollback_replay": true,
+    "protected_core_files": 8,
+    "frozen_files": 21
+  },
+  "package": {
+    "original": ".runtime/key-bias-recovery-fix-20261116/original",
+    "modified_artifacts": ".runtime/key-bias-recovery-fix-20261116/candidate",
+    "patch": ".runtime/key-bias-recovery-fix-20261116/change.patch",
+    "verification": ".runtime/key-bias-recovery-fix-20261116/verification.json",
+    "rollback": ".runtime/key-bias-recovery-fix-20261116/rollback.py"
+  },
+  "limitations": [
+    "Startup verified with real stdlib supervisor and injected native stub;no owner model/GPU execution or installs.",
+    "Real new-policy recovery and sample-trace.v2 remain pending collaborator rerun;no inherited admission.",
+    "Failed child report has no private traceback;FileExistsError cause reproduced against exact published startup sequence."
+  ],
+  "next_action": "Prepare new checkout and rerun unchanged recovery command from original b07 source plus reviewed91b8 screen on idle GPU0.",
+  "candidate_admitted": false,
+  "native_trace_ready": false,
+  "formal_training_started": false
+}

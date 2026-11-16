@@ -277,6 +277,17 @@ def execute(args,folder,report):
             report['original_checkpoint_and_metadata_unchanged']=True
 
 
+def prepare_worker_output(output):
+    """Allow the supervisor's existing diagnostics tree; preserve stale runs."""
+    output=Path(output)
+    if output.is_symlink(): raise ValueError('Worker output must be an owned directory')
+    output.mkdir(parents=True,exist_ok=True)
+    for entry in output.iterdir():
+        if entry.name!='diagnostics' or entry.is_symlink() or not entry.is_dir():
+            raise ValueError('Use a fresh output; only supervisor diagnostics may already exist')
+    return output
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source-suite',type=Path);p.add_argument('--cache',type=Path);p.add_argument('--gpu',default='0')
@@ -288,7 +299,7 @@ def main():
     if args.worker:
         if any(getattr(args,k) is None for k in ('request','output','mode')): p.error('Worker request/output/mode required')
         if (args.mode=='resume')!=(args.recovery_state is not None): p.error('Recovery state only for resume')
-        args.output.mkdir(parents=True,exist_ok=False)
+        prepare_worker_output(args.output)
         try: native(args.request,args.output,args.mode,args.recovery_state)
         except BaseException as error: worker_failure(args.output,error);raise
         return 0
