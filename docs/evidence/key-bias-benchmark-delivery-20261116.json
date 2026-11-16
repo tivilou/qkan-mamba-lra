@@ -1,0 +1,89 @@
+{
+  "schema": "qkan-key-bias-benchmark-delivery.v1",
+  "date": "2026-11-16",
+  "baseline_revision": "28b102f0864ebd6359520e00c2f52374834f8c84",
+  "status": "implemented_control_verified_native_benchmark_pending",
+  "changed_behavior": "Explicit operation dispatch in recovery.native; default recovery/trace branches unchanged. New isolated benchmark uses original state and analytic hook.",
+  "modified_files": {
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "experiments/baseline_delivery/key_bias_benchmark.py": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8",
+    "tests/test_baseline_key_bias_benchmark.py": "3116b3c791dc77b47209e013ad6d908a92aab3812718b0b54752bae1ff5d07dd",
+    "docs/baselines/attention-key-bias-benchmark-plan.json": "dd531d3da7cd70dee75933d3426d117df5df9e6fdde8c746fac480380372e2f2",
+    "docs/baselines/attention-key-bias-benchmark.md": "864e4f4daafe2cbc931052f28816d04e4ae69d7426861de83ba3e9cd2933a633"
+  },
+  "protected_core_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/worker.py": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+  },
+  "controls": {
+    "total": 454,
+    "passed": 451,
+    "skipped": 3,
+    "new": 9,
+    "framework_imports": 0
+  },
+  "package": {
+    "directory": ".runtime/key-bias-benchmark-20261116",
+    "candidate": "candidate/",
+    "patch": "change.patch",
+    "verification": "verification.json",
+    "rollback": "rollback.py",
+    "literal_commands": 11,
+    "patch_rollback_reapply_verified": true,
+    "baseline_behavior": "Benchmark module absent: CLI exit1",
+    "modified_behavior": "CLI exit0; guarded fake full pipeline/order/gates/rollback verified",
+    "initial_eol_trial": "Preserved failed trial:Git autocrlf changed bytes. Independent repository/core.autocrlf=false verified exact reapplication."
+  },
+  "contract": {
+    "routes": [
+      "fp32",
+      "fp32_analytic",
+      "bf16_analytic"
+    ],
+    "trajectory_updates": 4,
+    "dropout": 0,
+    "loss_absolute_limit": 0.1,
+    "profile_routes": [
+      "fp32",
+      "bf16_analytic"
+    ],
+    "warmup_updates_per_route": 2,
+    "timing_order": [
+      "fp32",
+      "bf16_analytic",
+      "bf16_analytic",
+      "fp32",
+      "fp32",
+      "bf16_analytic",
+      "bf16_analytic",
+      "fp32"
+    ],
+    "measured_per_route": 4,
+    "training_dropout": 0.1,
+    "median_gain_minimum_exclusive": 0,
+    "all_four_pairs_must_gain": true,
+    "diagnostic_updates": 26,
+    "child_timeout": 900,
+    "stall_timeout": 300
+  },
+  "prior_native_fixture": "docs/evidence/key-bias-recovery-native-review-20261116.json",
+  "source_preservation": "Original b07 Suite step14268/checkpoint and cache; no diagnostic training resume; original Adam history retained.",
+  "auto_return": "qkan-mamba/key-bias-benchmark/<Suite>/key-bias-benchmark.json; verified hash receipts and upload-only retry.",
+  "validation_limits": [
+    "Owner uses stdlib and fake runtimes only; no native model/GPU execution or installation.",
+    "Prior real fixture readiness is reused; new benchmark performance/trajectory remain unmeasured.",
+    "Four matched timing pairs are diagnostic, not statistical or sustained training evidence.",
+    "Memory shared allocator peaks are reported, not independent minimums or future capacity guarantee.",
+    "Architecture extension remains approved; executed old plugin plans immutable; formal admission closed."
+  ],
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "handoff": "docs/baselines/attention-key-bias-benchmark.md"
+}

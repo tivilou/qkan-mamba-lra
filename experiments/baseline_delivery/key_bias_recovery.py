@@ -187,7 +187,7 @@ def accept(result,request,request_sha,mode,code):
     return result
 
 
-def native(request_path,output,mode,recovery_path=None):
+def native(request_path,output,mode,recovery_path=None,*,operation=None):
     from .attention_precision_diagnostic import unchanged,SOURCE_REVISION,JOB
     from .attention_update_native import NativeUpdate
     request=read(request_path);validate(request,revision());p=request['checkpoint'];source=Path(request['source_suite'])
@@ -210,7 +210,9 @@ def native(request_path,output,mode,recovery_path=None):
     fastpath=torch.backends.mha.get_fastpath_enabled();torch.backends.mha.set_fastpath_enabled(False);runtime=None
     try:
         runtime=NativeUpdate(torch,np,request);request_sha=digest(request_path)
-        if mode=='trace':
+        if operation is not None:
+            result=operation(runtime,output)
+        elif mode=='trace':
             from .key_bias_trace import collect_and_validate
             result=dict(passed=True,trace=collect_and_validate(runtime,output),rollback=dict(ROLLBACK))
         else: result=recovery_run(runtime,output,mode,request_sha,recovery_path)
