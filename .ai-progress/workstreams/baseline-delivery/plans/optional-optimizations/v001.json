@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Collaborator runs check_attention_update.sh; audit real-loss numerical/trajectory, fresh-process exact recovery, complete train trace and matched full-update timing before Graph/formal integration.",
+  "next_action": "Collaborator runs CPU-only attention_bias_postprocess against completed attention-attribution-20261116T024408Z-e40dd283; review Q/K/V gradients, moments and Adam denominators from existing private values.",
   "blocker": null,
   "steps": [
     {
@@ -142,7 +142,10 @@
         "docs/baselines/attention-precision-diagnostic.md",
         "docs/baselines/attention-precision-plugin-plan.json",
         "docs/evidence/attention-precision-native-review-20261115.json",
-        "docs/evidence/attention-update-delivery-20261115.json"
+        "docs/evidence/attention-update-delivery-20261115.json",
+        "docs/evidence/attention-update-native-review-20261115.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-bias-postprocess-delivery-20261116.json"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -150,7 +153,8 @@
         "Unavailable flags reject enabled requests until their implementation and native evidence exist.",
         "Scoped BF16 mechanism probe implemented behind default-off registry; source FP32 training unchanged. Native trace, full-update recovery and convergence remain pending.",
         "Authenticated native mechanism return verified: micro16 first-layer/document1 BF16 efficient SDPA 2.936222x vs FP32; output relative L2 0.348621 percent, max gradient0.955918 percent, exact same-route replay/input-RNG rollback. Full-update/convergence/trace admission pending.",
-        "Delivered independently switchable BF16 SDPA complete-update candidate;377 guarded controls,20 new tests,8 protected core hashes unchanged. Native/convergence acceptance pending; no formal training."
+        "Delivered independently switchable BF16 SDPA complete-update candidate;377 guarded controls,20 new tests,8 protected core hashes unchanged. Native/convergence acceptance pending; no formal training.",
+        "Full-update numerical gate rejected Adam relative L2 .2105257684 above unchanged .20; recovery exact. Authenticated attribution localized98.3495percent update error energy in4packed attention biases. Delivered CPU-only read-only Q/K/V postprocessor with407guarded controls; real segment statistics pending. No repeated GPU update, changed gate or formal integration."
       ],
       "supersedes": [],
       "superseded_by": []
@@ -196,5 +200,5 @@
       "cursor_migration": "Design -> OP03"
     }
   ],
-  "updated_at": "2026-11-15"
+  "updated_at": "2026-11-16"
 }

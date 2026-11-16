@@ -1,0 +1,60 @@
+{
+  "schema": "qkan-attention-bias-postprocess-delivery.v1",
+  "date": "2026-11-16",
+  "status": "controls_verified_collaborator_cpu_measurement_pending",
+  "baseline_revision": "b76951e2e31f7d8c9f7971681d6b853086dc5925",
+  "purpose": "Read existing private completed attribution values; no new model/device/update execution.",
+  "prior_review": "docs/evidence/attention-attribution-native-review-20261116.json",
+  "handoff": "docs/baselines/attention-attribution-bias-postprocess.md",
+  "implementation_sha256": {
+    "experiments/baseline_delivery/attention_bias_postprocess.py": "cda7bb2cb1d08aeaf44553bce8840405f84c1aad459722e64e8aae9eb28d1d27",
+    "tests/test_baseline_attention_bias_postprocess.py": "75afcde94e6e9e78279215da8edaaaf1851d61522fbd6a9372ea0c7faff1ac9b",
+    "docs/baselines/attention-attribution-bias-postprocess.md": "a4c9479aa84915b2a514b4bff1df48466a6fa7ea476bb6ce74f26b3ffa997c62"
+  },
+  "controls": {
+    "total": 407,
+    "passed": 404,
+    "skipped": 3,
+    "new_tests": 14,
+    "native_imports": 0,
+    "protected_core_hashes": 8,
+    "scalar_adam_formula": true,
+    "known_key_only_error": true,
+    "qkv_coverage_reconstruction": true,
+    "input_mutation_fails": true,
+    "cpu_restricted_load": true,
+    "supervised_child": true,
+    "compact_only_auto_return": true,
+    "failed_child_return": true,
+    "upload_pending_retained": true,
+    "patch_apply_rollback_replay": true
+  },
+  "input": {
+    "report_sha256": "ce784d88f6b9269c5f321f2a890b15c3a9bd2060b0d8d630bc6216a646f7ef44",
+    "values_sha256": "b0d0c8797a79865314ab37761ff52b3da0ef2f160c56994b8ad5aefd9bc6154f",
+    "bytes": 45431227
+  },
+  "scope": {
+    "device": "cpu",
+    "forward_calls": 0,
+    "backward_calls": 0,
+    "optimizer_steps": 0,
+    "cpu_threads": 1,
+    "child_timeout": 900,
+    "stall_timeout": 300,
+    "original_files_read_only": true,
+    "auto_return": "attention-bias.json only",
+    "raw_values_upload": false
+  },
+  "package": {
+    "modified_artifacts": ".runtime/attention-bias-20261116/candidate",
+    "patch": ".runtime/attention-bias-20261116/change.patch",
+    "verification": ".runtime/attention-bias-20261116/verification.json",
+    "rollback": ".runtime/attention-bias-20261116/rollback.py"
+  },
+  "limitations": [
+    "Real Q/K/V statistics await collaborator CPU return; owner uses stdlib/fakes only.",
+    "Saved moments support the adaptive component, not exact full-step reconstruction without original weights.",
+    "No candidate/gate/default changes, causal proof, convergence, timing, Graph or formal release."
+  ]
+}
