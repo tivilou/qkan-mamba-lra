@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Collaborator prepares fixed checkout and reruns key_bias_recovery against original b07 and reviewed91b8 screen on idle GPU0;first3980019 attempt failed before native startup,now directory protocol fixed and real-supervisor controls verified.",
+  "next_action": "Deliver bounded matched short trajectory and full-update profile/ABBA timing; freeze gates; preserve source/formal-off.",
   "blocker": null,
   "steps": [
     {
@@ -156,7 +156,9 @@
         "docs/evidence/key-bias-recovery-delivery-20261116.json",
         "docs/baselines/attention-key-bias-recovery.md",
         "docs/baselines/attention-attribution-key-bias-recovery-plan.json",
-        "docs/evidence/key-bias-recovery-startup-fix-20261116.json"
+        "docs/evidence/key-bias-recovery-startup-fix-20261116.json",
+        "docs/evidence/key-bias-recovery-native-review-20261116.json",
+        "docs/research-log/20261116T-120747Z-key-bias-recovery-trace.md"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -170,7 +172,8 @@
         "Delivered independent bf16-key-bias-analytic-zero-v1;explicit new gradient definition K[128:256]=0,Q/V exact,all53parameters and Adam histories/steps/weight decay retained. One supervised3update screen,no unchanged BF16 rerun;64raw/corrected callbacks private,compact key-bias.json auto-return.424guarded controls/421pass/3skip,7file patch/rollback,8core+10reused hashes unchanged;new dossier/v2plan valid. Native result pending;architecture approved/trace blocked;no inherited formal/recovery admission.",
         "Authenticated91b8df6 native screen32412bytes/SHA1bcffacd...108edc reviewed:FP32 analytic Adam0.00164983628,BF16 analytic0.02710353760 vs original0.21052576842,all fixed gates pass;53parameters/807170elements,original histories/nonK parity,64callbacks,rollback and clean child verified. New-policy recovery/trace/trajectory/timing/convergence and formal admission remain pending;OP05 stays active.",
         "Delivered independent strategy-bound recovery/trace preflight:4supervised children,continuous2 vs interrupt1+freshprocess1 with original dropout,micro16/logical128;fixed first2 originalcursor rows trace/dropout0,complete raw/corrected/clipped packed gradients/Adam/bias values and exact replays.442guarded controls/439pass/3skip,18new;5file patch/rollback/replay,19frozen files including8core unchanged. Native fixture/recovery pending;architecture approved/trace blocked/formal off.",
-        "Authenticated failed Suite key-bias-recovery-20261116T111848Z-993e447c:6918bytes/SHAa70162e3...eaca64,first uninterrupted child exit1/0.203665s/worker_import,empty results,source unchanged,clean group. Exact startup reproduction found supervisor precreates output/diagnostics but worker mkdir(exist_ok=False) fails before native. New prepare_worker_output permits supervisor diagnostics and rejects stale outputs/symlinks.445guarded controls/442pass/3skip,3new incl actual supervisor subprocess;3file patch/rollback/replay verified,21frozen incl8core unchanged. Native recovery/trace remain pending;formal off."
+        "Authenticated failed Suite key-bias-recovery-20261116T111848Z-993e447c:6918bytes/SHAa70162e3...eaca64,first uninterrupted child exit1/0.203665s/worker_import,empty results,source unchanged,clean group. Exact startup reproduction found supervisor precreates output/diagnostics but worker mkdir(exist_ok=False) fails before native. New prepare_worker_output permits supervisor diagnostics and rejects stale outputs/symlinks.445guarded controls/442pass/3skip,3new incl actual supervisor subprocess;3file patch/rollback/replay verified,21frozen incl8core unchanged. Native recovery/trace remain pending;formal off.",
+        "Authenticated33ee6dd recovery/trace Suite120747Z passed:73651bytes SHA5b4eea0f...9e5c4e,16Git bindings/8core,continuous2 vs fresh1+1 exact9components/dropout0.1,128callbacks,2fixed rows/2routes/320complete-value artifacts/replay,4clean children/source unchanged/0commits. Owner compact-only audit;native fixture validated,formal pending;executed plugin plan unchanged. OP05 remains active for trajectory/performance/convergence."
       ],
       "supersedes": [],
       "superseded_by": []
