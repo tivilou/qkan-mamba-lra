@@ -108,25 +108,30 @@ class NativeUpdate:
         finally:
             for module,attr,value in saved: setattr(module,attr,value)
 
-    def update(self,enabled,*,dropout_off=False,fp32_adapter=False,retain=False):
+    def update(self,enabled,*,dropout_off=False,fp32_adapter=False,retain=False,executor=None,micro_batch=None):
         from .diagnostic_watch import mark
-        torch=self.t;n=POLICY['logical_batch'];micro=POLICY['micro_batch'];start=self.progress['cursor']
+        torch=self.t;n=POLICY['logical_batch'];micro=POLICY['micro_batch'] if micro_batch is None else micro_batch;start=self.progress['cursor']
+        if micro not in (16,32) or (executor is not None and (enabled or fp32_adapter)):
+            raise ValueError('Isolated FP32 executor comparison requires micro16/32 and no attention adapter')
         if start+n>len(self.split): raise ValueError('Bounded diagnostic does not cross an epoch boundary')
         ids=self.permutation[start:start+n].numpy()
         # CPU selection plus transfer belongs to the timed complete update.
         arrays=self.split.numpy_batch(ids,validate=True)
+        if executor is not None: executor.runtime.begin_update(micro)
         self.model.train();self.opt.zero_grad(set_to_none=True);loss_sum=0.;correct=0;outputs=[];finite=True
         with self.dropout(dropout_off), attention_route(torch,self.model,enabled,fp32_adapter=fp32_adapter) as stats:
             with torch.nn.attention.sdpa_kernel(torch.nn.attention.SDPBackend.EFFICIENT_ATTENTION):
                 for offset in range(0,n,micro):
                     mark('attention_update_micro_'+str(offset//micro),flush=True)
                     batch={key:torch.as_tensor(value[offset:offset+micro],device='cuda:0') for key,value in arrays.items()}
-                    logits=self.model(batch,validated_inputs=True)
+                    logits=executor.forward(batch) if executor is not None else self.model(batch,validated_inputs=True)
                     loss=torch.nn.functional.cross_entropy(logits,batch['labels'],reduction='sum')/n
                     finite=finite & torch.isfinite(loss.detach())
                     loss_sum=loss_sum+loss.detach()*n
                     correct=correct+(logits.detach().argmax(-1)==batch['labels']).sum()
                     loss.backward()
+                    if executor is not None and offset==0 and not executor.reference:
+                        executor.runtime.isolate_gradients()
                     if retain: outputs.append(logits.detach().cpu())
                     del logits,loss,batch
         mark('attention_update_finite_clip',flush=True)
