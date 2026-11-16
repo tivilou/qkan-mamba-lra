@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Deliver new-policy exact fresh-process recovery and real sample-trace.v2/replay from original source before expanding trajectory/timing; completed single-update numeric screen needs no repeat.",
+  "next_action": "Collaborator runs key_bias_recovery against original b07 source and completed91b8 numerical-screen Suite on idle GPU0;review strategy-bound exact recovery and real paired sample-trace.v2 before trajectory/timing.",
   "blocker": null,
   "steps": [
     {
@@ -152,7 +152,10 @@
         "docs/baselines/attention-attribution-key-bias-screen.md",
         "docs/baselines/attention-attribution-key-bias-plan.json",
         "docs/evidence/key-bias-native-review-20261116.json",
-        "docs/research-log/20261116T-090926Z-key-bias-numerical-screen.md"
+        "docs/research-log/20261116T-090926Z-key-bias-numerical-screen.md",
+        "docs/evidence/key-bias-recovery-delivery-20261116.json",
+        "docs/baselines/attention-key-bias-recovery.md",
+        "docs/baselines/attention-attribution-key-bias-recovery-plan.json"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -164,7 +167,8 @@
         "Full-update numerical gate rejected Adam relative L2 .2105257684 above unchanged .20; recovery exact. Authenticated attribution localized98.3495percent update error energy in4packed attention biases. Delivered CPU-only read-only Q/K/V postprocessor with407guarded controls; real segment statistics pending. No repeated GPU update, changed gate or formal integration.",
         "Authenticated CPU report459887bytes/SHA703c52f3...65890c reviewed with270paired summaries:K512elements carry98.3486876percent global Adam-error energy;near-zero FP32gradient4.552e-8 vs BF166.457e-5,allreference Kdenominators within2eps. Stored-moment adaptive route difference residual4.384e-7. CPU3.2162s,clean child,zero new model/update work;original gate still failed. Causal intervention and new candidate remain unmeasured.",
         "Delivered independent bf16-key-bias-analytic-zero-v1;explicit new gradient definition K[128:256]=0,Q/V exact,all53parameters and Adam histories/steps/weight decay retained. One supervised3update screen,no unchanged BF16 rerun;64raw/corrected callbacks private,compact key-bias.json auto-return.424guarded controls/421pass/3skip,7file patch/rollback,8core+10reused hashes unchanged;new dossier/v2plan valid. Native result pending;architecture approved/trace blocked;no inherited formal/recovery admission.",
-        "Authenticated91b8df6 native screen32412bytes/SHA1bcffacd...108edc reviewed:FP32 analytic Adam0.00164983628,BF16 analytic0.02710353760 vs original0.21052576842,all fixed gates pass;53parameters/807170elements,original histories/nonK parity,64callbacks,rollback and clean child verified. New-policy recovery/trace/trajectory/timing/convergence and formal admission remain pending;OP05 stays active."
+        "Authenticated91b8df6 native screen32412bytes/SHA1bcffacd...108edc reviewed:FP32 analytic Adam0.00164983628,BF16 analytic0.02710353760 vs original0.21052576842,all fixed gates pass;53parameters/807170elements,original histories/nonK parity,64callbacks,rollback and clean child verified. New-policy recovery/trace/trajectory/timing/convergence and formal admission remain pending;OP05 stays active.",
+        "Delivered independent strategy-bound recovery/trace preflight:4supervised children,continuous2 vs interrupt1+freshprocess1 with original dropout,micro16/logical128;fixed first2 originalcursor rows trace/dropout0,complete raw/corrected/clipped packed gradients/Adam/bias values and exact replays.442guarded controls/439pass/3skip,18new;5file patch/rollback/replay,19frozen files including8core unchanged. Native fixture/recovery pending;architecture approved/trace blocked/formal off."
       ],
       "supersedes": [],
       "superseded_by": []
