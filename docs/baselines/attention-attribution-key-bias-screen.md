@@ -63,4 +63,10 @@ cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_KEY_REV:0:12}" &&
 
 下一阶段如需保存新策略的可恢复训练状态，必须显式绑定本梯度策略ID和版本；本次不会将原恢复契约静默当作新策略的认证。
 
-机制记录：`attention-attribution-key-bias-recovery.json`。独立v2计划：`attention-attribution-key-bias-plan.json`。Owner只用QT2标准库/替身验证控制流程、标量恒等式和回滚；真实GPU结果等待本次回传。
+机制记录：`attention-attribution-key-bias-recovery.json`。独立v2计划：`attention-attribution-key-bias-plan.json`。Owner只用QT2标准库/替身验证控制流程、标量恒等式和回滚。
+
+## 已完成的真实数值筛查（2026-11-16）
+
+上述筛查已由合作者执行，无需重复。执行修订91b8df662c39，Suite为`key-bias-20261116T090926Z-60f6f2a2`。认证报告32412字节，SHA256为`1bcffacdb03a8e2ea501135422ad543dbb6aaffdb5d91868ceb1179b26108edc`。FP32解析对照/新BF16候选全局Adam相对L2分别为0.0016498362797680208和0.027103537600872692，四项固定门限均通过。全部53参数保留、原历史矩/步数一致、非K及前向匹配旧路线、64次回调和精确回滚通过；原训练checkpoint保持不变。
+
+详情见[审阅证据](../evidence/key-bias-native-review-20261116.json)及[数值检查点日志](../research-log/20261116T-090926Z-key-bias-numerical-screen.md)。本阶段仍没有新策略恢复、sample-trace.v2、短轨迹、匹配计时或收敛结论；正式准入和trace readiness继续关闭。
