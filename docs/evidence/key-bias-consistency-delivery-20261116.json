@@ -1,0 +1,73 @@
+{
+  "schema": "qkan-key-bias-consistency-delivery.v1",
+  "date": "2026-11-16",
+  "status": "controls_verified_collaborator_numerical_screen_pending",
+  "baseline_revision": "3f55401dbc2fcd2130017b7aaa97ee673e38928c",
+  "candidate_id": "bf16-key-bias-analytic-zero-v1",
+  "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1",
+  "prior_review": "docs/evidence/attention-bias-native-review-20261116.json",
+  "dossier": "docs/baselines/attention-attribution-key-bias-recovery.json",
+  "plugin_plan": "docs/baselines/attention-attribution-key-bias-plan.json",
+  "handoff": "docs/baselines/attention-attribution-key-bias-screen.md",
+  "architecture_status": "approved_pending_native_per_sample_fixture",
+  "formal_admission": false,
+  "modified_sha256": {
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/key_bias_diagnostic.py": "a76e349f01e54b985adeaa66f45f21f41ab00e1f99685d1f8041589c0a5e3555",
+    "experiments/baseline_delivery/optimization-presets/key-bias-consistency.json": "5d9e46efefcd4d5e7ab5e14b46fa611213e33c2e8dcc3f8afe61f7f373cea94c",
+    "tests/test_baseline_key_bias_consistency.py": "b9bfe93c52f903e2a1b66af375240a71cce64eb814eb1027d54fb18b6dae21d0",
+    "docs/baselines/attention-attribution-key-bias-recovery.json": "c71444836d0a843abb79db468bfd1c344cde3f1676a8cc811b2cde1a64303c67",
+    "docs/baselines/attention-attribution-key-bias-plan.json": "3191f18df1e00df7d291e28a7b1b8e4be55df61662d0edd317a81540bf231ca9",
+    "docs/baselines/attention-attribution-key-bias-screen.md": "7195ef467b96ada9d4ac96348ecf9d66d78416e8128e8919a7aa23dd891cad89"
+  },
+  "controls": {
+    "total": 424,
+    "passed": 421,
+    "skipped": 3,
+    "new_tests": 17,
+    "native_framework_imports": 0,
+    "protected_core_hashes": 8,
+    "frozen_reused_files": 10,
+    "mechanism_dossier_valid": true,
+    "plugin_plan_valid": true,
+    "known_softmax_null_direction": true,
+    "zero_k_qv_exact": true,
+    "hook_cleanup": true,
+    "full_parameter_metrics": true,
+    "source_checkpoint_binding": true,
+    "private_reopen": true,
+    "failed_child_and_upload_retained": true,
+    "patch_apply_rollback_replay": true
+  },
+  "scope": {
+    "children": 1,
+    "routes": [
+      "fp32",
+      "fp32_analytic",
+      "bf16_analytic"
+    ],
+    "updates_per_route": 1,
+    "micro": 16,
+    "logical": 128,
+    "dropout": 0,
+    "parameters": 53,
+    "elements": 807170,
+    "new_gradient_definition": true,
+    "adam_history_retained": true,
+    "original_global_gates_unchanged": true,
+    "private_callback_values": 64,
+    "private_values_max_bytes": 134217728,
+    "auto_return": "key-bias.json only"
+  },
+  "package": {
+    "modified_artifacts": ".runtime/key-bias-consistency-20261116/candidate",
+    "patch": ".runtime/key-bias-consistency-20261116/change.patch",
+    "verification": ".runtime/key-bias-consistency-20261116/verification.json",
+    "rollback": ".runtime/key-bias-consistency-20261116/rollback.py"
+  },
+  "limitations": [
+    "Owner stdlib/fake controls do not establish native numerical improvement.",
+    "Analytic derivative changes the gradient policy;neither literal BF16 derivative nor unchanged training trajectory is claimed.",
+    "Fresh-process recovery,sample-trace.v2,trajectory,timing,convergence and Graph/formal integration remain unmeasured for the new policy."
+  ]
+}

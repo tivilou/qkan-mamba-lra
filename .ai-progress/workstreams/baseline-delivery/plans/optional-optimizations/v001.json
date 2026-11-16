@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Design a separate default-off K-bias gradient numerical-consistency candidate with explicit gradient/Adam-history/checkpoint boundaries and FP32 parity control; do not repeat the completed CPU attribution run.",
+  "next_action": "Collaborator runs key_bias_diagnostic with explicit key-bias-consistency preset:original FP32,FP32 analytic control,BF16 analytic candidate from reviewed14268;review complete global gates and retained Adam history before any recovery/trace/timing expansion.",
   "blocker": null,
   "steps": [
     {
@@ -147,7 +147,10 @@
         "docs/evidence/attention-attribution-native-review-20261116.json",
         "docs/evidence/attention-bias-postprocess-delivery-20261116.json",
         "docs/evidence/attention-bias-native-review-20261116.json",
-        "docs/research-log/20261116T-080816Z-bf16-key-bias-diagnostic.md"
+        "docs/research-log/20261116T-080816Z-bf16-key-bias-diagnostic.md",
+        "docs/evidence/key-bias-consistency-delivery-20261116.json",
+        "docs/baselines/attention-attribution-key-bias-screen.md",
+        "docs/baselines/attention-attribution-key-bias-plan.json"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -157,7 +160,8 @@
         "Authenticated native mechanism return verified: micro16 first-layer/document1 BF16 efficient SDPA 2.936222x vs FP32; output relative L2 0.348621 percent, max gradient0.955918 percent, exact same-route replay/input-RNG rollback. Full-update/convergence/trace admission pending.",
         "Delivered independently switchable BF16 SDPA complete-update candidate;377 guarded controls,20 new tests,8 protected core hashes unchanged. Native/convergence acceptance pending; no formal training.",
         "Full-update numerical gate rejected Adam relative L2 .2105257684 above unchanged .20; recovery exact. Authenticated attribution localized98.3495percent update error energy in4packed attention biases. Delivered CPU-only read-only Q/K/V postprocessor with407guarded controls; real segment statistics pending. No repeated GPU update, changed gate or formal integration.",
-        "Authenticated CPU report459887bytes/SHA703c52f3...65890c reviewed with270paired summaries:K512elements carry98.3486876percent global Adam-error energy;near-zero FP32gradient4.552e-8 vs BF166.457e-5,allreference Kdenominators within2eps. Stored-moment adaptive route difference residual4.384e-7. CPU3.2162s,clean child,zero new model/update work;original gate still failed. Causal intervention and new candidate remain unmeasured."
+        "Authenticated CPU report459887bytes/SHA703c52f3...65890c reviewed with270paired summaries:K512elements carry98.3486876percent global Adam-error energy;near-zero FP32gradient4.552e-8 vs BF166.457e-5,allreference Kdenominators within2eps. Stored-moment adaptive route difference residual4.384e-7. CPU3.2162s,clean child,zero new model/update work;original gate still failed. Causal intervention and new candidate remain unmeasured.",
+        "Delivered independent bf16-key-bias-analytic-zero-v1;explicit new gradient definition K[128:256]=0,Q/V exact,all53parameters and Adam histories/steps/weight decay retained. One supervised3update screen,no unchanged BF16 rerun;64raw/corrected callbacks private,compact key-bias.json auto-return.424guarded controls/421pass/3skip,7file patch/rollback,8core+10reused hashes unchanged;new dossier/v2plan valid. Native result pending;architecture approved/trace blocked;no inherited formal/recovery admission."
       ],
       "supersedes": [],
       "superseded_by": []
