@@ -361,15 +361,21 @@ def run_job(suite, r, job, gpu, statuses):
     if job['id'] != JOB:
         env['QKAN_RUNTIME_RELEASE'] = str(Path(r['source_suite'])/'runtime-release.json')
         env['PYTHONPATH'] = r['original_root']
-    statuses[job['id']] = dict(state='running', started_training=True, physical_gpu=gpu)
+    started = time.time()
+    statuses[job['id']] = dict(state='running', started_training=True, physical_gpu=gpu, started=started)
     atomic_json(suite/'status.json', statuses)
     code = None
     from .performance import ProfileReturn
     from .diagnostic_watch import terminate
+    from scripts.formal_progress import Dashboard, Terminal
     profile = ProfileReturn(ROOT)
+    dashboard = Dashboard(ROOT, suite); terminal = Terminal('auto')
+    dashboard.launch = dict(started_at=started, runner_pid=os.getpid(), interval=30)
     with (folder/'worker.log').open('ab') as log:
         child = spawn(spec, log, env)
         try:
+            statuses[job['id']]['pid'] = child.pid
+            atomic_json(suite/'status.json', statuses)
             next_notice = 0
             while child.poll() is None:
                 profile.tick(suite, [job])
@@ -387,11 +393,14 @@ def run_job(suite, r, job, gpu, statuses):
                         computed=sum(v['state'] == 'computed' for v in statuses.values()), total=25,
                         pending=[n for n, v in statuses.items() if v['state'] == 'pending'],
                         failed=[n for n, v in statuses.items() if v['state'] == 'failed'])
-                    print(json.dumps(notice), flush=True); atomic_json(suite/'heartbeat.json', notice)
+                    atomic_json(suite/'heartbeat.json', notice)
+                    dashboard.launch['updated_at'] = time.time()
+                    terminal.show(dashboard.render())
                     next_notice = time.monotonic()+30
                 time.sleep(.5)
             code = child.returncode
         finally:
+            terminal.close()
             stop_child(child)  # Existing safe-pause grace; no diagnostic time cap on long jobs.
             cleanup = terminate(child, grace=2)
             profile.close()

@@ -152,8 +152,15 @@ class FormalTests(unittest.TestCase):
         spec = f.job_spec(self.suite, self.r, job)
         # Same module/interpreter as the real dispatch; no-data startup replaces only worker arguments.
         spec.update(cwd=str(REAL_ROOT), argv=spec['argv'][:5]+['--help'])
-        with patch.object(f, 'job_spec', return_value=spec), patch.object(f, 'validate_job_result', return_value={}), patch('builtins.print'):
+        with patch.object(f, 'job_spec', return_value=spec), patch.object(f, 'validate_job_result', return_value={}), \
+                patch('scripts.formal_progress.Terminal') as terminal, patch('builtins.print'):
             self.assertEqual(f.run_job(self.suite, self.r, job, '0', statuses), 0)
+        frame = terminal.return_value.show.call_args.args[0]
+        self.assertIn('任务 25', frame); self.assertNotIn('"pending": [', frame)
+        terminal.return_value.close.assert_called_once()
+        self.assertIsInstance(statuses[f.JOB]['pid'], int)
+        self.assertGreater(statuses[f.JOB]['started'], 0)
+        self.assertEqual(read(self.suite/'heartbeat.json')['job'], f.JOB)
         self.assertEqual(read(self.suite/'status.json')[f.JOB]['state'], 'computed')
         self.assertIn('Explicit mixed-executor', (self.suite/'jobs'/f.JOB/'worker.log').read_text())
         self.assertTrue(list((self.suite/'jobs'/f.JOB).glob('formal-child-*.json')))

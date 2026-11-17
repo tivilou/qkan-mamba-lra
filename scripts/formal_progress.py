@@ -209,8 +209,10 @@ class Dashboard:
         if self.launch is None:
             lines.append('模式：只读观察；不会自动启动或恢复暂停任务。')
         if launch:
-            pid=launch.get('runner_pid');alive=False
-            if isinstance(pid,int) and pid>0:
+            pid=launch.get('runner_pid');alive=self.launch is not None
+            # A dashboard owned by this live supervisor needs no PID probe.
+            # Windows os.kill(pid, 0) is not the POSIX read-only liveness test.
+            if not alive and os.name=='posix' and isinstance(pid,int) and pid>0:
                 try: os.kill(pid,0);alive=True
                 except PermissionError: alive=True
                 except OSError: pass
@@ -232,15 +234,21 @@ class Dashboard:
         for job in groups['running']:
             state=states[job];folder=self.suite/'jobs'/job
             config=read(folder/'config.json',{});hb=read(folder/'heartbeat.json',{})
-            started=state.get('started',now);age=max(0,now-hb.get('updated_at',started))
-            lines.append(f"GPU {state.get('physical_gpu','?')} | {job} | PID {state.get('pid','?')} | 本次进程耗时 {duration(now-started)}")
-            if not hb or hb.get('updated_at',0)<started:
+            # The first formal BF16 parent did not write started/pid. Its worker
+            # already records a process origin; use that instead of redraw time.
+            started=state.get('started',hb.get('run_started_at'))
+            age=max(0,now-hb.get('updated_at',now))
+            lines.append(f"GPU {state.get('physical_gpu','?')} | {job} | PID {state.get('pid','?')} | 本次进程耗时 {duration(now-started) if started is not None else '待测'}")
+            if not hb or (started is not None and hb.get('updated_at',0)<started):
                 lines.append('  初始化/恢复中，等待本次进程的第一个训练心跳；速度与 ETA 待测。')
                 acceleration=read(folder/'torch-acceleration.json',{})
                 if acceleration:
                     lines.append('  编译/Graph准备：'+acceleration.get('state',{}).get('phase',acceleration.get('state',{}).get('reason','待测'))+
                         '；首次编译/捕获及有界测速可能较慢，尚未计入样本进度。')
                 continue
+            policy=config.get('training_strategy')
+            if policy:
+                lines.append('  策略：BF16 注意力 / FP32 主参数和 Adam / 解析 K 偏置梯度 / eager（无 Graph）')
             adaptive=hb.get('adaptive_memory')
             if adaptive:
                 lines.append(f"  显存适配：本步 micro-batch {adaptive['used_micro_batch']} | 下一步 {adaptive['micro_batch']} | "
@@ -300,6 +308,18 @@ def computed_suite(suite):
     return (suite/'compute-complete.json').exists()
 
 
+def latest_formal(root):
+    """Select only formal suites in this executor; never infer a training start."""
+    suites=sorted(p for p in (Path(root)/'runs').glob('key-bias-formal-*')
+                  if p.is_dir() and (p/'formal-input.json').is_file())
+    running=[p for p in suites if not computed_suite(p) and any(
+        v.get('state')=='running' for v in read(p/'status.json',{}).values())]
+    if len(running)>1: raise ValueError('Multiple running formal suites; select one with --resume')
+    if running: return running[0]
+    if suites: return suites[-1]
+    raise ValueError('No initialized key-bias-formal suite in this executor runs/')
+
+
 def startup_lines(suite,launch,now):
     """Read only this launch's bounded log tails; never print raw child text."""
     lines=[]
@@ -329,19 +349,28 @@ def startup_lines(suite,launch,now):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=Path.cwd())
-    parser.add_argument('--resume',type=Path,required=True)
+    selection=parser.add_mutually_exclusive_group(required=True)
+    selection.add_argument('--resume',type=Path)
+    selection.add_argument('--latest-formal',action='store_true',help='Watch the running formal suite, or latest if none is running')
     parser.add_argument('--cache',type=Path)
     parser.add_argument('--interval',type=float,default=15)
     parser.add_argument('--display',choices=('auto','inplace','append'),default='auto',
                         help='TTY: refresh in place; redirected output: append snapshots; append forces plain output')
     parser.add_argument('--watch-only',action='store_true',help='Read existing files without launching or writing anything')
+    parser.add_argument('--once',action='store_true',help='Print one read-only snapshot and exit; requires watch-only')
     args=parser.parse_args()
     if not math.isfinite(args.interval) or not 1<=args.interval<=60: parser.error('interval must be 1..60 seconds')
-    root=args.root.resolve();suite=(root/args.resume).resolve()
+    if (args.latest_formal or args.once) and not args.watch_only:
+        parser.error('latest-formal and once require watch-only')
+    root=args.root.resolve()
+    try: suite=latest_formal(root).resolve() if args.latest_formal else (root/args.resume).resolve()
+    except ValueError as error: parser.error(str(error))
     if not suite.is_relative_to(root/'runs') or not suite.is_dir(): parser.error('resume must be an existing suite under runs/')
     dashboard=Dashboard(root,suite)
     terminal=Terminal(args.display)
     if args.watch_only:
+        if args.once:
+            print(dashboard.render(),flush=True);return 0
         def leave_watch(*_): raise KeyboardInterrupt
         watch_signals={sig:signal.signal(sig,leave_watch) for sig in
                        (signal.SIGTERM,signal.SIGHUP)} if os.name=='posix' else {}

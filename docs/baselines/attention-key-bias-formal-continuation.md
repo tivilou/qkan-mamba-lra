@@ -42,6 +42,22 @@ bash scripts/continue_key_bias_training.sh \
 
 入口先打印`Formal continuation Suite: .../runs/key-bias-formal-...`，请保留这个新Suite路径。正常准备通过后同一命令继续正式训练，不再等待手工更换命令。若只想执行零更新准备，可加`--prepare-only`；默认即继续长期训练。
 
+## 进度看板与已运行旧版本
+
+正式父进程复用项目原有`scripts/formal_progress.py`美化看板：TTY原地刷新、退出恢复光标；重定向时输出可读快照。机器状态仍写入`heartbeat.json`，终端不再逐条打印完整JSON。界面列出任务汇总、整卡GPU占用、样本／Epoch／实际Step、loss、近60秒平滑速度、本次进程平均速度和当前任务ETA；ETA不代表整个25任务队列的预计完成时间。
+
+`a356914`首次正式入口直接打印JSON，缺少看板所需的父进程`started`／`pid`字段。该版本已经运行时，保持原执行checkout和原进程，另开终端运行下面整段即可恢复原美化看板。新观察脚本从worker心跳中的`run_started_at`读取真实启动时间，兼容旧状态；不更换已绑定的正式执行文件，不触发代码／配置版本迁移。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-a3569140d43b &&
+git fetch origin research/collaboration-foundation &&
+git show FETCH_HEAD:scripts/formal_progress.py > .bootstrap/key-bias-progress-display.py &&
+.venv-baselines/bin/python -B .bootstrap/key-bias-progress-display.py \
+  --root "$PWD" --latest-formal --watch-only --display inplace
+```
+
+此命令只读本checkout的Suite／状态／心跳，附加有界`nvidia-smi`整卡查询；优先选择唯一标为运行中的正式Suite，没有运行项时选择最新正式Suite。若多项同时标为运行，需用`--resume`显式指定观察的Suite。`--once`可打印一次快照后退出。观察器的Ctrl-C只关闭看板，当前训练继续；原训练窗口仍显示旧JSON是旧进程保留原代码的正常结果。不要对正在运行的绑定checkout执行`git pull`，也不要为切换显示重跑首次迁移或新启动训练。
+
 ## 暂停与恢复
 
 保持在**创建该Suite的同一个固定checkout**中。正常Ctrl-C／SIGTERM／SIGHUP沿用原worker的更新边界保存与90秒安全暂停宽限；父进程随后清理自己的进程组，记录退出状态并回传。不得通过重新执行首次迁移命令恢复已有进度。

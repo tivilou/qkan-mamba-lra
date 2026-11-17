@@ -1,0 +1,48 @@
+{
+  "schema": "qkan-key-bias-display-delivery.v1",
+  "status": "display_delivery_verified",
+  "baseline_revision": "a3569140d43b56cae30bd42db8e604db252f5e50",
+  "files": {
+    "experiments/baseline_delivery/key_bias_formal.py": "6637e49914a28a62c2b3c83073c86c7910c6e491663037811f287f21abb08f60",
+    "scripts/formal_progress.py": "8f76655f88bbb774283d41a60a25a7503717c952b1323a57cf40ff5f1a87be36",
+    "tests/test_baseline_key_bias_formal.py": "bd6c6f081443191a1c875e8d623725937e152e09f4b0e0db4d3936dcd22d8a1f",
+    "tests/test_baseline_progress.py": "a63594bd5de128ebb068ed5ec92a9108b63309119eaa94a1571fb227af91f62b",
+    "docs/baselines/attention-key-bias-formal-continuation.md": "318ae71070c5a9c0062859695a6630e4175c2e6c0393570b533c032b61462e39"
+  },
+  "tests": {
+    "total": 522,
+    "passed": 519,
+    "skipped": 3,
+    "new": 7,
+    "framework_imports": 0
+  },
+  "unchanged_native_bindings": 21,
+  "verification_sha256": "ab6ce6ad1b6a61410543619ed01a464136a85e6ce52e95428e741698aa022ad4",
+  "package": {
+    "change.patch": {
+      "path": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-progress-20261117\\change.patch",
+      "sha256": "811317e37a09ac93c40258639a36a9a1621ccffd7c17a02c62fd992787a167e3"
+    },
+    "rollback.py": {
+      "path": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-progress-20261117\\rollback.py",
+      "sha256": "b99585b39aca94fcfe922125210db75524695e250858e68d36bb556169a054e3"
+    },
+    "package.json": {
+      "path": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-progress-20261117\\package.json",
+      "sha256": "5d81753c39efb9db516051f14f5c5a4a91e7197e5f2b1ecf63315e18d46895b4"
+    },
+    "dashboard-preview.txt": {
+      "path": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-progress-20261117\\dashboard-preview.txt",
+      "sha256": "6dc3bffe1cda5d5fee258106bd365b482860fc1af1b1d877a668ad677b83f886"
+    },
+    "candidate": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-progress-20261117\\candidate",
+    "verification": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-progress-20261117\\verification.json"
+  },
+  "literal_commands": 14,
+  "rollback_verified": true,
+  "reapply_verified": true,
+  "active_executor_preserved": "a3569140d43b56cae30bd42db8e604db252f5e50; keep its process, source files and binding; fetch observer into ignored .bootstrap only",
+  "current_run_observation": "User screenshot: transformer-retrieval-s42 step14527,epoch index15,computed2/25,failed0; progress increasing. Screenshot observation only; no new authenticated native report audited.",
+  "scope": "Reuse existing formal_progress Dashboard/Terminal. Standalone watch-only reads status/heartbeats and queries board metrics; no model load, worker launch, checkpoint write, pause or restart. New-version controller uses same dashboard by default.",
+  "claim_ceiling": "UI/control verification only; existing active run stays at pinned revision, full training and new readiness receipts not audited in this task."
+}
