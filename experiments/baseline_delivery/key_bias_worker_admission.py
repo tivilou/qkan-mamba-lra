@@ -15,6 +15,7 @@ import uuid
 
 from .common import ROOT,atomic_json,digest,fingerprint,read,revision,lock,worker_failure
 from . import key_bias_training as strategy
+from .key_bias_recovery import prepare_worker_output
 
 TARGET='experiments.baseline_delivery.key_bias_worker_admission'
 SCHEMA='qkan-key-bias-worker-admission.v1'
@@ -106,8 +107,7 @@ def native(path,output,mode):
     admission=strategy.Admission(r,path,output,mode)
     limit=r['checkpoint']['step']+(1 if mode=='interrupt' else 2)
     admission.validate(r['target_config'],output,'cuda:0',True,limit,False,False,None)
-    if output.exists(): raise ValueError('Fresh owned worker output required')
-    output.mkdir(parents=True)
+    prepare_worker_output(output)
     hasher=SimpleNamespace(t=torch,np=np)
     state_hash=lambda x:NativeUpdate.state_hash(hasher,x)
     try:

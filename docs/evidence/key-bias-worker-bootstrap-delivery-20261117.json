@@ -1,0 +1,106 @@
+{
+  "schema": "qkan-key-bias-worker-bootstrap-delivery.v1",
+  "status": "bootstrap_fix_delivered_native_retry_pending",
+  "baseline_revision": "09b0382bd904ef5f015bf1d73769829b1103d4cb",
+  "native_failure_review": {
+    "path": "docs\\evidence\\key-bias-worker-bootstrap-native-review-20261117.json",
+    "sha256": "fe3cc77c6847b1b8734a081f5dbf744adee58a0a546cc8e47ea0a721f545c391"
+  },
+  "change": {
+    "entry": "key_bias_worker_admission.native output preparation",
+    "behavior": "Allow only existing supervisor diagnostics;reject stale artifacts and symlinks using unchanged shared guard",
+    "implementation_binding": "Add key_bias_recovery.py dependency;18 execution files plus validator/plan/pilot review",
+    "worker_and_scientific_protocol_changed": false
+  },
+  "execution_binding": {
+    "files": {
+      "worker.py": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b",
+      "key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+      "key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+      "attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+      "key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+      "models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+      "logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+      "execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+      "trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+      "data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+      "migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+      "adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+      "performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+      "common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+      "diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+      "attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+      "attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+      "key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79"
+    },
+    "trace_validator_sha256": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "plan_sha256": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "pilot_review_sha256": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "modified_files": {
+    "experiments/baseline_delivery/key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+    "tests/test_baseline_key_bias_worker_bootstrap.py": "3d4143ada797da39ccad8b850aa028251808fc03dd7384f95c53089d264373c5",
+    "docs/baselines/attention-key-bias-worker-admission.md": "8a6bac7cf2207f583a17176244884facd950cdfe7edd9885608a0dded42acd11",
+    "docs/evidence/key-bias-worker-bootstrap-native-review-20261117.json": "fe3cc77c6847b1b8734a081f5dbf744adee58a0a546cc8e47ea0a721f545c391"
+  },
+  "unchanged_source_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/worker.py": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/baselines/attention-key-bias-stability-plan.json": "3286d03dd890c06956625633c54a22c9b05666632249ab44836ad1c77490320c",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7"
+  },
+  "controls": {
+    "tests": 490,
+    "passed": 487,
+    "skipped": 3,
+    "new_tests": 3,
+    "framework_imports": 0,
+    "actual_supervisor": "Actual bootstrap executes production native-entry preparation statements;fresh diagnostics pass,stale checkpoint rejected untouched",
+    "limitation": "Owner stops before native checkpoint/model preparation;no final-worker native migration/recovery/trace pass claimed"
+  },
+  "package": {
+    "directory": ".runtime/key-bias-worker-fix-20261117",
+    "roles": {
+      "modified": "candidate/",
+      "patch": "change.patch",
+      "verification": "verification.json",
+      "rollback": "rollback.py"
+    },
+    "files": 5,
+    "literal_command_records": 14,
+    "patch_sha256": "c57fd68f1af486ff7995ff4810e274c53e0573f37b108c4c3c47c1b6b0697f9f",
+    "verification_sha256": "6875b749112d0627853a5aff422cbe4caff992e21241ea17b25ae55ba3721925",
+    "rollback_sha256": "bf63431f1d76c595b1b8ad09b8ba1d22a1ed9a2c5a8610542c0e924df0ba817f",
+    "rollback_reapply_verified": true,
+    "baseline_behavior": {
+      "child_exit_status": 76,
+      "framework_imports": 0,
+      "outcome": "precreated_diagnostics_rejected",
+      "parent_reaped": true,
+      "supervisor_diagnostics": true
+    },
+    "modified_behavior": {
+      "child_exit_status": 0,
+      "framework_imports": 0,
+      "outcome": "checkpoint_preparation_reached",
+      "parent_reaped": true,
+      "supervisor_diagnostics": true
+    }
+  },
+  "native_retry_passed": false,
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "next_action": "Fresh checkout;repeat0+2+1+1 finite final-worker admission from latest compatible original b07 source;prior successful numeric/stability/performance runs stay reused"
+}

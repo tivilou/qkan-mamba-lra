@@ -2,7 +2,7 @@
 
 解析K梯度候选的隔离试跑已全部通过：三路线各64步恶化门、BF16连续64与32+32精确恢复，以及两项独立现有执行器比较。Graph16对照7.938秒至3.782秒，吞吐约2.099倍；Graph32对照7.574秒至3.706秒，约2.044倍，各四对均正。缓存修复后第三次捕获已通过；尚无完整收敛或验证/测试效用结论。
 
-当前优先方向是[最终worker接入与恢复/轨迹/迁移准入](../baselines/attention-key-bias-admission-readiness.md)。原六项结果精确复用，本轮仅运行最后一个子进程；成功诊断无需重跑。正式训练未接入候选，原checkpoint未变。详见[完整检查点](20261117T-050617Z-key-bias-stability-incumbents.md)及[认证审阅](../evidence/key-bias-stability-native-review-20261117.json)。
+当前优先方向是[最终worker恢复/轨迹/迁移准入](../baselines/attention-key-bias-worker-admission.md)。接入代码已交付；首次原生运行在迁移准备前因监督目录检查冲突退出，现已修复并补真实监督器测试，等待四项有界准入重试。既有成功数值、64步及计时无需重跑；正式队列关闭，原checkpoint未变。详见[目录故障与修复](20261117-worker-bootstrap-directory-fix.md)及[认证审阅](../evidence/key-bias-worker-bootstrap-native-review-20261117.json)。
 
 ## 时间线
 
@@ -15,6 +15,9 @@
 - 2026-11-16：[解析K梯度完整更新实测](20261116T-124533Z-key-bias-full-update-benchmark.md)。匹配原eager更新9.029秒至3.805秒，四步短轨迹及回滚通过；收敛、现有执行器相对收益与正式准入待测。
 
 - 2026-11-17：[解析K梯度稳定性与现有执行器比较](20261117T-050617Z-key-bias-stability-incumbents.md)。64步恶化门、64对32+32精确恢复及Graph16/Graph32独立比较全部通过；完整收敛和最终worker准入待验证。
+
+- 2026-11-17：[最终worker接入交付](20261117-final-worker-admission-delivery.md)。默认关闭策略、版本化完整checkpoint与四子进程准入已交付；原生证据待执行。
+- 2026-11-17：[最终worker监督目录衔接修复](20261117-worker-bootstrap-directory-fix.md)。认证回传定位首个迁移子进程的启动目录冲突；复用既有检查，490项控制487通过、3跳过，原生重试待执行。
 
 ## Idea 解释
 

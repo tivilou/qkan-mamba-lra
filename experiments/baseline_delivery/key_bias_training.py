@@ -19,7 +19,7 @@ FILES = ('worker.py', 'key_bias_training.py', 'key_bias_worker_admission.py',
          'attention_update.py', 'key_bias_consistency.py', 'models.py',
          'logical_batch.py', 'execution.py', 'trace.py', 'data.py', 'migration.py',
          'adaptive_memory.py', 'performance.py', 'common.py', 'diagnostic_watch.py',
-         'attention_precision_diagnostic.py', 'attention_update_native.py')
+         'attention_precision_diagnostic.py', 'attention_update_native.py', 'key_bias_recovery.py')
 PLAN = ROOT/'docs/baselines/attention-key-bias-worker-plan.json'
 REVIEW = ROOT/'docs/evidence/key-bias-stability-native-review-20261117.json'
 
