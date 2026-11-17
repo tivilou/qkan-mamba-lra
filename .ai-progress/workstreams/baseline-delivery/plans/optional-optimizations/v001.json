@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Retry finite actual-worker admission after one-line migration receipt keyword-collision fix; audit authenticated return,then separately complete formal long-run entry.",
+  "next_action": "Deliver the separate formal migration/long-run start entry bound to reviewed actual-worker implementation and latest compatible original source; preserve completed results and automatic return. No repeated diagnostics needed.",
   "blocker": null,
   "steps": [
     {
@@ -179,7 +179,8 @@
         "docs/evidence/key-bias-worker-bootstrap-native-review-20261117.json",
         "docs/evidence/key-bias-worker-bootstrap-delivery-20261117.json",
         "docs/evidence/key-bias-worker-migration-receipt-native-review-20261117.json",
-        "docs/evidence/key-bias-worker-migration-receipt-delivery-20261117.json"
+        "docs/evidence/key-bias-worker-migration-receipt-delivery-20261117.json",
+        "docs/evidence/key-bias-worker-native-review-20261117.json"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -203,7 +204,8 @@
         "Authenticated5fe8636Suite050617Z:273986bytes/SHA c0b7da89...fd4b7,23bindings/8core,6prefix exact+1cleanexit0child.All7pilot results pass,64step gates/exact32+32;Graph32 7.574034879->3.705730844s/2.043870750x,all4pairspositive;3cache resets/stateexact/thirdcapturepass. Full convergence and finalworker admission remain pending,OP05active.",
         "Final-worker explicit default-off BF16 analytic strategy and versioned full checkpoint implemented; frozen4-child0+2+1+1 native admission prepared. Prior64step/performance evidence reused; native final-worker and full convergence remain pending.",
         "Authenticated09b0382 first migration failed entry109 before checkpoint preparation because Supervisor precreated diagnostics. Reuse unchanged prepare_worker_output;actual bootstrap3new controls,490tests487pass3skip;8cores/frozenprotocol unchanged;native retry pending.",
-        "7829579 actualworker reached receipt after zero-update save/reopen comparison,then TypeError target_contract duplicated.4new full production migration-branch state-fake controls;494tests491pass3skip/0frameworks;numericbody/protocol unchanged;native retry pending."
+        "7829579 actualworker reached receipt after zero-update save/reopen comparison,then TypeError target_contract duplicated.4new full production migration-branch state-fake controls;494tests491pass3skip/0frameworks;numericbody/protocol unchanged;native retry pending.",
+        "Authenticated b23e1da Suite113204Z:69785bytes/SHA cd53b6ee...92f8d8,21 bindings;4clean exit0children;zero-update migration,26scientific components and update records exact2vs1+1,actual paused worker paired val0/1 trace16680224bytes/replay pass. Source and2completed intact,8owned generations removed. Final-worker native fixture validated;formal start entry/full convergence remain pending."
       ],
       "supersedes": [],
       "superseded_by": []
