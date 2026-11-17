@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Retry four finite final-worker migration/recovery/paired-trace children from a fresh checkout after bootstrap directory fix; audit authenticated compact return before any formal queue decision.",
+  "next_action": "Retry finite actual-worker admission after one-line migration receipt keyword-collision fix; audit authenticated return,then separately complete formal long-run entry.",
   "blocker": null,
   "steps": [
     {
@@ -177,7 +177,9 @@
         "docs/baselines/attention-key-bias-worker-plan.json",
         "docs/baselines/attention-key-bias-worker-admission.md",
         "docs/evidence/key-bias-worker-bootstrap-native-review-20261117.json",
-        "docs/evidence/key-bias-worker-bootstrap-delivery-20261117.json"
+        "docs/evidence/key-bias-worker-bootstrap-delivery-20261117.json",
+        "docs/evidence/key-bias-worker-migration-receipt-native-review-20261117.json",
+        "docs/evidence/key-bias-worker-migration-receipt-delivery-20261117.json"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -200,7 +202,8 @@
         "Authenticated664b912retry:one child,6old results exact,7timings,third capture FailOnRecompileLimitHit/recompile_budget. Isolated cache-reset fix475guarded controls passed;native patched result pending,formal off.",
         "Authenticated5fe8636Suite050617Z:273986bytes/SHA c0b7da89...fd4b7,23bindings/8core,6prefix exact+1cleanexit0child.All7pilot results pass,64step gates/exact32+32;Graph32 7.574034879->3.705730844s/2.043870750x,all4pairspositive;3cache resets/stateexact/thirdcapturepass. Full convergence and finalworker admission remain pending,OP05active.",
         "Final-worker explicit default-off BF16 analytic strategy and versioned full checkpoint implemented; frozen4-child0+2+1+1 native admission prepared. Prior64step/performance evidence reused; native final-worker and full convergence remain pending.",
-        "Authenticated09b0382 first migration failed entry109 before checkpoint preparation because Supervisor precreated diagnostics. Reuse unchanged prepare_worker_output;actual bootstrap3new controls,490tests487pass3skip;8cores/frozenprotocol unchanged;native retry pending."
+        "Authenticated09b0382 first migration failed entry109 before checkpoint preparation because Supervisor precreated diagnostics. Reuse unchanged prepare_worker_output;actual bootstrap3new controls,490tests487pass3skip;8cores/frozenprotocol unchanged;native retry pending.",
+        "7829579 actualworker reached receipt after zero-update save/reopen comparison,then TypeError target_contract duplicated.4new full production migration-branch state-fake controls;494tests491pass3skip/0frameworks;numericbody/protocol unchanged;native retry pending."
       ],
       "supersedes": [],
       "superseded_by": []

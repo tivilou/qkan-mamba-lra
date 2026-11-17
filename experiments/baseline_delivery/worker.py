@@ -302,7 +302,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         state['adaptive_memory']=adaptive.snapshot()
         save_checkpoint(output,state)
         compare_states(state,load_checkpoint(output,contract))
-        atomic_json(output/'migration-validation.json',dict(passed=True,**state['migration'],
+        atomic_json(output/'migration-validation.json',dict(state['migration'],passed=True,
             state_roundtrip='exact before first adaptive optimizer update',
             target_contract=contract,optimizer_steps_performed=0))
         return 0

@@ -4,6 +4,8 @@
 
 2026-11-17重试说明：首次09b0382运行在迁移准备前退出，原因是监督器预建`output/diagnostics`与入口的“目录必须不存在”检查冲突。现复用既有`prepare_worker_output`：只允许监督诊断目录预先存在，旧checkpoint、配置、结果或链接仍拒绝。新增真实监督器启动控制；未修改worker更新主体、冻结协议或既有成功实验。首次回传与来源保存审阅见[故障审阅](../evidence/key-bias-worker-bootstrap-native-review-20261117.json)。下面命令先准备新的干净checkout，再重做尚未执行的四个准入子进程。
 
+第二次7829579运行已通过目录检查、模型准备和零更新checkpoint保存／重读比较，在写`migration-validation.json`时发生重复`target_contract`关键字错误。现只修正回执字典合并顺序，保留所有状态比较、原元数据及0更新约束；新增整段生产迁移分支的标准库替身测试，覆盖候选、旧路线、损坏状态拒绝及回执字段优先级。原源未变，两份自有step14268诊断代际已清理；四项完整准入仍待重试。见[第二次故障审阅](../evidence/key-bias-worker-migration-receipt-native-review-20261117.json)。
+
 本次仅扩展 `worker.run` 的显式策略分支。未选择时保持原数值更新主体；选择后使用原实例适配器和解析K段hook，固定eager16／logical128。候选训练和评估均用BF16注意力，FP32主参数、投影、残差、head、loss及原Adam历史保持。与Graph、其他模型任务及未知策略组合均拒绝。常规worker CLI不具备启用权限，新的准入入口只允许有限步数。
 
 完整checkpoint增加策略版本、精度、梯度策略、配置、原源checkpoint和执行文件绑定，以及全部参数梯度。已有候选checkpoint须严格匹配；原FP32源的首次转换单独记录，移除旧进程加速状态，不重置参数、矩、step、衰减、样本时钟或排列。原源没有保存梯度，因此初次转换明确设为None；后续候选checkpoint实际保存并恢复全部梯度。
