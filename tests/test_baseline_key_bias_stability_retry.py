@@ -150,7 +150,7 @@ class Tests(unittest.TestCase):
             def set_mode(self,mode): pass
             def clear(self): pass
             def generation(self): return 1
-            def status(self): return dict(graph_resident=True)
+            def status(self): return dict(graph_resident=False)
             def backend_error(self,error): return False
         rt=Runtime();rt.np=NS(ndarray=type('Unused',(),{}));rt.opt=NS(zero_grad=lambda **k:None);rt.t.cuda.OutOfMemoryError=MemoryError
         graph=Graph()

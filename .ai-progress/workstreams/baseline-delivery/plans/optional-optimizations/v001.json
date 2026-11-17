@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Collaborator retries partition32 only with authenticated six-child prefix;review retained internal rejection/timings before final admission.",
+  "next_action": "Collaborator retries partition32 with compiler-cache reset between released captures;reuse original six successes and audit fresh completeABBAx2 or native rejection.",
   "blocker": null,
   "steps": [
     {
@@ -168,7 +168,9 @@
         "docs/baselines/attention-key-bias-stability.md",
         "docs/baselines/attention-key-bias-stability-plan.json",
         "docs/evidence/key-bias-stability-partial-review-20261117.json",
-        "docs/evidence/key-bias-stability-retry-delivery-20261117.json"
+        "docs/evidence/key-bias-stability-retry-delivery-20261117.json",
+        "docs/evidence/key-bias-compiler-cache-native-review-20261117.json",
+        "docs/evidence/key-bias-compiler-cache-delivery-20261117.json"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -187,7 +189,8 @@
         "Delivered isolated post-preflight benchmark:3routes x4shortupdates,CEabs<=.10,2profiles/4warmups/8timings,all4pairs+median positive,same-route fullstate exact;454controls451pass3skip/9new,5file patchrollback/11commands/8core unchanged;owner stdlib only/native pending/formal off.",
         "Authenticated b3a337d full-update benchmark151569bytes/SHAb358b9a6...0df6:16Git bindings/8core,4steps/3routes match,median9.0291202813->3.8053162526s/2.37276475x,all4paired gains positive,efficientSDPAproof,same-route fullstate exact/prior interrupt agreement,1clean child/source intact/0commits. Owner compact stdlib audit;no heldout utility/convergence/formal admission.",
         "Delivered7child pilot:3x64 original-dropout updates/8192epoch rows,online8step mean loss gate,BF16 32+32 recovery,independent Graph16/partition32 vs BF16eager ABBAx2 with resident validated generation unchanged.466guarded463pass3skip/12new;6file patchrollback/11commands,8core+6reused unchanged. Native pilot pending/formal off.",
-        "Authenticated5d7ec8f:64step gates/exact32+32 and Graph16vsBF16 2.098773499x passed;last partition32 AccelerationRequired unknown cause. Diagnostic retention/reuse fix471guarded controls passed;no owner native run/formal admission."
+        "Authenticated5d7ec8f:64step gates/exact32+32 and Graph16vsBF16 2.098773499x passed;last partition32 AccelerationRequired unknown cause. Diagnostic retention/reuse fix471guarded controls passed;no owner native run/formal admission.",
+        "Authenticated664b912retry:one child,6old results exact,7timings,third capture FailOnRecompileLimitHit/recompile_budget. Isolated cache-reset fix475guarded controls passed;native patched result pending,formal off."
       ],
       "supersedes": [],
       "superseded_by": []

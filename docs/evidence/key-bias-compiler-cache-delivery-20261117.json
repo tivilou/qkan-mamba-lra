@@ -1,0 +1,92 @@
+{
+  "schema": "qkan-key-bias-compiler-cache-delivery.v1",
+  "baseline_revision": "664b91271641368fc38888c2dea9e23e52160996",
+  "native_review": "docs/evidence/key-bias-compiler-cache-native-review-20261117.json",
+  "native_audit": {
+    "passed": true,
+    "source_sha256": "2c060b8fccf1c099c99d92bb47a4b1a3b07656a55e3eb84bbc7cf48496702659",
+    "published_bindings_verified": 23,
+    "six_reused_exact": true,
+    "retained_timing_records": 7,
+    "error_type": "FailOnRecompileLimitHit",
+    "category": "recompile_budget",
+    "native_framework_imports": 0
+  },
+  "change": "In isolated partition32 comparison only,after release/sync and complete-state restore,torch.compiler.reset before each new incumbent capture. Verify complete state/RNG unchanged and reset count constant inside timing.",
+  "primary_reference": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/compiler/__init__.py",
+  "files_sha256": {
+    "experiments/baseline_delivery/key_bias_stability_native.py": "36c2d82cbb73abd3f65a81048050b0120c39c76a57c36d7075b15b27aa0daa95",
+    "tests/test_baseline_key_bias_stability.py": "845bb1698d1cd4bd7d5d603f3c5a9159882d5fd86fe4f5619c436628cf920207",
+    "tests/test_baseline_key_bias_stability_retry.py": "bf6dcf72eb5ff9264a67047c165b22b4aa5b6b2c8a509bee1788c5b9a92ccf6c",
+    "tests/test_baseline_key_bias_compiler_cache.py": "0b9d3d4f475aadd8e645529705c4ad9c072e1f33624d497212e6d73c2ed13086",
+    "docs/evidence/key-bias-compiler-cache-native-review-20261117.json": "18d458ef8b48df5c37a3b8fb6c8331ef1937765262df4e7148506829a5d368d7",
+    "docs/baselines/attention-key-bias-compiler-cache.md": "dd3466398263d4458c6d9fa11d93e58b91ca780fcc1a0ec02331f7671a98a98a"
+  },
+  "protected_core_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/worker.py": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+  },
+  "unchanged_reused_sha256": {
+    "docs/baselines/attention-key-bias-stability-plan.json": "3286d03dd890c06956625633c54a22c9b05666632249ab44836ad1c77490320c",
+    "docs/baselines/attention-attribution-key-bias-recovery-plan.json": "4d025f102723adb51c7f76f5fc37a377f1f7c1755092d6a095867fdf46fb8758",
+    "docs/baselines/attention-key-bias-benchmark-plan.json": "dd531d3da7cd70dee75933d3426d117df5df9e6fdde8c746fac480380372e2f2",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "experiments/baseline_delivery/key_bias_benchmark.py": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8"
+  },
+  "controls": {
+    "total": 475,
+    "passed": 472,
+    "skipped": 3,
+    "new": 4,
+    "framework_imports": 0
+  },
+  "validation": [
+    "Actual stdlib Executor/fake shared-cache model reproduces third-capture recompile_budget failure after seven records",
+    "Same fixture passes unchanged ABBAx2/eight records when cache reset after Graph release,before capture at timing indices0/3/7",
+    "Resident graph reset forbidden;complete training/RNG changes rejected;reset failure retains diagnostics and rolls back",
+    "All preexisting prefix reuse,partial diagnostic,parity and rollback controls pass;formal eight core engines untouched"
+  ],
+  "package": {
+    "directory": ".runtime/key-bias-compiler-cache-20261117",
+    "candidate": "candidate/",
+    "patch": "change.patch",
+    "verification": "verification.json",
+    "rollback": "rollback.py",
+    "files": 6,
+    "literal_commands": 15,
+    "patch_rollback_reapply_verified": true,
+    "baseline_behavior": {
+      "cache_resets": [],
+      "outcome": "AccelerationRequired",
+      "retained_timing_records": 7,
+      "rollback_exact": true
+    },
+    "modified_behavior": {
+      "cache_resets": [
+        0,
+        1,
+        2
+      ],
+      "outcome": "comparison_passed",
+      "retained_timing_records": 8,
+      "rollback_exact": true
+    },
+    "full_controls_record": ".runtime/key-bias-compiler-cache-20261117/controls-final.log"
+  },
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "limitations": [
+    "Native guard specialization text/count absent;cache-lifetime mechanism supported by code/error location,not independent full guard trace",
+    "475 tests and package probe use stdlib/fakes only;actual patched Graph32 result pending",
+    "Seven old native timings do not complete ABBAx2 or authorize admission;no loss/optimizer/microbatch/compiler-limit change"
+  ],
+  "next_action": "Collaborator executes docs/baselines/attention-key-bias-compiler-cache.md;reuse original six successful children and rerun only partition32;auto-return complete comparison or internal rejection"
+}

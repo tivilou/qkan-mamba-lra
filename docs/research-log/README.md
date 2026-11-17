@@ -2,7 +2,7 @@
 
 解析K梯度候选已通过单更新数值、新策略恢复和真实配对轨迹预检。2026-11-17认证回传中，三路线各64步恶化门、BF16连续64与32+32精确恢复通过；相对现有Graph16，完整更新7.938秒至3.782秒，约2.099倍，四对均正。最后一项Graph32比较失败，整套试跑仍待完成；尚无完整收敛或验证/测试效用结论。
 
-当前优先方向是[复用已审阅六项、只重试Graph32并保留内部拒绝原因](../baselines/attention-key-bias-stability-retry.md)。正式训练仍未接入候选，原checkpoint未变。详见[最新补充记录](20261116T-124533Z-key-bias-full-update-benchmark.md)及[部分结果审阅](../evidence/key-bias-stability-partial-review-20261117.json)。
+当前优先方向是[修复Graph32重建时的编译缓存清理后、只重试最后一项](../baselines/attention-key-bias-compiler-cache.md)。单项重试已明确第三次捕获触发FailOnRecompileLimitHit，前六项仍原样复用；修复原生结果待确认。正式训练未接入候选，原checkpoint未变。详见[最新补充记录](20261116T-124533Z-key-bias-full-update-benchmark.md)及[错误审阅](../evidence/key-bias-compiler-cache-native-review-20261117.json)。
 
 ## 时间线
 

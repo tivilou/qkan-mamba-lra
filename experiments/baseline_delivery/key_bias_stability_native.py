@@ -155,6 +155,20 @@ def compare_summary(records):
         throughput_gain=gain,paired_throughput_gain=pairs,update_time_reduction=1-med['candidate']/med['incumbent'])
 
 
+def reset_partition_compiler(runtime,graph,report,index):
+    """A released partition route must not keep old replica-specialized compilations."""
+    if graph.status().get('graph_resident') is not False:
+        raise ValueError('Release resident graph before compiler cache reset')
+    runtime.t.cuda.synchronize()
+    before=runtime.state_hash(runtime.snapshot())
+    mark('key_bias_partition_compiler_reset',flush=True)
+    runtime.t.compiler.reset()
+    after=runtime.state_hash(runtime.snapshot())
+    if before!=after: raise ValueError('Compiler reset changed complete training/RNG state')
+    report.setdefault('compiler_cache_resets',[]).append(dict(before_timing_index=index,
+        api='torch.compiler.reset',graph_resident=False,full_state_unchanged=True,outside_timing=True))
+
+
 def comparison(runtime,output,mode):
     from .torch_acceleration import Executor,torch_runtime,policy,NumericalMismatch,backend_diagnostic
     from .partition_comparison import prepare_route,execution_validation,require_steady
@@ -182,18 +196,21 @@ def comparison(runtime,output,mode):
             if name!=active:
                 graph.clear();runtime.restore(runtime.base)
                 if name=='incumbent':
+                    if mode=='partition32': reset_partition_compiler(runtime,graph,report,index)
                     # A new capture generation must pass full-update parity before timing.
                     prepare_route(run_graph,validation,lambda:runtime.restore(runtime.base),t.cuda.synchronize)
                 else:
                     for _ in range(2): runtime.restore(runtime.base);benchmark.update(runtime,'bf16_analytic')
                 active=name
             runtime.restore(runtime.base);t.cuda.synchronize();before=validation() if name=='incumbent' else None
+            resets=len(report.get('compiler_cache_resets',[]))
             if before is not None: require_steady(before)
             t.cuda.reset_peak_memory_stats();mark('key_bias_incumbent_'+mode+'_'+str(index),flush=True)
             start=time.perf_counter();value=run_graph() if name=='incumbent' else benchmark.update(runtime,'bf16_analytic')
             t.cuda.synchronize();elapsed=time.perf_counter()-start
             after=validation() if name=='incumbent' else None
             if before!=after: raise ValueError('Capture/validation changed during timing')
+            if resets!=len(report.get('compiler_cache_resets',[])): raise ValueError('Compiler reset inside timing')
             if after is not None: require_steady(after)
             records.append(dict(route=name,seconds=elapsed,update=value,full_state_sha256=runtime.state_hash(runtime.snapshot()),
                 steady_before=before,steady_after=after,peak_allocated=t.cuda.max_memory_allocated(),peak_reserved=t.cuda.max_memory_reserved()))

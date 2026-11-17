@@ -18,6 +18,7 @@ class Runtime(BenchRuntime):
     def __init__(self):
         super().__init__();self.split=list(range(20000));self.config['dropout']=.1
         self.rng_state=lambda:self.state['rng'];self.restore_rng=lambda value:None
+        self.t.compiler=NS(reset=lambda:None)
     def update(self,enabled,**kwargs):
         value=super().update(enabled,**kwargs)
         self.state['scheduler']['progress']+=128;self.state['model']['weight']-=.001
