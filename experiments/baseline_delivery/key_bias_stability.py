@@ -14,12 +14,57 @@ TARGET='experiments.baseline_delivery.key_bias_stability'
 SCHEMA='qkan-key-bias-stability.v1'
 PLAN=ROOT/'docs/baselines/attention-key-bias-stability-plan.json'
 REVIEW=ROOT/'docs/evidence/key-bias-benchmark-native-review-20261116.json'
+REUSE_REVIEW=ROOT/'docs/evidence/key-bias-stability-partial-review-20261117.json'
+
+
+def bind_reuse(folder,request):
+    """Reuse only the six authenticated, reviewed children; never an unfinished child."""
+    folder=Path(folder).resolve();path=folder/'key-bias-stability.json';input_path=folder/'stability-input.json'
+    review=read(REUSE_REVIEW)
+    if (path.is_symlink() or input_path.is_symlink() or digest(path)!=review['source_report']['sha256']
+            or path.stat().st_size!=review['source_report']['bytes'] or digest(input_path)!=review['request_sha256']):
+        raise ValueError('Reviewed immutable partial pilot/request required')
+    prior=read(path);old=read(input_path)
+    # Only the diagnostic launcher/observation code changed. The executed protocol,
+    # source, native model/update/gradient policy and incumbent engines stay pinned.
+    same=(*recovery.BINDING_KEYS,'policy','optimization_config','optimization_config_sha256',
+        'key_bias_config','key_bias_config_sha256','key_bias_manifest','screen_binding','dossier_sha256',
+        'plugin_plan_sha256','plugin_files','benchmark_evidence')
+    old_binding=review['pilot_binding'];current=request['pilot_binding']
+    if (prior['source_revision']!=review['source_revision'] or old['source_revision']!=review['source_revision']
+            or old['pilot_binding']!=old_binding or prior['pilot_binding']!=old_binding
+            or prior['plugin_files']!=request['plugin_files'] or any(old.get(k)!=request.get(k) for k in same)
+            or any(current[k]!=old_binding[k] for k in ('plan_sha256','review_sha256'))
+            or set(current['files'])!=set(old_binding['files'])
+            or any(current['files'][k]!=v for k,v in old_binding['files'].items()
+                   if k not in ('key_bias_stability.py','key_bias_stability_native.py'))):
+        raise ValueError('Reviewed prefix/source/unchanged implementation differs')
+    if (set(prior['results'])!=set(operations.MODES[:-1]) or prior['passed'] is not False
+            or prior['candidate_admitted'] is not False or prior['formal_training_started'] is not False
+            or prior['training_samples_committed']!=0 or prior['original_checkpoint_and_metadata_unchanged'] is not True):
+        raise ValueError('Expected closed partial pilot with exactly six completed children')
+    for mode,value in prior['results'].items():
+        child_accept(value,old,review['request_sha256'],mode)
+        if value['passed'] is not True: raise ValueError('Only successful prefix children may be reused')
+    gate=operations.gate(prior['results']);agreement=operations.agreement(prior['results'])
+    graph=prior['results']['graph16']
+    timing=operations.compare_summary(graph['timing_records'])
+    from .partition_comparison import require_steady
+    for row in graph['timing_records']:
+        if row['route']=='incumbent':
+            require_steady(row['steady_before'])
+            if row['steady_before']!=row['steady_after']: raise ValueError('Prior capture changed inside timing')
+    if (not gate['passed'] or gate!=prior['stability_gate'] or agreement!=prior['recovery']
+            or timing!=graph['timing'] or timing['passed'] is not True or not prior['disposable_checkpoint']['removed']):
+        raise ValueError('Reviewed prefix gates/recovery/Graph16 proof differs')
+    return prior,dict(suite=str(folder),sha256=digest(path),request_sha256=digest(input_path),
+        review_sha256=digest(REUSE_REVIEW),reused_modes=list(operations.MODES[:-1]),rerun_modes=['partition32'])
 
 
 def binding():
     files={n:digest(Path(__file__).parent/n) for n in ('key_bias_stability.py','key_bias_stability_native.py',
         'key_bias_benchmark.py','torch_acceleration.py','parallel_attention.py','partitioned_attention.py','partition_comparison.py')}
-    return dict(files=files,plan_sha256=digest(PLAN),review_sha256=digest(REVIEW))
+    return dict(files=files,plan_sha256=digest(PLAN),review_sha256=digest(REVIEW),reuse_review_sha256=digest(REUSE_REVIEW))
 
 
 def bind_benchmark(folder,source):
@@ -66,18 +111,27 @@ def execute(args,folder,report):
             key_bias_config=read(recovery.PRESET),key_bias_config_sha256=digest(recovery.PRESET),key_bias_manifest=recovery.manifest(),
             screen_binding=screen,dossier_sha256=digest(recovery.DOSSIER),plugin_plan_sha256=digest(recovery.PLAN),
             plugin_files=recovery.code_binding(),pilot_binding=binding(),benchmark_evidence=prior)
+        reused=None
+        if getattr(args,'reuse_from',None) is not None:
+            reused,request['reuse_evidence']=bind_reuse(args.reuse_from,request)
         path=folder/'stability-input.json';atomic_json(path,request)
         supervisor=Supervisor(args.child_timeout,args.stall_timeout);report.update(child_executions=supervisor.records,
             benchmark_evidence=prior,screen_binding=screen,results={})
+        modes=operations.MODES
+        if reused is not None:
+            for key in ('results','stability_gate','recovery','disposable_checkpoint'):
+                report[key]=reused[key]
+            report.update(reuse_evidence=request['reuse_evidence'],reused_child_executions=reused['child_executions'][:6])
+            modes=('partition32',)
         env=dict(os.environ,CUDA_VISIBLE_DEVICES=gpu,PYTHONDONTWRITEBYTECODE='1',PYTHONUNBUFFERED='1',
             CUBLAS_WORKSPACE_CONFIG=':4096:8',QKAN_DIAGNOSTIC_STAGE_FENCES='0')
         try:
-            for mode in operations.MODES:
+            for mode in modes:
                 output=folder/mode;print('Stability child: '+mode,flush=True)
                 code=supervisor.run(dict(target=TARGET,cwd=str(ROOT),argv=[sys.executable,'-B','-m',TARGET,
                     '--worker','--request',str(path),'--output',str(output),'--mode',mode]),folder/(mode+'.log'),env)
                 for name in ('stability.json','comparison.json','worker-error.json'):
-                    if (output/name).is_file(): report.setdefault('partial_children',{})[mode]=read(output/name)
+                    if (output/name).is_file(): report.setdefault('partial_children',{}).setdefault(mode,{})[name]=read(output/name)
                 if code!=0 or not (output/'result.json').is_file(): raise RuntimeError('Pilot child failed; inspect partial diagnostics')
                 value=child_accept(read(output/'result.json'),request,digest(path),mode);report['results'][mode]=value
                 report.get('partial_children',{}).pop(mode,None)
@@ -95,12 +149,14 @@ def execute(args,folder,report):
         finally:
             unchanged(original)
             if bind_benchmark(args.benchmark_from,dict(**original,screen_binding=screen))!=prior: raise ValueError('Prior evidence changed')
+            if reused is not None and bind_reuse(args.reuse_from,request)[1]!=request['reuse_evidence']:
+                raise ValueError('Reused evidence changed')
             report['original_checkpoint_and_metadata_unchanged']=True
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    for n in ('source-suite','cache','screen-from','benchmark-from','request','output'): p.add_argument('--'+n,type=Path)
+    for n in ('source-suite','cache','screen-from','benchmark-from','reuse-from','request','output'): p.add_argument('--'+n,type=Path)
     p.add_argument('--gpu',default='0');p.add_argument('--worker',action='store_true');p.add_argument('--mode',choices=operations.MODES)
     p.add_argument('--child-timeout',type=float,default=900);p.add_argument('--stall-timeout',type=float,default=300);args=p.parse_args()
     if args.worker:
@@ -110,6 +166,9 @@ def main():
             request=read(args.request)
             if request.get('pilot_binding')!=binding(): raise ValueError('Pilot implementation/plan/review differs')
             if bind_benchmark(request['benchmark_evidence']['suite'],request)!=request['benchmark_evidence']: raise ValueError('Prior evidence differs')
+            if 'reuse_evidence' in request:
+                if args.mode!='partition32' or bind_reuse(request['reuse_evidence']['suite'],request)[1]!=request['reuse_evidence']:
+                    raise ValueError('Retry must bind the reviewed prefix and run partition32 only')
             def run(runtime,output):
                 if args.mode in ('graph16','partition32'): return operations.comparison(runtime,output,args.mode)
                 reference=None

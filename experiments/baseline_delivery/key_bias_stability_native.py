@@ -12,6 +12,14 @@ BLOCK=8
 MODES=('fp32','fp32_analytic','bf16_analytic','interrupt','resume','graph16','partition32')
 
 
+class ParityMismatch(ValueError):
+    """Bounded field identity, never values or exception text from native code."""
+    def __init__(self,kind,path):
+        super().__init__(kind+' parity:'+path)
+        self.report=dict(schema='qkan-pilot-parity-failure.v1',passed=False,kind=kind,field=path[:240],
+            rtol=1e-5,atol=1e-6,rng_and_controls='exact',tensor_values_included=False)
+
+
 def require_rows(runtime):
     if runtime.progress['cursor']+STEPS*128>len(runtime.split):
         raise ValueError('Need8192 remaining train rows in original epoch; preserve source, no reselection')
@@ -110,22 +118,22 @@ def agreement(results):
 def compare_values(runtime,left,right,path='state'):
     t=runtime.t;np=runtime.np
     if t.is_tensor(left):
-        if not t.is_tensor(right) or left.shape!=right.shape or left.dtype!=right.dtype: raise ValueError('Tensor identity:'+path)
+        if not t.is_tensor(right) or left.shape!=right.shape or left.dtype!=right.dtype: raise ParityMismatch('tensor_identity',path)
         exact='/rng/' in path or not left.is_floating_point()
         if not bool(t.equal(left,right) if exact else t.allclose(left,right,rtol=1e-5,atol=1e-6)):
-            raise ValueError('Numerical parity:'+path)
+            raise ParityMismatch('numerical',path)
     elif isinstance(left,np.ndarray):
-        if not isinstance(right,np.ndarray) or not np.array_equal(left,right): raise ValueError('Array parity:'+path)
-    elif type(left)!=type(right): raise ValueError('Type parity:'+path)
+        if not isinstance(right,np.ndarray) or not np.array_equal(left,right): raise ParityMismatch('array',path)
+    elif type(left)!=type(right): raise ParityMismatch('type',path)
     elif isinstance(left,dict):
-        if left.keys()!=right.keys(): raise ValueError('Keys parity:'+path)
+        if left.keys()!=right.keys(): raise ParityMismatch('keys',path)
         for k in left: compare_values(runtime,left[k],right[k],path+'/'+str(k))
     elif isinstance(left,(list,tuple)):
-        if len(left)!=len(right): raise ValueError('Length parity:'+path)
+        if len(left)!=len(right): raise ParityMismatch('length',path)
         for i,(a,b) in enumerate(zip(left,right)): compare_values(runtime,a,b,path+'/'+str(i))
     elif isinstance(left,float) and '/rng/' not in path:
-        if not math.isfinite(left) or not math.isfinite(right) or not math.isclose(left,right,rel_tol=1e-5,abs_tol=1e-6): raise ValueError('Float parity:'+path)
-    elif left!=right: raise ValueError('Control parity:'+path)
+        if not math.isfinite(left) or not math.isfinite(right) or not math.isclose(left,right,rel_tol=1e-5,abs_tol=1e-6): raise ParityMismatch('float',path)
+    elif left!=right: raise ParityMismatch('control',path)
 
 
 def compare_summary(records):
@@ -148,15 +156,18 @@ def compare_summary(records):
 
 
 def comparison(runtime,output,mode):
-    from .torch_acceleration import Executor,torch_runtime,policy
+    from .torch_acceleration import Executor,torch_runtime,policy,NumericalMismatch,backend_diagnostic
     from .partition_comparison import prepare_route,execution_validation,require_steady
     t=runtime.t;micro=16 if mode=='graph16' else 32;backend='eager_parallel' if micro==16 else'eager_partitioned'
     config=policy('compile_graph',backend,'graph');report=dict(passed=False,mode=mode,incumbent_backend=backend,incumbent_micro=micro,candidate_micro=16)
     graph=torch_runtime(t,runtime.model,runtime.rng_state,runtime.restore_rng,config);last={}
+    def compare(a,b):
+        try: compare_values(runtime,a,b)
+        except ParityMismatch as error: raise NumericalMismatch(error.report) from error
     executor=Executor(graph,config,saved=dict(mode='compile_graph',benchmarked=True,reason='matched_diagnostic',benchmark=None),
         read_state=lambda:dict(state=runtime.snapshot(),observed=last.get('observed')),
-        compare=lambda a,b:compare_values(runtime,a,b))
-    base_hash=runtime.state_hash(runtime.base);records=[]
+        compare=compare)
+    base_hash=runtime.state_hash(runtime.base);records=[];report['timing_records']=records
     def run_graph():
         def callback():
             value=runtime.update(False,executor=executor,micro_batch=micro,retain=executor.validating)
@@ -186,9 +197,19 @@ def comparison(runtime,output,mode):
             if after is not None: require_steady(after)
             records.append(dict(route=name,seconds=elapsed,update=value,full_state_sha256=runtime.state_hash(runtime.snapshot()),
                 steady_before=before,steady_after=after,peak_allocated=t.cuda.max_memory_allocated(),peak_reserved=t.cuda.max_memory_reserved()))
+            atomic_json(Path(output)/'comparison.json',report)
         report.update(timing=compare_summary(records),timing_records=records,passed=compare_summary(records)['passed'],
             scope='Same original state/logical128/dropout;CPU gather/H2D included;Graph native micro vs BF16eager16;one resident route;prepare/capture/parity/restore/hash excluded')
         return report
+    except BaseException as error:
+        # Executor may replace the native rejection with AccelerationRequired.
+        # Copy its bounded diagnostics BEFORE clear() destroys the resident route.
+        import copy
+        report['failure']=dict(error=backend_diagnostic(error,'comparison',backend),
+            executor_state={k:copy.deepcopy(v) for k,v in executor.state.items() if k in ('mode','benchmarked','eager_agreement')},
+            executor_diagnostics=copy.deepcopy(getattr(executor,'diagnostics',[])),
+            validation=validation(),completed_timing_records=len(records))
+        raise
     finally:
         try: graph.clear()
         finally: runtime.restore(runtime.base)
