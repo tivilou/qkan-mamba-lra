@@ -97,12 +97,12 @@ def evaluate(model,split,device,microbatch):
     return {'loss':loss/total,'accuracy':correct/total,'samples':total}
 
 
-def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False):
+def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False,strategy_admission=None):
     with ExitStack() as resources:
-        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source,operator_profile_only,probe_micro_batch,compare_incumbent)
+        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source,operator_profile_only,probe_micro_batch,compare_incumbent,strategy_admission)
 
 
-def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False):
+def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False,strategy_admission=None):
     if os.environ.get('QKAN_DIAGNOSTIC_STAGE_FENCES')=='1' and (not synthetic or acceleration_probe_source is not None):
         raise ValueError('Stage fences are synthetic diagnostics only; no training or timed calibration')
     run_started_at=time.time()
@@ -132,6 +132,14 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         implementation,review_policy=policy_check()
         validate_context(acceleration_probe_source,config,revision(),implementation,review_policy)
     torch.set_num_threads(int(os.environ.get('QKAN_CPU_THREADS','1')))
+    from . import key_bias_training as strategy
+    candidate=strategy.select(config)
+    if candidate:
+        if strategy_admission is None: raise ValueError('Candidate final-worker admission pending')
+        strategy_admission.validate(config,output,device,resume,stop_after,synthetic,migration_check_only,acceleration_probe_source)
+        resources.enter_context(strategy.process(torch))
+    elif strategy_admission is not None:
+        raise ValueError('Admission requires explicit candidate strategy')
     seed=config['seed']; random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
     if device.startswith('cuda'):
         if not torch.cuda.is_available(): raise ValueError('CUDA unavailable')
@@ -163,7 +171,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
          'packages':{d.metadata['Name']:d.version for d in importlib.metadata.distributions()},
          'torch':torch.__version__,'numpy':np.__version__,'cuda_runtime':torch.version.cuda,
          'gpu_name':torch.cuda.get_device_name() if device.startswith('cuda') else None,
-         'precision':'float32; no mixed precision','deterministic_algorithms':True})
+         'precision':strategy.POLICY if candidate else 'float32; no mixed precision','deterministic_algorithms':True})
     steps_per_epoch=math.ceil(len(train)/config['batch_size'])
     total_steps=config['epochs']*steps_per_epoch
     warmup=min(config['warmup_steps'],max(0,total_steps-1))
@@ -187,9 +195,16 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 {'config':old,'train':train.identity,'val':val.identity,'dictionary':dict_sha}),load_checkpoint,
                 migration_suite=acceleration_probe_source)
         else: state=load_checkpoint(output,contract)
+        strategy.check_checkpoint(state,config,strategy_admission.expected if candidate else None)
         if state['runtime']!={'torch':torch.__version__,'numpy':np.__version__,'device_type':device.split(':')[0]}:
             raise ValueError('Runtime changed; exact resume is not certified across runtimes')
         model.load_state_dict(state['model'],strict=True);opt.load_state_dict(state['optimizer'])
+        if candidate:
+            if set(state['strategy_gradients'])!=set(dict(model.named_parameters())):
+                raise ValueError('Candidate gradient parameter membership differs')
+            for name,p in model.named_parameters():
+                value=state['strategy_gradients'][name]
+                p.grad=None if value is None else value.to(p.device).clone()
         if not dynamic or state['scheduler'].get('schema')!='qkan-sample-clock.v1':
             schedule.load_state_dict(state['scheduler'])
         restore_rng(state['rng'])
@@ -272,7 +287,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             saved=state.get('sample_clock'),reference_batch=config['batch_size'])
         if clock.state['progress']!=position: raise ValueError('Sample clock and sampler cursor differ')
         schedule=TorchSampleSchedule(opt,clock)
-    if migration_check_only:
+    if migration_check_only or (candidate and strategy_admission.check_only):
         if adaptive is None: raise ValueError('Migration target must enable adaptive memory')
         from .runner import compare_states
         for name,actual in dict(model=model.state_dict(),optimizer=opt.state_dict(),
@@ -294,6 +309,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     if probe and (state['epoch']>=config['epochs'] or state['cursor']>=len(train)):
         raise ValueError('Real-checkpoint calibration needs a pending update; validation/test access is forbidden')
     def evaluate_split(split):
+        if candidate:
+            with strategy.attention_route(torch,model,True):
+                return evaluate(model,split,device,16)
         if adaptive:
             return adaptive_evaluate(adaptive,lambda micro:evaluate(model,split,device,micro),
                 cleanup_update,lambda error:isinstance(error,torch.cuda.OutOfMemoryError))
@@ -304,6 +322,9 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         nonlocal last_save,started
         now=time.monotonic(); state['training_seconds']+=now-started; started=now
         state.update(model=model.state_dict(),optimizer=opt.state_dict(),scheduler=schedule.state_dict(),rng=rng_state())
+        if candidate:
+            state['strategy_gradients']={n:None if p.grad is None else p.grad.detach().cpu().clone()
+                                         for n,p in model.named_parameters()}
         if adaptive: state['adaptive_memory']=adaptive.snapshot()
         if dynamic: state['sample_clock']=clock.snapshot()
         if acceleration: state['torch_acceleration']=acceleration.snapshot()
@@ -400,6 +421,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             state['permutation']=torch.randperm(len(train))
         model.train()
         while state['cursor']<len(train):
+            if candidate: strategy.pin(adaptive)
             canary_tier(adaptive,config,state['step'])
             if probe_micro_batch is not None:
                 if adaptive is None: raise ValueError('Fixed diagnostic micro requires adaptive controller')
@@ -431,7 +453,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     try: staged={key:value.to(device,non_blocking=True) for key,value in staged.items()}
                     except torch.cuda.OutOfMemoryError:
                         torch.cuda.empty_cache()  # Keep CPU staging for microbatch transfer.
-            def update_impl(micro_batch):
+            def update_body(micro_batch):
                 nonlocal update_observation
                 observed_micros.add(micro_batch)
                 update_observation={}
@@ -470,6 +492,10 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     if dynamic: schedule.step(len(ids))
                     else: schedule.step()
                 return (float(update_loss),int(update_correct)) if adaptive else (update_loss,update_correct)
+            def update_impl(micro_batch):
+                if not candidate: return update_body(micro_batch)
+                with strategy.update(torch,model,micro_batch,len(ids)):
+                    return update_body(micro_batch)
             def update(micro_batch):
                 if not acceleration: return update_impl(micro_batch)
                 return acceleration.run(lambda:update_impl(micro_batch),active_snapshot,
@@ -553,6 +579,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 next_batch=planned_batch_size(adaptive,config,state['step'])
                 prefetch.submit(state['permutation'][end:min(end+next_batch,len(train))].numpy())
             state['epoch_loss']+=update_loss;state['epoch_correct']+=update_correct;state['epoch_samples']+=len(ids)
+            if candidate: strategy_admission.record(state,ids,update_loss,update_correct)
             if synthetic:
                 state['update_trace'].append({'step':state['step'],'rows':ids.tolist(),'loss':update_loss/len(ids)})
             heartbeat={'state':'running','epoch':state['epoch'],
@@ -573,7 +600,12 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                     token=adaptive.state['transitions'])
             else: atomic_json(output/'heartbeat.json',heartbeat)
             if PAUSE or (stop_after is not None and state['step']>=stop_after):
-                save();atomic_json(output/'status.json',{'state':'paused','step':state['step']});return 75
+                save()
+                if candidate and strategy_admission.trace:
+                    pointer=read(output/'checkpoints/latest.json')
+                    result=strategy_admission.capture_trace(torch,model,val,config,pointer['sha256'])
+                    atomic_json(output/'strategy-trace.json',result)
+                atomic_json(output/'status.json',{'state':'paused','step':state['step']});return 75
             if state['step']%config['checkpoint_steps']==0 or time.monotonic()-last_save>=300:
                 save()
         mark('validation',flush=True)
@@ -602,7 +634,10 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     torch.save(state['best_weights'],output/'best-model.pt')
     from .trace import capture
     mark('trace_capture',flush=True)
-    capture(model,val,output,config,digest(output/'best-model.pt'))
+    if candidate:
+        with strategy.attention_route(torch,model,True):
+            capture(model,val,output,config,digest(output/'best-model.pt'))
+    else: capture(model,val,output,config,digest(output/'best-model.pt'))
     summary={'schema':'qkan-baseline-result.v1','task':config['task'],'model':config['model'],'seed':seed,
              'source_revision':config['source_revision'],'config_sha256':fingerprint(config),'contract':contract,
              'data_hashes':config.get('data_hashes',{}),'best_epoch':state['best_epoch'],
@@ -614,6 +649,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     if adaptive: summary['adaptive_memory']=dict(policy=adaptive.policy,state=adaptive.snapshot(),
         peak_bytes=state.get('adaptive_peak_bytes'),trajectory='adaptive; not fixed-microbatch-equivalent')
     if state.get('migration'): summary['migration']=state['migration']
+    if candidate: summary['training_strategy']=state['training_strategy']
     if dynamic: summary['sample_clock']=clock.snapshot()
     if acceleration: summary['torch_acceleration']=dict(policy=config['torch_acceleration'],state=acceleration.snapshot())
     if dynamic: summary['adaptive_memory']['trajectory']='dynamic logical batch/sample schedule; not fixed-batch equivalent'

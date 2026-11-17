@@ -1,0 +1,31 @@
+# 最终 worker 的有界准入
+
+状态：代码已接入，原生准入待合作者执行；正式队列继续关闭。新协议见[冻结计划](attention-key-bias-worker-plan.json)。此前数值、64步稳定性及两组性能结果沿用原审阅，不重复运行。
+
+本次仅扩展 `worker.run` 的显式策略分支。未选择时保持原数值更新主体；选择后使用原实例适配器和解析K段hook，固定eager16／logical128。候选训练和评估均用BF16注意力，FP32主参数、投影、残差、head、loss及原Adam历史保持。与Graph、其他模型任务及未知策略组合均拒绝。常规worker CLI不具备启用权限，新的准入入口只允许有限步数。
+
+完整checkpoint增加策略版本、精度、梯度策略、配置、原源checkpoint和执行文件绑定，以及全部参数梯度。已有候选checkpoint须严格匹配；原FP32源的首次转换单独记录，移除旧进程加速状态，不重置参数、矩、step、衰减、样本时钟或排列。原源没有保存梯度，因此初次转换明确设为None；后续候选checkpoint实际保存并恢复全部梯度。
+
+新入口先检查空闲GPU、源锁、原最新checkpoint与两项已完成结果，再复制保留结果。它运行四个独立进程：零更新迁移验证、连续2步、中断1步、新进程恢复1步。连续与中断都从实际零更新验证后的副本开始。总计4次副本更新、512个处理样本，仅256个不同原训练行；每子进程900秒、阶段停滞300秒。若原源推进，则保留新进度并绑定最新源；若当前epoch不足256行则退出，待单独处理，不回退到旧14268。
+
+连续2步与1＋1步比较所有科学持久化字段、每次更新记录及参数梯度；明确排除训练用时、控制器计时／显存遥测、峰值字节、进程加速记录与回滚设备。每次更新重新固定物理／逻辑批量。这是科学状态精确恢复，未宣称整个checkpoint文件或计时遥测逐字节相同。
+
+恢复后的实际worker模型生成固定验证行0、1的FP32／BF16配对 `sample-trace.v2`：同一暂停权重、输入和标签，完整私有数组重读、坐标访问、结构／语义验证、独立池化与head重放。checkpoint标为 `latest_preflight`，而非best-validation。该验证只检查最终worker前向，不重复此前真实训练梯度轨迹，也不报告验证集效用或最终模型案例。私有值总额上限128MiB，轨迹前后检查模型、梯度和RNG不变。
+
+无论成功或失败，入口都会自动回传紧凑 `key-bias-worker-admission.json`，使用既有认证交换及SHA256回执；原始值、日志与权重留在本机。比较结束删除自有诊断checkpoint代际，保留紧凑回执、两个完成结果副本和固定案例值。续训源始终是原始完整源，不使用诊断中点。
+
+合作者在最新已发布checkout中执行：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-b07d98e17ad0 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+QKAN_NEW_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_NEW_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.key_bias_worker_admission \
+  --source-suite /root/projects/qkan-mamba-lra-adaptive-b07d98e17ad0/runs/adaptive-migrated-20261114T040717Z-233292 \
+  --cache /root/qkan-cache --gpu 0 \
+  --pilot-from /root/projects/qkan-mamba-lra-adaptive-5fe863648d4c/runs/key-bias-stability-20261117T050617Z-0fc6b309 \
+  --child-timeout 900 --stall-timeout 300
+```
+
+执行后审阅新回传报告，才决定后续正式迁移。此次命令不启动25任务队列，准入通过也不等于完整收敛或科学性能改善。

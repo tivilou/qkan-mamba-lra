@@ -1,0 +1,124 @@
+{
+  "schema": "qkan-key-bias-worker-delivery.v1",
+  "status": "code_delivered_native_pending",
+  "baseline_revision": "7e17f8fa6fd530580d559c424385fad1f98d11f7",
+  "candidate_id": "bf16-key-bias-analytic-zero-v1",
+  "policy": {
+    "schema": "qkan-training-strategy.v1",
+    "candidate_id": "bf16-key-bias-analytic-zero-v1",
+    "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1",
+    "precision": "bf16_sdpa_fp32_master_v1",
+    "micro_batch": 16,
+    "logical_batch": 128,
+    "evaluation": "bf16_attention_fp32_head_v1",
+    "graph": false
+  },
+  "execution_binding": {
+    "files": {
+      "worker.py": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b",
+      "key_bias_training.py": "6f1ef4a86a733fd14b33132b4f4777f6e6112452ed57f9edf4b2894d994a9cd1",
+      "key_bias_worker_admission.py": "6015bcef0dd0ff866625f29e66ccac2c69323c35e57fcda00c6dff4011511d32",
+      "attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+      "key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+      "models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+      "logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+      "execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+      "trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+      "data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+      "migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+      "adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+      "performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+      "common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+      "diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+      "attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+      "attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7"
+    },
+    "trace_validator_sha256": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "plan_sha256": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "pilot_review_sha256": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "modified_files": {
+    "experiments/baseline_delivery/worker.py": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b",
+    "experiments/baseline_delivery/key_bias_training.py": "6f1ef4a86a733fd14b33132b4f4777f6e6112452ed57f9edf4b2894d994a9cd1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "6015bcef0dd0ff866625f29e66ccac2c69323c35e57fcda00c6dff4011511d32",
+    "tests/test_baseline_key_bias_worker.py": "8fe262e0f00359c8ce1b72c87a9d41ec82abbf491958b1519bba82aca164ae0f",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/baselines/attention-key-bias-worker-admission.md": "08fefeb7a2b10350ef1b7ea25e5fc9bbb66841eb0985010ab4fc7773a148c803"
+  },
+  "controls": {
+    "tests": 487,
+    "passed": 484,
+    "skipped": 3,
+    "framework_imports": 0,
+    "new_control_tests": 12,
+    "legacy_numerical_body": "Exact original AST after function rename; checked against7e17f8f",
+    "late_failure": "Provisional success revoked on final source/cleanup failure; compact report auto-return tested"
+  },
+  "package": {
+    "directory": ".runtime/key-bias-worker-final-20261117",
+    "roles": {
+      "modified": "candidate/",
+      "patch": "change.patch",
+      "verification": "verification.json",
+      "rollback": "rollback.py"
+    },
+    "verification_sha256": "f9616f50e49db42ce201bece8f7b8eb3abb0065b83ce6dad19658b38022235cf",
+    "patch_sha256": "8bfbefc6b3d07631df13e985715d6b5460c5bbec71d9c6505bd10f428f8d16df",
+    "rollback_sha256": "75a24aa3353908675dc41543a37db0ce0ef4306a9d4a85b8355d04d87fe273f8",
+    "literal_command_records": 14,
+    "rollback_reapply_verified": true,
+    "baseline_behavior": {
+      "default_off": true,
+      "final_worker_strategy_argument": false,
+      "stale_checkpoint_rejected": false
+    },
+    "modified_behavior": {
+      "default_off": true,
+      "final_worker_strategy_argument": true,
+      "stale_checkpoint_rejected": true
+    }
+  },
+  "deliberate_core_delta": {
+    "experiments/baseline_delivery/worker.py": {
+      "before": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03",
+      "after": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b"
+    }
+  },
+  "unchanged_protected_core_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+  },
+  "unchanged_reused_sha256": {
+    "docs/baselines/attention-key-bias-stability-plan.json": "3286d03dd890c06956625633c54a22c9b05666632249ab44836ad1c77490320c",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7"
+  },
+  "native_contract": {
+    "children": [
+      "migration0",
+      "continuous2",
+      "interrupt1",
+      "resume1"
+    ],
+    "total_disposable_updates": 4,
+    "original_distinct_training_rows": 256,
+    "total_processed_training_rows": 512,
+    "child_timeout_seconds": 900,
+    "stall_timeout_seconds": 300,
+    "paired_trace": "Actual paused worker FP32/BF16 attention on frozen val0,val1; complete private values/replay pending",
+    "equality": "All scientific persisted fields; five named execution telemetry fields excluded",
+    "source": "Latest compatible original b07 full checkpoint; preserve original and two completed results",
+    "autoreturn": "key-bias-worker-admission/key-bias-worker-admission.json with existing authenticated SHA256 receipts"
+  },
+  "native_passed": false,
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "claim_ceiling": "Owner stdlib/fakes and final-worker code delivery only; no native final-path fixture/full convergence/utility claim"
+}

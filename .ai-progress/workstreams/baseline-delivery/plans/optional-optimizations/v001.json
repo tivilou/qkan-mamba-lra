@@ -6,7 +6,7 @@
   "status": "active",
   "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
   "focus_step_id": "OP05",
-  "next_action": "Prepare final worker strategy-bound checkpoint/recovery/trace/migration admission;reuse completed seven-result pilot,no diagnostic rerun or formal launch.",
+  "next_action": "Run bounded actual-worker migration/recovery/paired-trace admission from the latest compatible original source; audit compact returned evidence before any formal queue decision.",
   "blocker": null,
   "steps": [
     {
@@ -173,7 +173,9 @@
         "docs/evidence/key-bias-compiler-cache-delivery-20261117.json",
         "docs/evidence/key-bias-stability-native-review-20261117.json",
         "docs/baselines/attention-key-bias-admission-readiness.md",
-        "docs/research-log/20261117T-050617Z-key-bias-stability-incumbents.md"
+        "docs/research-log/20261117T-050617Z-key-bias-stability-incumbents.md",
+        "docs/baselines/attention-key-bias-worker-plan.json",
+        "docs/baselines/attention-key-bias-worker-admission.md"
       ],
       "owner": "baseline-delivery",
       "blocker": null,
@@ -194,7 +196,8 @@
         "Delivered7child pilot:3x64 original-dropout updates/8192epoch rows,online8step mean loss gate,BF16 32+32 recovery,independent Graph16/partition32 vs BF16eager ABBAx2 with resident validated generation unchanged.466guarded463pass3skip/12new;6file patchrollback/11commands,8core+6reused unchanged. Native pilot pending/formal off.",
         "Authenticated5d7ec8f:64step gates/exact32+32 and Graph16vsBF16 2.098773499x passed;last partition32 AccelerationRequired unknown cause. Diagnostic retention/reuse fix471guarded controls passed;no owner native run/formal admission.",
         "Authenticated664b912retry:one child,6old results exact,7timings,third capture FailOnRecompileLimitHit/recompile_budget. Isolated cache-reset fix475guarded controls passed;native patched result pending,formal off.",
-        "Authenticated5fe8636Suite050617Z:273986bytes/SHA c0b7da89...fd4b7,23bindings/8core,6prefix exact+1cleanexit0child.All7pilot results pass,64step gates/exact32+32;Graph32 7.574034879->3.705730844s/2.043870750x,all4pairspositive;3cache resets/stateexact/thirdcapturepass. Full convergence and finalworker admission remain pending,OP05active."
+        "Authenticated5fe8636Suite050617Z:273986bytes/SHA c0b7da89...fd4b7,23bindings/8core,6prefix exact+1cleanexit0child.All7pilot results pass,64step gates/exact32+32;Graph32 7.574034879->3.705730844s/2.043870750x,all4pairspositive;3cache resets/stateexact/thirdcapturepass. Full convergence and finalworker admission remain pending,OP05active.",
+        "Final-worker explicit default-off BF16 analytic strategy and versioned full checkpoint implemented; frozen4-child0+2+1+1 native admission prepared. Prior64step/performance evidence reused; native final-worker and full convergence remain pending."
       ],
       "supersedes": [],
       "superseded_by": []
