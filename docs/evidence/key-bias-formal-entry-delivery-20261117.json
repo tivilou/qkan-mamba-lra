@@ -1,0 +1,107 @@
+{
+  "schema": "qkan-key-bias-formal-entry-delivery.v1",
+  "date": "2026-11-17",
+  "status": "formal_entry_code_delivered_native_preparation_pending",
+  "baseline_revision": "fc52674141a6bf5f22a8aa6e09bc2fd38cd3ac68",
+  "candidate_id": "bf16-key-bias-analytic-zero-v1",
+  "native_worker_review": {
+    "path": "docs/evidence/key-bias-worker-native-review-20261117.json",
+    "sha256": "b2af45783070b19c034f3a606a1c6559c9af2b316fb50104abceaf599968e9c0",
+    "immutable": true
+  },
+  "unchanged_reviewed_bindings": {
+    "experiments/baseline_delivery/worker.py": "6a5d855312cea021dd016742c5686027393d688948edfcae375e233289e3da57",
+    "experiments/baseline_delivery/key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+    "experiments/baseline_delivery/execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+    "experiments/baseline_delivery/performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+    "experiments/baseline_delivery/common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+    "experiments/baseline_delivery/diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+    "experiments/baseline_delivery/attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "tools/sample_trace_contract/validate.py": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "delivered_files": {
+    "experiments/baseline_delivery/key_bias_formal.py": "416a930a09b69ccbea69ff6fe1b48c5ad54f6ad222ef0b49fab04c5bd0d74843",
+    "scripts/continue_key_bias_training.sh": "252cd2786ca776f93ed7e777837ef6c132c556c61758950dd2d42427c76276a1",
+    "docs/baselines/attention-key-bias-formal-plan.json": "7132ed4dcd39ec82b9c5beece16b25285db635a547a1e20ed8a53c55250c4ba6",
+    "docs/baselines/attention-key-bias-formal-continuation.md": "af6f122754254ac41bd2aa45c210af28c44715665483761cd54b4a83346b52ff",
+    "docs/baselines/attention-key-bias-worker-admission.md": "040bfd67712662195458f54e3e52bde49b12cc7995ccb7bf74b3041745881847",
+    "tests/test_baseline_key_bias_formal.py": "a89bc9be319962026d4747455d46f9fc3e67542a2cd549c2fa31f5d9ca1b1bf3"
+  },
+  "control_tests": {
+    "total": 515,
+    "passed": 512,
+    "skipped": 3,
+    "new": 21,
+    "framework_imports": 0,
+    "interpreter": "D:/Software/Dev/Language/Anaconda3/envs/QT2/python.exe",
+    "command": "python -B -X utf8 .runtime/key-bias-formal-20261117/run_controls.py",
+    "exclusions": [
+      "test_baseline_delivery",
+      "test_baseline_recovery_audit",
+      "test_baseline_trace_replay",
+      "test_baseline_recovery_replicates"
+    ],
+    "exclusion_reason": "Existing native/model suites excluded from owner standard-library controls",
+    "log_sha256": "0d39b31ee997fff9a5fc5e030f348a1f389144d505a0cfcd4b96e4312966bccd"
+  },
+  "package": {
+    "files": 6,
+    "literal_command_records": 16,
+    "candidate": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-formal-20261117\\candidate",
+    "patch": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-formal-20261117\\change.patch",
+    "verification": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-formal-20261117\\verification.json",
+    "rollback": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\key-bias-formal-20261117\\rollback.py",
+    "verification_sha256": "eff60efb3dde32a42e9baf7ced5e510189bf8b698581ddc108248c06ea07b9ee",
+    "patch_sha256": "a8b8cf86e07443b2ba0fa61363250de5e7f94a92d138ef5749301324c9706c38",
+    "rollback_sha256": "90064333a8612d0245e93ffa16d7caab59664bf25bf7296c9f8bc52778d2f70d",
+    "rollback_verified": true,
+    "reapply_verified": true,
+    "baseline_behavior": "No formal module; --help exit 1",
+    "modified_behavior": "Explicit formal module; --help exit 0; score transition 0.8 to 0.75 with protected state exact and zero updates"
+  },
+  "queue": {
+    "jobs": 25,
+    "preserved_results": 2,
+    "candidate_jobs": 1,
+    "unchanged_pending_jobs": 22,
+    "candidate_executor": "Unchanged reviewed worker.run with separate bound formal capability",
+    "others": "Original admitted b07 checkout/config/runtime; isolated MEGA and S5 interpreters; native JAX S5",
+    "gpu_count": 1,
+    "seed": 42,
+    "epochs": 100
+  },
+  "zero_update_preparation": {
+    "native_migration": "Reuse reviewed worker migration mode against latest original full source",
+    "validation_selection": "Re-evaluate inherited best weights on full validation under BF16; preserve original weights, epoch, history and all protected training fields",
+    "training_updates": 0,
+    "test_access": false,
+    "child_timeout_seconds": 900,
+    "stall_timeout_seconds": 300,
+    "ready_return_required_before_training": true,
+    "native_result": "pending collaborator execution"
+  },
+  "recovery": {
+    "resume": "Latest full state; same fixed checkout and formal-input binding",
+    "missing_started_checkpoint": "Fail; no fresh fallback",
+    "pause_grace_seconds": 90,
+    "long_job_diagnostic_time_cap": null,
+    "uploads": "Immutable authenticated readiness/completion/pause/failure events; upload-only does not start jobs; final existing baseline-suite whitelist"
+  },
+  "formal_training_started": false,
+  "owner_native_runs": 0,
+  "owner_installs": 0,
+  "claim_ceiling": "Code/control delivery only. New native zero-update/selection preparation and formal start await collaborator. Existing native admission reused; no repeated diagnostics or full-convergence/utility claim."
+}
