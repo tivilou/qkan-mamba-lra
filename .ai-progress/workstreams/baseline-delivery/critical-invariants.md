@@ -22,12 +22,14 @@ Put rationale and chronology in decisions/*.md instead.
 
 - User instruction (2026-11-03): future collaborator scripts must automatically return explicitly needed runtime artifacts to the designated project exchange directory, with verified receipts and retryable local retention; reuse existing authenticated return tooling.
 - User instruction (2026-11-04): assume the collaborator cannot access external internet. Runtime/install scripts use local prerequisites/data and authenticated exchange only; prepare source/dependency assets on our side, disable public-source fallbacks, and stop clearly if an asset is missing. No owner model tests, training or dependency installation.
+- User instruction (2026-11-18): one recommended experiment entry; train/resume and original progress dashboard in one terminal. Use explicit watch for read-only observation. Preserve existing Suite executor revision and scientific bindings; unified control scripts may live in ignored .bootstrap without replacing training code.
 
 ## Decision Index
 
 <!-- Add one bullet per decision: `- [STATUS] Short title -> [detail](relative/path.md)`. -->
 - [ACTIVE] Implementation roster and claim scope -> [detail](decisions/2026-11-04-implementation-roster.md)
 - [ACTIVE] Assume collaborator has no external internet -> [detail](decisions/2026-11-04-offline-collaborator.md)
+- [ACTIVE] Unified experiment entry with pinned executors -> [detail](decisions/2026-11-18-unified-experiment-entry.md)
 
 ## Information Map
 

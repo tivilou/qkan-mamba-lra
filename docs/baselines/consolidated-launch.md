@@ -1,5 +1,7 @@
 # Consolidated collaborator launch
 
+> Current user entry: [Unified experiment launcher](experiment.md). The commands and revision-specific outcomes below are historical. Existing suites resume through their original pinned executor; do not pull a running checkout to change the display.
+
 The current delivery implements all five model workers and one entry point. It has not been run on the collaborator GPU at this revision. Existing historical receipts cannot certify it.
 
 Run in the existing `/root/projects/qkan-mamba-lra` terminal, retaining the already configured QKAN_CACHE and project exchange variables:

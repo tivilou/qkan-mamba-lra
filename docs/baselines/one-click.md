@@ -1,5 +1,7 @@
 # 协作者一键运行入口
 
+> 当前推荐操作已收敛至[统一实验入口](experiment.md)。本页保留旧版准备、预检与安装流程的历史说明；已有正式Suite使用统一入口的`resume`，不重复首次准备。
+
 [从新服务器开始的中文操作步骤](collaborator-beginner-guide.zh-CN.md)。
 
 入口：`bash scripts/run_baselines.sh`。安装镜像支持 Linux x86_64 + Python 3.11；GPU 阶段需要 NVIDIA 驱动，Mamba1 还需要与 PyTorch cu126 对应的 CUDA 工具链和 `nvcc`。首次安装和作者数据下载需要网络。脚本创建项目内 `.venv-baselines`，固定 PyTorch 2.7.1、NumPy 2.2.6、einops 0.8.1；不改系统 Python。

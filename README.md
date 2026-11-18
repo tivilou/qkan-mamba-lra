@@ -4,6 +4,8 @@ Quantum Kolmogorov-Arnold Gated State Space Models for Long-Range Sequence Under
 
 ## Research status and collaboration
 
+**实验运行统一入口：[启动、断点续跑与原美化进度看板一体化](docs/baselines/experiment.md)。** 当前速度优化版的完整续跑命令在该文档首节；已有Suite保持其原执行版本，使用控制脚本副本即可，不需要更新训练代码。历史启动脚本保留兼容，日常只使用`experiment.py`。
+
 The research foundation was audited on 2026-10-21. [Current plan](docs/research-plan.md), [collaborator handoff](docs/collaboration.md), [data readiness](docs/data-and-literature-readiness.md), and [recovery audit](docs/audits/recovery-20261021.md) are the current entry points.
 
 The four historical Mamba pilot scores are preliminary. Original data, result JSON and checkpoints have not been recovered from the released server. Dataset qualification and the baseline protocol must precede formal comparisons; the training examples below are historical development commands.
@@ -34,7 +36,9 @@ cd qkan-mamba-lra
 pip install -r requirements.txt
 ```
 
-## Quick Start
+## Historical Development Quick Start
+
+These examples are historical development paths, not the current admitted experiment continuation. Use the [unified experiment entry](docs/baselines/experiment.md) for the current suite.
 
 ```bash
 # Run a single experiment
