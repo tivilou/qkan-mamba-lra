@@ -29,6 +29,7 @@ DIAGNOSTICS = {
     'attention-update': 'attention_update_diagnostic', 'parallel-attention': 'attention_diagnostic',
     'partitioned-attention': 'partitioned_diagnostic', 'operator': 'operator_diagnostic',
     'precision': 'attention_precision_diagnostic', 'padding': 'padding_profile',
+    'bf16-graph': 'bf16_graph_diagnostic',
 }
 
 
