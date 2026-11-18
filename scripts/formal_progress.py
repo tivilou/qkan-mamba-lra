@@ -241,6 +241,8 @@ class Dashboard:
             lines.append(f"GPU {state.get('physical_gpu','?')} | {job} | PID {state.get('pid','?')} | 本次进程耗时 {duration(now-started) if started is not None else '待测'}")
             if not hb or (started is not None and hb.get('updated_at',0)<started):
                 lines.append('  初始化/恢复中，等待本次进程的第一个训练心跳；速度与 ETA 待测。')
+                if (self.suite/'graph-input.json').exists() and job=='transformer-retrieval-s42':
+                    lines.append('  请求 BF16＋Graph；正在恢复/捕获，实际 replay 待首个完整更新确认。')
                 acceleration=read(folder/'torch-acceleration.json',{})
                 if acceleration:
                     lines.append('  编译/Graph准备：'+acceleration.get('state',{}).get('phase',acceleration.get('state',{}).get('reason','待测'))+
@@ -248,7 +250,16 @@ class Dashboard:
                 continue
             policy=config.get('training_strategy')
             if policy:
-                lines.append('  策略：BF16 注意力 / FP32 主参数和 Adam / 解析 K 偏置梯度 / eager（无 Graph）')
+                execution=read(folder/'bf16-graph-execution.json',{})
+                current=(execution.get('enabled') is True and execution.get('pid')==state.get('pid')
+                         and started is not None and execution.get('updated_at',0)>=started)
+                route='CUDA Graph（按文档，micro16；短尾 eager）' if current else 'eager（无 Graph）'
+                lines.append('  策略：BF16 注意力 / FP32 主参数和 Adam / 解析 K 偏置梯度 / '+route)
+                if current:
+                    runtime=execution.get('runtime',{})
+                    lines.append(f"  Graph 实际执行：捕获代数 {runtime.get('graph_builds','?')} | "
+                        f"完整 micro {execution.get('full_graph_micros',0)} | 短尾 eager {execution.get('eager_tail_micros',0)} | "
+                        f"前向/反向 replay {runtime.get('forward_replays',0)}/{runtime.get('backward_replays',0)}")
             adaptive=hb.get('adaptive_memory')
             if adaptive:
                 lines.append(f"  显存适配：本步 micro-batch {adaptive['used_micro_batch']} | 下一步 {adaptive['micro_batch']} | "
@@ -310,8 +321,9 @@ def computed_suite(suite):
 
 def latest_formal(root):
     """Select only formal suites in this executor; never infer a training start."""
-    suites=sorted(p for p in (Path(root)/'runs').glob('key-bias-formal-*')
-                  if p.is_dir() and (p/'formal-input.json').is_file())
+    suites=sorted(p for p in (Path(root)/'runs').glob('*-formal-*')
+                  if p.is_dir() and ((p.name.startswith('key-bias-formal-') and (p/'formal-input.json').is_file())
+                                    or (p.name.startswith('bf16-graph-formal-') and (p/'graph-input.json').is_file())))
     running=[p for p in suites if not computed_suite(p) and any(
         v.get('state')=='running' for v in read(p/'status.json',{}).values())]
     if len(running)>1: raise ValueError('Multiple running formal suites; select one with --resume')
@@ -323,6 +335,13 @@ def latest_formal(root):
 def startup_lines(suite,launch,now):
     """Read only this launch's bounded log tails; never print raw child text."""
     lines=[]
+    graph=read(suite/'preflight/progress.json',{})
+    if graph and (suite/'graph-input.json').exists():
+        if (suite/'graph-ready.json').exists():
+            lines.append('  BF16＋Graph 实际 worker 验收通过；正在派发正式续跑。')
+        else:
+            lines.append('  BF16＋Graph 正式前校验：'+str(graph.get('mode','准备'))+
+                f" | 已完成 {graph.get('completed',0)}/4；使用临时副本，尚未推进正式训练。")
     for name,label in (('setup.log','环境检查'),('progress-parent.log','入口日志')):
         path=suite/name
         try:

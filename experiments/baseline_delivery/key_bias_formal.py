@@ -353,9 +353,9 @@ def publish_status(suite, event):
     upload_declared(folder, 'key-bias-formal', ['formal-status.json'], run_id=suite.name+'--'+folder.name)
 
 
-def run_job(suite, r, job, gpu, statuses):
+def run_job(suite, r, job, gpu, statuses, *, spec_builder=None, result_validator=None):
     folder = suite/'jobs'/job['id']; checkpoint_required(suite, job, statuses[job['id']])
-    spec = job_spec(suite, r, job); atomic_json(folder/'command.json', spec)
+    spec = (spec_builder or job_spec)(suite, r, job); atomic_json(folder/'command.json', spec)
     env = dict(os.environ, CUDA_VISIBLE_DEVICES=gpu, CUBLAS_WORKSPACE_CONFIG=':4096:8',
                PYTHONDONTWRITEBYTECODE='1', PYTHONUNBUFFERED='1')
     if job['id'] != JOB:
@@ -412,7 +412,7 @@ def run_job(suite, r, job, gpu, statuses):
             if os.name != 'nt' and (not cleanup['parent_reaped'] or not cleanup['group_verified']):
                 raise ValueError('Owned formal process group did not finish cleanup')
     if code == 0:
-        validate_job_result(suite, r, job)
+        (result_validator or validate_job_result)(suite, r, job)
         statuses[job['id']].update(state='computed'); atomic_json(suite/'status.json', statuses)
     return code
 

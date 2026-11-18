@@ -4,6 +4,8 @@
 
 ## 当前速度优化版：一条命令续跑并显示
 
+BF16＋Graph 实际 worker 接入现使用显式 `start --profile bf16-graph`，见[首次切换整段指令](bf16-graph-formal.md)。它自动完成实际 worker 恢复检查，再在同一终端续跑和显示；新 Suite 后续直接 `resume`。以下命令保留为原 BF16 eager Suite 的续跑入口。
+
 适用于已存在的`key-bias-formal-20261117T141411Z-047505d9`，原执行checkout为`a3569140d43b`。若仍在只读观察器中，Ctrl-C先关闭观察器，再粘贴整段。该操作不需要先更新训练checkout。
 
 ```bash
@@ -50,6 +52,7 @@ BF16 策略＋Graph 的显式隔离叠加测试：见[完整指令与门槛](bf1
 | `accelerated` | 编译／Graph候选 | 原有参数与恢复／性能门保持不变 |
 | `parallel` | 历史Retrieval Graph路线 | 原有parallel参数与原准入保持不变 |
 | `key-bias` | 当前解析K梯度路线 | 必须提供`--migrate-from`和`--worker-from`；先原零更新准备，再自动resume |
+| `bf16-graph` | BF16＋按文档 Graph | `--migrate-from`原BF16正式Suite、`--graph-from`已审计报告；复制最新状态、实际worker检查与回传通过后自动resume |
 
 `--prepare-only`只做该次准备，不进入长期训练。普通profile可指定新的`--output`；key-bias由其原模块分配Suite，监督器只解析该次日志中固定的`Formal continuation Suite:`行，不打印原始日志。源迁移仍须显式给出；改变策略不属于resume，不自动将原FP32与候选权重混合。
 

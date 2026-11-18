@@ -1,0 +1,16 @@
+{
+  "schema": "qkan-bf16-graph-formal-plan.v1",
+  "arithmetic": "unchanged existing BF16 analytic K-bias policy, FP32 masters/Adam, original dropout0.1 and sample clock",
+  "source": "latest safely paused original BF16 formal Suite, at or beyond audited step20325; never disposable diagnostics",
+  "copy": "new Suite and executor; same config and full-state bytes; no fresh start, optimizer reset, best re-score or source overwrite",
+  "preflight": ["actual-worker eager reference2", "actual-worker Graph continuous2", "actual-worker Graph interrupt1", "actual-worker Graph fresh resume1 and original evaluation trace"],
+  "same_worker_parity": {"rtol": 0.00001, "atol": 0.000001, "rng_and_controls": "exact"},
+  "fresh_process_recovery": "all scientific persisted values and update records exact; exclude only declared execution/time telemetry",
+  "gate": "supervised children clean, source/completed results unchanged, private checkpoint cleanup, authenticated preflight and ready receipts before formal updates",
+  "tail": "full micro16 uses resident Graph; a final short micro uses original BF16 eager explicitly; no OOM fallback labeled Graph",
+  "display": "one unified experiment start/resume command with original dashboard and actual Graph/tail telemetry",
+  "pause": "original worker safe pause/checkpoint, derived Graphs rebuilt on next process",
+  "rollback": "original Suite remains untouched; stop new fork before using original eager Suite, which retains its own old cursor",
+  "formal_execution_requires_native_preflight": true,
+  "owner_native_execution": false
+}
