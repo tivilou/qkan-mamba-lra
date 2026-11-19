@@ -1,0 +1,28 @@
+{
+  "schema": "qkan-s5-restore-placement-repair.v1",
+  "receipt": "qkan-mamba/formal-readiness/failure-8845df5c6186/failure.json",
+  "receipt_sha256": "5f484d34cd7c21a04dae75d73f8f3b5926816523506dc3dc22b76e91cab30bad",
+  "source_revision": "2d491fc30353b0ace2bc4988c68ea740d1fe81c8",
+  "suite": "runs/formal-ready-20261105T030124Z-2edcc58b",
+  "evidence": "Existing authenticated exchange receipt and user-supplied parent traceback. No task arrays, checkpoint or raw task log transferred.",
+  "observed": "All five source probes completed. All three S5/ListOps child exits met expectations and trace emission finished. Parent failed exact train_state array comparison before canary receipt.",
+  "unobserved": "The receipt did not include the mismatching field, magnitude or first divergent update. It does not prove a specific numerical root cause.",
+  "code_finding": "Saved TrainState converted to NumPy. Flax0.8.2 from_state_dict returns unregistered leaf types directly from supplied state; no device conversion. Restored parameters, optimizer moments/counters could enter eager Optax arithmetic as NumPy while fresh state uses JAX arrays.",
+  "primary_sources": [
+    "https://raw.githubusercontent.com/google/flax/v0.8.2/flax/serialization.py",
+    "https://raw.githubusercontent.com/google/flax/v0.8.2/flax/training/train_state.py"
+  ],
+  "repair": [
+    "Canonicalize fresh/restored live TrainState leaves to explicit-dtype JAX device arrays, int32 training step",
+    "Before resuming, require exact serialized shape/dtype/value roundtrip after placement",
+    "Retain exact continuation comparison; extend to epoch accumulators/completion/runtime/contract",
+    "Return bounded mismatch field paths/counts/max absolute differences from failed parent comparisons automatically"
+  ],
+  "source_encoder_changed": false,
+  "optimizer_algorithm_changed": false,
+  "recovery_tolerance_changed": false,
+  "new_dependencies": false,
+  "runtime_repair_verified": false,
+  "formal_training_started": false,
+  "owner_model_tests_install_training": false
+}

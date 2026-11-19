@@ -1,0 +1,17 @@
+{
+  "schema": "qkan-formal-continuation-plan.v1",
+  "authorization": "approved_code_delivery_and_collaborator_handoff",
+  "candidate_id": "bf16-key-bias-analytic-zero-v1",
+  "review": "docs/evidence/key-bias-worker-native-review-20261117.json",
+  "scientific_implementation": "Unchanged 18 execution files and shared trace validator from reviewed actual worker; separate bound formal capability",
+  "source": "Latest compatible full original b07 checkpoint; never diagnostic updated state",
+  "queue": {"models": ["transformer", "mamba1", "mega", "s5", "s4d_minimal"], "tasks": ["listops", "text", "retrieval", "image", "pathfinder"], "seeds": [42], "jobs": 25, "preserved_results": 2, "candidate_job": "transformer-retrieval-s42", "unchanged_pending_jobs": 22},
+  "executors": {"candidate": "Current formal entry invoking unchanged reviewed worker.run with explicit capability", "others": "Original admitted b07 checkout, exact original configs/runtime certificates; S5 native JAX and original isolated interpreters", "physical_gpus": 1},
+  "migration": {"training_updates": 0, "steps": ["Immutable snapshot of all latest original states/completed results", "Actual reviewed-worker zero-update restore/roundtrip", "Re-evaluate original best weights on entire validation split under candidate BF16 evaluation", "Preserve all other scientific fields exactly and roundtrip selected state", "Authenticated ready receipt before first long update"], "child_seconds": 900, "stall_seconds": 300},
+  "selection": {"criterion": "Maximum validation accuracy; earliest tie", "source_best": "Preserve weights and epoch; record original score and re-evaluate once under BF16 evaluation before comparing future epochs", "history": "Preserve all original records; explicitly annotate precision transition", "test_access_during_migration": false},
+  "training": {"candidate": "BF16 attention, FP32 masters/projections/residual/head/loss/Adam; eager16/logical128; four K-bias gradient slices zero; no Graph", "budget": "Existing 100 full-data epochs and original sample clock; no reset", "resume": "Latest full checkpoint with parameters, optimizer, gradients, RNG, permutation, cursor, clock, cumulative metrics and selected weights; no fresh fallback for started jobs", "long_job_time_cap": null, "pause": "Existing worker safe update-boundary checkpoint and process-group cleanup with 90-second grace"},
+  "trace": {"preflight": "Reuse reviewed actual-worker fixed val0,val1 paired fixture", "formal": "Existing production sample-trace.v2 capture and semantic/head replay on best-validation selected weights", "values": "Private local full arrays; no automatic raw trace upload", "scope": "Final-model result remains pending until training completes"},
+  "return": {"ready_pause_failure_each_job": "Immutable compact key-bias-formal events using existing authenticated exchange/hash receipts", "final": "Existing baseline-suite selected weights/full latest checkpoint/metrics whitelist", "failure": "Nonzero status and retryable local delivery manifest; no training rerun for upload alone"},
+  "rollback": "Original source and completed results remain unchanged; pause new suite and explicitly choose original FP32 continuation. Do not relabel candidate-trained weights as FP32 baseline or merge their updates into original source.",
+  "claim_ceiling": "Formal entry code/control verification only; native migration/selection and formal start are collaborator actions. No full convergence, independent FP32 training comparison or utility claim."
+}

@@ -1,0 +1,751 @@
+{
+  "schema_version": "qkan-data-diagnostics.v1",
+  "scope": [
+    "listops",
+    "text",
+    "retrieval",
+    "image",
+    "pathfinder"
+  ],
+  "status": "insufficient",
+  "formal_baseline_allowed": false,
+  "mode": "complete declared arrays; no row sampling or model training",
+  "tasks": [
+    {
+      "task": "listops",
+      "status": "insufficient",
+      "splits": {
+        "train": {
+          "path": "listops/train.npz",
+          "size_bytes": 67613740,
+          "sha256": "b3a27129a126f7d85fca66fa145862808506c0b8bae90fc6254a5956d066b315",
+          "samples": 96000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                96000,
+                2048
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                96000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 16343,
+            "1": 8717,
+            "2": 7298,
+            "3": 8156,
+            "4": 8601,
+            "5": 8117,
+            "6": 7413,
+            "7": 6985,
+            "8": 8300,
+            "9": 16070
+          },
+          "majority_class_accuracy": 0.17023958333333333,
+          "input_statistics": {
+            "inputs": {
+              "min": 1.0,
+              "max": 18.0,
+              "values": 196608000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 96000,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "val": {
+          "path": "listops/val.npz",
+          "size_bytes": 1408408,
+          "sha256": "f1b0026bbf38964853151fa3df9b07b004c291ee823971b0f652586a15712870",
+          "samples": 2000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                2000,
+                2048
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                2000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 343,
+            "1": 162,
+            "2": 150,
+            "3": 172,
+            "4": 194,
+            "5": 156,
+            "6": 175,
+            "7": 158,
+            "8": 171,
+            "9": 319
+          },
+          "majority_class_accuracy": 0.1715,
+          "input_statistics": {
+            "inputs": {
+              "min": 1.0,
+              "max": 18.0,
+              "values": 4096000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 2000,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "test": {
+          "path": "listops/test.npz",
+          "size_bytes": 1410597,
+          "sha256": "ccf452b4027bfccf00b7b349615a6c2e96a5cbad571af91bc41f55143e99e5c1",
+          "samples": 2000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                2000,
+                2048
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                2000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 356,
+            "1": 168,
+            "2": 143,
+            "3": 179,
+            "4": 193,
+            "5": 162,
+            "6": 155,
+            "7": 142,
+            "8": 157,
+            "9": 345
+          },
+          "majority_class_accuracy": 0.178,
+          "input_statistics": {
+            "inputs": {
+              "min": 1.0,
+              "max": 18.0,
+              "values": 4096000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 2000,
+          "duplicate_model_inputs_within_split": 0
+        }
+      },
+      "failures": [],
+      "missing": [],
+      "overlaps": {
+        "train:val": 0,
+        "train:test": 0,
+        "val:test": 0
+      },
+      "conflicting_input_labels": 0
+    },
+    {
+      "task": "text",
+      "status": "insufficient",
+      "splits": {
+        "train": {
+          "path": "text/train.npz",
+          "size_bytes": 15057343,
+          "sha256": "4f6dddc0612182e47e8027e60c238fef9da787271e1546294760eeb89a21e325",
+          "samples": 19877,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                19877,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                19877
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 9905,
+            "1": 9972
+          },
+          "majority_class_accuracy": 0.5016853649947175,
+          "input_statistics": {
+            "inputs": {
+              "min": 1.0,
+              "max": 160.0,
+              "values": 79508000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 19795,
+          "duplicate_model_inputs_within_split": 82
+        },
+        "val": {
+          "path": "text/val.npz",
+          "size_bytes": 3812913,
+          "sha256": "4a3df1d3051b136a2e3e5bb7641b4b93e2365762bd9bb036d0307ea811c15dea",
+          "samples": 5000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                5000,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                5000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 2500,
+            "1": 2500
+          },
+          "majority_class_accuracy": 0.5,
+          "input_statistics": {
+            "inputs": {
+              "min": 1.0,
+              "max": 158.0,
+              "values": 20000000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 4986,
+          "duplicate_model_inputs_within_split": 14
+        },
+        "test": {
+          "path": "text/test.npz",
+          "size_bytes": 18610109,
+          "sha256": "620c6955731aeeb0fdc15cb58ee26ef6c81a347674460cd4470497dbc82e6ae3",
+          "samples": 25000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                25000,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                25000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 12500,
+            "1": 12500
+          },
+          "majority_class_accuracy": 0.5,
+          "input_statistics": {
+            "inputs": {
+              "min": 1.0,
+              "max": 160.0,
+              "values": 100000000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 24801,
+          "duplicate_model_inputs_within_split": 199
+        }
+      },
+      "failures": [],
+      "missing": [],
+      "overlaps": {
+        "train:val": 0,
+        "train:test": 0,
+        "val:test": 0
+      },
+      "conflicting_input_labels": 0
+    },
+    {
+      "task": "retrieval",
+      "status": "insufficient",
+      "splits": {
+        "train": {
+          "path": "retrieval/train.npz",
+          "size_bytes": 485938647,
+          "sha256": "b218253ca5b6bcdf74859140850bcf0883d3d19b9e4929adc39b0958fd554faa",
+          "samples": 146731,
+          "arrays": {
+            "inputs1": {
+              "shape": [
+                146731,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "inputs2": {
+              "shape": [
+                146731,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                146731
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 72536,
+            "1": 74195
+          },
+          "majority_class_accuracy": 0.5056532021181618,
+          "input_statistics": {
+            "inputs1": {
+              "min": 4.0,
+              "max": 99.0,
+              "values": 586924000,
+              "zeros": 0,
+              "non_integer_values": 0
+            },
+            "inputs2": {
+              "min": 4.0,
+              "max": 99.0,
+              "values": 586924000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 146731,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "val": {
+          "path": "retrieval/val.npz",
+          "size_bytes": 59803073,
+          "sha256": "9156ade27567258a880597dc41119391157e87cba5e376db5a754651022da09c",
+          "samples": 18068,
+          "arrays": {
+            "inputs1": {
+              "shape": [
+                18068,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "inputs2": {
+              "shape": [
+                18068,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                18068
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 8948,
+            "1": 9120
+          },
+          "majority_class_accuracy": 0.5047597963249945,
+          "input_statistics": {
+            "inputs1": {
+              "min": 4.0,
+              "max": 99.0,
+              "values": 72272000,
+              "zeros": 0,
+              "non_integer_values": 0
+            },
+            "inputs2": {
+              "min": 4.0,
+              "max": 99.0,
+              "values": 72272000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 18068,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "test": {
+          "path": "retrieval/test.npz",
+          "size_bytes": 57981240,
+          "sha256": "698f59c0041b0599bae377a1c8b9f2ddf4f9d00bf1a4a1929e7ecc8ba817c7e1",
+          "samples": 17419,
+          "arrays": {
+            "inputs1": {
+              "shape": [
+                17419,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "inputs2": {
+              "shape": [
+                17419,
+                4000
+              ],
+              "dtype": "<u2"
+            },
+            "labels": {
+              "shape": [
+                17419
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 8606,
+            "1": 8813
+          },
+          "majority_class_accuracy": 0.5059417877030828,
+          "input_statistics": {
+            "inputs1": {
+              "min": 4.0,
+              "max": 99.0,
+              "values": 69676000,
+              "zeros": 0,
+              "non_integer_values": 0
+            },
+            "inputs2": {
+              "min": 4.0,
+              "max": 99.0,
+              "values": 69676000,
+              "zeros": 0,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 17419,
+          "duplicate_model_inputs_within_split": 0
+        }
+      },
+      "failures": [],
+      "missing": [],
+      "overlaps": {
+        "train:val": 0,
+        "train:test": 0,
+        "val:test": 0
+      },
+      "conflicting_input_labels": 0
+    },
+    {
+      "task": "image",
+      "status": "insufficient",
+      "splits": {
+        "train": {
+          "path": "image/train.npz",
+          "size_bytes": 42965405,
+          "sha256": "94c933d6a6e4c1bc89c7655d3540fe832b8e0565bca7f2437ea9124ce2dbe886",
+          "samples": 45000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                45000,
+                1024
+              ],
+              "dtype": "|u1"
+            },
+            "labels": {
+              "shape": [
+                45000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 4530,
+            "1": 4508,
+            "2": 4522,
+            "3": 4526,
+            "4": 4497,
+            "5": 4503,
+            "6": 4505,
+            "7": 4500,
+            "8": 4456,
+            "9": 4453
+          },
+          "majority_class_accuracy": 0.10066666666666667,
+          "input_statistics": {
+            "inputs": {
+              "min": 0.0,
+              "max": 255.0,
+              "values": 46080000,
+              "zeros": 88502,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 45000,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "val": {
+          "path": "image/val.npz",
+          "size_bytes": 4773087,
+          "sha256": "e219d64014640eaf3068219ef7d5bbf6d8a712f12e1b6ada1fa1d3438279f3ce",
+          "samples": 5000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                5000,
+                1024
+              ],
+              "dtype": "|u1"
+            },
+            "labels": {
+              "shape": [
+                5000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 470,
+            "1": 492,
+            "2": 478,
+            "3": 474,
+            "4": 503,
+            "5": 497,
+            "6": 495,
+            "7": 500,
+            "8": 544,
+            "9": 547
+          },
+          "majority_class_accuracy": 0.1094,
+          "input_statistics": {
+            "inputs": {
+              "min": 0.0,
+              "max": 255.0,
+              "values": 5120000,
+              "zeros": 8588,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 5000,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "test": {
+          "path": "image/test.npz",
+          "size_bytes": 9544741,
+          "sha256": "dc5d537b0c1e1a0a314dc5a80040be00c9e809820493d63629c165ecdd6be58d",
+          "samples": 10000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                10000,
+                1024
+              ],
+              "dtype": "|u1"
+            },
+            "labels": {
+              "shape": [
+                10000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 1000,
+            "1": 1000,
+            "2": 1000,
+            "3": 1000,
+            "4": 1000,
+            "5": 1000,
+            "6": 1000,
+            "7": 1000,
+            "8": 1000,
+            "9": 1000
+          },
+          "majority_class_accuracy": 0.1,
+          "input_statistics": {
+            "inputs": {
+              "min": 0.0,
+              "max": 255.0,
+              "values": 10240000,
+              "zeros": 21176,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 10000,
+          "duplicate_model_inputs_within_split": 0
+        }
+      },
+      "failures": [],
+      "missing": [],
+      "overlaps": {
+        "train:val": 0,
+        "train:test": 0,
+        "val:test": 0
+      },
+      "conflicting_input_labels": 0
+    },
+    {
+      "task": "pathfinder",
+      "status": "insufficient",
+      "splits": {
+        "train": {
+          "path": "pathfinder/train.npz",
+          "size_bytes": 48908870,
+          "sha256": "142392969b85b94de420b13da2dcd6e1bc14b3d253e86df33996e030f76a8028",
+          "samples": 160000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                160000,
+                1024
+              ],
+              "dtype": "|u1"
+            },
+            "labels": {
+              "shape": [
+                160000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 79927,
+            "1": 80073
+          },
+          "majority_class_accuracy": 0.50045625,
+          "input_statistics": {
+            "inputs": {
+              "min": 0.0,
+              "max": 255.0,
+              "values": 163840000,
+              "zeros": 100945749,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 160000,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "val": {
+          "path": "pathfinder/val.npz",
+          "size_bytes": 6116259,
+          "sha256": "b9a8ceaf79cf3e2747b10e2828ebfd8ee0941946b1fcac6c6a8c24aa31e6d66e",
+          "samples": 20000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                20000,
+                1024
+              ],
+              "dtype": "|u1"
+            },
+            "labels": {
+              "shape": [
+                20000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 10038,
+            "1": 9962
+          },
+          "majority_class_accuracy": 0.5019,
+          "input_statistics": {
+            "inputs": {
+              "min": 0.0,
+              "max": 255.0,
+              "values": 20480000,
+              "zeros": 12616854,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 20000,
+          "duplicate_model_inputs_within_split": 0
+        },
+        "test": {
+          "path": "pathfinder/test.npz",
+          "size_bytes": 6108175,
+          "sha256": "af14f0bbed13a7468ad8c2cc97a03780dc52892e6f1ed4f3870cbf2b9cc406d3",
+          "samples": 20000,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                20000,
+                1024
+              ],
+              "dtype": "|u1"
+            },
+            "labels": {
+              "shape": [
+                20000
+              ],
+              "dtype": "<i8"
+            }
+          },
+          "class_counts": {
+            "0": 10115,
+            "1": 9885
+          },
+          "majority_class_accuracy": 0.50575,
+          "input_statistics": {
+            "inputs": {
+              "min": 0.0,
+              "max": 255.0,
+              "values": 20480000,
+              "zeros": 12625200,
+              "non_integer_values": 0
+            }
+          },
+          "nonfinite_values": 0,
+          "unique_model_inputs": 20000,
+          "duplicate_model_inputs_within_split": 0
+        }
+      },
+      "failures": [],
+      "missing": [],
+      "overlaps": {
+        "train:val": 0,
+        "train:test": 0,
+        "val:test": 0
+      },
+      "conflicting_input_labels": 0
+    }
+  ],
+  "limitations": [
+    "Passing numeric checks is not dataset qualification.",
+    "Source, license, conversion provenance, split identity, tokenizer/mask semantics and learnability require separate evidence.",
+    "Input hashes detect exact encoded duplicates; semantic/near duplicates and shared Retrieval documents require source IDs.",
+    "Raw samples and per-sample hashes are not exported."
+  ]
+}

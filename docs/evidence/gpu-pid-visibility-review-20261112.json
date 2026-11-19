@@ -1,0 +1,39 @@
+{
+  "schema": "qkan-gpu-pid-visibility-review.v1",
+  "date": "2026-11-12",
+  "source_revision": "a36a271fa95bb5a7c8deba70f0a68757202adaf5",
+  "receipt": {
+    "path": "qkan-mamba/parallel-attention/parallel-attention-20261112T041309Z-9bc76bd0/parallel-attention.json",
+    "size_bytes": 632,
+    "sha256": "066869198818436ba896ced6c92bf6e281d44f5c79cd718a5630312257c207bb",
+    "authenticated_upload_receipt_verified": true
+  },
+  "observations": {
+    "startup_stage": "prepare",
+    "new_children": 0,
+    "gpu_compute_pids": [
+      3974269
+    ],
+    "screenshot_gpu_process_name": "[Not Found]",
+    "screenshot_gpu_memory_mib": 2224,
+    "prior_screenshot_local_ps_row": false,
+    "prior_screenshot_proc_pid_available": false
+  },
+  "correction": "A missing local /proc/<NVML PID> or ps row does not prove process exit. The earlier exit interpretation was not established; repeating startup without addressing occupancy did not help.",
+  "hypotheses": {
+    "pid_namespace_or_proc_visibility_mismatch": "Plausible, unverified; PID spaces and visibility may differ across containers and host",
+    "other_namespace_compute_process": "Possible; no project/job attribution established",
+    "driver_context_or_process_record_residue": "Possible; not confirmed by screenshot or application report"
+  },
+  "next_action": "Inspect current-namespace NVIDIA device holders using /proc/*/fd, status Name/State/PPid/NSpid and bounded cwd/-m/--worker-module/--output only; no full argv/environment. Device holders are candidates, not proof of equality to NVML PID. If unresolved, host/provider must inspect host PID3974269 and map the container. No blind kill, GPU reset, service restart or admission bypass.",
+  "runtime_changed": false,
+  "owner_gpu_query": false,
+  "owner_process_signals": false,
+  "owner_model_tests_or_installs": false,
+  "handoff_validation": "Read-only Python stdlib collector parsed with ast, not executed on owner GPU or /proc",
+  "primary_source": {
+    "url": "https://man7.org/linux/man-pages/man7/pid_namespaces.7.html",
+    "method": "Direct HTTPS read after web search endpoint failed",
+    "supports": "PID namespaces isolate PID numbers; child namespaces cannot see ancestor-namespace processes. Does not by itself establish this server uses a mismatched namespace."
+  }
+}

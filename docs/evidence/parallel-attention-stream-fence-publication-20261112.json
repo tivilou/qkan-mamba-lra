@@ -1,0 +1,19 @@
+{
+  "schema": "qkan-code-publication.v1",
+  "date": "2026-11-12",
+  "status": "remote_ref_verified",
+  "branch": "research/collaboration-foundation",
+  "code_revision": "c13d7db47fa6084cca39480eef5f4627753842b1",
+  "prior_remote_revision": "a36a271fa95bb5a7c8deba70f0a68757202adaf5",
+  "relay_role": "authorized_project_development_3080",
+  "bundle_sha256": "5dfddf7b80faa4c3235dd992d88aa160c3afababb24764d5e1cdd781c1463b59",
+  "remote_bundle_hash_verified": true,
+  "bundle_prerequisite_verified": true,
+  "non_force_push": true,
+  "github_branch_ref_verified": true,
+  "executor_checkout_changed": false,
+  "gpu_or_model_test": false,
+  "training_started": false,
+  "delivery": "docs/evidence/parallel-attention-stream-fence-delivery-20261112.json",
+  "native_remaining": "Junior stage-fence observation followed by unfenced exact recovery and actual-checkpoint numerical/RNG/rollback/positive-gain validation."
+}

@@ -1,0 +1,378 @@
+{
+  "schema": "qkan-recovery-leaf-review.v1",
+  "source_sha256": "21ec9ec3aac951ac5cc5d01a1f2e723b4f9b27493d5d556d61fe9fe6da376ff4",
+  "compared_leaves": 1311,
+  "leaves_above_observed_repeat_max": 60,
+  "by_field": {
+    "model": 14,
+    "best_weights": 11,
+    "optimizer": 33,
+    "update_trace": 1,
+    "history": 1
+  },
+  "exceedances": [
+    {
+      "path": "model/blocks.4.mixer.D",
+      "repeat_max_abs": 0,
+      "recovery_max_abs": 5.960464477539063e-08,
+      "ratio": null
+    },
+    {
+      "path": "best_weights/blocks.1.mixer.D",
+      "repeat_max_abs": 0,
+      "recovery_max_abs": 5.960464477539063e-08,
+      "ratio": null
+    },
+    {
+      "path": "best_weights/blocks.3.norm.weight",
+      "repeat_max_abs": 0,
+      "recovery_max_abs": 5.960464477539063e-08,
+      "ratio": null
+    },
+    {
+      "path": "best_weights/head.bias",
+      "repeat_max_abs": 0,
+      "recovery_max_abs": 3.725290298461914e-09,
+      "ratio": null
+    },
+    {
+      "path": "best_weights/blocks.1.mixer.conv1d.bias",
+      "repeat_max_abs": 9.313225746154785e-10,
+      "recovery_max_abs": 5.960464477539063e-08,
+      "ratio": 64.0
+    },
+    {
+      "path": "model/embedding.weight",
+      "repeat_max_abs": 5.960464477539063e-08,
+      "recovery_max_abs": 2.384185791015625e-07,
+      "ratio": 4.0
+    },
+    {
+      "path": "model/blocks.1.mixer.conv1d.bias",
+      "repeat_max_abs": 1.4901161193847656e-08,
+      "recovery_max_abs": 5.960464477539063e-08,
+      "ratio": 4.0
+    },
+    {
+      "path": "model/blocks.2.mixer.out_proj.weight",
+      "repeat_max_abs": 1.5273690223693848e-07,
+      "recovery_max_abs": 3.0919909477233887e-07,
+      "ratio": 2.024390243902439
+    },
+    {
+      "path": "best_weights/blocks.2.mixer.out_proj.weight",
+      "repeat_max_abs": 1.5273690223693848e-07,
+      "recovery_max_abs": 3.0919909477233887e-07,
+      "ratio": 2.024390243902439
+    },
+    {
+      "path": "model/blocks.0.mixer.D",
+      "repeat_max_abs": 5.960464477539063e-08,
+      "recovery_max_abs": 1.1920928955078125e-07,
+      "ratio": 2.0
+    },
+    {
+      "path": "model/blocks.2.mixer.in_proj.weight",
+      "repeat_max_abs": 2.7194619178771973e-07,
+      "recovery_max_abs": 5.438923835754395e-07,
+      "ratio": 2.0
+    },
+    {
+      "path": "model/blocks.4.mixer.conv1d.weight",
+      "repeat_max_abs": 2.9802322387695312e-08,
+      "recovery_max_abs": 5.960464477539063e-08,
+      "ratio": 2.0
+    },
+    {
+      "path": "model/blocks.5.mixer.D",
+      "repeat_max_abs": 5.960464477539063e-08,
+      "recovery_max_abs": 1.1920928955078125e-07,
+      "ratio": 2.0
+    },
+    {
+      "path": "optimizer/state/50/exp_avg_sq",
+      "repeat_max_abs": 1.1102230246251565e-16,
+      "recovery_max_abs": 2.220446049250313e-16,
+      "ratio": 2.0
+    },
+    {
+      "path": "optimizer/state/55/exp_avg_sq",
+      "repeat_max_abs": 7.105427357601002e-15,
+      "recovery_max_abs": 1.4210854715202004e-14,
+      "ratio": 2.0
+    },
+    {
+      "path": "optimizer/state/62/exp_avg",
+      "repeat_max_abs": 2.9103830456733704e-11,
+      "recovery_max_abs": 5.820766091346741e-11,
+      "ratio": 2.0
+    },
+    {
+      "path": "optimizer/state/62/exp_avg_sq",
+      "repeat_max_abs": 8.881784197001252e-16,
+      "recovery_max_abs": 1.7763568394002505e-15,
+      "ratio": 2.0
+    },
+    {
+      "path": "optimizer/state/70/exp_avg",
+      "repeat_max_abs": 1.862645149230957e-09,
+      "recovery_max_abs": 3.725290298461914e-09,
+      "ratio": 2.0
+    },
+    {
+      "path": "best_weights/blocks.0.mixer.D",
+      "repeat_max_abs": 5.960464477539063e-08,
+      "recovery_max_abs": 1.1920928955078125e-07,
+      "ratio": 2.0
+    },
+    {
+      "path": "best_weights/blocks.2.mixer.in_proj.weight",
+      "repeat_max_abs": 2.7194619178771973e-07,
+      "recovery_max_abs": 5.438923835754395e-07,
+      "ratio": 2.0
+    },
+    {
+      "path": "best_weights/blocks.5.mixer.D",
+      "repeat_max_abs": 5.960464477539063e-08,
+      "recovery_max_abs": 1.1920928955078125e-07,
+      "ratio": 2.0
+    },
+    {
+      "path": "best_weights/blocks.5.norm.bias",
+      "repeat_max_abs": 2.1944288164377213e-08,
+      "recovery_max_abs": 4.377216100692749e-08,
+      "ratio": 1.9946949602122015
+    },
+    {
+      "path": "model/blocks.5.norm.bias",
+      "repeat_max_abs": 2.2177118808031082e-08,
+      "recovery_max_abs": 4.406319931149483e-08,
+      "ratio": 1.9868766404199476
+    },
+    {
+      "path": "optimizer/state/25/exp_avg_sq",
+      "repeat_max_abs": 1.2705494208814505e-21,
+      "recovery_max_abs": 2.329340604949326e-21,
+      "ratio": 1.8333333333333333
+    },
+    {
+      "path": "optimizer/state/33/exp_avg",
+      "repeat_max_abs": 1.7462298274040222e-10,
+      "recovery_max_abs": 3.2014213502407074e-10,
+      "ratio": 1.8333333333333333
+    },
+    {
+      "path": "optimizer/state/28/exp_avg",
+      "repeat_max_abs": 7.275957614183426e-11,
+      "recovery_max_abs": 1.3096723705530167e-10,
+      "ratio": 1.8
+    },
+    {
+      "path": "optimizer/state/9/exp_avg_sq",
+      "repeat_max_abs": 7.940933880509066e-23,
+      "recovery_max_abs": 1.3234889800848443e-22,
+      "ratio": 1.6666666666666667
+    },
+    {
+      "path": "optimizer/state/38/exp_avg_sq",
+      "repeat_max_abs": 2.6645352591003757e-15,
+      "recovery_max_abs": 4.440892098500626e-15,
+      "ratio": 1.6666666666666667
+    },
+    {
+      "path": "optimizer/state/64/exp_avg",
+      "repeat_max_abs": 1.0658141036401503e-14,
+      "recovery_max_abs": 1.7763568394002505e-14,
+      "ratio": 1.6666666666666667
+    },
+    {
+      "path": "optimizer/state/21/exp_avg_sq",
+      "repeat_max_abs": 5.293955920339377e-22,
+      "recovery_max_abs": 8.470329472543003e-22,
+      "ratio": 1.6
+    },
+    {
+      "path": "optimizer/state/58/exp_avg",
+      "repeat_max_abs": 7.105427357601002e-14,
+      "recovery_max_abs": 1.1368683772161603e-13,
+      "ratio": 1.6
+    },
+    {
+      "path": "optimizer/state/22/exp_avg",
+      "repeat_max_abs": 1.1641532182693481e-10,
+      "recovery_max_abs": 1.7462298274040222e-10,
+      "ratio": 1.5
+    },
+    {
+      "path": "optimizer/state/27/exp_avg",
+      "repeat_max_abs": 8.731149137020111e-11,
+      "recovery_max_abs": 1.3096723705530167e-10,
+      "ratio": 1.5
+    },
+    {
+      "path": "optimizer/state/65/exp_avg",
+      "repeat_max_abs": 2.842170943040401e-14,
+      "recovery_max_abs": 4.263256414560601e-14,
+      "ratio": 1.5
+    },
+    {
+      "path": "update_trace/5/loss",
+      "repeat_max_abs": 5.960464477539063e-08,
+      "recovery_max_abs": 8.940696716308594e-08,
+      "ratio": 1.5
+    },
+    {
+      "path": "history/1/train_loss",
+      "repeat_max_abs": 1.9868215073159945e-08,
+      "recovery_max_abs": 2.9802322387695312e-08,
+      "ratio": 1.499999988824129
+    },
+    {
+      "path": "optimizer/state/29/exp_avg",
+      "repeat_max_abs": 7.275957614183426e-11,
+      "recovery_max_abs": 1.0186340659856796e-10,
+      "ratio": 1.4
+    },
+    {
+      "path": "optimizer/state/33/exp_avg_sq",
+      "repeat_max_abs": 7.105427357601002e-15,
+      "recovery_max_abs": 9.769962616701378e-15,
+      "ratio": 1.375
+    },
+    {
+      "path": "model/blocks.4.norm.bias",
+      "repeat_max_abs": 8.731149137020111e-10,
+      "recovery_max_abs": 1.1641532182693481e-09,
+      "ratio": 1.3333333333333333
+    },
+    {
+      "path": "optimizer/state/6/exp_avg_sq",
+      "repeat_max_abs": 3.3306690738754696e-16,
+      "recovery_max_abs": 4.440892098500626e-16,
+      "ratio": 1.3333333333333333
+    },
+    {
+      "path": "optimizer/state/32/exp_avg_sq",
+      "repeat_max_abs": 6.352747104407253e-22,
+      "recovery_max_abs": 8.470329472543003e-22,
+      "ratio": 1.3333333333333333
+    },
+    {
+      "path": "optimizer/state/37/exp_avg_sq",
+      "repeat_max_abs": 1.6653345369377348e-16,
+      "recovery_max_abs": 2.220446049250313e-16,
+      "ratio": 1.3333333333333333
+    },
+    {
+      "path": "optimizer/state/40/exp_avg",
+      "repeat_max_abs": 4.3655745685100555e-11,
+      "recovery_max_abs": 5.820766091346741e-11,
+      "ratio": 1.3333333333333333
+    },
+    {
+      "path": "optimizer/state/41/exp_avg",
+      "repeat_max_abs": 5.4569682106375694e-12,
+      "recovery_max_abs": 7.275957614183426e-12,
+      "ratio": 1.3333333333333333
+    },
+    {
+      "path": "optimizer/state/31/exp_avg",
+      "repeat_max_abs": 1.0658141036401503e-14,
+      "recovery_max_abs": 1.3766765505351941e-14,
+      "ratio": 1.2916666666666667
+    },
+    {
+      "path": "model/norm.bias",
+      "repeat_max_abs": 5.587935447692871e-09,
+      "recovery_max_abs": 6.984919309616089e-09,
+      "ratio": 1.25
+    },
+    {
+      "path": "optimizer/state/4/exp_avg",
+      "repeat_max_abs": 1.4551915228366852e-11,
+      "recovery_max_abs": 1.8189894035458565e-11,
+      "ratio": 1.25
+    },
+    {
+      "path": "optimizer/state/6/exp_avg",
+      "repeat_max_abs": 1.4551915228366852e-11,
+      "recovery_max_abs": 1.8189894035458565e-11,
+      "ratio": 1.25
+    },
+    {
+      "path": "optimizer/state/30/exp_avg_sq",
+      "repeat_max_abs": 6.938893903907228e-18,
+      "recovery_max_abs": 8.673617379884035e-18,
+      "ratio": 1.25
+    },
+    {
+      "path": "optimizer/state/59/exp_avg_sq",
+      "repeat_max_abs": 1.1102230246251565e-16,
+      "recovery_max_abs": 1.3877787807814457e-16,
+      "ratio": 1.25
+    },
+    {
+      "path": "optimizer/state/9/exp_avg",
+      "repeat_max_abs": 1.7763568394002505e-14,
+      "recovery_max_abs": 2.1316282072803006e-14,
+      "ratio": 1.2
+    },
+    {
+      "path": "optimizer/state/30/exp_avg",
+      "repeat_max_abs": 4.547473508864641e-12,
+      "recovery_max_abs": 5.4569682106375694e-12,
+      "ratio": 1.2
+    },
+    {
+      "path": "optimizer/state/69/exp_avg_sq",
+      "repeat_max_abs": 4.547473508864641e-12,
+      "recovery_max_abs": 5.4569682106375694e-12,
+      "ratio": 1.2
+    },
+    {
+      "path": "model/blocks.0.norm.bias",
+      "repeat_max_abs": 9.313225746154785e-10,
+      "recovery_max_abs": 1.0477378964424133e-09,
+      "ratio": 1.125
+    },
+    {
+      "path": "optimizer/state/20/exp_avg_sq",
+      "repeat_max_abs": 5.293955920339377e-23,
+      "recovery_max_abs": 5.955700410381799e-23,
+      "ratio": 1.125
+    },
+    {
+      "path": "optimizer/state/68/exp_avg_sq",
+      "repeat_max_abs": 1.4779288903810084e-12,
+      "recovery_max_abs": 1.5916157281026244e-12,
+      "ratio": 1.0769230769230769
+    },
+    {
+      "path": "model/blocks.5.mixer.in_proj.weight",
+      "repeat_max_abs": 2.9802322387695312e-08,
+      "recovery_max_abs": 3.166496753692627e-08,
+      "ratio": 1.0625
+    },
+    {
+      "path": "best_weights/blocks.5.mixer.in_proj.weight",
+      "repeat_max_abs": 2.9802322387695312e-08,
+      "recovery_max_abs": 3.166496753692627e-08,
+      "ratio": 1.0625
+    },
+    {
+      "path": "best_weights/blocks.0.norm.bias",
+      "repeat_max_abs": 6.184563972055912e-10,
+      "recovery_max_abs": 6.475602276623249e-10,
+      "ratio": 1.0470588235294118
+    },
+    {
+      "path": "model/blocks.2.norm.bias",
+      "repeat_max_abs": 1.0331859812140465e-09,
+      "recovery_max_abs": 1.0477378964424133e-09,
+      "ratio": 1.0140845070422535
+    }
+  ],
+  "assessment": "Observed per-leaf maxima only, not a calibrated tolerance. Exceeding a finite repeat sample maximum alone does not prove faulty recovery; global maxima alone cannot certify recovery.",
+  "formal": false,
+  "recovery_gate_changed": false
+}

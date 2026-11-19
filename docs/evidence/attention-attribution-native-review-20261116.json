@@ -1,0 +1,118 @@
+{
+  "schema": "qkan-attention-attribution-native-review.v1",
+  "date": "2026-11-16",
+  "status": "attribution_verified_candidate_still_rejected",
+  "source_revision": "ebe7e4732dc04264bbf257d2ec686657396cf44a",
+  "source_report": {
+    "suite": "attention-attribution-20261116T024408Z-e40dd283",
+    "bytes": 410105,
+    "sha256": "ce784d88f6b9269c5f321f2a890b15c3a9bd2060b0d8d630bc6216a646f7ef44",
+    "authenticated": true,
+    "module_contract_plan_preset_hashes_verified": true
+  },
+  "reviewed_scope": {
+    "parameters": 53,
+    "elements": 807170,
+    "updates_per_route": 1,
+    "dropout": 0,
+    "micro_batch": 16,
+    "logical_batch": 128,
+    "checkpoint_step": 14268,
+    "checkpoint_sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9",
+    "prior_metrics_exactly_reproduced": true,
+    "prior_train_rows_match": true
+  },
+  "numerical": {
+    "logits_relative_l2": 0.002006039511795308,
+    "loss_absolute": 0.0003707408905029297,
+    "gradient_relative_l2": 0.040851755119082934,
+    "adam_delta_relative_l2": 0.2105257684201854
+  },
+  "bias_update_error_contributions": [
+    {
+      "parameter": "encoder.layers.0.self_attn.in_proj_bias",
+      "error_energy_share": 0.38337892463193485,
+      "relative_l2": 8.372969788525017,
+      "reference_update_l2": 0.003369659908793687,
+      "candidate_update_l2": 0.028407658431416103,
+      "update_difference_l2": 0.028214060613933507,
+      "max_absolute_difference": 0.002981567522510886
+    },
+    {
+      "parameter": "encoder.layers.1.self_attn.in_proj_bias",
+      "error_energy_share": 0.3708860706566122,
+      "relative_l2": 7.847714258322771,
+      "reference_update_l2": 0.0035361327246315752,
+      "candidate_update_l2": 0.02800518657176944,
+      "update_difference_l2": 0.027750559202412962,
+      "max_absolute_difference": 0.0028937142342329025
+    },
+    {
+      "parameter": "encoder.layers.2.self_attn.in_proj_bias",
+      "error_energy_share": 0.17442062036475792,
+      "relative_l2": 5.296587604397885,
+      "reference_update_l2": 0.0035929752962393993,
+      "candidate_update_l2": 0.019402093965185892,
+      "update_difference_l2": 0.019030508416969422,
+      "max_absolute_difference": 0.0027238090988248587
+    },
+    {
+      "parameter": "encoder.layers.3.self_attn.in_proj_bias",
+      "error_energy_share": 0.05480957892656767,
+      "relative_l2": 3.08860937666023,
+      "reference_update_l2": 0.0034539553959476946,
+      "candidate_update_l2": 0.011207814858744955,
+      "update_difference_l2": 0.010667919022490247,
+      "max_absolute_difference": 0.0023585683666169643
+    }
+  ],
+  "combined_bias_update_error_energy_share": 0.9834951945798727,
+  "complement": {
+    "relative_l2": 0.027060530419588145,
+    "scope": "Post-hoc descriptive complement after excluding all four packed in_proj_bias tensors; not a revised gate or permitted parameter removal."
+  },
+  "clipping": {
+    "fp32": {
+      "before": 0.9686922976611283,
+      "after": 0.9686922976611283,
+      "observed_norm_ratio": 1.0
+    },
+    "bf16": {
+      "before": 0.9712631639565954,
+      "after": 0.9712631639565954,
+      "observed_norm_ratio": 1.0
+    }
+  },
+  "initial_moments_exact": true,
+  "missing_initial_slots": false,
+  "step_counters": {
+    "before": 14268,
+    "after": 14269
+  },
+  "private_values": {
+    "file": "paired-parameters.pt",
+    "bytes": 45431227,
+    "sha256": "b0d0c8797a79865314ab37761ff52b3da0ef2f160c56994b8ad5aefd9bc6154f",
+    "complete_values_reopened_exact": true
+  },
+  "protection": {
+    "full_state_rollback_exact": true,
+    "original_checkpoint_and_metadata_unchanged": true,
+    "training_committed_samples": 0,
+    "training_committed_updates": 0,
+    "owned_children_clean": 1
+  },
+  "findings": [
+    "Four packed Q/K/V in_proj_bias tensors account for98.3495percent of update squared-error, despite only1536 of807170 parameters.",
+    "Pre/post clipping fields are identical: clipping did not change either route on this batch.",
+    "Initial moments and steps match; same batch/aggregate metrics reproduce the rejected run.",
+    "This locates the error-bearing tensors; Q/K/V slice and coordinate-level Adam sensitivity remain unobserved in the compact summary."
+  ],
+  "hypothesis": "In exact dot-product attention, adding the same key bias at every key changes each query logits by a row constant, canceled by softmax. Low-precision cancellation residuals in key-bias gradients and small Adam denominators are a plausible mechanism; this report has no Q/K/V slices and does not establish it.",
+  "next_action": "Read the existing private paired-parameters.pt on collaborator CPU, verify its hash, split each packed bias into Q/K/V128 slices and examine gradients/moments/Adam denominator and update contributions. No new forward/backward/GPU run needed for that analysis. Preserve original gates, parameter values and BF16-off policy; decide any revised method only after that evidence.",
+  "limitations": [
+    "All shares derive from returned scalar reductions; owner stdlib review independently reconstructs sums/ratios and hashes, not private tensors.",
+    "Observed parameter-error localization is not a causal ablation or convergence/speed evidence.",
+    "Complement2.706percent is post-hoc, not an admission metric."
+  ]
+}

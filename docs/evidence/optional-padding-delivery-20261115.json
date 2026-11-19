@@ -1,0 +1,87 @@
+{
+  "schema": "qkan-optional-padding-delivery.v1",
+  "date": "2026-11-15",
+  "baseline_revision": "2c7422156950eb4024597e846b3812abd83d77ec",
+  "stage": "phase1_cpu_opportunity_delivery",
+  "architecture_authorization": "approved",
+  "native_trace_ready": false,
+  "formal_training_started": false,
+  "native_gpu_speedup": null,
+  "selected_fields": [
+    "padding_trim.enabled",
+    "padding_trim.length_alignment"
+  ],
+  "behavior": {
+    "all_off": "Same input object, zero token inspection/copy.",
+    "enabled": "Per-document aligned common trailing PAD slice; original row/token coordinates retained.",
+    "unavailable_flags": "BF16, Flash and tuned FP32 reject enabled requests; no silent fallback.",
+    "storage": "Existing verified train array cache required; only compact aggregate report returned."
+  },
+  "verification": {
+    "total_tests": 339,
+    "passed": 336,
+    "platform_skips": 3,
+    "new_tests": 18,
+    "native_framework_imports": 0,
+    "excluded_native_suites": [
+      "test_baseline_delivery",
+      "test_baseline_recovery_audit",
+      "test_baseline_trace_replay",
+      "test_baseline_recovery_replicates"
+    ],
+    "bash_syntax": true,
+    "actual_bash_dispatch_argv": true,
+    "actual_cli_help_and_invalid_argv": true,
+    "plugin_plan_validation": true,
+    "workflow_plan_validation": true,
+    "baseline_behavior": "Optional boundary absent;8 protected source files exact.",
+    "modified_behavior": "All-off input object identity; enabled8-to4 trailing trim preserves valid-token coordinates;8 protected files exact.",
+    "rollback_and_patch_replay": true,
+    "protected_core_files": 8
+  },
+  "candidate_files": {
+    "experiments/baseline_delivery/optimization_plugins.py": "2796ef407d3b550326d04aa3f5fc1c664c73971021987f3f932fac6a38790669",
+    "experiments/baseline_delivery/padding_profile.py": "6412d6ca61876b131205c5f0e4e3f53a2a7a59291f1870007f0224591f972378",
+    "experiments/baseline_delivery/optimization-presets/baseline.json": "1cbf080abc916630a2d9bd52deb4507602095e011e1f24c1562b8c2e804aa0c6",
+    "experiments/baseline_delivery/optimization-presets/padding-trim.json": "10b2e4f026a026a6bb6899a5581b7be76cfedcc67a6928ca11abcc0aef459297",
+    "scripts/profile_optional_padding.sh": "a1e42ed90f6eb9133566e93a68542ce741a8320bfd5e313d7d428d1b4a37d7b7",
+    "tests/test_baseline_optional_optimizations.py": "865b51fa5cf25825aef8125057af6f572ee66a2892095e7788b95bac3fe7a471",
+    "docs/baselines/optional-training-optimizations.md": "c497881c9e9dbfe98ea0c0d74db945026a646e03f9dd26d922592662c94a23da",
+    "docs/baselines/optional-optimization-plugin-plan.json": "c8e9dc7773051721f110d80bf3c989fafe290282456f734c18218c80050819e0",
+    ".ai-progress/workstreams/baseline-delivery/plans/optional-optimizations/v001.json": "c909b61cda0579367ec6b8b62fe81d62e16e319c4248b6f130be6789c0ab5251"
+  },
+  "candidate_bytes": 53108,
+  "protected_core_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/worker.py": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+  },
+  "private_roles": {
+    "modified_artifact": ".runtime/padding-plugin-20261115/candidate",
+    "patch": {
+      "path": ".runtime/padding-plugin-20261115/change.patch",
+      "sha256": "01ce3d899cccfa9bb494fc04f473ab7f739475a09ed4c19c2bee25fd6c2c92af"
+    },
+    "verification": {
+      "path": ".runtime/padding-plugin-20261115/verification.json",
+      "sha256": "2d7a8e972053ef0bf5fab241c84215dffe5f68c06c3adac189b8e2108179fde0"
+    },
+    "rollback": {
+      "path": ".runtime/padding-plugin-20261115/rollback.py",
+      "sha256": "e5bbe69fbad067e4c394bcdf8b5af066e1e026607302bdbacd04bb7db803c27c"
+    }
+  },
+  "limitations": [
+    "No owner native NumPy/Torch/model/GPU execution.",
+    "No collaborator train-prefix statistics received in this implementation turn.",
+    "Token preservation is not native numerical/RNG/recovery/trace equivalence.",
+    "No formal worker integration or BF16/Flash/FP32 tuned implementation.",
+    "Fixed-prefix matrix-cell estimates are not whole-corpus GPU speedup evidence."
+  ],
+  "next_action": "Run scripts/profile_optional_padding.sh once on collaborator CPU, review authenticated padding-profile.json; kill PAD route if negligible common-tail reduction."
+}

@@ -1,0 +1,85 @@
+{
+  "schema": "qkan-operator-profile-delivery.v1",
+  "date": "2026-11-10",
+  "status": "stdlib_mock_verified_native_profile_pending",
+  "purpose": "Attribute the native backward bottleneck; not an acceleration or formal-release finding",
+  "prior_native_evidence": "docs/evidence/compiler-phase-profile-20261110.json",
+  "scope": {
+    "job": "transformer-retrieval-s42",
+    "mode": "eager",
+    "maximum_instrumented_updates": 1,
+    "rollback": "Exact model/Adam/scheduler/RNG verification before zero-commit declaration",
+    "source_is_immutable": true,
+    "formal_training_started": false,
+    "cohort_gate_rerun": false,
+    "report": "operator-profile/<new Suite>/operator-profile.json",
+    "automatic_sha256_return": true,
+    "no_gain_hook": "One eager operator observation after separate phase profiles; excluded from admission benchmark",
+    "phases": [
+      "forward_loss",
+      "backward",
+      "clip_optimizer_schedule",
+      "unattributed"
+    ],
+    "attribution": "CPU self_device_time_total; no duplicate CUDA device rows; unassigned ancestry remains unattributed",
+    "bounds": {
+      "top_operators_per_phase": 12,
+      "examined_events": 100000,
+      "raw_trace_export": false
+    },
+    "privacy": "No shapes, memory timeline, stacks, source paths, tensor values or raw events; native-name whitelist",
+    "failures": "Profiler setup/collection gets compact status; update exceptions escape without retry; inexact rollback blocks success"
+  },
+  "migration_source": {
+    "revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+    "suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "restored_step": 12683,
+    "checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "preserved_completed": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ]
+  },
+  "validation": {
+    "stdlib_mock_tests": 266,
+    "passed": 264,
+    "platform_skips": 2,
+    "new_operator_checks": 18,
+    "initial_broad_discovery": "Four native Torch test modules unavailable in owner environment; excluded from final explicit stdlib/mock suite without installing dependencies",
+    "worker_entry": "Actual main/parser AST accepts dispatched operator flag; no native worker import",
+    "python_ast": true,
+    "bash_syntax": true,
+    "artifact_hashes": true,
+    "native_framework_loaded": false,
+    "gpu_queried": false,
+    "training_executed": false,
+    "thresholds_relaxed": false
+  },
+  "limitations": [
+    "Native profiler/CUPTI or legacy CUDA event support must be checked on collaborator RTX3090",
+    "One observed update may include lazy CUDA initialization; instrumented times are not admission speed measurements",
+    "Kernel sums may overlap across streams; not critical-path wall time or a causal kernel conclusion",
+    "Fixed event examination limit does not cap the profiler internal capture buffer; capture is bounded to one update",
+    "No native operator ranking, accelerated backend admission or sustained gain has been established"
+  ],
+  "primary_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/autograd/profiler_util.py",
+      "sha256": "191d9c88ef8a43506138e40f38b55653b6942f777d053b195ffe23b982db9a0f"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/profiler/profiler.py",
+      "sha256": "ec56b59e82b9ba565f4b8322495f2711381e75616d1efe4a668e915d49e00c78"
+    }
+  ],
+  "artifacts": {
+    "experiments/baseline_delivery/operator_profile.py": "e637ab994fc153586bd77c9beeae0418a2a82104884ca3331c7bfee221fff607",
+    "experiments/baseline_delivery/operator_diagnostic.py": "2dea48d4f14cef03616395606c1e3a8d6588165d184b5e3573530edea8851ba2",
+    "experiments/baseline_delivery/worker.py": "f6b717818fed2c22019afe8a82cdf2b590809a6a7a4f616b8e84a8084a271ca8",
+    "experiments/baseline_delivery/performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+    "experiments/baseline_delivery/torch_acceleration.py": "050d0da46c556eb97563f544b31431913dfb30afa581459df609bdceade62fa6",
+    "scripts/collect_operator_profile.sh": "080da9f82edfaa130bc46b90e6c63ad3613e3f31c74df61df957800dbc3e403a",
+    "tests/test_baseline_operator_profile.py": "d0dd4ee3d4003f7d552f27363382b7678b3d075229206cd2ace707a9fd12b2fa",
+    "docs/baselines/torch-acceleration.md": "04c75c8ca96e02a129d8f6977b371c7d5ea87c229eb6ce8e29a38dffd99220cf"
+  }
+}

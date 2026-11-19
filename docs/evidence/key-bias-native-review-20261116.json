@@ -1,0 +1,346 @@
+{
+  "schema": "qkan-key-bias-native-review.v1",
+  "date": "2026-11-16",
+  "status": "three_route_single_update_numerics_verified_admission_closed",
+  "source_revision": "91b8df662c39c44593238e6fa10a201a4d9d99aa",
+  "source_report": {
+    "suite": "key-bias-20261116T090926Z-60f6f2a2",
+    "namespace": "qkan-mamba/key-bias/key-bias-20261116T090926Z-60f6f2a2",
+    "bytes": 32412,
+    "sha256": "1bcffacdb03a8e2ea501135422ad543dbb6aaffdb5d91868ceb1179b26108edc",
+    "authenticated": true
+  },
+  "source_binding": {
+    "suite": "/root/projects/qkan-mamba-lra-adaptive-ebe7e4732dc0/runs/attention-attribution-20261116T024408Z-e40dd283",
+    "report_sha256": "ce784d88f6b9269c5f321f2a890b15c3a9bd2060b0d8d630bc6216a646f7ef44",
+    "values_sha256": "b0d0c8797a79865314ab37761ff52b3da0ef2f160c56994b8ad5aefd9bc6154f",
+    "values_bytes": 45431227,
+    "checkpoint_sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9",
+    "checkpoint_step": 14268,
+    "row_ids_sha256": "823ce471b360100fa3d8a7088b7c6bed611e20a47bb2aa16b91a6f9cf4433e0d"
+  },
+  "key_bias_manifest": {
+    "id": "gradient.key_bias_analytic_zero",
+    "version": "1",
+    "candidate_id": "bf16-key-bias-analytic-zero-v1",
+    "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1",
+    "forward": "existing BF16 attention route unchanged",
+    "parameter_membership": "unchanged",
+    "adam_history": "retain exp_avg/exp_avg_sq/step; normal decay and weight decay",
+    "metric_population": "all53 tensors/807170 elements; original FP32 reference",
+    "formal_admission": false
+  },
+  "implementation_binding": {
+    "module_sha256": {
+      "key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+      "key_bias_diagnostic.py": "a76e349f01e54b985adeaa66f45f21f41ab00e1f99685d1f8041589c0a5e3555",
+      "attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+      "attention_update_native.py": "ecd2f1835c5a5be7958f552585bf91b2d53478730a10636be8c18e312d5e19d4",
+      "attention_attribution.py": "2f6856c8f667d62bcd1e256c6c981e945f9f9d18b3fcfeb86e1b2cef814dc870",
+      "attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+      "attention_bias_postprocess.py": "cda7bb2cb1d08aeaf44553bce8840405f84c1aad459722e64e8aae9eb28d1d27",
+      "diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004"
+    },
+    "plugin_tree_sha256": "5c0cd98b5039b86a99851a76cfc8962a54784077ee2e315f55f8fa911688f162",
+    "dossier_sha256": "c71444836d0a843abb79db468bfd1c344cde3f1676a8cc811b2cde1a64303c67",
+    "plugin_plan_sha256": "3191f18df1e00df7d291e28a7b1b8e4be55df61662d0edd317a81540bf231ca9",
+    "optimization_config_sha256": "5d9e46efefcd4d5e7ab5e14b46fa611213e33c2e8dcc3f8afe61f7f373cea94c"
+  },
+  "numerical_reference": "Original unmodified FP32 update; all53 tensors/807170elements; original fixed thresholds retained",
+  "fixed_limits": {
+    "logits_relative_l2": 0.02,
+    "loss_absolute": 0.02,
+    "gradient_relative_l2": 0.05,
+    "adam_delta_relative_l2": 0.2
+  },
+  "original_bf16_numerical": {
+    "logits_relative_l2": 0.002006039511795308,
+    "loss_absolute": 0.0003707408905029297,
+    "gradient_relative_l2": 0.040851755119082934,
+    "adam_delta_relative_l2": 0.2105257684201854
+  },
+  "numerical": {
+    "fp32_analytic": {
+      "logits_relative_l2": 0.0,
+      "loss_absolute": 0.0,
+      "gradient_relative_l2": 4.699183997065646e-08,
+      "adam_delta_relative_l2": 0.0016498362797680208
+    },
+    "bf16_analytic": {
+      "logits_relative_l2": 0.002006039511795308,
+      "loss_absolute": 0.0003707408905029297,
+      "gradient_relative_l2": 0.04085170074243264,
+      "adam_delta_relative_l2": 0.027103537600872692
+    }
+  },
+  "numerical_passed": {
+    "fp32_analytic": true,
+    "bf16_analytic": true
+  },
+  "global_fields": {
+    "fp32_analytic": {
+      "gradients": {
+        "reference_l2": 0.9686922976611283,
+        "candidate_l2": 0.9686922976611272,
+        "difference_l2": 4.5520633432500595e-08,
+        "relative_l2": 4.699183997065784e-08,
+        "reference_squared_l2": 0.938364767547996,
+        "candidate_squared_l2": 0.9383647675479939,
+        "difference_squared_l2": 2.072128068096091e-15,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "clipped_gradients": {
+        "reference_l2": 0.9686922976611283,
+        "candidate_l2": 0.9686922976611272,
+        "difference_l2": 4.5520633432500595e-08,
+        "relative_l2": 4.699183997065784e-08,
+        "reference_squared_l2": 0.938364767547996,
+        "candidate_squared_l2": 0.9383647675479939,
+        "difference_squared_l2": 2.072128068096091e-15,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "deltas": {
+        "reference_l2": 0.2164443314545935,
+        "candidate_l2": 0.21644421085296325,
+        "difference_l2": 0.0003570977105838993,
+        "relative_l2": 0.0016498362797679115,
+        "reference_squared_l2": 0.046848148618825934,
+        "candidate_squared_l2": 0.04684809641176202,
+        "difference_squared_l2": 1.275187749042623e-07,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_before": {
+        "reference_l2": 0.19351579554107057,
+        "candidate_l2": 0.19351579554107057,
+        "difference_l2": 0.0,
+        "relative_l2": 0.0,
+        "reference_squared_l2": 0.03744836312389343,
+        "candidate_squared_l2": 0.03744836312389343,
+        "difference_squared_l2": 0.0,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_after": {
+        "reference_l2": 0.1932896752152884,
+        "candidate_l2": 0.19328967521528836,
+        "difference_l2": 4.552063427028639e-09,
+        "relative_l2": 2.355047377444499e-08,
+        "reference_squared_l2": 0.03736089854483167,
+        "candidate_squared_l2": 0.03736089854483166,
+        "difference_squared_l2": 2.0721281443691715e-17,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_sq_before": {
+        "reference_l2": 0.043869451609009215,
+        "candidate_l2": 0.043869451609009215,
+        "difference_l2": 0.0,
+        "relative_l2": 0.0,
+        "reference_squared_l2": 0.0019245287844752012,
+        "candidate_squared_l2": 0.0019245287844752012,
+        "difference_squared_l2": 0.0,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_sq_after": {
+        "reference_l2": 0.04384176547124674,
+        "candidate_l2": 0.04384176547124674,
+        "difference_l2": 2.8440677520161707e-19,
+        "relative_l2": 6.487119579802116e-18,
+        "reference_squared_l2": 0.0019221003996358027,
+        "candidate_squared_l2": 0.0019221003996358027,
+        "difference_squared_l2": 8.088721378058316e-38,
+        "parameter_count": 53,
+        "numel": 807170
+      }
+    },
+    "bf16_analytic": {
+      "gradients": {
+        "reference_l2": 0.9686922976611283,
+        "candidate_l2": 0.9712631618102617,
+        "difference_l2": 0.03957272785554985,
+        "relative_l2": 0.040851700742430525,
+        "reference_squared_l2": 0.938364767547996,
+        "candidate_squared_l2": 0.9433521294896667,
+        "difference_squared_l2": 0.0015660007899294106,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "clipped_gradients": {
+        "reference_l2": 0.9686922976611283,
+        "candidate_l2": 0.9712631618102617,
+        "difference_l2": 0.03957272785554985,
+        "relative_l2": 0.040851700742430525,
+        "reference_squared_l2": 0.938364767547996,
+        "candidate_squared_l2": 0.9433521294896667,
+        "difference_squared_l2": 0.0015660007899294106,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "deltas": {
+        "reference_l2": 0.2164443314545935,
+        "candidate_l2": 0.21638066606901954,
+        "difference_l2": 0.005866407076074947,
+        "relative_l2": 0.02710353760087094,
+        "reference_squared_l2": 0.046848148618825934,
+        "candidate_squared_l2": 0.04682059264847254,
+        "difference_squared_l2": 3.441473198222221e-05,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_before": {
+        "reference_l2": 0.19351579554107057,
+        "candidate_l2": 0.19351579554107057,
+        "difference_l2": 0.0,
+        "relative_l2": 0.0,
+        "reference_squared_l2": 0.03744836312389343,
+        "candidate_squared_l2": 0.03744836312389343,
+        "difference_squared_l2": 0.0,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_after": {
+        "reference_l2": 0.1932896752152884,
+        "candidate_l2": 0.19319453230689357,
+        "difference_l2": 0.0039572728992558134,
+        "relative_l2": 0.02047327615842985,
+        "reference_squared_l2": 0.03736089854483167,
+        "candidate_squared_l2": 0.03732412731327934,
+        "difference_squared_l2": 1.566000879918451e-05,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_sq_before": {
+        "reference_l2": 0.043869451609009215,
+        "candidate_l2": 0.043869451609009215,
+        "difference_l2": 0.0,
+        "relative_l2": 0.0,
+        "reference_squared_l2": 0.0019245287844752012,
+        "candidate_squared_l2": 0.0019245287844752012,
+        "difference_squared_l2": 0.0,
+        "parameter_count": 53,
+        "numel": 807170
+      },
+      "exp_avg_sq_after": {
+        "reference_l2": 0.04384176547124674,
+        "candidate_l2": 0.043841974112102444,
+        "difference_l2": 9.942688320127883e-07,
+        "relative_l2": 2.2678576497218644e-05,
+        "reference_squared_l2": 0.0019221003996358027,
+        "candidate_squared_l2": 0.0019221186940462608,
+        "difference_squared_l2": 9.885705103120744e-13,
+        "parameter_count": 53,
+        "numel": 807170
+      }
+    }
+  },
+  "validation": {
+    "paired_summary_groups_recomputed": 30,
+    "published_files_verified": 11,
+    "protected_core_files_unchanged": 8,
+    "original_fp32_matches_saved_update_exact": true,
+    "analytic_routes_forward_and_non_k_match_saved_routes_exact": true,
+    "original_adam_groups_steps_and_starting_moments_exact": true,
+    "k_updates_identical_across_analytic_routes": true,
+    "k_parameters_still_update_from_history": true,
+    "private_raw_corrected_callbacks": 64,
+    "hooks_removed": true,
+    "original_checkpoint_and_metadata_unchanged": true,
+    "full_state_rollback_exact": true,
+    "committed_samples": 0,
+    "committed_updates": 0,
+    "owned_children_clean": 1,
+    "child_elapsed_seconds": 32.92277507856488,
+    "owner_framework_imports": 0
+  },
+  "error_energy_reconciliation": {
+    "original_global_squared_l2": 0.002076361440814594,
+    "unchanged_non_k_squared_l2": 3.428721320731771e-05,
+    "corrected_k_squared_l2": 1.275187749042623e-07,
+    "new_global_squared_l2": 3.441473198222221e-05,
+    "new_equals_original_non_k_plus_corrected_k": true,
+    "relative_l2_reduction": 0.8712578616657647
+  },
+  "saved_route_agreement": {
+    "fp32": {
+      "forward_exact": true,
+      "sample_identity_exact": true,
+      "all53_parameters_retained": true,
+      "original_adam_groups_steps_and_starting_moments_exact": true,
+      "non_k_values_exact": true,
+      "k_gradient_zero": false
+    },
+    "fp32_analytic": {
+      "forward_exact": true,
+      "sample_identity_exact": true,
+      "all53_parameters_retained": true,
+      "original_adam_groups_steps_and_starting_moments_exact": true,
+      "non_k_values_exact": true,
+      "k_gradient_zero": true
+    },
+    "bf16_analytic": {
+      "forward_exact": true,
+      "sample_identity_exact": true,
+      "all53_parameters_retained": true,
+      "original_adam_groups_steps_and_starting_moments_exact": true,
+      "non_k_values_exact": true,
+      "k_gradient_zero": true
+    }
+  },
+  "hook_observations": {
+    "fp32": {
+      "enabled": false,
+      "handles_removed": true
+    },
+    "fp32_analytic": {
+      "enabled": true,
+      "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1",
+      "handles_removed": true,
+      "hook_calls": {
+        "encoder.layers.0.self_attn.in_proj_bias": 8,
+        "encoder.layers.1.self_attn.in_proj_bias": 8,
+        "encoder.layers.2.self_attn.in_proj_bias": 8,
+        "encoder.layers.3.self_attn.in_proj_bias": 8
+      },
+      "qv_exact": true,
+      "key_zero": true
+    },
+    "bf16_analytic": {
+      "enabled": true,
+      "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1",
+      "handles_removed": true,
+      "hook_calls": {
+        "encoder.layers.0.self_attn.in_proj_bias": 8,
+        "encoder.layers.1.self_attn.in_proj_bias": 8,
+        "encoder.layers.2.self_attn.in_proj_bias": 8,
+        "encoder.layers.3.self_attn.in_proj_bias": 8
+      },
+      "qv_exact": true,
+      "key_zero": true
+    }
+  },
+  "private_values": {
+    "path": "/root/projects/qkan-mamba-lra-adaptive-91b8df662c39/runs/key-bias-20261116T090926Z-60f6f2a2/screen/paired-updates.pt",
+    "file": "paired-updates.pt",
+    "bytes": 68374953,
+    "sha256": "a794f95d4d643d218437ad40db3cebd08187a639e11dcfdc76b90e9e536c99c1",
+    "complete_values_reopened_exact": true,
+    "downloaded": false,
+    "owner_tensor_recomputation": false
+  },
+  "evidence_ceiling": "Matched single-training-batch numerical intervention; no held-out utility or complete causal sample trace",
+  "limitations": [
+    "A new gradient definition, not bitwise equivalence to the original FP32 or literal finite-BF16 derivative.",
+    "Owner recomputed compact scalar identities; private tensors were reopened on collaborator only.",
+    "Dropout0,one update per route,micro16/logical128,one checkpoint and fixed128 train rows; no validation/test utility.",
+    "Fresh-process recovery for this new policy, sample-trace.v2 fixture/replay, short trajectory and matched full-update timing pending.",
+    "Worker total runtime includes setup and evidence generation; it is not a timing benchmark."
+  ],
+  "candidate_admitted": false,
+  "native_trace_ready": false,
+  "formal_training_started": false,
+  "next_action": "Deliver new-policy fresh-process exact recovery and real sample-trace.v2/replay before trajectory/timing and formal admission."
+}

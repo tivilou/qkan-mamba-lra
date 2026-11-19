@@ -1,0 +1,16 @@
+{
+  "schema": "qkan-attention-update-publication.v1",
+  "date": "2026-11-15",
+  "implementation_revision": "638a4882ce1bf4ad467addbdeb9c6632d94bc9ba",
+  "branch": "research/collaboration-foundation",
+  "remote_head_equals_implementation_verified": true,
+  "publication": "existing authorized development SSH SOCKS relay; existing private credential; strict host verification; HTTP/1.1",
+  "repaired_entry": "Resolve serverctl.cmd via shutil.which before subprocess on Windows.",
+  "native_model_or_gpu_work_started": false,
+  "delivery_evidence": "docs/evidence/attention-update-delivery-20261115.json",
+  "collaborator_handoff": "docs/baselines/attention-update-diagnostic.md",
+  "candidate_hashes_checked": 12,
+  "protected_core_hashes_checked": 8,
+  "private_verification": ".runtime/attention-update-20261115/publication-entry-verification.json",
+  "next_action": "Collaborator runs check_attention_update.sh after existing training is paused through its normal workflow and GPU0 is idle; audit automatically returned report. Full-update numerical/recovery/trace/speed and convergence remain pending."
+}

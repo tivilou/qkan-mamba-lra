@@ -1,0 +1,15 @@
+{
+  "schema": "qkan-install-mirror-validation.v1",
+  "objects": 44,
+  "bytes": 3036418350,
+  "all_chunk_receipts_verified": true,
+  "all_https_readback_hashes_verified": true,
+  "python_tag": "cp311",
+  "gpu_install_verified": false,
+  "source_revision": "f1adc22a327a289b9cc3d344eac2c2ab9f2b871c",
+  "scheduler_task": "dc5229a54f5541ccb009af023e1efa78",
+  "scheduler_attempt": "ef868c8525cd4458a8c88e1340cbe4a8",
+  "linux_shell_syntax_passed": true,
+  "linux_regression_tests_passed": 8,
+  "limits": "No actual CUDA compilation or GPU execution certified. Dependency transport readback and mocked installer regressions passed. Task datasets remain acquired directly from the author."
+}

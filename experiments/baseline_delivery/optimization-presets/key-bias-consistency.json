@@ -1,0 +1,5 @@
+{
+  "schema": "qkan-key-bias-consistency.v1",
+  "enabled": true,
+  "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1"
+}

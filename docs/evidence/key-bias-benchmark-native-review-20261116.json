@@ -1,0 +1,282 @@
+{
+  "schema": "qkan-key-bias-benchmark-native-review.v1",
+  "date": "2026-11-16",
+  "status": "short_trajectory_and_matched_eager_full_update_gain_verified_formal_pending",
+  "source_revision": "b3a337d4267f20e1356f292fe7106b7460bf6f7f",
+  "source_report": {
+    "suite": "key-bias-benchmark-20261116T124533Z-26d47029",
+    "namespace": "qkan-mamba/key-bias-benchmark/key-bias-benchmark-20261116T124533Z-26d47029",
+    "bytes": 151569,
+    "sha256": "b358b9a654ab609c8836133b335c38f0b3934091c361e584d633f50d07cc0df6",
+    "authenticated": true
+  },
+  "implementation_binding": {
+    "module_sha256": {
+      "key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+      "key_bias_trace.py": "5cb95c85d4b7ad992d6bfb5d92f40c6991ab06448aef14db4988ba0fb9ae646c",
+      "key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+      "key_bias_diagnostic.py": "a76e349f01e54b985adeaa66f45f21f41ab00e1f99685d1f8041589c0a5e3555",
+      "attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+      "attention_update_native.py": "ecd2f1835c5a5be7958f552585bf91b2d53478730a10636be8c18e312d5e19d4",
+      "attention_update_trace.py": "e6648533c432f917a62ef813e388eef0cecb7390e0b1945e531cbaf5308b7ea9",
+      "attention_attribution.py": "2f6856c8f667d62bcd1e256c6c981e945f9f9d18b3fcfeb86e1b2cef814dc870",
+      "attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+      "attention_bias_postprocess.py": "cda7bb2cb1d08aeaf44553bce8840405f84c1aad459722e64e8aae9eb28d1d27",
+      "diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+      "trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+      "tools/sample_trace_contract/validate.py": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9"
+    },
+    "benchmark_binding": {
+      "module_sha256": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8",
+      "plan_sha256": "dd531d3da7cd70dee75933d3426d117df5df9e6fdde8c746fac480380372e2f2",
+      "review_sha256": "12a21c34fa5a3699da5ef1e0cd427065aec59377771060c68b26cf53bfb9be42"
+    }
+  },
+  "preflight_binding": {
+    "suite": "/root/projects/qkan-mamba-lra-adaptive-33ee6dd8c6b8/runs/key-bias-recovery-20261116T120747Z-5a5247d4",
+    "sha256": "5b4eea0ff1ac00f918039de49b31e37b0f66a0be2998f8f4af818029439e5c4e",
+    "review_sha256": "12a21c34fa5a3699da5ef1e0cd427065aec59377771060c68b26cf53bfb9be42"
+  },
+  "screen_binding": {
+    "suite": "/root/projects/qkan-mamba-lra-adaptive-91b8df662c39/runs/key-bias-20261116T090926Z-60f6f2a2",
+    "report_sha256": "1bcffacdb03a8e2ea501135422ad543dbb6aaffdb5d91868ceb1179b26108edc",
+    "request_sha256": "f1cf2954f3dc32b87c144781c4eaad6e033a1fa7550c2c513daa476889deae37",
+    "review_sha256": "408cd366602af73e540837ca2932e76128d96d41e25048f5d66b757c47bac148",
+    "attribution": {
+      "suite": "/root/projects/qkan-mamba-lra-adaptive-ebe7e4732dc0/runs/attention-attribution-20261116T024408Z-e40dd283",
+      "report_sha256": "ce784d88f6b9269c5f321f2a890b15c3a9bd2060b0d8d630bc6216a646f7ef44",
+      "values_sha256": "b0d0c8797a79865314ab37761ff52b3da0ef2f160c56994b8ad5aefd9bc6154f",
+      "values_bytes": 45431227,
+      "checkpoint_sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9",
+      "checkpoint_step": 14268,
+      "row_ids_sha256": "823ce471b360100fa3d8a7088b7c6bed611e20a47bb2aa16b91a6f9cf4433e0d"
+    }
+  },
+  "source_checkpoint": {
+    "step": 14268,
+    "sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9"
+  },
+  "key_bias_manifest": {
+    "id": "gradient.key_bias_analytic_zero",
+    "version": "1",
+    "candidate_id": "bf16-key-bias-analytic-zero-v1",
+    "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1",
+    "forward": "existing BF16 attention route unchanged",
+    "parameter_membership": "unchanged",
+    "adam_history": "retain exp_avg/exp_avg_sq/step; normal decay and weight decay",
+    "metric_population": "all53 tensors/807170 elements; original FP32 reference",
+    "formal_admission": false
+  },
+  "trajectory": {
+    "passed": true,
+    "loss_absolute_limit": 0.1,
+    "loss_absolute_differences": {
+      "fp32": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fp32_analytic": [
+        0.0,
+        1.4901161193847656e-08,
+        5.960464477539063e-08,
+        0.0
+      ],
+      "bf16_analytic": [
+        0.0003707408905029297,
+        0.00020428001880645752,
+        0.00016108155250549316,
+        7.471442222595215e-05
+      ]
+    },
+    "updates_per_route": 4,
+    "dropout": 0,
+    "convergence_certified": false
+  },
+  "trajectory_updates": {
+    "fp32": [
+      {
+        "loss": 0.28349193930625916,
+        "rows": 128,
+        "correct": 112,
+        "row_ids_sha256": "823ce471b360100fa3d8a7088b7c6bed611e20a47bb2aa16b91a6f9cf4433e0d"
+      },
+      {
+        "loss": 0.17511920630931854,
+        "rows": 128,
+        "correct": 120,
+        "row_ids_sha256": "dafb137ad38bbff176e5b2197dd768fd7bd8dd2506bf1a575d492243585ccde9"
+      },
+      {
+        "loss": 0.39570748805999756,
+        "rows": 128,
+        "correct": 107,
+        "row_ids_sha256": "e7058f459e3bcf6853f948d28a5c5b66140f7254a2dc601af2c73adb5123465c"
+      },
+      {
+        "loss": 0.2810777723789215,
+        "rows": 128,
+        "correct": 113,
+        "row_ids_sha256": "5a6d544c8768de0e8e726be54d60056245ecdd092be4929594ede8af92bc4830"
+      }
+    ],
+    "fp32_analytic": [
+      {
+        "loss": 0.28349193930625916,
+        "rows": 128,
+        "correct": 112,
+        "row_ids_sha256": "823ce471b360100fa3d8a7088b7c6bed611e20a47bb2aa16b91a6f9cf4433e0d"
+      },
+      {
+        "loss": 0.17511919140815735,
+        "rows": 128,
+        "correct": 120,
+        "row_ids_sha256": "dafb137ad38bbff176e5b2197dd768fd7bd8dd2506bf1a575d492243585ccde9"
+      },
+      {
+        "loss": 0.39570754766464233,
+        "rows": 128,
+        "correct": 107,
+        "row_ids_sha256": "e7058f459e3bcf6853f948d28a5c5b66140f7254a2dc601af2c73adb5123465c"
+      },
+      {
+        "loss": 0.2810777723789215,
+        "rows": 128,
+        "correct": 113,
+        "row_ids_sha256": "5a6d544c8768de0e8e726be54d60056245ecdd092be4929594ede8af92bc4830"
+      }
+    ],
+    "bf16_analytic": [
+      {
+        "loss": 0.2838626801967621,
+        "rows": 128,
+        "correct": 112,
+        "row_ids_sha256": "823ce471b360100fa3d8a7088b7c6bed611e20a47bb2aa16b91a6f9cf4433e0d"
+      },
+      {
+        "loss": 0.17491492629051208,
+        "rows": 128,
+        "correct": 120,
+        "row_ids_sha256": "dafb137ad38bbff176e5b2197dd768fd7bd8dd2506bf1a575d492243585ccde9"
+      },
+      {
+        "loss": 0.39586856961250305,
+        "rows": 128,
+        "correct": 107,
+        "row_ids_sha256": "e7058f459e3bcf6853f948d28a5c5b66140f7254a2dc601af2c73adb5123465c"
+      },
+      {
+        "loss": 0.28100305795669556,
+        "rows": 128,
+        "correct": 113,
+        "row_ids_sha256": "5a6d544c8768de0e8e726be54d60056245ecdd092be4929594ede8af92bc4830"
+      }
+    ]
+  },
+  "timing": {
+    "samples_seconds": {
+      "fp32": [
+        8.827903259545565,
+        9.03511095046997,
+        9.028414685279131,
+        9.029825877398252
+      ],
+      "bf16": [
+        3.756212782114744,
+        3.7854553125798702,
+        3.8271512873470783,
+        3.8251771926879883
+      ]
+    },
+    "median_seconds": {
+      "fp32": 9.029120281338692,
+      "bf16": 3.8053162526339293
+    },
+    "throughput_gain": 1.3727647538069925,
+    "update_time_reduction": 0.5785507187783594,
+    "gain_passed": true
+  },
+  "paired_throughput_gain": [
+    1.350213838145629,
+    1.386796357216101,
+    1.3590430603378336,
+    1.3606294355877688
+  ],
+  "timing_order": [
+    "fp32",
+    "bf16_analytic",
+    "bf16_analytic",
+    "fp32",
+    "fp32",
+    "bf16_analytic",
+    "bf16_analytic",
+    "fp32"
+  ],
+  "timing_scope": "Original dropout; gather/H2D/forward/CE/backward/gradient hook/clip/Adam/schedule/finite checks; restore/warm/profile excluded",
+  "timing_state_sha256": {
+    "fp32": "2d23e7dbcc41d8ae254de3fc7de9907a2828af4caf795488d03dea3033d40cd3",
+    "bf16_analytic": "b2c4279d559b1dc0c20e9be4b8b30d007e8db853546dbe49204b9305cda01f7f"
+  },
+  "kernel_proof": {
+    "fp32": {
+      "efficient_forward": true,
+      "efficient_backward": true,
+      "other_sdpa": false,
+      "scope": "ATen profiler operators, not exported CUDA kernel names"
+    },
+    "bf16_analytic": {
+      "efficient_forward": true,
+      "efficient_backward": true,
+      "other_sdpa": false,
+      "scope": "ATen profiler operators, not exported CUDA kernel names"
+    }
+  },
+  "memory": {
+    "fp32": {
+      "start_allocated": 78844416,
+      "peak_allocated": 5286718976,
+      "peak_reserved": 5421137920,
+      "scope": "Shared allocator full-update peak; not isolated minimum"
+    },
+    "bf16_analytic": {
+      "start_allocated": 78844416,
+      "peak_allocated": 4753427968,
+      "peak_reserved": 5421137920,
+      "scope": "Shared allocator full-update peak; not isolated minimum"
+    }
+  },
+  "allocated_peak_reduction": 0.10087371967773762,
+  "validation": {
+    "published_file_hashes_verified": 16,
+    "protected_core_files_unchanged": 8,
+    "trajectory_updates_recomputed": 12,
+    "timed_updates_verified": 8,
+    "same_route_full_state_and_outputs_exact": true,
+    "bf16_timed_state_matches_prior_interrupt_exact": true,
+    "child_exit_code": 0,
+    "child_elapsed_seconds": 191.92185569554567,
+    "owned_process_group_clean": true,
+    "original_checkpoint_and_metadata_unchanged": true,
+    "rollback": {
+      "full_state_exact": true,
+      "committed_samples": 0,
+      "committed_updates": 0
+    },
+    "owner_framework_imports": 0,
+    "private_values_downloaded": false
+  },
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "limitations": [
+    "Matched eager full update versus original eager; incumbent Graph/partitioned route not measured in this comparison.",
+    "4dropout0 updates per route/512fixed train rows/one checkpoint/seed42/one RTX3090;no convergence or held-out utility evidence.",
+    "4timings per route and4paired comparisons are diagnostic,not statistical significance or sustained queue performance.",
+    "Profiler evidence is ATen efficient SDPA forward/backward,not exported CUDA kernel names or operator time shares.",
+    "Memory is shared allocator peak;reserved peak unchanged;not isolated minimum or a formal training peak guarantee.",
+    "Owner recomputes authenticated compact scalar/hash identities;private model values not downloaded or independently recomputed.",
+    "Request hash is producer-reported;the private request file itself was not returned."
+  ],
+  "next_action": "Deliver bounded train-only convergence/stability pilot and matched incumbent-route comparison before final integration;freeze gates first."
+}

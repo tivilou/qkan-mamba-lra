@@ -1,0 +1,92 @@
+{
+  "schema": "qkan-compiler-graph-calibration.v1",
+  "date": "2026-11-09",
+  "status": "implemented_stdlib_mock_verified_native_pending",
+  "authentic_prior_observation": "docs/evidence/compiler-runtime-observation-20261109.json",
+  "active_source_revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+  "active_source_suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+  "fixed_defects": [
+    "Real-data NumericalMismatch discarded the concrete failing fields",
+    "Synthetic-only backend admission did not test the migrated real checkpoint",
+    "Current840 source was missing from explicit migration support",
+    "Readiness reentry must preserve failed-profile calibration evidence byte-for-byte",
+    "Capture wrapped native OOM and required Graph could exit before microbatch downgrade",
+    "Epoch tails could repeatedly recapture the hot graph and exhaust finite validation/build budgets"
+  ],
+  "candidates": [
+    "compile_graph/inductor",
+    "compile_graph/aot_eager_default_partitioner",
+    "compile/inductor",
+    "compile/aot_eager_default_partitioner",
+    "eager"
+  ],
+  "native_aten_profile": "torch.compile/AOTAutograd default partitioner with native ATen graphs; no Inductor/Triton fusion claim",
+  "preserved": [
+    "model",
+    "Adam moments/counters",
+    "RNG",
+    "sampler permutation/cursor",
+    "sample schedule",
+    "OOM controller",
+    "original result bytes and source provenance",
+    "100epochs and declared sample budget"
+  ],
+  "calibration": {
+    "source": "immutable full migration snapshot",
+    "directory": "isolated suite/calibration/",
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0,
+    "rollback": "exact model/Adam/scheduler/RNG",
+    "test_access": false,
+    "formal_checkpoint_written": false,
+    "binding": [
+      "config",
+      "source checkpoint SHA256",
+      "source revision",
+      "GPU identity",
+      "restored step"
+    ],
+    "admission": "same requested actual mode; passed numerics/recovery; measured complete-update positive gain"
+  },
+  "required_graph_job": "transformer-retrieval-s42",
+  "required_graph_failure": "Bounded two graph-profile attempts then compact automatic return; no eager continuation or failed update commit",
+  "graph_lifecycle": {
+    "required_oom": "release pool and delegate original error to finite microbatch rollback/retry",
+    "partial_tail": "native eager tail; retain one full-microbatch graph",
+    "agreement_cache": "execution key plus graph generation; recheck rebuilt graphs",
+    "actual_graph_admission": "positive real graph_replays counter required, alongside numeric/recovery and timing gates"
+  },
+  "validation": {
+    "standard_library_mock_checks": 183,
+    "framework_imported": false,
+    "gpu_queried": false,
+    "dependencies_installed": false,
+    "training_executed": false,
+    "floating_update_rtol": 1e-05,
+    "floating_update_atol": 1e-06,
+    "exact_recovery_threshold_relaxed": false,
+    "native_graph_passed": false,
+    "sustained_speedup_established": false
+  },
+  "primary_sources": [
+    "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_dynamo/backends/debugging.py",
+    "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py",
+    "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/config.py"
+  ],
+  "primary_source_check": "Pinned official source retrieved using stdlib HTTP; no native framework import",
+  "artifacts": {
+    "experiments/baseline_delivery/torch_acceleration.py": "975a70b9d504fc69000651fe676cf91e2ab7a605ba6ed6c34fb578259b59c9ec",
+    "experiments/baseline_delivery/acceleration_calibration.py": "e93295ff253691eae6194bea91027840381181e164d171e83b40272fe23661c1",
+    "experiments/baseline_delivery/worker.py": "7e5857e987ecd849687ad4f53f295737a22d08ed784a366d697b7f43346a4be1",
+    "experiments/baseline_delivery/readiness.py": "69770b48f63fefa9208084a2c6900d5b2e421aa6a71f395cca5392ea9097e0cd",
+    "experiments/baseline_delivery/migration.py": "e453ef2e006e23daed35fdcbd6d448eb28b4d2f1d3596df2602e9db2bbe62e04",
+    "scripts/formal_progress.py": "fb0cc553c3a3ff89fb975827c98aa229f7ab4eb28c3f785256737a70e369a68f",
+    "scripts/run_admitted.py": "06e09f80bfe1c56993bd391dc727382113cf8d37470e9f98d2b3c85f6e15fe49",
+    "docs/baselines/torch-acceleration.md": "7765b81a81f2301feeb734ef807d6e1dbeb465232b52ab2cd0c6bfefd1b39ac3",
+    "tests/test_baseline_acceleration_calibration.py": "ea1d830222953dac5b2cf5f367832a6a29f979f6177c4bdb1a822a0e3e033d3b",
+    "tests/test_baseline_torch_acceleration.py": "5a3fb92419e0d1dc4b81c690446f24bd100ff7e31e43e0ad1fdf09776c4cfb72",
+    "tests/test_baseline_migration.py": "377e00d3663940800b17f9e59ea123c849ad865503e70ef708c15046337d7af9",
+    "tests/test_baseline_completed_migration.py": "f84c50e4ed0105e9868ae3a9d485175e1a134ba2416f2012418ca77c6b71ec08",
+    "tests/test_baseline_admitted_entry.py": "bc20f9bd1d98bb821bb9b1feafe1462fdc764a63f171493e16dee6aa53e2ffcf"
+  }
+}

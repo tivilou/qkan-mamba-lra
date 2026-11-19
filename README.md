@@ -2,6 +2,18 @@
 
 Quantum Kolmogorov-Arnold Gated State Space Models for Long-Range Sequence Understanding.
 
+## Research status and collaboration
+
+**实验运行统一入口：[启动、断点续跑与原美化进度看板一体化](docs/baselines/experiment.md)。** 当前速度优化版的完整续跑命令在该文档首节；已有Suite保持其原执行版本，使用控制脚本副本即可，不需要更新训练代码。历史启动脚本保留兼容，日常只使用`experiment.py`。
+
+The research foundation was audited on 2026-10-21. [Current plan](docs/research-plan.md), [collaborator handoff](docs/collaboration.md), [data readiness](docs/data-and-literature-readiness.md), and [recovery audit](docs/audits/recovery-20261021.md) are the current entry points.
+
+The four historical Mamba pilot scores are preliminary. Original data, result JSON and checkpoints have not been recovered from the released server. Dataset qualification and the baseline protocol must precede formal comparisons; the training examples below are historical development commands.
+
+Collaborator instructions: [中文操作步骤：配置服务器、获取项目与启动实验](docs/baselines/collaborator-beginner-guide.zh-CN.md). Automation details: [one-command baseline preparation, preflight, resume and artifact return](docs/baselines/one-click.md). Formal launch remains gated by dataset qualification and per-model fidelity certificates.
+
+To view the local research portal, run `python scripts/refresh_portal.py`, then `python scripts/serve_portal.py --portal-root research-web --project-root . --host 127.0.0.1 --port 4191` and open `http://127.0.0.1:4191/`. It reads only reviewed source records. Exchange client tests use `python -m unittest discover -s tests -v` and require no GPU or model dependencies.
+
 ## Overview
 
 QKAN-Mamba combines quantum circuit-based non-linear gating (QKAN) with Mamba's selective state space mechanism for long-range sequence tasks. The quantum gate learns rich feature interactions while Mamba handles efficient temporal modeling.
@@ -24,7 +36,9 @@ cd qkan-mamba-lra
 pip install -r requirements.txt
 ```
 
-## Quick Start
+## Historical Development Quick Start
+
+These examples are historical development paths, not the current admitted experiment continuation. Use the [unified experiment entry](docs/baselines/experiment.md) for the current suite.
 
 ```bash
 # Run a single experiment

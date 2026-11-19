@@ -1,0 +1,32 @@
+# 正式实验最短放行路径（2026-11-03）
+
+2026-11-04 更新：两项 GPU 恢复/trace 与三模型适配组合验收已通过；后续源码审计发现 Mamba 零 decay 标记遗漏，修正后尚无回执。当前明细与强基线未集成事实见 [放行审计](release-audit-20261104.md)，不能沿用旧的“只剩一次命令”预期。
+
+当前交付包尚未达到正式训练放行条件。此清单不发放新证书，也不改变 release.json。研究方完成文档和代码审计；合作者执行剩余设备验证。不新增 owner 侧训练或回归测试。
+
+## 已收到的恢复证据
+
+- 运行：recovery-replicates-f19b2bf61722，5 组相同种子、每组 6 更新，全部控制状态精确一致、数值有限。报告及摘要已按服务收据核验。
+- 总体模型差异：不中断重复 7.23e-7，恢复对照 5.74e-7；不能用总体最大值代替逐参数判断。
+- 逐叶审阅：1311 项中 60 项的恢复差异超过该项不中断重复的观测最大值，包括 model 14、optimizer 33、best_weights 11、history 1、update_trace 1。例：embedding 2.38e-7 对 5.96e-8；一个最优权重 conv1d bias 5.96e-8 对 9.31e-10。
+- 这些差异仍小；有限重复的最大值不是统计噪声上界，超出它不等于恢复错误。不能按每项观测最大值直接设容差。证据：../evidence/baseline-recovery-leaf-review-20261103.json。
+
+## 依赖顺序与具体交付物
+
+1. 数据资格：逐任务闭合来源、获取和本项目用途声明。区分内部科研使用和对外再分发；不能仅因禁止再分发就推断禁止内部研究，也不能把代码许可证视为数据许可证。现有缺口见 ../data-use-boundaries.md；源审阅完成后才可更新 mega-document-v3-qualification.json。
+2. 比较范围：冻结当前研究问题所需的 cohort 和共同协议；说明 Transformer、Mamba1 与 minimal S4D 的角色，及 MEGA/S5/近期强方法的纳入或排除理由。minimal S4D 不得改称完整 S4。候选调查见 candidate-inventory.md、recent-screen.md。
+3. 模型保真：针对固定上游实现完成机制与适配清单，交付同输入、同权重条件下的 forward/loss/gradient/一步更新对照脚本及产物契约，由合作者执行；输出绑定实现/协议哈希的逐模型证书。不得把恢复报告代替此证书。
+4. 恢复契约：审阅 checkpoint 保存/加载路径并声明 FP32 数值恢复的工程误差预算与精确控制项；预算需有数值尺度依据，不拟合本次观测的最坏值，不将其包装为统计保证。将候选政策与逐项差异对应，明确适用模型、设备和版本，再让实际 GPU 预检执行该契约。CPU/其他模型维持已约定的精确要求。
+5. 一次交付：将保真对照、恢复/trace 与设备检查整合成可自动回传的合作者验收入口，避免继续分散执行噪声重复。已有 trace 修复的 Transformer/Retrieval GPU 回放仍需确认。
+6. 发布：只有上述证据通过，才更新 qualification、冻结协议、登记真实证书并设置 release。发布首个全量单种子任务（seed=42），随后按既定规则扩大种子；正式训练由合作者启动。
+
+## 当前可复用内容
+
+已有固定依赖镜像、数据内容哈希、一键准备/预检/恢复入口和认证文件交换，不需要师弟重装环境或重传既有报告。已有数据直接从作者取得，不经本项目服务再分发。
+
+## 目前不应执行
+
+不要直接运行旧 experiments/lra/train.py，不绕过 check_release，不伪造 canary.json 或 fidelity 证书，也不把已有候选默认标为已认证。
+
+
+Current handoff supersedes earlier commands: [consolidated launch](consolidated-launch.md). Native MEGA/S5 workers and conditional all-gates admission are delivered; no current runtime receipt is claimed.

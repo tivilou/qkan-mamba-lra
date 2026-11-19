@@ -1,0 +1,94 @@
+{
+  "schema": "qkan-reviewed-scheduler-receipts.v1",
+  "observed_at": "2026-10-28T09:37:08.125517+00:00",
+  "checkpoints": [
+    {
+      "task": "e0b56e161769467f83ff147e1a501f91",
+      "attempt": "7afd75d69e114df586bdb22a31bf326f",
+      "node": "owner-recovery-3080ti",
+      "revision": "f1494397836fa4e7fc722a776b4a7d1b6e708971",
+      "state": "complete",
+      "quiescent": true,
+      "returncode": 0,
+      "finished": 1793178692.9358168,
+      "outputs": {
+        "preflight.json": {
+          "bytes": 857,
+          "sha256": "db595344edacec8e0556157dec77e50b8de949112b717b2576ba8243aa6aa3fd"
+        },
+        "test_data_pipeline.py.log": {
+          "bytes": 1287,
+          "sha256": "bca7516f0e5d83cee8ce235f3dd4d58101ca97e6483443b4ecdb8d24f2843ba3"
+        },
+        "test_exchange.py.log": {
+          "bytes": 2425,
+          "sha256": "cb598c947ea2b81090efb4c0792a2da49d00b23bb5228e63465e2c819f478376"
+        },
+        "test_qualification.py.log": {
+          "bytes": 879,
+          "sha256": "812009cbda39f1e5bec249b08c1103869001e63cd0cf9fafe9d57306791856f8"
+        }
+      }
+    },
+    {
+      "task": "79c9a56ec9794299a5133a1e51928c71",
+      "attempt": "8321d7e5bec44c23aa58e9cf3abf6af8",
+      "node": "owner-recovery-3080ti",
+      "revision": "f1494397836fa4e7fc722a776b4a7d1b6e708971",
+      "state": "complete",
+      "quiescent": true,
+      "returncode": 0,
+      "finished": 1793178870.5925896,
+      "outputs": {
+        "relations.json": {
+          "bytes": 2072,
+          "sha256": "70415ed0efba9cb9fe08c7bf5d2dbf95d10332b6b845f9d56b3e5fe49a1eb77f"
+        }
+      }
+    },
+    {
+      "task": "d89015acb0b04f28b294c0c3b61dbc5b",
+      "attempt": "5dba18f2bcca4e3dbe304ec26c3fa07d",
+      "node": "owner-recovery-3080ti",
+      "revision": "f1494397836fa4e7fc722a776b4a7d1b6e708971",
+      "state": "complete",
+      "quiescent": true,
+      "returncode": 0,
+      "finished": 1793179369.137926,
+      "outputs": {
+        "pilot.json": {
+          "bytes": 5185,
+          "sha256": "a165b5a69329ab6c49f5af35eb23917249996f2316acb73fcdef4cfd36d08095"
+        }
+      }
+    },
+    {
+      "task": "34cd8fa4ef2b4a07b104805a6105bc83",
+      "attempt": "ee9d6702f9444d8a9aa0794f65f055da",
+      "node": "owner-recovery-3080ti",
+      "revision": "6fd939241d8d1167188d9576a25aaa9c114019a3",
+      "state": "complete",
+      "quiescent": true,
+      "returncode": 0,
+      "finished": 1793180158.5008588,
+      "outputs": {
+        "preflight.json": {
+          "bytes": 857,
+          "sha256": "db595344edacec8e0556157dec77e50b8de949112b717b2576ba8243aa6aa3fd"
+        },
+        "test_data_pipeline.py.log": {
+          "bytes": 1287,
+          "sha256": "19ee1eac5cc1492bd0b708d56c79d284bfb1ed7be34fffe4590e8367ebe97a8a"
+        },
+        "test_exchange.py.log": {
+          "bytes": 2425,
+          "sha256": "b4bf767994eaeed8b919961b9e391d24b75c2c4bc9184c7b275f85385774ec9d"
+        },
+        "test_qualification.py.log": {
+          "bytes": 1332,
+          "sha256": "bda1cac2d4e34489d6b651dd746a8258144de5970b75ce2b320652dc682b415e"
+        }
+      }
+    }
+  ]
+}

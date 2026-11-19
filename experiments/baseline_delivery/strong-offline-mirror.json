@@ -1,0 +1,3553 @@
+{
+  "schema": "qkan-strong-offline-mirror.v1",
+  "status": "published",
+  "python_tag": "cp310",
+  "platform": "linux-x86_64",
+  "models": {
+    "mega": {
+      "requirements_sha256": "03f8689aaab3740c90ea637fe5c8aecc4e548770bc11ffe10eca172abfc43fc4",
+      "wheels": [
+        {
+          "filename": "Cython-0.29.37-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl",
+          "size_bytes": 1910402,
+          "sha256": "12192ab269e7185720f2d2f8894587bf1da4276db1b9b869e4622a093f18cae6",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/12192ab269e7185720f2d2f8894587bf1da4276db1b9b869e4622a093f18cae6.chunk",
+              "size_bytes": 1910402,
+              "sha256": "12192ab269e7185720f2d2f8894587bf1da4276db1b9b869e4622a093f18cae6"
+            }
+          ]
+        },
+        {
+          "filename": "PyYAML-6.0.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 705525,
+          "sha256": "ba336e390cd8e4d1739f42dfe9bb83a3cc2e80f567d8805e11b46f4a943f5515",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/ba336e390cd8e4d1739f42dfe9bb83a3cc2e80f567d8805e11b46f4a943f5515.chunk",
+              "size_bytes": 705525,
+              "sha256": "ba336e390cd8e4d1739f42dfe9bb83a3cc2e80f567d8805e11b46f4a943f5515"
+            }
+          ]
+        },
+        {
+          "filename": "antlr4_python3_runtime-4.8-py3-none-any.whl",
+          "size_bytes": 141210,
+          "sha256": "8d608964fecdc2f01a69f5dfe4b16bb7822be65389ef7405ee9bd75848e472b8",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/8d608964fecdc2f01a69f5dfe4b16bb7822be65389ef7405ee9bd75848e472b8.chunk",
+              "size_bytes": 141210,
+              "sha256": "8d608964fecdc2f01a69f5dfe4b16bb7822be65389ef7405ee9bd75848e472b8"
+            }
+          ]
+        },
+        {
+          "filename": "bitarray-2.9.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 288305,
+          "sha256": "345c76b349ff145549652436235c5532e5bfe9db690db6f0a6ad301c62b9ef21",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/345c76b349ff145549652436235c5532e5bfe9db690db6f0a6ad301c62b9ef21.chunk",
+              "size_bytes": 288305,
+              "sha256": "345c76b349ff145549652436235c5532e5bfe9db690db6f0a6ad301c62b9ef21"
+            }
+          ]
+        },
+        {
+          "filename": "cffi-1.16.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 443865,
+          "sha256": "e4108df7fe9b707191e55f33efbcb2d81928e10cea45527879a4749cbe472614",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e4108df7fe9b707191e55f33efbcb2d81928e10cea45527879a4749cbe472614.chunk",
+              "size_bytes": 443865,
+              "sha256": "e4108df7fe9b707191e55f33efbcb2d81928e10cea45527879a4749cbe472614"
+            }
+          ]
+        },
+        {
+          "filename": "colorama-0.4.6-py2.py3-none-any.whl",
+          "size_bytes": 25335,
+          "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6.chunk",
+              "size_bytes": 25335,
+              "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"
+            }
+          ]
+        },
+        {
+          "filename": "editdistance-0.8.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 401846,
+          "sha256": "67d143429a49ab552411505f550a0fb4285a1d4336e096804d233ec495ac20fc",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/67d143429a49ab552411505f550a0fb4285a1d4336e096804d233ec495ac20fc.chunk",
+              "size_bytes": 401846,
+              "sha256": "67d143429a49ab552411505f550a0fb4285a1d4336e096804d233ec495ac20fc"
+            }
+          ]
+        },
+        {
+          "filename": "einops-0.6.1-py3-none-any.whl",
+          "size_bytes": 42232,
+          "sha256": "99149e46cc808956b174932fe563d920db4d6e5dadb8c6ecdaa7483b7ef7cfc3",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/99149e46cc808956b174932fe563d920db4d6e5dadb8c6ecdaa7483b7ef7cfc3.chunk",
+              "size_bytes": 42232,
+              "sha256": "99149e46cc808956b174932fe563d920db4d6e5dadb8c6ecdaa7483b7ef7cfc3"
+            }
+          ]
+        },
+        {
+          "filename": "hydra_core-1.0.7-py3-none-any.whl",
+          "size_bytes": 123750,
+          "sha256": "e800c6deb8309395508094851fa93bc13408f2285261eb97e626d37193b58a9f",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e800c6deb8309395508094851fa93bc13408f2285261eb97e626d37193b58a9f.chunk",
+              "size_bytes": 123750,
+              "sha256": "e800c6deb8309395508094851fa93bc13408f2285261eb97e626d37193b58a9f"
+            }
+          ]
+        },
+        {
+          "filename": "joblib-1.3.2-py3-none-any.whl",
+          "size_bytes": 302207,
+          "sha256": "ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9.chunk",
+              "size_bytes": 302207,
+              "sha256": "ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9"
+            }
+          ]
+        },
+        {
+          "filename": "lxml-6.1.3-cp310-cp310-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl",
+          "size_bytes": 5296830,
+          "sha256": "f6449672f9c93316deb5e2839e18931f468670e44d5bd9b1301a5a9655d45c07",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/f6449672f9c93316deb5e2839e18931f468670e44d5bd9b1301a5a9655d45c07.chunk",
+              "size_bytes": 5296830,
+              "sha256": "f6449672f9c93316deb5e2839e18931f468670e44d5bd9b1301a5a9655d45c07"
+            }
+          ]
+        },
+        {
+          "filename": "numpy-1.23.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 17059657,
+          "sha256": "5e05b1c973a9f858c74367553e236f287e749465f773328c8ef31abe18f691e1",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/5e05b1c973a9f858c74367553e236f287e749465f773328c8ef31abe18f691e1.chunk",
+              "size_bytes": 17059657,
+              "sha256": "5e05b1c973a9f858c74367553e236f287e749465f773328c8ef31abe18f691e1"
+            }
+          ]
+        },
+        {
+          "filename": "omegaconf-2.0.6-py3-none-any.whl",
+          "size_bytes": 36834,
+          "sha256": "9e349fd76819b95b47aa628edea1ff83fed5b25108608abdd6c7fdca188e302a",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/9e349fd76819b95b47aa628edea1ff83fed5b25108608abdd6c7fdca188e302a.chunk",
+              "size_bytes": 36834,
+              "sha256": "9e349fd76819b95b47aa628edea1ff83fed5b25108608abdd6c7fdca188e302a"
+            }
+          ]
+        },
+        {
+          "filename": "pip-23.3.2-py3-none-any.whl",
+          "size_bytes": 2109393,
+          "sha256": "5052d7889c1f9d05224cd41741acb7c5d6fa735ab34e339624a614eaaa7e7d76",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/5052d7889c1f9d05224cd41741acb7c5d6fa735ab34e339624a614eaaa7e7d76.chunk",
+              "size_bytes": 2109393,
+              "sha256": "5052d7889c1f9d05224cd41741acb7c5d6fa735ab34e339624a614eaaa7e7d76"
+            }
+          ]
+        },
+        {
+          "filename": "portalocker-4.4.2-py3-none-any.whl",
+          "size_bytes": 129702,
+          "sha256": "e661b91af34fc1806740f8e0e42990fe55cd85cbae55675ac48a400a9656a51b",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e661b91af34fc1806740f8e0e42990fe55cd85cbae55675ac48a400a9656a51b.chunk",
+              "size_bytes": 129702,
+              "sha256": "e661b91af34fc1806740f8e0e42990fe55cd85cbae55675ac48a400a9656a51b"
+            }
+          ]
+        },
+        {
+          "filename": "pycparser-3.11-py3-none-any.whl",
+          "size_bytes": 51178,
+          "sha256": "51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80.chunk",
+              "size_bytes": 51178,
+              "sha256": "51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80"
+            }
+          ]
+        },
+        {
+          "filename": "regex-2024.4.16-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 773992,
+          "sha256": "c4ed75ea6892a56896d78f11006161eea52c45a14994794bcfa1654430984b22",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/c4ed75ea6892a56896d78f11006161eea52c45a14994794bcfa1654430984b22.chunk",
+              "size_bytes": 773992,
+              "sha256": "c4ed75ea6892a56896d78f11006161eea52c45a14994794bcfa1654430984b22"
+            }
+          ]
+        },
+        {
+          "filename": "sacrebleu-2.4.2-py3-none-any.whl",
+          "size_bytes": 106704,
+          "sha256": "611a581d205828912f0b05f806b110180087184d3be2dc650fda7a729d6ecb89",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/611a581d205828912f0b05f806b110180087184d3be2dc650fda7a729d6ecb89.chunk",
+              "size_bytes": 106704,
+              "sha256": "611a581d205828912f0b05f806b110180087184d3be2dc650fda7a729d6ecb89"
+            }
+          ]
+        },
+        {
+          "filename": "scikit_learn-1.2.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 9625294,
+          "sha256": "2e2642baa0ad1e8f8188917423dd73994bf25429f8893ddbe115be3ca3183584",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/2e2642baa0ad1e8f8188917423dd73994bf25429f8893ddbe115be3ca3183584.chunk",
+              "size_bytes": 9625294,
+              "sha256": "2e2642baa0ad1e8f8188917423dd73994bf25429f8893ddbe115be3ca3183584"
+            }
+          ]
+        },
+        {
+          "filename": "scipy-1.10.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 34422544,
+          "sha256": "4c0ff64b06b10e35215abce517252b375e580a6125fd5fdf6421b98efbefb2d2",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/4c0ff64b06b10e35215abce517252b375e580a6125fd5fdf6421b98efbefb2d2.chunk",
+              "size_bytes": 34422544,
+              "sha256": "4c0ff64b06b10e35215abce517252b375e580a6125fd5fdf6421b98efbefb2d2"
+            }
+          ]
+        },
+        {
+          "filename": "setuptools-68.2.2-py3-none-any.whl",
+          "size_bytes": 807864,
+          "sha256": "b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a.chunk",
+              "size_bytes": 807864,
+              "sha256": "b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a"
+            }
+          ]
+        },
+        {
+          "filename": "tabulate-0.10.0-py3-none-any.whl",
+          "size_bytes": 39814,
+          "sha256": "f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3.chunk",
+              "size_bytes": 39814,
+              "sha256": "f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3"
+            }
+          ]
+        },
+        {
+          "filename": "threadpoolctl-3.1.0-py3-none-any.whl",
+          "size_bytes": 14928,
+          "sha256": "8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b.chunk",
+              "size_bytes": 14928,
+              "sha256": "8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"
+            }
+          ]
+        },
+        {
+          "filename": "torch-1.13.1+cu117-cp310-cp310-linux_x86_64.whl",
+          "size_bytes": 1801766149,
+          "sha256": "14c5c9db09df8cf1b3942a3479c779da6e293a84a162d8a6ac71e2bde30e30c5",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/2394dcbb6fd8bd55bf953f1b85277d19fa438e94d5b345d037891d8e61992966.chunk",
+              "size_bytes": 67108864,
+              "sha256": "2394dcbb6fd8bd55bf953f1b85277d19fa438e94d5b345d037891d8e61992966"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b63e3155e709148d4236db5f50f9bd65065b83b2fb8271e5811e2cb9d5e5b2b9.chunk",
+              "size_bytes": 67108864,
+              "sha256": "b63e3155e709148d4236db5f50f9bd65065b83b2fb8271e5811e2cb9d5e5b2b9"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/76a4816a9133065f50543db19032de510561655cc3348579cdbf9edb944aa478.chunk",
+              "size_bytes": 67108864,
+              "sha256": "76a4816a9133065f50543db19032de510561655cc3348579cdbf9edb944aa478"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/717fc386188aa4bd1c1d99f9271d3c5a31d9cc3edb7393bb8b62ea8073b5b985.chunk",
+              "size_bytes": 67108864,
+              "sha256": "717fc386188aa4bd1c1d99f9271d3c5a31d9cc3edb7393bb8b62ea8073b5b985"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/66af88da5c050392453203dd20c033eae2b1859648815dfafc5a2fbf772f165a.chunk",
+              "size_bytes": 67108864,
+              "sha256": "66af88da5c050392453203dd20c033eae2b1859648815dfafc5a2fbf772f165a"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e6aa8112e5f31c10fce47846da2259d785d7843a8707f34552c1df378fb222ce.chunk",
+              "size_bytes": 67108864,
+              "sha256": "e6aa8112e5f31c10fce47846da2259d785d7843a8707f34552c1df378fb222ce"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/cd4ed611e973951e20abb54026ed97b8bc0613c6ca7c413b3f7de5a2ada26483.chunk",
+              "size_bytes": 67108864,
+              "sha256": "cd4ed611e973951e20abb54026ed97b8bc0613c6ca7c413b3f7de5a2ada26483"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/cd3e5e008e41f0c4a250fe9d0897eadfb3edf38c8bdba3860497b5ec85e3c9e7.chunk",
+              "size_bytes": 67108864,
+              "sha256": "cd3e5e008e41f0c4a250fe9d0897eadfb3edf38c8bdba3860497b5ec85e3c9e7"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/dced2ddf9fcfd8e1dcd5cc3f3166c585e569bea8aacf475a047c80438f0efd2f.chunk",
+              "size_bytes": 67108864,
+              "sha256": "dced2ddf9fcfd8e1dcd5cc3f3166c585e569bea8aacf475a047c80438f0efd2f"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/096281c61724768503ba1e2ceb99d66a04869442bfaa3711bc28029c8b0b0504.chunk",
+              "size_bytes": 67108864,
+              "sha256": "096281c61724768503ba1e2ceb99d66a04869442bfaa3711bc28029c8b0b0504"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/0862d71a6ec13152de2e9b77a70b40541827a9c216df6cb44b277a162d1b25bb.chunk",
+              "size_bytes": 67108864,
+              "sha256": "0862d71a6ec13152de2e9b77a70b40541827a9c216df6cb44b277a162d1b25bb"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/7f3d53015c82665ac2613ac5061a97999f2bf90d0d54b0891d733c817cb44d73.chunk",
+              "size_bytes": 67108864,
+              "sha256": "7f3d53015c82665ac2613ac5061a97999f2bf90d0d54b0891d733c817cb44d73"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b50ff3980a55e2eb9ee8f0dee4401ed3e77b385b13ae30b7eff83f4d9a3afbe3.chunk",
+              "size_bytes": 67108864,
+              "sha256": "b50ff3980a55e2eb9ee8f0dee4401ed3e77b385b13ae30b7eff83f4d9a3afbe3"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/5bd8a031dcc64b0aa821c379c01832dcd1ea7fee2fa95380e1999afc9209709f.chunk",
+              "size_bytes": 67108864,
+              "sha256": "5bd8a031dcc64b0aa821c379c01832dcd1ea7fee2fa95380e1999afc9209709f"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e6340db0796a1190d6009c04626f96d03d1e82a17af405f347174725177c6b41.chunk",
+              "size_bytes": 67108864,
+              "sha256": "e6340db0796a1190d6009c04626f96d03d1e82a17af405f347174725177c6b41"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/dee3c866dfcf33a02506debe21e115d3fe2164ff8146e0409e73218aa0192dad.chunk",
+              "size_bytes": 67108864,
+              "sha256": "dee3c866dfcf33a02506debe21e115d3fe2164ff8146e0409e73218aa0192dad"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/724469cb72386ce2cc816823e13c4d577db5ecc44fe34ea01be34af199ba623c.chunk",
+              "size_bytes": 67108864,
+              "sha256": "724469cb72386ce2cc816823e13c4d577db5ecc44fe34ea01be34af199ba623c"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/021e4d2a8f6a216ceb70469b2c8c8ed768b1c02599ca2d62c225d0ce1c9458ac.chunk",
+              "size_bytes": 67108864,
+              "sha256": "021e4d2a8f6a216ceb70469b2c8c8ed768b1c02599ca2d62c225d0ce1c9458ac"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/c1b5392217383525bb8cf74581877ce75731cea7dea77b0df91bcafc5bc7f5a2.chunk",
+              "size_bytes": 67108864,
+              "sha256": "c1b5392217383525bb8cf74581877ce75731cea7dea77b0df91bcafc5bc7f5a2"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e851a4dddb3efa67ddcec27679f9f3debc05937415356fe03247ad05dc430166.chunk",
+              "size_bytes": 67108864,
+              "sha256": "e851a4dddb3efa67ddcec27679f9f3debc05937415356fe03247ad05dc430166"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/c5c3af1a98e01162c7dd592fa7291ae24898bfd234325b6bacc9687ec8253b0c.chunk",
+              "size_bytes": 67108864,
+              "sha256": "c5c3af1a98e01162c7dd592fa7291ae24898bfd234325b6bacc9687ec8253b0c"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/cbdddb688c9f9fc466a7422b26c16e7e12d0dbebca3f27e6f4cc356205d941e9.chunk",
+              "size_bytes": 67108864,
+              "sha256": "cbdddb688c9f9fc466a7422b26c16e7e12d0dbebca3f27e6f4cc356205d941e9"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/caf27b8c5d55f6c41fd235d202d6148c5be396d3314804b5d9e608650b4607b6.chunk",
+              "size_bytes": 67108864,
+              "sha256": "caf27b8c5d55f6c41fd235d202d6148c5be396d3314804b5d9e608650b4607b6"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/88f09efd0b44920aa7e71d6d300ca2f0f2c6b62367c75010c8a90d2d9d6d33f6.chunk",
+              "size_bytes": 67108864,
+              "sha256": "88f09efd0b44920aa7e71d6d300ca2f0f2c6b62367c75010c8a90d2d9d6d33f6"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/5d2eb1ceca774b8eaa2848a71cc120438df736f3812b1c954d91c5f346a648ff.chunk",
+              "size_bytes": 67108864,
+              "sha256": "5d2eb1ceca774b8eaa2848a71cc120438df736f3812b1c954d91c5f346a648ff"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b7bb0862c885244cdc8be93d6c878c1e783fad03a0b511aab083fce93999186c.chunk",
+              "size_bytes": 67108864,
+              "sha256": "b7bb0862c885244cdc8be93d6c878c1e783fad03a0b511aab083fce93999186c"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/8098d87f484908b001c2764aa305d01650a974de6893ee2bb61b1697b637409e.chunk",
+              "size_bytes": 56935685,
+              "sha256": "8098d87f484908b001c2764aa305d01650a974de6893ee2bb61b1697b637409e"
+            }
+          ]
+        },
+        {
+          "filename": "torchaudio-0.13.1+cu117-cp310-cp310-linux_x86_64.whl",
+          "size_bytes": 4203287,
+          "sha256": "93f4554a4b53f9698d02224903c923c12a6c22b3c942dcfc2179b581d8f37146",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/93f4554a4b53f9698d02224903c923c12a6c22b3c942dcfc2179b581d8f37146.chunk",
+              "size_bytes": 4203287,
+              "sha256": "93f4554a4b53f9698d02224903c923c12a6c22b3c942dcfc2179b581d8f37146"
+            }
+          ]
+        },
+        {
+          "filename": "tqdm-4.66.4-py3-none-any.whl",
+          "size_bytes": 78275,
+          "sha256": "b75ca56b413b030bc3f00af51fd2c1a1a5eac6a0c1cca83cbb37a5c52abce644",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b75ca56b413b030bc3f00af51fd2c1a1a5eac6a0c1cca83cbb37a5c52abce644.chunk",
+              "size_bytes": 78275,
+              "sha256": "b75ca56b413b030bc3f00af51fd2c1a1a5eac6a0c1cca83cbb37a5c52abce644"
+            }
+          ]
+        },
+        {
+          "filename": "typing_extensions-4.12.2-py3-none-any.whl",
+          "size_bytes": 37438,
+          "sha256": "04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d.chunk",
+              "size_bytes": 37438,
+              "sha256": "04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"
+            }
+          ]
+        },
+        {
+          "filename": "wheel-0.41.3-py3-none-any.whl",
+          "size_bytes": 65801,
+          "sha256": "488609bc63a29322326e05560731bf7bfea8e48ad646e1f5e40d366607de0942",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/488609bc63a29322326e05560731bf7bfea8e48ad646e1f5e40d366607de0942.chunk",
+              "size_bytes": 65801,
+              "sha256": "488609bc63a29322326e05560731bf7bfea8e48ad646e1f5e40d366607de0942"
+            }
+          ]
+        }
+      ],
+      "source": {
+        "filename": "mega-source.zip",
+        "size_bytes": 4509933,
+        "sha256": "7159778600094d31d6d7fb477523ee7c5c3dee1bd3b15e456cb37f9f421735ef",
+        "chunks": [
+          {
+            "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/7159778600094d31d6d7fb477523ee7c5c3dee1bd3b15e456cb37f9f421735ef.chunk",
+            "size_bytes": 4509933,
+            "sha256": "7159778600094d31d6d7fb477523ee7c5c3dee1bd3b15e456cb37f9f421735ef"
+          }
+        ],
+        "revision": "aeaa4b44592cd1d60a9a34554e359eda2a62b03b",
+        "members": {
+          ".gitignore": {
+            "size_bytes": 1858,
+            "sha256": "951a26895695b32afc2a164b3a008bef85c793e5856b5d82009efd04788e1ab9"
+          },
+          "CODE_OF_CONDUCT.md": {
+            "size_bytes": 3350,
+            "sha256": "e56165552d721972842d5368ee2292f191c2198962c9d2fa693dfb231eb9a331"
+          },
+          "CONTRIBUTING.md": {
+            "size_bytes": 1144,
+            "sha256": "fbb6f50c9dee0ec8e2533e3afa51c9c46d679c76a0fcd4bf30b00ed5719b1867"
+          },
+          "LICENSE": {
+            "size_bytes": 1067,
+            "sha256": "1c2ca6f91a3653966d1cf932ead267df9f6d8ffe47ba9c4d0a404e8a2b83e72f"
+          },
+          "README.md": {
+            "size_bytes": 4635,
+            "sha256": "14861e52d0db9a116ebeb55f6c078964555cfd12e3bbde0a9e86a1be49f03db3"
+          },
+          "docs/Makefile": {
+            "size_bytes": 607,
+            "sha256": "9bc7f2ac257ec1e11d587169059616e39a3f5a5020358c94881998e943d01c7f"
+          },
+          "docs/_static/theme_overrides.css": {
+            "size_bytes": 192,
+            "sha256": "11452202c39a53e1e0c33bfe02e5fb215f1b04883cb1bf545be01fb564e6d3c3"
+          },
+          "docs/command_line_tools.rst": {
+            "size_bytes": 1893,
+            "sha256": "2f46d9035d57be31d9f6c288e17f28227b82ce2ada496fa7bd7708654e7f68d1"
+          },
+          "docs/conf.py": {
+            "size_bytes": 4235,
+            "sha256": "b2c246ff4344c70420c248fe164acd886d5c50c7e8a2c896e5a321aa1b3d39e5"
+          },
+          "docs/criterions.rst": {
+            "size_bytes": 758,
+            "sha256": "893c4f82dbb12f11323c7797782f6e474a6bbb9f0cfdc8271dff6123018e75ae"
+          },
+          "docs/data.rst": {
+            "size_bytes": 1202,
+            "sha256": "7b8f8a7d77bf39e7b0c31c6b9cb8d3f88057f417f23a15fa7426e4f398e3ace2"
+          },
+          "docs/docutils.conf": {
+            "size_bytes": 25,
+            "sha256": "9036da81a55ab7c71337d3e3000fb85a7522841a167244ac93601ea6c3055238"
+          },
+          "docs/fairseq.gif": {
+            "size_bytes": 2664833,
+            "sha256": "b7551e9682c816fca1fa00458f3b657177c8d90d2e87db31e42197cb3ae80fca"
+          },
+          "docs/fairseq_logo.png": {
+            "size_bytes": 73036,
+            "sha256": "850abbe321cffb628d19cb5c20585ae87659ad265ec8635c57fd91ffcd81d742"
+          },
+          "docs/getting_started.rst": {
+            "size_bytes": 8125,
+            "sha256": "fb4f3a39b0b7d03d6150518fdaec52cc38f4a4a1e5145cae5344eff778b1a1e6"
+          },
+          "docs/index.rst": {
+            "size_bytes": 1002,
+            "sha256": "d3e04b0b3be718d2ea865bfa547a8ced8a30512182c28470869c287e6dfa605c"
+          },
+          "docs/lr_scheduler.rst": {
+            "size_bytes": 1055,
+            "sha256": "5d8cfb62a959f6b9fcbe2a03f2eeaf1e4ab8613406a5f07b8e923978675b3952"
+          },
+          "docs/make.bat": {
+            "size_bytes": 805,
+            "sha256": "dcfb7d3ff34493e839894f790cc4931f765fa316992d0aa0dda515dda1990240"
+          },
+          "docs/mega.png": {
+            "size_bytes": 1445323,
+            "sha256": "c54e7a6ad273ffa33d621ec67bc81e5536adbed23a9abdaafab8df7faa7bb6f1"
+          },
+          "docs/models.rst": {
+            "size_bytes": 2830,
+            "sha256": "51b48237e70edd2fd2576b93b73a09f9d78aa6fe710524df6f17a250fb960f79"
+          },
+          "docs/modules.rst": {
+            "size_bytes": 241,
+            "sha256": "01df87932ae58bb1f56fe95c8ab9019f907074b0bea384c4995e9ede3125a11e"
+          },
+          "docs/optim.rst": {
+            "size_bytes": 846,
+            "sha256": "9db53f6497e3323d92016bc206f80dcd79fff6085a490e196b27d7c976c5ac1f"
+          },
+          "docs/overview.rst": {
+            "size_bytes": 2708,
+            "sha256": "76b3c3eed9352a20aa9242d106632c017f903b3943a530f72436fb0584d976bf"
+          },
+          "docs/requirements.txt": {
+            "size_bytes": 27,
+            "sha256": "d1144fe028d8786461d0bca2cf6bfc8ee4921ea4f6b004fa345ca1666cfd0450"
+          },
+          "docs/tasks.rst": {
+            "size_bytes": 1391,
+            "sha256": "bbe3670a77bdb71cce5258ccdc485d004253f32e97e0ce9874c7afdb86ab8f14"
+          },
+          "docs/tutorial_classifying_names.rst": {
+            "size_bytes": 16898,
+            "sha256": "5cb0288876fb6db6f6ccc75d6605a97f3dc25d3f57249680c6d431b1fc5f528e"
+          },
+          "docs/tutorial_simple_lstm.rst": {
+            "size_bytes": 21220,
+            "sha256": "a41db15b2b89fca71545716ed6f3b6860d74c8df7ce4f8b3ef45ff5e5b7d7183"
+          },
+          "examples/.gitignore": {
+            "size_bytes": 16,
+            "sha256": "c3eef95527e006abeef32c85120a3c9616f5254fb2a09c9bbc121dc8df47b4f7"
+          },
+          "examples/__init__.py": {
+            "size_bytes": 238,
+            "sha256": "36264b0642150a7ab5fa9fa75e76ec8ccff9ed668ff706cbb453038e6ce7dd30"
+          },
+          "examples/language_model/README.adaptive_inputs.md": {
+            "size_bytes": 1992,
+            "sha256": "378a0353fd41b69b5372a15960c306fe29f6e61396892013d4e42d521ffad6e4"
+          },
+          "examples/language_model/README.conv.md": {
+            "size_bytes": 1262,
+            "sha256": "2943434325f1fcf033b086ee501d4f855cf2688ec5d73c38c84849c03898914f"
+          },
+          "examples/language_model/README.md": {
+            "size_bytes": 5472,
+            "sha256": "75130cd26ea90a5b9066df040c0a3152528f7a34a9f8582a625cc9af7f0876b3"
+          },
+          "examples/language_model/prepare-wikitext-103.sh": {
+            "size_bytes": 827,
+            "sha256": "a4ae1ff2503b2fa98e0501a05c56d116f2a5cdd0dcf55dac21afe448b3ce5f90"
+          },
+          "examples/mega/README.lm.md": {
+            "size_bytes": 4171,
+            "sha256": "d1e249cff35642fd6fcd99e28d0303cc665d08eff5db0f40837771d66fc46a09"
+          },
+          "examples/mega/README.lra.md": {
+            "size_bytes": 6812,
+            "sha256": "80a3620af776cbb16261207b2682b44617403bfbdfee80d675b5e5fa745b6679"
+          },
+          "examples/mega/README.md": {
+            "size_bytes": 1192,
+            "sha256": "e711753b5708ec9cf10be1cfeb2c2dee0b405be7e785c5332139d4facd67ad64"
+          },
+          "examples/mega/README.mt.md": {
+            "size_bytes": 2513,
+            "sha256": "1496aa968b79442530dff3838cd7fa552602bd8a672dd8e32720039f74a59353"
+          },
+          "examples/mega/README.sc.md": {
+            "size_bytes": 2447,
+            "sha256": "4d5233eb2a575b69249219a4f6cdb73eaa5fda1aa086a62bb92df24e36ea6226"
+          },
+          "examples/mega/lra/data_process.py": {
+            "size_bytes": 5784,
+            "sha256": "579c586664dabfec3dd737fbc49895eb6c96f5c9836bab466917afbed501a30a"
+          },
+          "examples/mega/prepare-wmt16en2de.sh": {
+            "size_bytes": 6185,
+            "sha256": "4cde59dde8b77ed69ae6fe421334f10766875f743031b76acc1f17ef3223aed2"
+          },
+          "examples/translation/README.md": {
+            "size_bytes": 14814,
+            "sha256": "790019fe5ed36f0c37a6c87e3ddee6bfc057dd8caa20d7243d713b47ab669243"
+          },
+          "examples/translation/prepare-iwslt14.sh": {
+            "size_bytes": 2978,
+            "sha256": "50f9dd64d373bd2f5e0fcc517865fc96b3b7b5ab23648a3cda6224da3c255af0"
+          },
+          "examples/translation/prepare-iwslt17-multilingual.sh": {
+            "size_bytes": 4386,
+            "sha256": "b153b415a281941839d79ab1f7da9910e730549e6d1971980a8dc57645db3874"
+          },
+          "examples/translation/prepare-wmt14en2de.sh": {
+            "size_bytes": 3962,
+            "sha256": "d34382e7986f6fdaede569edc7a5c15670ed4583867fb847436f423bb3865a41"
+          },
+          "examples/translation/prepare-wmt14en2fr.sh": {
+            "size_bytes": 3724,
+            "sha256": "a292c815e4a90268f1a9c7200011f7eb11f77d42b2cd12248e999ce2314bb5c4"
+          },
+          "fairseq/__init__.py": {
+            "size_bytes": 802,
+            "sha256": "2fd0adee275598c64d30dc9734b505cfd38d8cde22727c2f483325b1199c10a6"
+          },
+          "fairseq/benchmark/__init__.py": {
+            "size_bytes": 309,
+            "sha256": "fc2d5c9a720e8b5f644915466c91bde3314136c6f06fa01347d9140018498775"
+          },
+          "fairseq/benchmark/dummy_lm.py": {
+            "size_bytes": 3532,
+            "sha256": "34f49ee892348de8ecff92ac7852924b6e2eb81136e016dbaec7599a0f7d3dcd"
+          },
+          "fairseq/benchmark/dummy_masked_lm.py": {
+            "size_bytes": 3840,
+            "sha256": "502d6d22923aa37c35ff30354d52973a788eaa576f3c81ee6d5350f1b9a1795e"
+          },
+          "fairseq/benchmark/dummy_model.py": {
+            "size_bytes": 2971,
+            "sha256": "7417eb16505e5147580f7be7e96bbc7e90d1770ae7ad6c9d7afcb83755928474"
+          },
+          "fairseq/benchmark/dummy_mt.py": {
+            "size_bytes": 3605,
+            "sha256": "babaa978a97c7a0ad52b73e5b2554c5290528f1068db07f3c85f40592ae65027"
+          },
+          "fairseq/binarizer.py": {
+            "size_bytes": 3374,
+            "sha256": "c8772f9506ef7e3677546b4977261d0d457261cf4d549b7d483c37757dbb018b"
+          },
+          "fairseq/checkpoint_utils.py": {
+            "size_bytes": 20383,
+            "sha256": "50308a909da7b8e914f3db2715dd639f24de96f63e4555c6f8cd1f377caaa7a6"
+          },
+          "fairseq/clib/libbleu/libbleu.cpp": {
+            "size_bytes": 2923,
+            "sha256": "3c1ba1ade061483d4866230c753f48d0ddd07e1a75b8fbaaa13febd86740904a"
+          },
+          "fairseq/clib/libbleu/module.cpp": {
+            "size_bytes": 791,
+            "sha256": "ce422bd485865572104bc937ff445870b6b8d3af03d4a0c92cbfc8b7d2b81708"
+          },
+          "fairseq/clib/libnat/edit_dist.cpp": {
+            "size_bytes": 5958,
+            "sha256": "9d2d884c5a5394f0d4b87d486982db638c607c5eba5fe99422bb2a0ddfaf084c"
+          },
+          "fairseq/clib/libnat_cuda/binding.cpp": {
+            "size_bytes": 1772,
+            "sha256": "27f75430f46b007b823e2d13290c9a7de6c10a08ba763fdeeef6f9b87a02851a"
+          },
+          "fairseq/clib/libnat_cuda/edit_dist.cu": {
+            "size_bytes": 10623,
+            "sha256": "41677a0db91c952d895c69a46a2022b05f40d3b3d47569d44ef204083dc2a8c8"
+          },
+          "fairseq/clib/libnat_cuda/edit_dist.h": {
+            "size_bytes": 659,
+            "sha256": "c9ffeb69c8761901442121069fbc11058f75ea7181e8b61c196e790e84517868"
+          },
+          "fairseq/criterions/__init__.py": {
+            "size_bytes": 778,
+            "sha256": "a8470528d583e49a53d31453c6ea326408000549c94a5fb013787d14c22bfc91"
+          },
+          "fairseq/criterions/adaptive_loss.py": {
+            "size_bytes": 4277,
+            "sha256": "00498822539323f69780585909925b399aee0987f921311a5ec035b1e822868b"
+          },
+          "fairseq/criterions/composite_loss.py": {
+            "size_bytes": 3689,
+            "sha256": "12f9208f9ee2c330a32beeb17a5168933772b32f5fdb68cddaf5f840db9fd628"
+          },
+          "fairseq/criterions/cross_entropy.py": {
+            "size_bytes": 3166,
+            "sha256": "0d942be4d0aa78e844d3f1087e903b42ffb2af1b45615e922c1076c6703a95d6"
+          },
+          "fairseq/criterions/ctc.py": {
+            "size_bytes": 9597,
+            "sha256": "abe8055561a8c81b7257e85cd00fca82901b5a346e57a0040164df3913a303d9"
+          },
+          "fairseq/criterions/fairseq_criterion.py": {
+            "size_bytes": 4258,
+            "sha256": "135997a66589bf5d97839bb2eaa2e0eb12d4dcea198a9ecdc79e10f01dac4423"
+          },
+          "fairseq/criterions/label_smoothed_cross_entropy.py": {
+            "size_bytes": 3941,
+            "sha256": "2e292c747fde9d41cac52262856eb65b4901bfad7cd3f3fee12512cb4c285700"
+          },
+          "fairseq/criterions/label_smoothed_cross_entropy_with_alignment.py": {
+            "size_bytes": 4393,
+            "sha256": "6391ec4026fc07e0e4dd7a2c043f1d5b1f43e18ef60852e1abd5d9f32ce397f1"
+          },
+          "fairseq/criterions/legacy_masked_lm.py": {
+            "size_bytes": 6793,
+            "sha256": "de64a91762159701c172c48a879359532358d70675829151ce93fffcd17fe0e3"
+          },
+          "fairseq/criterions/lra_cross_entropy.py": {
+            "size_bytes": 2886,
+            "sha256": "98d35b70fd9af60b36431f5415fec90f243d505b2d47cde3d614f6a079290424"
+          },
+          "fairseq/criterions/masked_lm.py": {
+            "size_bytes": 3153,
+            "sha256": "54f66bb1c875e8d3f2b536efd3d007ed2bae3dba4d4696ecb5a782a0c8649254"
+          },
+          "fairseq/criterions/nat_loss.py": {
+            "size_bytes": 6238,
+            "sha256": "98e3be1ab3bb20cced8751d6be25d02b53646cd04962d4744a076116ef81dddb"
+          },
+          "fairseq/criterions/sentence_prediction.py": {
+            "size_bytes": 3717,
+            "sha256": "96209f3851c54ece93f5fab54270784b959bd3edf6ebbe80871a8ccc8181dcad"
+          },
+          "fairseq/criterions/sentence_ranking.py": {
+            "size_bytes": 4532,
+            "sha256": "2273b48278d2d589dbfeef31152915ef8249895d47ba54b80af23753b7df34e6"
+          },
+          "fairseq/criterions/wav2vec_criterion.py": {
+            "size_bytes": 6420,
+            "sha256": "656c8c8e6903123a6aed7fd8d7b98497b708dd8484186cd53b90e36bdb9ea14f"
+          },
+          "fairseq/data/__init__.py": {
+            "size_bytes": 4283,
+            "sha256": "85480ecb65f58c0d21bfa4a86ac4eac146f22443aea6da9b16ccf0052dcc4878"
+          },
+          "fairseq/data/add_target_dataset.py": {
+            "size_bytes": 2046,
+            "sha256": "33a80c6d53bd55283f228f201f4823ce9ca60116887c6f9c21799e407e9dedd3"
+          },
+          "fairseq/data/append_token_dataset.py": {
+            "size_bytes": 1066,
+            "sha256": "7e575da623c5f3ea8e2043e946f68223bec7e6c4e6be4af98515a89151be8791"
+          },
+          "fairseq/data/audio/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "fairseq/data/audio/raw_audio_dataset.py": {
+            "size_bytes": 5335,
+            "sha256": "ed6b17f295f7ebbef5df6ac5dd136ef9833168418c9d3cbda2f917973ed7ba1b"
+          },
+          "fairseq/data/audio/speech_commands_dataset.py": {
+            "size_bytes": 21328,
+            "sha256": "2f38a007cf0e4ebdfaa905042aa8ae838ae9c22c7cd846ae6ba044baf82b633b"
+          },
+          "fairseq/data/backtranslation_dataset.py": {
+            "size_bytes": 6235,
+            "sha256": "36671e9fbc7ca23ca468c0743d692882df83e0c49a70c17fe03cbb23b5da7dff"
+          },
+          "fairseq/data/base_wrapper_dataset.py": {
+            "size_bytes": 1808,
+            "sha256": "2c96236f6fbe65b52f3e72db1f248c47440a37fc22b5862908d6fe159ba1632a"
+          },
+          "fairseq/data/bucket_pad_length_dataset.py": {
+            "size_bytes": 2261,
+            "sha256": "d13200731292f2772d84f934f8129dfe09aec4fa4d75b04c57237d4b5f092f27"
+          },
+          "fairseq/data/colorize_dataset.py": {
+            "size_bytes": 844,
+            "sha256": "06e9c5fa3f9cb44817a9c7106e3893bcb5f9f6f687494a61ceca89aeae84b814"
+          },
+          "fairseq/data/concat_dataset.py": {
+            "size_bytes": 3759,
+            "sha256": "f682c6be256e08831da87c93dfa3eb4e13e756693fae2cf19d42fbb00dfe17d6"
+          },
+          "fairseq/data/concat_sentences_dataset.py": {
+            "size_bytes": 1573,
+            "sha256": "5b4a7ec585f8dc126a456bf4a5420ca131789558d63de1ab12a8f9deb18ffb25"
+          },
+          "fairseq/data/data_utils.py": {
+            "size_bytes": 15707,
+            "sha256": "bc46bdca58801685004432eb1eabf93e97d3138d86c9927aab5f03e69208a758"
+          },
+          "fairseq/data/data_utils_fast.pyx": {
+            "size_bytes": 3507,
+            "sha256": "1c5484c0444e9b9f6370573b0b28181c41a96570723678f19b930f476ed8399a"
+          },
+          "fairseq/data/denoising_dataset.py": {
+            "size_bytes": 15082,
+            "sha256": "6b4adcd4939b5cbcc2ca4799ace8364c5cb55b937520fe41eb582686c27117bd"
+          },
+          "fairseq/data/dictionary.py": {
+            "size_bytes": 12579,
+            "sha256": "3288e20a45fa0299e18313d87a8ec0b6cf1f5d42a3061fffc4e0c7b0bd89b809"
+          },
+          "fairseq/data/encoders/__init__.py": {
+            "size_bytes": 746,
+            "sha256": "ecad44d0635a1c59e132e27a3fccefa17d54af6296dca7795f843efcd24c415a"
+          },
+          "fairseq/data/encoders/byte_bpe.py": {
+            "size_bytes": 1329,
+            "sha256": "d351c439a193d9bab5edc58ae1aac326fc0ca6110513a377c01133650458171f"
+          },
+          "fairseq/data/encoders/byte_utils.py": {
+            "size_bytes": 1644,
+            "sha256": "73949c1b599ac962ca43e3906464b21d381a050fc9f86013681e8e39d9a74c01"
+          },
+          "fairseq/data/encoders/bytes.py": {
+            "size_bytes": 861,
+            "sha256": "dfb0aca32acaf06f97fd8130309e6ca51bc684964f463944efbca0b4b98814e1"
+          },
+          "fairseq/data/encoders/characters.py": {
+            "size_bytes": 680,
+            "sha256": "7551af25dd768c8b5a5ecb410176972bc3bb84dbb7309cc09b1738bc19731175"
+          },
+          "fairseq/data/encoders/fastbpe.py": {
+            "size_bytes": 1101,
+            "sha256": "b79c6d633d6e307edbf2e013b8635f1f58e3e9b85d927a2fff66a900747e7e5d"
+          },
+          "fairseq/data/encoders/gpt2_bpe.py": {
+            "size_bytes": 1637,
+            "sha256": "53f0e6eed10ec35f04231d3435cda68c25d6a3751df831614e9fe9641384fcf4"
+          },
+          "fairseq/data/encoders/gpt2_bpe_utils.py": {
+            "size_bytes": 4465,
+            "sha256": "9822ed1a8fe8d4d344fec528ca148b07baa2e7df65fb0f9869ae72ecada1b1cd"
+          },
+          "fairseq/data/encoders/hf_bert_bpe.py": {
+            "size_bytes": 1606,
+            "sha256": "ae0a6c2c4f6549536d453fb79ce53d7c195883139d29c4ca0ee1824586f41234"
+          },
+          "fairseq/data/encoders/hf_byte_bpe.py": {
+            "size_bytes": 1499,
+            "sha256": "d58da2d0838d6a4ffeb696f314c01e8446df4f78254768aeaddce37b2675a161"
+          },
+          "fairseq/data/encoders/moses_tokenizer.py": {
+            "size_bytes": 1938,
+            "sha256": "a6acc6503e93241b09a447615dd64e56e2ad0a9df3ae73bcd2960984122c2caf"
+          },
+          "fairseq/data/encoders/nltk_tokenizer.py": {
+            "size_bytes": 707,
+            "sha256": "a6dc2aeedcba18dc4faa59e367cdbb12043846dbee4f9b5ecdd1e6661a3d03a1"
+          },
+          "fairseq/data/encoders/sentencepiece_bpe.py": {
+            "size_bytes": 1630,
+            "sha256": "60086cff95c7dd1390bcc21724ce63a0f11e4eb8ee82ba513ad1a1e9616af0f8"
+          },
+          "fairseq/data/encoders/space_tokenizer.py": {
+            "size_bytes": 543,
+            "sha256": "52255bdaa2b1ee59663ec36909372578d7645f0f98117fb0e1a58cad66dade4a"
+          },
+          "fairseq/data/encoders/subword_nmt_bpe.py": {
+            "size_bytes": 1642,
+            "sha256": "636028153a97a643088685f2911fbda588f22d77e68e84cbc66758301221f6ce"
+          },
+          "fairseq/data/encoders/utils.py": {
+            "size_bytes": 907,
+            "sha256": "03250d4925f2fc1b0fa485bd08a8ca6fe7f695a406474bbe5f0449e470a700f4"
+          },
+          "fairseq/data/fairseq_dataset.py": {
+            "size_bytes": 5788,
+            "sha256": "81aa3900219115f4656730b903b82121fc88dd48abc8b907c65ce098c616fa14"
+          },
+          "fairseq/data/id_dataset.py": {
+            "size_bytes": 424,
+            "sha256": "131892adfde250f0ef12d1117bb55a6802363ee28060cd41005032f45ab69253"
+          },
+          "fairseq/data/indexed_dataset.py": {
+            "size_bytes": 16026,
+            "sha256": "1f1093deee5eaf30f617a38d1dae2b2b294c4b8f698f7c7f7bf2032898b9ed04"
+          },
+          "fairseq/data/iterators.py": {
+            "size_bytes": 18688,
+            "sha256": "71065d4cbaa0dda3ffd003dd32e7bfd8ff1d4bbb7289e631d1714c7ee6d22bfa"
+          },
+          "fairseq/data/language_pair_dataset.py": {
+            "size_bytes": 18451,
+            "sha256": "8bd4e0819ba39b8d5c82f37a37dc913a6e6888965e18d8a66cfc916e23f1cbc4"
+          },
+          "fairseq/data/legacy/__init__.py": {
+            "size_bytes": 453,
+            "sha256": "7e3cd651f7e6cbd51844b1fb503bbdab57bb0e85d5d9cf6129d5ae536d3db4b7"
+          },
+          "fairseq/data/legacy/block_pair_dataset.py": {
+            "size_bytes": 12878,
+            "sha256": "7892179331dec6e1f93d7100ae42f46bce3df0d93c31e0e0ef87ec237cd25fca"
+          },
+          "fairseq/data/legacy/masked_lm_dataset.py": {
+            "size_bytes": 12468,
+            "sha256": "23fd65fcce6a272ff830b7c4db4c48a07c46a191d2f82fcac1e8144439728936"
+          },
+          "fairseq/data/legacy/masked_lm_dictionary.py": {
+            "size_bytes": 1557,
+            "sha256": "01780cb725dd6ea3e01d297c19ced34b9482058f78b882d774d757f4580aa242"
+          },
+          "fairseq/data/list_dataset.py": {
+            "size_bytes": 730,
+            "sha256": "5579351dc843be5ab43ec1b6c15d4b42218e1ae56e8745e3a1923ed1388844b7"
+          },
+          "fairseq/data/lm_context_window_dataset.py": {
+            "size_bytes": 2910,
+            "sha256": "7575aac4584608d7fdb8fe37759697bea2a7a3788dadea30b9c9d2d0c9a5afd5"
+          },
+          "fairseq/data/lru_cache_dataset.py": {
+            "size_bytes": 571,
+            "sha256": "c64724ae81dc140b3365b52d77ab3d3a24d6a6c3b9dbc4824529d56b29f88889"
+          },
+          "fairseq/data/mask_tokens_dataset.py": {
+            "size_bytes": 6847,
+            "sha256": "a1f27c1ed49e0f2e13f65e4a5b8d51fc8c4babb2726118b2634ab40abce2bac0"
+          },
+          "fairseq/data/monolingual_dataset.py": {
+            "size_bytes": 8094,
+            "sha256": "cc16d91b51d560376ca00fbb38c6bd863b8cd7e3de73303c5b0bc5a146442a32"
+          },
+          "fairseq/data/multi_corpus_dataset.py": {
+            "size_bytes": 5147,
+            "sha256": "ba6595b57df022b2ed400db17ceb9a3d1ce4468ee72ab7ffc7a983c5263299f2"
+          },
+          "fairseq/data/multi_corpus_sampled_dataset.py": {
+            "size_bytes": 5115,
+            "sha256": "60f946a8c2e09c9c500fded755d02690a3564343bef799409a506fdb27c70eba"
+          },
+          "fairseq/data/multilingual/__init__.py": {
+            "size_bytes": 177,
+            "sha256": "df08e0cb14bbd5c619636d825979fc64705afa6c54ff970b4010027d2eb1ce83"
+          },
+          "fairseq/data/multilingual/multilingual_data_manager.py": {
+            "size_bytes": 38695,
+            "sha256": "974976597465ccaf04cfedda220016e1c78c12bdb85ff3a930a08c93d49886ad"
+          },
+          "fairseq/data/multilingual/sampled_multi_dataset.py": {
+            "size_bytes": 16841,
+            "sha256": "965c70cde89ea05385400e0186b0124ea9adadcfdf703246f657f1879ad5da43"
+          },
+          "fairseq/data/multilingual/sampled_multi_epoch_dataset.py": {
+            "size_bytes": 11332,
+            "sha256": "bff288d07d08287aa47760d104e886335a2fab7db834bc44b73c43e15bef3886"
+          },
+          "fairseq/data/multilingual/sampling_method.py": {
+            "size_bytes": 1947,
+            "sha256": "f9b165d29eba9b906c1d18cea5183ab01e2b58b195199ccfd9ded87beda03bd5"
+          },
+          "fairseq/data/nested_dictionary_dataset.py": {
+            "size_bytes": 3776,
+            "sha256": "2c678f2584ca07f73c73b0bc327bffce0c867689c90b71ec6cf3982f10a8d48d"
+          },
+          "fairseq/data/noising.py": {
+            "size_bytes": 12184,
+            "sha256": "ec44bbd62251652061fb59ed70d3ba8c86c84f0fc0bdeb18758dd013ff889ea8"
+          },
+          "fairseq/data/num_samples_dataset.py": {
+            "size_bytes": 405,
+            "sha256": "ed9a4084ee9f7c630854d95b9964b5c51cdc2b05f07afab2620ec026eefe478b"
+          },
+          "fairseq/data/numel_dataset.py": {
+            "size_bytes": 787,
+            "sha256": "0283008bc2578883b3fed47ae2b0711b957d01c475c01fda1d1da544015093b0"
+          },
+          "fairseq/data/offset_tokens_dataset.py": {
+            "size_bytes": 445,
+            "sha256": "3426ea32ddcf0b7e4810c9ee3fc1382afcae039450cbbad382aa6444c0077bfa"
+          },
+          "fairseq/data/pad_dataset.py": {
+            "size_bytes": 837,
+            "sha256": "1bfdf6271f52e243047b3b9a40f0de9ed4aefe2bc8e4f2664a62667ad45f8454"
+          },
+          "fairseq/data/pixel_sequence_dataset.py": {
+            "size_bytes": 2125,
+            "sha256": "35727c0f1a80604cb8d5b1fc708c0870d31e36b7918d877fca3baea3cbf88ad2"
+          },
+          "fairseq/data/plasma_utils.py": {
+            "size_bytes": 2640,
+            "sha256": "9bd747db46c47508647a8672fb16521e6499f70d8acc93410d7cfcffdb072dd1"
+          },
+          "fairseq/data/prepend_dataset.py": {
+            "size_bytes": 953,
+            "sha256": "638342c3bedbbb9b7fdcfb0fa6e7b29a89253ea6583189cee4ad543c81c1dda9"
+          },
+          "fairseq/data/prepend_token_dataset.py": {
+            "size_bytes": 1067,
+            "sha256": "35bfd19106c59eea5fa2369996f76f2de7a123dcca5db05d2eb62dc3ae69ca4f"
+          },
+          "fairseq/data/raw_label_dataset.py": {
+            "size_bytes": 547,
+            "sha256": "d527c83a6ad98f9434d904e3e87ecb891514f01a12cff734e2be09deb824bfd4"
+          },
+          "fairseq/data/replace_dataset.py": {
+            "size_bytes": 1394,
+            "sha256": "1dabb76fffbfa5c605e0adea6bf5eabe15fd6f2dce3afa9ee4872698730fe791"
+          },
+          "fairseq/data/resampling_dataset.py": {
+            "size_bytes": 4232,
+            "sha256": "517ad34e75b8fc31cd082d936982fae2028921612a42f4af0bf7c390add89533"
+          },
+          "fairseq/data/roll_dataset.py": {
+            "size_bytes": 486,
+            "sha256": "014c72822e53e66616f3b8c7200bbfd15acff12f1c78e21cd866cff2515862ae"
+          },
+          "fairseq/data/round_robin_zip_datasets.py": {
+            "size_bytes": 4153,
+            "sha256": "1b537aa6d175fcff0c4471fe6db9fb65fb2c6f6293a0f5d575df6da06f7563a6"
+          },
+          "fairseq/data/shorten_dataset.py": {
+            "size_bytes": 2316,
+            "sha256": "5378b14e802d62bd95504afb6495814c8f7c35e01b3eee3c55cf2102b148b32f"
+          },
+          "fairseq/data/sort_dataset.py": {
+            "size_bytes": 622,
+            "sha256": "6c9f1830dc6dbc7ecd403da22527aafe7fcca7c487417f09d305c6482f1f181e"
+          },
+          "fairseq/data/strip_token_dataset.py": {
+            "size_bytes": 648,
+            "sha256": "0219b62ecfad49266739f790dd785b7054b59f20ed487d0c226f6bcebda6cfce"
+          },
+          "fairseq/data/subsample_dataset.py": {
+            "size_bytes": 2103,
+            "sha256": "e5a6c82228e938dfbe83bc81e627872e68219c34948bbb5c6e1a7e7e57355680"
+          },
+          "fairseq/data/token_block_dataset.py": {
+            "size_bytes": 8755,
+            "sha256": "f6ead1e7d67b6f56fd9c2a9562507109124da872df3793261e848ae10474ba7c"
+          },
+          "fairseq/data/token_block_mixture_dataset.py": {
+            "size_bytes": 5865,
+            "sha256": "ae7c0ae5370fd9f9e51fb94ef87877d404a4e10b7bb72149fb9a72ee4276dca6"
+          },
+          "fairseq/data/token_block_utils_fast.pyx": {
+            "size_bytes": 8973,
+            "sha256": "69182aa2e73bb2d3b1ae335e4d4a7109c93d565bf498373ea052bf7d40c998a6"
+          },
+          "fairseq/data/transform_eos_dataset.py": {
+            "size_bytes": 4576,
+            "sha256": "eab3fdf3a5a99b539f8e6dc848010f013007a12aecc1709410a21a11a40af407"
+          },
+          "fairseq/data/transform_eos_lang_pair_dataset.py": {
+            "size_bytes": 3381,
+            "sha256": "ca463c9aa7c11b98678944f135f4cf9fdf483a0623cfa3de195fbd628e7dd3e7"
+          },
+          "fairseq/distributed_utils.py": {
+            "size_bytes": 12239,
+            "sha256": "9fac03c1385a1d0df87735bf919c990720d38078aa9843a9ac87986bf777981a"
+          },
+          "fairseq/file_io.py": {
+            "size_bytes": 3307,
+            "sha256": "7e53faf77b3422682e1f0a7b9b3e2edae007ffb9203e970975946e413fe2b474"
+          },
+          "fairseq/file_utils.py": {
+            "size_bytes": 11056,
+            "sha256": "84c5d8c1491d1c35a1fed22a9685123c7ee2bde973d88ce8e37328b573c93927"
+          },
+          "fairseq/hub_utils.py": {
+            "size_bytes": 10062,
+            "sha256": "69aba80d7c89eccbda4e1aa65c92efa3a3266e0f208c8df59ab0b45c7b15b4e0"
+          },
+          "fairseq/incremental_decoding_utils.py": {
+            "size_bytes": 1780,
+            "sha256": "6c44991f5bcb5e9ce033ae5ebe3e82ccf9634f13fb2ea97c8a1696345cdd569e"
+          },
+          "fairseq/legacy_distributed_data_parallel.py": {
+            "size_bytes": 6223,
+            "sha256": "b04cfcf9d458edb446cedc3315f320e38dd67dddddefaaddc681a83b776162a6"
+          },
+          "fairseq/logging/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "fairseq/logging/meters.py": {
+            "size_bytes": 7885,
+            "sha256": "ceee264ef99b1b303a5acec64e1234cab9df829d11d1fe213dbe753e822780f6"
+          },
+          "fairseq/logging/metrics.py": {
+            "size_bytes": 9325,
+            "sha256": "7298dbd77e32354131a63462238e5bec0f3035a2d723d7c342d77d8ac722779c"
+          },
+          "fairseq/logging/progress_bar.py": {
+            "size_bytes": 13003,
+            "sha256": "26b99f5c965df3b1ef01d2b49bb30d1f1962e213f8d082806d98baae80001de8"
+          },
+          "fairseq/model_parallel/__init__.py": {
+            "size_bytes": 228,
+            "sha256": "f233f172a9a76a0e52c94f8552d6725543fc97972a55b83409587ac60fed017b"
+          },
+          "fairseq/model_parallel/criterions/__init__.py": {
+            "size_bytes": 505,
+            "sha256": "8997dd60097a979b16dc216a60a8203718bd30a2f3a76f009f380693366f582d"
+          },
+          "fairseq/model_parallel/criterions/vocab_parallel_cross_entropy.py": {
+            "size_bytes": 3003,
+            "sha256": "eda4fd3d284630be051ae461bb1e5f994b4e68330355579116fd151bc5721a06"
+          },
+          "fairseq/model_parallel/megatron_trainer.py": {
+            "size_bytes": 1997,
+            "sha256": "d7d8d8c16410c740785ea442a9e6964ed4c18fd2c058ec8f684a9573c298eafa"
+          },
+          "fairseq/model_parallel/models/__init__.py": {
+            "size_bytes": 668,
+            "sha256": "dff6c72b888f2c78158da587a2864f97729fe50e0ffd7317eef6b4db1d3eb806"
+          },
+          "fairseq/model_parallel/models/transformer.py": {
+            "size_bytes": 3642,
+            "sha256": "76ab997e19dcf0010edc5efa8633241f293dcb843429123990a1aa8284fb98c4"
+          },
+          "fairseq/model_parallel/models/transformer_lm.py": {
+            "size_bytes": 3752,
+            "sha256": "c8f71eaa1bc218a84f9dddb454f880f319bc7e918a1fa4db4ef0d23f83a82b78"
+          },
+          "fairseq/model_parallel/modules/__init__.py": {
+            "size_bytes": 765,
+            "sha256": "a1efee45eef7ef49e78ead78a4ff75b572340725b8db0961040c188ad3ae1792"
+          },
+          "fairseq/model_parallel/modules/multihead_attention.py": {
+            "size_bytes": 12558,
+            "sha256": "08b65e63d56010873ba9b5a0037b4a2243d51af242bcc3bc9808bd051de921ae"
+          },
+          "fairseq/model_parallel/modules/transformer_layer.py": {
+            "size_bytes": 2866,
+            "sha256": "91e16f852b13bd4dd6aa551dc87c134a9ee569deec4630e1418f645fedfc1dd5"
+          },
+          "fairseq/model_parallel/modules/transformer_sentence_encoder.py": {
+            "size_bytes": 1884,
+            "sha256": "2e93aee0c6e120538674dd8a2f660c968d5a378b2c2963b84dcd39bbadaffcc2"
+          },
+          "fairseq/model_parallel/modules/transformer_sentence_encoder_layer.py": {
+            "size_bytes": 2446,
+            "sha256": "a8bcbe080ba8d54027ddc1c18168416dfc01455573fb6669cf248072c1e8f05a"
+          },
+          "fairseq/models/__init__.py": {
+            "size_bytes": 4818,
+            "sha256": "63da3ae50d0cda8c7480b7f4a6db3422f6f472e64d28bb098ada300962d02d2f"
+          },
+          "fairseq/models/composite_encoder.py": {
+            "size_bytes": 1896,
+            "sha256": "03c909ebe201f2f9421841b7485d0ec843cdb34f80738a13e86ceb6834c08553"
+          },
+          "fairseq/models/distributed_fairseq_model.py": {
+            "size_bytes": 3982,
+            "sha256": "e964ba910f2c749ca6f9e556409a700f066fd5927414587c633adabddc914583"
+          },
+          "fairseq/models/fairseq_decoder.py": {
+            "size_bytes": 3064,
+            "sha256": "d65de4c0e60f247a8977d8c8e0cc1d7e202e705a31e931929aa95b29304d4443"
+          },
+          "fairseq/models/fairseq_encoder.py": {
+            "size_bytes": 2955,
+            "sha256": "331a357b852e77dd04470bd2082de2900903fa7499bc6ae73715dae2cb1502c7"
+          },
+          "fairseq/models/fairseq_incremental_decoder.py": {
+            "size_bytes": 4387,
+            "sha256": "1a91a62891e1a318514ceb1b0377ab5fde8febd10f6e929acf0d6a4f49b47113"
+          },
+          "fairseq/models/fairseq_model.py": {
+            "size_bytes": 19381,
+            "sha256": "909a1fe7a7ccfe2872f4683e41ed342c86ae3e4925e8056d9d315a52710ca208"
+          },
+          "fairseq/models/huggingface/__init__.py": {
+            "size_bytes": 709,
+            "sha256": "8fecd26ee437b82693d556039850b2e76acda46a74795a0717a8fac148a3bd44"
+          },
+          "fairseq/models/huggingface/hf_gpt2.py": {
+            "size_bytes": 7034,
+            "sha256": "da986e0643a9e5f7962f3ff1e8c7aa2a7685278a79d919bc64513e6fbf96e090"
+          },
+          "fairseq/models/lra/__init__.py": {
+            "size_bytes": 447,
+            "sha256": "ed6813c0d4419e149e317602ee486d7d15d2fbd2628961611a9887aa17d7546f"
+          },
+          "fairseq/models/lra/flash_lra_encoder.py": {
+            "size_bytes": 7161,
+            "sha256": "acf17d85cf802b935b695ae6f9699b9acae781afc166a71be02ff42551e1b48e"
+          },
+          "fairseq/models/lra/lstm_lra_encoder.py": {
+            "size_bytes": 5703,
+            "sha256": "6c61c70aa1f520f602f724f66c8c7163a18fff740d1c83947cde4664bbd6bc9d"
+          },
+          "fairseq/models/lra/luna_lra_encoder.py": {
+            "size_bytes": 12052,
+            "sha256": "d7d50ffcd55b1478d89724b29a7a8ca42785c1d2c2104ce2031b2084bc9e3efc"
+          },
+          "fairseq/models/lra/mega_lra_encoder.py": {
+            "size_bytes": 8948,
+            "sha256": "001e2c9ee20154c0b97be09630714093991638c9ab5c5d08a5e9f96883dfb26f"
+          },
+          "fairseq/models/lra/model.py": {
+            "size_bytes": 33381,
+            "sha256": "25f0fe1a512f6ecde8c744cc60ea11387cce15ad3027eca561b569e9db1ff5c2"
+          },
+          "fairseq/models/lra/transformer_lra_encoder.py": {
+            "size_bytes": 10400,
+            "sha256": "243321cac3ad751e23a057962c5cf3e6a78ece55cb1d74932eea494dccd72aa9"
+          },
+          "fairseq/models/luna.py": {
+            "size_bytes": 42788,
+            "sha256": "e72688fde8a5c5dcefdb26d384745a6e6221b5ce2b7582bcffc1317e15a34b57"
+          },
+          "fairseq/models/luna_bert/__init__.py": {
+            "size_bytes": 240,
+            "sha256": "5062aac422c3764eeb2a5babe62772ce2bd21d092858582862f16b9735221a4e"
+          },
+          "fairseq/models/luna_bert/hub_interface.py": {
+            "size_bytes": 9860,
+            "sha256": "99ef270a2a8b2e9133ef30a356c28fde8582821a6011b3a04a0cb3913f0942c5"
+          },
+          "fairseq/models/luna_bert/model.py": {
+            "size_bytes": 22394,
+            "sha256": "6eb007a08f07381bee100a1836575a33045a5619ac09ce950d64a2c25259692d"
+          },
+          "fairseq/models/masked_lm.py": {
+            "size_bytes": 15107,
+            "sha256": "e58ebc6549efcf0d8f84c79e8fa302aa15f886a51b5ba21b81ddf992b89d2f1f"
+          },
+          "fairseq/models/mega.py": {
+            "size_bytes": 32300,
+            "sha256": "3fe7e7651eb23af6152af5f60e232f43fb88681f32e6aa5d2340d5769d288edb"
+          },
+          "fairseq/models/mega_lm.py": {
+            "size_bytes": 27274,
+            "sha256": "653f07ab269b5dc9e949be669fc3233fd27c96db4ea9de4f32ab9e1c48541594"
+          },
+          "fairseq/models/model_utils.py": {
+            "size_bytes": 2335,
+            "sha256": "0ab8c57e8680ecc32c6428730b9b70f88f079e22df1053cb740f284ae07935c6"
+          },
+          "fairseq/models/speech_commands/__init__.py": {
+            "size_bytes": 257,
+            "sha256": "cf5c9ff7f63a2d26f1cdc860f3be0126474fac81ada5734a1fdadc3195f191f2"
+          },
+          "fairseq/models/speech_commands/mega_scraw_encoder.py": {
+            "size_bytes": 6474,
+            "sha256": "dac4c0a7124c69c464dddfb2088b4323ae34d06074b2dc1d33d914b4ab143ec5"
+          },
+          "fairseq/models/speech_commands/model.py": {
+            "size_bytes": 10804,
+            "sha256": "85f58969ce0c00cd8602137a86de0c68d2fcd03a99eca60defaf7315c4fd28ac"
+          },
+          "fairseq/models/transformer.py": {
+            "size_bytes": 42713,
+            "sha256": "9e8035a64a1a2b6cbda0dc6b320322416ccc8da6beb58db81ca7dd00a294947e"
+          },
+          "fairseq/models/transformer_lm.py": {
+            "size_bytes": 16624,
+            "sha256": "5623dad8b4c646e1875fc071201b815c8ff930525edb8821f9df3b165d9d3fb6"
+          },
+          "fairseq/modules/__init__.py": {
+            "size_bytes": 3600,
+            "sha256": "e26296579f4de2731a24c7c08b85da570987bfcaab1d81a6f8fcc52720c918a0"
+          },
+          "fairseq/modules/adaptive_input.py": {
+            "size_bytes": 2514,
+            "sha256": "034eaae2e6f0744dc644ff9aba2afa8ceda3bccd5b05e3e84856c5eb473b9efb"
+          },
+          "fairseq/modules/adaptive_softmax.py": {
+            "size_bytes": 7931,
+            "sha256": "06e03afb662b6dbaeed065b3f0d09fc8964a5528165a38e00e09de00cf28c95d"
+          },
+          "fairseq/modules/character_token_embedder.py": {
+            "size_bytes": 6846,
+            "sha256": "cb24989d20799ce5a4d3a76c1fea57c8a00464713b4bd053d0207511781e18dd"
+          },
+          "fairseq/modules/cross_entropy.py": {
+            "size_bytes": 1650,
+            "sha256": "a1897a6c34c6dd0a908b64645ae879ebf22edfa3b7ce7332f149b5806b857b9d"
+          },
+          "fairseq/modules/cuda_utils.cu": {
+            "size_bytes": 5817,
+            "sha256": "4a3264ffbd3df9048c2d086ee56173c532dad10962888891ef055d344cb50c0b"
+          },
+          "fairseq/modules/downsampled_multihead_attention.py": {
+            "size_bytes": 9863,
+            "sha256": "2a8992667a0e7e692f271237f6da2c59d400b4adcf17a557dc80c85f05359e57"
+          },
+          "fairseq/modules/exponential_moving_average.py": {
+            "size_bytes": 8833,
+            "sha256": "223ee827cffa474c4b2f4759af1999c69b4c2de868174260c3f789a86df8c225"
+          },
+          "fairseq/modules/fairseq_dropout.py": {
+            "size_bytes": 3602,
+            "sha256": "8c9c00ba454d0565faacd1d5c9f34796c787a70052a694f2eb88a47bf1b61140"
+          },
+          "fairseq/modules/flash_sentence_encoder_layer.py": {
+            "size_bytes": 2699,
+            "sha256": "bf1711bd2c125bd6bb95195e8604bb3a20fc74608a636ca09d936dafbea6648b"
+          },
+          "fairseq/modules/fp32_group_norm.py": {
+            "size_bytes": 749,
+            "sha256": "20c1f7f16ad4bb75279c9b0ff77b576130ff1e0da50a41003e0335f135956e1a"
+          },
+          "fairseq/modules/gated_attention_unit.py": {
+            "size_bytes": 8438,
+            "sha256": "0b1c0db9d1c46f69215bd8c60976a99ddb92dbcbf1d6d1aa2e763b15938cbed4"
+          },
+          "fairseq/modules/gated_cross_attention.py": {
+            "size_bytes": 12139,
+            "sha256": "504e9688bf6031896adc9033df1c4b62aa8caab2ff123b784c84b953423e5bf5"
+          },
+          "fairseq/modules/gelu.py": {
+            "size_bytes": 706,
+            "sha256": "b1e8efc40d2c5aefaa49ac72cb2c169c172539085570005ffc98f3029333d763"
+          },
+          "fairseq/modules/grad_multiply.py": {
+            "size_bytes": 442,
+            "sha256": "e9b5c827ca05b8e4bbb45e2541d132fd65e9815d94acae75353c8c91e7d836dd"
+          },
+          "fairseq/modules/gumbel_vector_quantizer.py": {
+            "size_bytes": 6792,
+            "sha256": "dff8a4b8992afc349c91f00a49d71511e100f43f1dab65884a0535bfa675d518"
+          },
+          "fairseq/modules/kmeans_vector_quantizer.py": {
+            "size_bytes": 4248,
+            "sha256": "4e881ba043537568fc48916005be27040d0b68cb9f98ea634c5df57440ba6729"
+          },
+          "fairseq/modules/layer_drop.py": {
+            "size_bytes": 1409,
+            "sha256": "251556ba361b094bd7d1588ec87522b543f6f1ec3cccf2c9b9e9f6c3ced0ebe5"
+          },
+          "fairseq/modules/layer_norm.py": {
+            "size_bytes": 1499,
+            "sha256": "28b3b4aeb85e5b2d9cf9d2dae1bd04092bac879adfb26da7a918a998c2db837b"
+          },
+          "fairseq/modules/learned_positional_embedding.py": {
+            "size_bytes": 2364,
+            "sha256": "5cb8fcdf6d86e0806c40312df82cd10a5c0eb9d24b861354fa7af9d3edaea04c"
+          },
+          "fairseq/modules/luna_attention.py": {
+            "size_bytes": 31497,
+            "sha256": "d4e678a520f4c81d16aa8fc29dc05fc64293b80ff93e49d6395cd897a2e10279"
+          },
+          "fairseq/modules/luna_layer.py": {
+            "size_bytes": 14378,
+            "sha256": "221b838b8116452091fb5b6586e90cba1598e3ddf8a0bb0dda02586f708eb46d"
+          },
+          "fairseq/modules/luna_sentence_encoder.py": {
+            "size_bytes": 18915,
+            "sha256": "4dd0c8e8d426a516883778a257db5983e03a76f6f76c610bc0c4a1f21a3bf7b3"
+          },
+          "fairseq/modules/mega_layer.py": {
+            "size_bytes": 7643,
+            "sha256": "08bd19bc528a2a83e0007e77eff83afb6268200455f4ebf163dbcc31f4a6316f"
+          },
+          "fairseq/modules/mega_sentence_encoder_layer.py": {
+            "size_bytes": 4195,
+            "sha256": "e7d2fc5494c0902de36287db76d1229dcb5d8f8db4021819b572afd7cdae859a"
+          },
+          "fairseq/modules/moving_average_gated_attention.py": {
+            "size_bytes": 15645,
+            "sha256": "90d331dbbac12817fe7b22371badedfc4d8ff24b6860336c0bc476cd9ab9ba90"
+          },
+          "fairseq/modules/multihead_attention.py": {
+            "size_bytes": 19130,
+            "sha256": "8a30e476a4869d8622706a5379cc176ac73616aa7b9aac49f800ef19ac782ac4"
+          },
+          "fairseq/modules/normalized_feedforward_network.py": {
+            "size_bytes": 2265,
+            "sha256": "1d27ebccb39b915acd8fc54efebf8c5b2005cbd42387734a4cea344b35c15032"
+          },
+          "fairseq/modules/positional_embedding.py": {
+            "size_bytes": 1383,
+            "sha256": "3197711c37a870b1f08f1201f330c33686a99d69078c83dcca0cd2a44f692a0b"
+          },
+          "fairseq/modules/quant_noise.py": {
+            "size_bytes": 3666,
+            "sha256": "d3420df48273abfa5d7e7718b4d8a7e0fe7c44303a098a96e7d4a549d7eb4ddb"
+          },
+          "fairseq/modules/quantization/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "fairseq/modules/quantization/pq/__init__.py": {
+            "size_bytes": 234,
+            "sha256": "f2f7206a4bf8b15c13b2c78ac2e587c77185478b63348e01539fdbc4616f6368"
+          },
+          "fairseq/modules/quantization/pq/em.py": {
+            "size_bytes": 7333,
+            "sha256": "68461d17ae422e7f0ab7e41aed267ff4ae09a54708f95067643ca17b027c112b"
+          },
+          "fairseq/modules/quantization/pq/modules/__init__.py": {
+            "size_bytes": 290,
+            "sha256": "bff93d3ad47bd2afac0aba89a2c886ca1c7d97be4599c3fbd03aaf6f1ad1109d"
+          },
+          "fairseq/modules/quantization/pq/modules/qconv.py": {
+            "size_bytes": 4245,
+            "sha256": "358c61a818992ee6c871fd3e30983f0e750b71f00112e08138046fde2e00faf0"
+          },
+          "fairseq/modules/quantization/pq/modules/qemb.py": {
+            "size_bytes": 3515,
+            "sha256": "7a2ef9e73f490ce90e97c07a72a5880b0db177d8d7247c27c220bfbdff408195"
+          },
+          "fairseq/modules/quantization/pq/modules/qlinear.py": {
+            "size_bytes": 2547,
+            "sha256": "bfcb5269154fcb2b65b02d36b718c89f99c720b42ee7ee93ed99b41f1f05589d"
+          },
+          "fairseq/modules/quantization/pq/pq.py": {
+            "size_bytes": 4292,
+            "sha256": "9dc23957506cf378c1581a7aa0f9cdc1b8123caa3e9441fefd7700e74cf1f07c"
+          },
+          "fairseq/modules/quantization/pq/utils.py": {
+            "size_bytes": 11605,
+            "sha256": "e44adb8fff93c16ef4ac9e61a9552c20a9a9e561be4e98d160133d53f18b13df"
+          },
+          "fairseq/modules/quantization/quantization_options.py": {
+            "size_bytes": 1647,
+            "sha256": "7801d6608c77cec938659dff2b412038b1308413868d69f825daa53321c6d3ee"
+          },
+          "fairseq/modules/quantization/scalar/__init__.py": {
+            "size_bytes": 221,
+            "sha256": "ae0070a0e6804908788d788db05d64d6385d9d0236ed19abc22371ad3d774ac3"
+          },
+          "fairseq/modules/quantization/scalar/modules/__init__.py": {
+            "size_bytes": 339,
+            "sha256": "9da6c77bcc88fde41dfeb1e863d7150c6e027a19e69187b7a739140fbeceb29b"
+          },
+          "fairseq/modules/quantization/scalar/modules/qact.py": {
+            "size_bytes": 3033,
+            "sha256": "7d85df12decd25467d51772bba17e75c9679738e6e7c28ab49dc7553f76af2b6"
+          },
+          "fairseq/modules/quantization/scalar/modules/qconv.py": {
+            "size_bytes": 4415,
+            "sha256": "2ba98c74899c88634062c144d0c44827f1ca42a374a8fe480879802e71ad2a83"
+          },
+          "fairseq/modules/quantization/scalar/modules/qemb.py": {
+            "size_bytes": 4771,
+            "sha256": "439eb5780f1f0551bbb1facb968a37fb6d9bc52d23ad361270e14c4c930dab96"
+          },
+          "fairseq/modules/quantization/scalar/modules/qlinear.py": {
+            "size_bytes": 3596,
+            "sha256": "8f5525a15ac6c1e8550463599a8a5533765e5e414a8f84eaca1a0f33328216ee"
+          },
+          "fairseq/modules/quantization/scalar/ops.py": {
+            "size_bytes": 1669,
+            "sha256": "5862fcd0a2dbdeea9e93ec5fa80553f0c8d05c03565cf907a3550c4a5ecee1c2"
+          },
+          "fairseq/modules/quantization/scalar/utils.py": {
+            "size_bytes": 2323,
+            "sha256": "60e4a1333a9dc646f5f03d4b785f34e13d15476a73c26e017d4e356932966038"
+          },
+          "fairseq/modules/real_number_embedding.py": {
+            "size_bytes": 810,
+            "sha256": "970e1568a7603dc780dba65d4b5809d8c9a981d7b3ce4e2f3e58027721ecac3e"
+          },
+          "fairseq/modules/relative_positional_bias.py": {
+            "size_bytes": 3428,
+            "sha256": "c0b41ae90a621f9710e185649fc284d324bb289921308b7ae81029e47265e762"
+          },
+          "fairseq/modules/root_mean_square_norm.py": {
+            "size_bytes": 1098,
+            "sha256": "9f24aa39a8305f97358b6ad6daea98303e64f5948abb45314fb8c02fe2fb2a99"
+          },
+          "fairseq/modules/same_pad.py": {
+            "size_bytes": 452,
+            "sha256": "0a52fd11d98bbace25f23eb574ec7f13bfdf9d193094b70833cc87480d85e8d4"
+          },
+          "fairseq/modules/scalar_bias.py": {
+            "size_bytes": 906,
+            "sha256": "b097e5cbce205a41815c11141099fd2119977b83589f7f849f6292599b0090e2"
+          },
+          "fairseq/modules/scale_norm.py": {
+            "size_bytes": 1052,
+            "sha256": "bf4878147953366f01fe3cbb47537d03aeacf2747428c7f8072a376606e99a03"
+          },
+          "fairseq/modules/sequence_norm.py": {
+            "size_bytes": 1536,
+            "sha256": "038b3643192fe1f53f809acd1efbdcc3285792beef6b65c10179d7064e95acc7"
+          },
+          "fairseq/modules/sinusoidal_positional_embedding.py": {
+            "size_bytes": 4024,
+            "sha256": "147b4d7363f18f9156fdf79295d226f04ebb1053426db5152e29952cd1a1b37b"
+          },
+          "fairseq/modules/transformer_layer.py": {
+            "size_bytes": 16334,
+            "sha256": "6a3de5e833b50eb8b6c9d65a6dd6f877e8ef4cac3861b495b4731e96607db3a5"
+          },
+          "fairseq/modules/transformer_sentence_encoder.py": {
+            "size_bytes": 9740,
+            "sha256": "bd36f60e7b5a6d9ca61a3802a2c50ca09d37c378b87784fbfe4445a0ff3ddf73"
+          },
+          "fairseq/modules/transformer_sentence_encoder_layer.py": {
+            "size_bytes": 4180,
+            "sha256": "04a21addd875b22df8e25cfb0be92ce35aaec1f8cfc25af2abc2933d186fbe63"
+          },
+          "fairseq/modules/transpose_last.py": {
+            "size_bytes": 550,
+            "sha256": "fe27abce194ea9423f59188fc118104e5556fa248d5b2fbb797cf43d816f0464"
+          },
+          "fairseq/modules/unfold.py": {
+            "size_bytes": 570,
+            "sha256": "74ed90306d4c605dfaf760a4f5035a6dcecbe7c8acb6b775afe4ab4346f34d7c"
+          },
+          "fairseq/nan_detector.py": {
+            "size_bytes": 3041,
+            "sha256": "4656c9baa8681ebdb2fb8bf6aca5f8aa3f994ce3b5fb3396ae4729b6145b79b9"
+          },
+          "fairseq/optim/__init__.py": {
+            "size_bytes": 962,
+            "sha256": "7646ad46b3588f7b157426409b4a082c22713934a8136c1fb1e8d1f96bf18f78"
+          },
+          "fairseq/optim/adabelief.py": {
+            "size_bytes": 6531,
+            "sha256": "091977ad9a2438c1d806dba90c39d05571fd2e1d1e9c68d845d0a5d2e823bd82"
+          },
+          "fairseq/optim/adadelta.py": {
+            "size_bytes": 1823,
+            "sha256": "77df8a1ff5fe1cb283dd42781aedd1e680b87df420d2d8cd68600e3f4b2b19a2"
+          },
+          "fairseq/optim/adafactor.py": {
+            "size_bytes": 10509,
+            "sha256": "3888a8969cc2a101251a2f5fff39a2bbee40f9da4f19d25d0ea1cc5f50bfb162"
+          },
+          "fairseq/optim/adagrad.py": {
+            "size_bytes": 1266,
+            "sha256": "e3555e8217558338fc87dc657b155e680451309de614398503bab661d9b1165f"
+          },
+          "fairseq/optim/adam.py": {
+            "size_bytes": 8383,
+            "sha256": "f54accfbfbd8576c1b169eab84b7877313a46c9f89d7f9cd39af8dc37f519865"
+          },
+          "fairseq/optim/adamax.py": {
+            "size_bytes": 6084,
+            "sha256": "5e8bb199193be03e45724f1443b8f6c17f89556ead998acd3cb4fa8477ea5609"
+          },
+          "fairseq/optim/apollo.py": {
+            "size_bytes": 7646,
+            "sha256": "4fe2a9a693b22f623d3479cdffe9c299166e671747863905d029d0d8ee280ed3"
+          },
+          "fairseq/optim/bmuf.py": {
+            "size_bytes": 8302,
+            "sha256": "edb2e7ba0b3e9e0f52172bc5f320860dc24ed2dcb59620669fdd08ab3bbb7d5b"
+          },
+          "fairseq/optim/dynamic_loss_scaler.py": {
+            "size_bytes": 2539,
+            "sha256": "50cce44e3fcbae599346a5327f3536bba248fde7a4c42853b01103c464ef7078"
+          },
+          "fairseq/optim/fairseq_optimizer.py": {
+            "size_bytes": 4381,
+            "sha256": "e5b11762905bf0fafa03237801aa9f59eab2a9d048d6f2141c54312c6c2646a3"
+          },
+          "fairseq/optim/fp16_optimizer.py": {
+            "size_bytes": 15496,
+            "sha256": "8256b405bc0a4824362eb89bea0a5356fc9604604901752a4c6483526505421c"
+          },
+          "fairseq/optim/fused_adam.py": {
+            "size_bytes": 13372,
+            "sha256": "f1f59344e4cabe8bcbb778f1da9a227695c3dee5fbbe8265551b60e5dd8dfd1b"
+          },
+          "fairseq/optim/fused_lamb.py": {
+            "size_bytes": 1821,
+            "sha256": "b598366cd22b9e163b4cd1a324fd97dabfa450cc20bd40088b4eebdda18b72b9"
+          },
+          "fairseq/optim/lr_scheduler/__init__.py": {
+            "size_bytes": 788,
+            "sha256": "3406997cd0fcc9f099965f59d29abdf20e8d1b936c7214ca2ae5bdbf89a0fab9"
+          },
+          "fairseq/optim/lr_scheduler/cosine_lr_scheduler.py": {
+            "size_bytes": 4776,
+            "sha256": "57e20b6916ae67e3605eba239ff52c68c13e6ec12760176ad3ad32d45025c45e"
+          },
+          "fairseq/optim/lr_scheduler/fairseq_lr_scheduler.py": {
+            "size_bytes": 1329,
+            "sha256": "e5e312bfaf87f03b78f176c89150b39865c7211a3e7ded70b94c39a9021667be"
+          },
+          "fairseq/optim/lr_scheduler/fixed_schedule.py": {
+            "size_bytes": 2637,
+            "sha256": "e69077f8f0c0eeca6a6ae31845c771852a19f09439014af0c904c76df37d4e2f"
+          },
+          "fairseq/optim/lr_scheduler/inverse_square_root_schedule.py": {
+            "size_bytes": 2952,
+            "sha256": "48f71f1aa7fca668f94d188171df60b85f4aba5a275a478684bc4c28fd4ecec4"
+          },
+          "fairseq/optim/lr_scheduler/linear_decay_schedule.py": {
+            "size_bytes": 3463,
+            "sha256": "a76769b475ac1e373dec7f94568fec9928f9e36dfa05781f8abcd20ec21bec89"
+          },
+          "fairseq/optim/lr_scheduler/milestone_lr_scheduler.py": {
+            "size_bytes": 3170,
+            "sha256": "74858a90ed963e75e33da7bdd5603163d0eca3d596be2e35a8b1f75feff09380"
+          },
+          "fairseq/optim/lr_scheduler/polynomial_decay_schedule.py": {
+            "size_bytes": 2983,
+            "sha256": "a6982eeb6360087fe622e46f0b7e5e489b598bcb91e3139ae10df76c73128bfd"
+          },
+          "fairseq/optim/lr_scheduler/reduce_lr_on_plateau.py": {
+            "size_bytes": 4743,
+            "sha256": "4c58b953cb05e0e58935823e712c0a47f2e5371e08eda936fe070ee56a112756"
+          },
+          "fairseq/optim/lr_scheduler/step_lr_scheduler.py": {
+            "size_bytes": 3080,
+            "sha256": "ca66e67d1273635a6ab2e26aa8ebe00fd56d85cd2ca0a0414ee314a07c5e2322"
+          },
+          "fairseq/optim/lr_scheduler/tri_stage_lr_scheduler.py": {
+            "size_bytes": 5062,
+            "sha256": "f463d1a821ff42a2c358db42b80effbcd142f6bd21b8837863ac12c0276dbfed"
+          },
+          "fairseq/optim/lr_scheduler/triangular_lr_scheduler.py": {
+            "size_bytes": 2711,
+            "sha256": "079ae846818b02bce06e0710653fa7513d2872dcd1d028dba0d33cefb6284d40"
+          },
+          "fairseq/optim/nag.py": {
+            "size_bytes": 3485,
+            "sha256": "04276eb463b7f0c1135cec25d030d8d19f5798452384a48b18e9b3cc626270d5"
+          },
+          "fairseq/optim/radam.py": {
+            "size_bytes": 5875,
+            "sha256": "ef50dc0e911381afb5c82ac8dec4c6d21d997d305b6c9011479697e2a53eb7f1"
+          },
+          "fairseq/optim/sgd.py": {
+            "size_bytes": 1430,
+            "sha256": "0b75cdf02542b780aab348e10f36547afb698a2e2bfaeff49e7a4db48d492f2d"
+          },
+          "fairseq/options.py": {
+            "size_bytes": 37010,
+            "sha256": "0d5bf7e99c8b3a85bfc31e9a70eb13d619312596da9420fc2448c392dc6d0bd4"
+          },
+          "fairseq/pdb.py": {
+            "size_bytes": 1089,
+            "sha256": "e1a814e23cb69e958a9b47ecaf64559dd711c764a35dfd9459b20aba2558ab12"
+          },
+          "fairseq/quantization_utils.py": {
+            "size_bytes": 5440,
+            "sha256": "b8a5e6ec42091e194d7f205c98d3d8d9529a7c2ee98c3f113c9b642256e105f0"
+          },
+          "fairseq/registry.py": {
+            "size_bytes": 2752,
+            "sha256": "e732e52a879e11b144519f3473dece65720c23b3e435a76c409249e82021b59a"
+          },
+          "fairseq/scoring/__init__.py": {
+            "size_bytes": 1073,
+            "sha256": "f4e2c676146025a1fdf8b1d679ffbe60da23cb28409fb6124b48f87e29dee6e1"
+          },
+          "fairseq/scoring/bleu.py": {
+            "size_bytes": 4073,
+            "sha256": "0ecb8b934673aa0431fe7e30d93ed163e2a8f8012157db8d119b2713ddfef3f9"
+          },
+          "fairseq/scoring/wer.py": {
+            "size_bytes": 837,
+            "sha256": "d2edc18b51b02b6027ba7d4aa4d404b880df541bc4d9c5d8b355a1fa3173b8f8"
+          },
+          "fairseq/search.py": {
+            "size_bytes": 12720,
+            "sha256": "1d63f19610892d301c75388ad6f906f70a70805912fde39fc444e705378e6c78"
+          },
+          "fairseq/sequence_generator.py": {
+            "size_bytes": 36476,
+            "sha256": "cbff92416bb3e739ea199246ba08b377317e6cf1f6a6141f7f43c80b53b24604"
+          },
+          "fairseq/sequence_scorer.py": {
+            "size_bytes": 5272,
+            "sha256": "60d756e9d4a62505a7d40f956aed727b2e0a1b9de451ef698d45dc93b3b6c9e4"
+          },
+          "fairseq/tasks/__init__.py": {
+            "size_bytes": 2555,
+            "sha256": "36e08cbb3208fe86b01c78be4217c7b993e1762b12c067e3138213ebedbb2800"
+          },
+          "fairseq/tasks/audio_pretraining.py": {
+            "size_bytes": 4426,
+            "sha256": "649ea566c6dde14bb91b7080734e4bca40e62ff5c3aa72574ce75eab2567ba8a"
+          },
+          "fairseq/tasks/cross_lingual_lm.py": {
+            "size_bytes": 6176,
+            "sha256": "fbd2c70ffde65152019bb5dc5de9315ad27e81f3262108e0c7db6b2170b22656"
+          },
+          "fairseq/tasks/denoising.py": {
+            "size_bytes": 6135,
+            "sha256": "702ea5cbf2fc4364851692c6cd2ac31eb888dec2770876fc1c367f67ac328df7"
+          },
+          "fairseq/tasks/fairseq_task.py": {
+            "size_bytes": 17588,
+            "sha256": "5d3ae784753ac1d63b14bb35cb540b7c88ef347dd6f1bca23ace3bbd9771412b"
+          },
+          "fairseq/tasks/language_modeling.py": {
+            "size_bytes": 18053,
+            "sha256": "afea15393f08d95bed180f5879d2d956049235965a28498cbaf952524957b1b4"
+          },
+          "fairseq/tasks/legacy_masked_lm.py": {
+            "size_bytes": 4882,
+            "sha256": "4442afdef766676fc93dd932f0f9382f71cf89ef41db847dcbe3a330d90e521a"
+          },
+          "fairseq/tasks/long_range_arena.py": {
+            "size_bytes": 11424,
+            "sha256": "d82d758e8296deba38cf31ea2cdaa36a0115ed7f8b3ad10c68c292bd2296ead2"
+          },
+          "fairseq/tasks/masked_lm.py": {
+            "size_bytes": 9309,
+            "sha256": "a3d84be62bfb1f626f1efd728f6eae0fbe0daa168e08d8956704c3dd2707c209"
+          },
+          "fairseq/tasks/multilingual_denoising.py": {
+            "size_bytes": 8285,
+            "sha256": "ff6cd58ab1abbad528671cce54f44ca5d782de42bac1236820627bc61f658198"
+          },
+          "fairseq/tasks/multilingual_masked_lm.py": {
+            "size_bytes": 12616,
+            "sha256": "da6df4ae02aae5c54d8d5c2155beb52a9f4bcc69ff48e1c418c793f570379057"
+          },
+          "fairseq/tasks/multilingual_translation.py": {
+            "size_bytes": 15716,
+            "sha256": "0ce295054dd3041faa2c584bcf1fcd7166106d7b58cad3276c7ee0a3636a0e5f"
+          },
+          "fairseq/tasks/semisupervised_translation.py": {
+            "size_bytes": 18621,
+            "sha256": "1bc69d79553a0d5de478058245f4860fda8dccbbfa08968e2726144868717ab1"
+          },
+          "fairseq/tasks/sentence_prediction.py": {
+            "size_bytes": 8790,
+            "sha256": "64628cf078637ed5694790e90fbc7dfdc94cd5431a11b56ebd54eb277e2fb639"
+          },
+          "fairseq/tasks/sentence_ranking.py": {
+            "size_bytes": 6998,
+            "sha256": "e2de74397f4980540a0431276e555ed6a5acfc2f0f570a830052a7d7bf5c2622"
+          },
+          "fairseq/tasks/speech_command.py": {
+            "size_bytes": 3575,
+            "sha256": "e43ca53ecb11f33767fbf0befb2526f911a28facdb267a4e4be049c19d01da93"
+          },
+          "fairseq/tasks/translation.py": {
+            "size_bytes": 17792,
+            "sha256": "3b11b19051b95d700eb9e7a4932adbfbfef3dbc73e6f9e4acbdbfb54f3fc8f51"
+          },
+          "fairseq/tasks/translation_from_pretrained_bart.py": {
+            "size_bytes": 5017,
+            "sha256": "181359200415135d993944e6f8e553b00d010a0d1ebe46c7d2170bb258887fe3"
+          },
+          "fairseq/tasks/translation_from_pretrained_xlm.py": {
+            "size_bytes": 1106,
+            "sha256": "6c3f08312056900e63c826fc5d33d4e4e319feda421f5c251c4e353b7487e676"
+          },
+          "fairseq/tasks/translation_multi_simple_epoch.py": {
+            "size_bytes": 13713,
+            "sha256": "15c8d0d12c0d579201212ec52534a529035ebc81af3a91eb231c418328567296"
+          },
+          "fairseq/tokenizer.py": {
+            "size_bytes": 345,
+            "sha256": "94be8ad4e917b2586798765f74bfc68d6b04997477eed8d0fb9a4bcbcc04d3d1"
+          },
+          "fairseq/trainer.py": {
+            "size_bytes": 43725,
+            "sha256": "8739dd155dc3346c7d38d4bff60536ca2dfb033931f4358fbf59e529dd1c0ac6"
+          },
+          "fairseq/utils.py": {
+            "size_bytes": 21688,
+            "sha256": "9ea9473a8713082e84a43582eff078ec23eb2631765e5aecf79589b39ba25b87"
+          },
+          "fairseq_cli/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "fairseq_cli/eval_lm.py": {
+            "size_bytes": 9150,
+            "sha256": "924a2315fe8cc3dc89514327a69b9223d6196cee3d18660aba9266ee9213cc59"
+          },
+          "fairseq_cli/eval_mega_lm.py": {
+            "size_bytes": 10549,
+            "sha256": "25705ee81ad086f3359255a04dddee3c07c968ac98e3a275155b416bcf3eba00"
+          },
+          "fairseq_cli/generate.py": {
+            "size_bytes": 11306,
+            "sha256": "082a6c9a3fee4e33ac1765e34fe32b24735fd5dc8daf9cc6524736d850ca3a66"
+          },
+          "fairseq_cli/interactive.py": {
+            "size_bytes": 7589,
+            "sha256": "530ff4b823f04ce92d04f061f06dce42fe236a364a74c3404452e94b9064d090"
+          },
+          "fairseq_cli/preprocess.py": {
+            "size_bytes": 14069,
+            "sha256": "acd6a6264466151c62bf07a03de0f98d81b9fe9db98da6c433240a353e4d9487"
+          },
+          "fairseq_cli/score.py": {
+            "size_bytes": 3066,
+            "sha256": "2c4d9a1be95710f83c1b71375ffe3533121cfd2f408e5a6fdc55bca5e04f3eb0"
+          },
+          "fairseq_cli/train.py": {
+            "size_bytes": 16375,
+            "sha256": "886869ced33f50e45ae7bbffb068faa856538fd0fc6b384562b3617c1d8d69a0"
+          },
+          "fairseq_cli/validate.py": {
+            "size_bytes": 4297,
+            "sha256": "eb067f6c9a5243db394e6d00749b38f5f276dd1469b62f6f0d8dc9d49245e83b"
+          },
+          "hubconf.py": {
+            "size_bytes": 1432,
+            "sha256": "72eb7d9bcbd3e434c1880050c2646ce4654954690850c65f607c587c2fdadfea"
+          },
+          "pyproject.toml": {
+            "size_bytes": 100,
+            "sha256": "e627b788e8dc9f5931a585b82ffa183299996042d7e7a287f7c0e4d7e7490f35"
+          },
+          "scripts/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "scripts/average_checkpoints.py": {
+            "size_bytes": 5957,
+            "sha256": "131c0aee1a86f06de145ac823dd1e25d88ac08afa80c0e9c70caeea47c728caf"
+          },
+          "scripts/build_sym_alignment.py": {
+            "size_bytes": 3806,
+            "sha256": "7ba121248bc4c0262356da1f8b8855ee952f11f2a778935d98702340a73a70cd"
+          },
+          "scripts/compare_namespaces.py": {
+            "size_bytes": 1052,
+            "sha256": "c804c9a58545437aff6cfbde80c367bf0fe2cd7c76ae36e7909c98786de2af0b"
+          },
+          "scripts/compound_split_bleu.sh": {
+            "size_bytes": 439,
+            "sha256": "c228b2237549d5322af4da4bb8bbb279f75f8e38bc0a734778e15a85d3f9c2ec"
+          },
+          "scripts/convert_dictionary.lua": {
+            "size_bytes": 787,
+            "sha256": "e85e13f5461bfd3537aa351eefd0a3bd1b68925ca63654d6d9292df31a9cbe2f"
+          },
+          "scripts/convert_model.lua": {
+            "size_bytes": 3423,
+            "sha256": "566c7c70bd7900d3981201ecde49318f077021941e44000f26879fd118d3fc3e"
+          },
+          "scripts/count_docs.py": {
+            "size_bytes": 1784,
+            "sha256": "413de75ddbb3f45316776e38b734520b754e482a859aca8dc8cb8ee394442aba"
+          },
+          "scripts/process_lm_data.py": {
+            "size_bytes": 2299,
+            "sha256": "955815e7bbe2d227abbbac22422dbc850f55f371685ebc16b6ab5513e94817f9"
+          },
+          "scripts/read_binarized.py": {
+            "size_bytes": 1365,
+            "sha256": "82751ee43fe6c709a38d6b79810b5de1bac593752ae53f0c47bdf29dec6f33bb"
+          },
+          "scripts/rm_pt.py": {
+            "size_bytes": 4772,
+            "sha256": "bf3cc1d253397ebfdef94ab867bb07f38aabaf92a498eda2f461ca142bb84695"
+          },
+          "scripts/sacrebleu.sh": {
+            "size_bytes": 486,
+            "sha256": "9202e2f1ca8b789b34a2dc565b12ef4309b0d3b91f5ccebf8b42ea435e4efbbb"
+          },
+          "scripts/shard_docs.py": {
+            "size_bytes": 1576,
+            "sha256": "8ff373d2f90ef4718ae0bb5a3cc1c5498a808462e83f77d9bd189a3f2293349c"
+          },
+          "scripts/split_train_valid_docs.py": {
+            "size_bytes": 2561,
+            "sha256": "448f58d599330dd8052d3bd9dede98038fe8d5c1bef308ddbc7df1d9cc75334b"
+          },
+          "scripts/spm_decode.py": {
+            "size_bytes": 1509,
+            "sha256": "2a087d400fb27182f06966d5d4150c0df958b3ccd0980e6535397c3292c00faa"
+          },
+          "scripts/spm_encode.py": {
+            "size_bytes": 3411,
+            "sha256": "fbe071007c86d9919e2f54e85ebdb7d8e65530be7f73866dc130bebf9a5a1223"
+          },
+          "scripts/spm_train.py": {
+            "size_bytes": 431,
+            "sha256": "cb8c919de3d52ede5130d7693724939f812b0b0a538f9809156f6c8f59a747af"
+          },
+          "setup.py": {
+            "size_bytes": 4389,
+            "sha256": "507038b9ceb2cf3faa7bdf1cdf1159f4541191c691e9defb51c34033b0b663ad"
+          },
+          "tests/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "tests/gpu/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "tests/gpu/test_binaries_gpu.py": {
+            "size_bytes": 9920,
+            "sha256": "425b76a143a89f8afed6c80b8be64d3cd3c4473d09b78e4740d3718ff287e8df"
+          },
+          "tests/gpu/transformer_quantization_config.yaml": {
+            "size_bytes": 766,
+            "sha256": "f5439227ce6b8c00216a14c06f4b70166e84efed0f2c20beec9470d7d29c61ba"
+          },
+          "tests/speech_recognition/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "tests/speech_recognition/asr_test_base.py": {
+            "size_bytes": 19491,
+            "sha256": "4e20494b7f34ba689dea06a157ec916c91225353fabfe780e10ac8d30d3972f5"
+          },
+          "tests/speech_recognition/test_collaters.py": {
+            "size_bytes": 2048,
+            "sha256": "919a2958bef195f46b709ac52797fd8e7d4e28b210569071b1c84ba938b81b31"
+          },
+          "tests/speech_recognition/test_cross_entropy.py": {
+            "size_bytes": 1428,
+            "sha256": "2410620c2f11f0210335a0713c13b6e99f92c4d30359cb349bb4441b56e7108c"
+          },
+          "tests/speech_recognition/test_data_utils.py": {
+            "size_bytes": 1039,
+            "sha256": "586409804b5ba42e53e1711b65c22952e42fbf9f17a5d205476553c11cea8a65"
+          },
+          "tests/speech_recognition/test_vggtransformer.py": {
+            "size_bytes": 4578,
+            "sha256": "a07d8f211dc89b7899b8252f738cc3292273f69c8a315359a0b909d4de01d1e2"
+          },
+          "tests/test_average_checkpoints.py": {
+            "size_bytes": 4494,
+            "sha256": "22c078efe9f77ccc7b9a42a4ed707c1fcd0c21e33309f1eeafd4e0d908391fc7"
+          },
+          "tests/test_backtranslation_dataset.py": {
+            "size_bytes": 4030,
+            "sha256": "f34dd898e587745d4b4c874de27171096fbf720e97d7a69ae7f8dcdc0b0f50cf"
+          },
+          "tests/test_binaries.py": {
+            "size_bytes": 40028,
+            "sha256": "93ab30531ac87a508a02a81b0b38e3cbcebd5392f9f683252463f066e375c656"
+          },
+          "tests/test_bmuf.py": {
+            "size_bytes": 5351,
+            "sha256": "f321eb623276be5cd52b2d19d3ab9c748eac1519fc12fa1b0210c5f1c85ae524"
+          },
+          "tests/test_character_token_embedder.py": {
+            "size_bytes": 1656,
+            "sha256": "0791d4073156dde2cfc0135925bd46af0d762416b20e284763aabdecdd02d37b"
+          },
+          "tests/test_concat_dataset.py": {
+            "size_bytes": 1943,
+            "sha256": "6e6d20a884b78dbad2c6ef26a7404b6ea58f7c04723d55329f01f551aa6948d1"
+          },
+          "tests/test_convtbc.py": {
+            "size_bytes": 1679,
+            "sha256": "ee961ca1bab4a131353016a72c0dcac9f214a1d5892b6dff6b58bc1122bbaabc"
+          },
+          "tests/test_dictionary.py": {
+            "size_bytes": 3342,
+            "sha256": "77fb6d47aa5e5b9e7a910caf9159d0f69619b6a78e2be52c9f029486d8a772b3"
+          },
+          "tests/test_export.py": {
+            "size_bytes": 3499,
+            "sha256": "cf15640e7c42c2baa8c3938ae7737e6b3da68986a19c55d3a47e87b59d011a3c"
+          },
+          "tests/test_file_io.py": {
+            "size_bytes": 1415,
+            "sha256": "8e91ff4feeb5492447778d97a56f424ca7861001a34351ee1221a707e7a8a535"
+          },
+          "tests/test_inference_dropout.py": {
+            "size_bytes": 2935,
+            "sha256": "d858b9d9fd34d24e1b5e16fbe2862d0ac5e60bc38c7f9133885ce39437c084e4"
+          },
+          "tests/test_iterators.py": {
+            "size_bytes": 2831,
+            "sha256": "0b0989af6be555ea35021cb736c672efbe798580e8948de49fc2482385055a58"
+          },
+          "tests/test_label_smoothing.py": {
+            "size_bytes": 4235,
+            "sha256": "9893ec4f069bdb8ad8b9498dceeb0ca4c06040e7bdf48deaa13dc6a8cbdd10dc"
+          },
+          "tests/test_memory_efficient_fp16.py": {
+            "size_bytes": 2002,
+            "sha256": "efabe8af8016bc8afdca846b2a3590c21b3e55be3c206aa2b2f1f0731c62c34a"
+          },
+          "tests/test_metrics.py": {
+            "size_bytes": 2638,
+            "sha256": "6a8f22b04d15b6bd3040acddfbde16db1c861f4b3e93ee2212534996985567d5"
+          },
+          "tests/test_multi_corpus_sampled_dataset.py": {
+            "size_bytes": 3105,
+            "sha256": "55a641661dc4fb7f6017ca5897905534f65dc76025cfa18c7cb23ec56b9c152f"
+          },
+          "tests/test_multihead_attention.py": {
+            "size_bytes": 1904,
+            "sha256": "ff30727e3574791d4bb944ad56965cdff2f6f6e8325626c15128c33d1d84fd47"
+          },
+          "tests/test_noising.py": {
+            "size_bytes": 19779,
+            "sha256": "c05efea79df8480a457ddfe130c4a3a11ef7df5aee81fefabf3c933e4e3e83ef"
+          },
+          "tests/test_reproducibility.py": {
+            "size_bytes": 3864,
+            "sha256": "b22ca7a4b2425f0cab20b624c0579a59c3a34726ee40f1591feb63b6e57d4768"
+          },
+          "tests/test_resampling_dataset.py": {
+            "size_bytes": 3366,
+            "sha256": "0083e203acecf3b705f367c200f0b48df03f9a16ddd3f8d7cb5624463f5b8250"
+          },
+          "tests/test_sequence_generator.py": {
+            "size_bytes": 23549,
+            "sha256": "b17dd25a2a17c96551dc78a8651790517de68336186a483e70f1c153b1275f13"
+          },
+          "tests/test_sequence_scorer.py": {
+            "size_bytes": 3949,
+            "sha256": "145a95d2a8ce826390e7b89d0bd8dcf1b582bfc9e94b8e5067f2eb680188622f"
+          },
+          "tests/test_token_block_dataset.py": {
+            "size_bytes": 2970,
+            "sha256": "4f6d93591ade975182eb7dc54b2630dce8fd5adbad251e2c309389da63d6fd1e"
+          },
+          "tests/test_token_block_mixture_dataset.py": {
+            "size_bytes": 1608,
+            "sha256": "9481ca2745bc9e8d41cb0555f549be74c7c981793a8c66233a2f2c318d130c06"
+          },
+          "tests/test_train.py": {
+            "size_bytes": 8331,
+            "sha256": "32add9c9716e887f2b2ee12a5b9de81d107fc18804627ab48f5df5d0a5448c45"
+          },
+          "tests/test_utils.py": {
+            "size_bytes": 3067,
+            "sha256": "83119ee4b5aaa6c6bd10b561fb4b8f69dbd8190ab1a9fc6b48f5f16d0ab684ef"
+          },
+          "tests/utils.py": {
+            "size_bytes": 16382,
+            "sha256": "2998bdc8fa36c1a70960127a2325b7c8f185fd5715eda885c14c2b3f3151826b"
+          },
+          "train.py": {
+            "size_bytes": 366,
+            "sha256": "7c1c7504abaa9cf55e5c814f87c6c04ab2fea7c70afaedba83cdf49bbf31b5cc"
+          }
+        }
+      }
+    },
+    "s5": {
+      "requirements_sha256": "1da70522c347619553d8e4c5b9955f4aa1098c5c842e1618639979572d3d6837",
+      "wheels": [
+        {
+          "filename": "absl_py-2.5.1-py3-none-any.whl",
+          "size_bytes": 137673,
+          "sha256": "721200f2f0e9960f2ca9dc3a2a706b201f5f75d812c158f059cbbe29eeafbdb8",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/721200f2f0e9960f2ca9dc3a2a706b201f5f75d812c158f059cbbe29eeafbdb8.chunk",
+              "size_bytes": 137673,
+              "sha256": "721200f2f0e9960f2ca9dc3a2a706b201f5f75d812c158f059cbbe29eeafbdb8"
+            }
+          ]
+        },
+        {
+          "filename": "chex-0.1.86-py3-none-any.whl",
+          "size_bytes": 98167,
+          "sha256": "251c20821092323a3d9c28e1cf80e4a58180978bec368f531949bd9847eee568",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/251c20821092323a3d9c28e1cf80e4a58180978bec368f531949bd9847eee568.chunk",
+              "size_bytes": 98167,
+              "sha256": "251c20821092323a3d9c28e1cf80e4a58180978bec368f531949bd9847eee568"
+            }
+          ]
+        },
+        {
+          "filename": "etils-1.13.0-py3-none-any.whl",
+          "size_bytes": 170603,
+          "sha256": "d9cd4f40fbe77ad6613b7348a18132cc511237b6c076dbb89105c0b520a4c6bb",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/d9cd4f40fbe77ad6613b7348a18132cc511237b6c076dbb89105c0b520a4c6bb.chunk",
+              "size_bytes": 170603,
+              "sha256": "d9cd4f40fbe77ad6613b7348a18132cc511237b6c076dbb89105c0b520a4c6bb"
+            }
+          ]
+        },
+        {
+          "filename": "flax-0.8.2-py3-none-any.whl",
+          "size_bytes": 686754,
+          "sha256": "911d83e01380fdb3135c309e70981aabd15e7ca038014d7989ddc3cfaf4d0d45",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/911d83e01380fdb3135c309e70981aabd15e7ca038014d7989ddc3cfaf4d0d45.chunk",
+              "size_bytes": 686754,
+              "sha256": "911d83e01380fdb3135c309e70981aabd15e7ca038014d7989ddc3cfaf4d0d45"
+            }
+          ]
+        },
+        {
+          "filename": "fsspec-2026.9.0-py3-none-any.whl",
+          "size_bytes": 221738,
+          "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f.chunk",
+              "size_bytes": 221738,
+              "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f"
+            }
+          ]
+        },
+        {
+          "filename": "importlib_resources-7.1.0-py3-none-any.whl",
+          "size_bytes": 37232,
+          "sha256": "1bd7b48b4088eddb2cd16382150bb515af0bd2c70128194392725f82ad2c96a1",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/1bd7b48b4088eddb2cd16382150bb515af0bd2c70128194392725f82ad2c96a1.chunk",
+              "size_bytes": 37232,
+              "sha256": "1bd7b48b4088eddb2cd16382150bb515af0bd2c70128194392725f82ad2c96a1"
+            }
+          ]
+        },
+        {
+          "filename": "jax-0.4.23-py3-none-any.whl",
+          "size_bytes": 1735250,
+          "sha256": "a7a07ccd1577111e3b82378c79a8ed0f9d6613b1e98fb6bf3c0b459198f73eaa",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/a7a07ccd1577111e3b82378c79a8ed0f9d6613b1e98fb6bf3c0b459198f73eaa.chunk",
+              "size_bytes": 1735250,
+              "sha256": "a7a07ccd1577111e3b82378c79a8ed0f9d6613b1e98fb6bf3c0b459198f73eaa"
+            }
+          ]
+        },
+        {
+          "filename": "jaxlib-0.4.23+cuda12.cudnn89-cp310-cp310-manylinux2014_x86_64.whl",
+          "size_bytes": 131812210,
+          "sha256": "8e42000672599e7ec0ea7f551acfcc95dcdd0e22b05a1d1f12f97b56a9fce4a8",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/27e16294274a9f3c13fd9d01316448bb1e39324675842e03b63a4523d8f77f04.chunk",
+              "size_bytes": 67108864,
+              "sha256": "27e16294274a9f3c13fd9d01316448bb1e39324675842e03b63a4523d8f77f04"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/9863ccc5db8f962685dc47fc7b11a42650ce9420599eaa5897582fc39ec3875d.chunk",
+              "size_bytes": 64703346,
+              "sha256": "9863ccc5db8f962685dc47fc7b11a42650ce9420599eaa5897582fc39ec3875d"
+            }
+          ]
+        },
+        {
+          "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
+          "size_bytes": 91687,
+          "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a.chunk",
+              "size_bytes": 91687,
+              "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a"
+            }
+          ]
+        },
+        {
+          "filename": "mdurl-0.1.2-py3-none-any.whl",
+          "size_bytes": 9979,
+          "sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8.chunk",
+              "size_bytes": 9979,
+              "sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"
+            }
+          ]
+        },
+        {
+          "filename": "ml_dtypes-0.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 2160459,
+          "sha256": "961134ea44c7b8ca63eda902a44b58cd8bd670e21d62e255c81fba0a8e70d9b7",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/961134ea44c7b8ca63eda902a44b58cd8bd670e21d62e255c81fba0a8e70d9b7.chunk",
+              "size_bytes": 2160459,
+              "sha256": "961134ea44c7b8ca63eda902a44b58cd8bd670e21d62e255c81fba0a8e70d9b7"
+            }
+          ]
+        },
+        {
+          "filename": "msgpack-1.0.8-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 385107,
+          "sha256": "00e073efcba9ea99db5acef3959efa45b52bc67b61b00823d2a1a6944bf45982",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/00e073efcba9ea99db5acef3959efa45b52bc67b61b00823d2a1a6944bf45982.chunk",
+              "size_bytes": 385107,
+              "sha256": "00e073efcba9ea99db5acef3959efa45b52bc67b61b00823d2a1a6944bf45982"
+            }
+          ]
+        },
+        {
+          "filename": "nest_asyncio-1.6.0-py3-none-any.whl",
+          "size_bytes": 5195,
+          "sha256": "87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c.chunk",
+              "size_bytes": 5195,
+              "sha256": "87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c"
+            }
+          ]
+        },
+        {
+          "filename": "numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 18240889,
+          "sha256": "ffa75af20b44f8dba823498024771d5ac50620e6915abac414251bd971b4529f",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/ffa75af20b44f8dba823498024771d5ac50620e6915abac414251bd971b4529f.chunk",
+              "size_bytes": 18240889,
+              "sha256": "ffa75af20b44f8dba823498024771d5ac50620e6915abac414251bd971b4529f"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cublas_cu12-12.2.5.6-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 417825305,
+          "sha256": "f448d8db463f9a2c7dd9a1e607c0961d3e95f825b86839c5882f7d073d406df0",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/81d23f57af22c294de00f46045e6dc91adb843bae80580e5d4ed37a0acffbfe7.chunk",
+              "size_bytes": 67108864,
+              "sha256": "81d23f57af22c294de00f46045e6dc91adb843bae80580e5d4ed37a0acffbfe7"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/224188d11b20a362bb42fbdd4a56658e6f0376177e79d34d2b3721ded5e43ade.chunk",
+              "size_bytes": 67108864,
+              "sha256": "224188d11b20a362bb42fbdd4a56658e6f0376177e79d34d2b3721ded5e43ade"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/81f30f3a75084e17b2cf58ad4f10452a1698c4d51e75a14a539cda1b0088fe22.chunk",
+              "size_bytes": 67108864,
+              "sha256": "81f30f3a75084e17b2cf58ad4f10452a1698c4d51e75a14a539cda1b0088fe22"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/4e2b309ae43856528ff3d450d88e1093e6239977b4d4072429f1e030881f5fdf.chunk",
+              "size_bytes": 67108864,
+              "sha256": "4e2b309ae43856528ff3d450d88e1093e6239977b4d4072429f1e030881f5fdf"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e9a535cb61abca9c015f9ba371fb4f65714a4f967f752e179a3a8573d5d6a7aa.chunk",
+              "size_bytes": 67108864,
+              "sha256": "e9a535cb61abca9c015f9ba371fb4f65714a4f967f752e179a3a8573d5d6a7aa"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/50162e4bc822ba96b38ec10a38d71addc81df8602ba013bf447b0f43b4cf34da.chunk",
+              "size_bytes": 67108864,
+              "sha256": "50162e4bc822ba96b38ec10a38d71addc81df8602ba013bf447b0f43b4cf34da"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/4a0fa73d058de5811c5db323d8aea4d1d43c0a0d308a2e9cc57109c29efb6940.chunk",
+              "size_bytes": 15172121,
+              "sha256": "4a0fa73d058de5811c5db323d8aea4d1d43c0a0d308a2e9cc57109c29efb6940"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cuda_cupti_cu12-12.2.142-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 13900552,
+          "sha256": "ce68d1009dd14215e38ed49643d31374c71d6fea381181cb0b9da7f19dfd1624",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/ce68d1009dd14215e38ed49643d31374c71d6fea381181cb0b9da7f19dfd1624.chunk",
+              "size_bytes": 13900552,
+              "sha256": "ce68d1009dd14215e38ed49643d31374c71d6fea381181cb0b9da7f19dfd1624"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cuda_nvcc_cu12-12.2.140-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 21319729,
+          "sha256": "c6ff4ae7a636eb6cab7621191e19ac3779690686bbcf52c04d8b1ca2944e1e27",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/c6ff4ae7a636eb6cab7621191e19ac3779690686bbcf52c04d8b1ca2944e1e27.chunk",
+              "size_bytes": 21319729,
+              "sha256": "c6ff4ae7a636eb6cab7621191e19ac3779690686bbcf52c04d8b1ca2944e1e27"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cuda_nvrtc_cu12-12.2.140-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 23430053,
+          "sha256": "b1cdcae6443cb7cdcfb5d1bf51896a148c9f82f9e65b27db9ab095eaed689aa7",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b1cdcae6443cb7cdcfb5d1bf51896a148c9f82f9e65b27db9ab095eaed689aa7.chunk",
+              "size_bytes": 23430053,
+              "sha256": "b1cdcae6443cb7cdcfb5d1bf51896a148c9f82f9e65b27db9ab095eaed689aa7"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cuda_runtime_cu12-12.2.140-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 845802,
+          "sha256": "acb9cb7e44594a3512533497ea790d9f0b0e399abcc888584c157d1ffa080e41",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/acb9cb7e44594a3512533497ea790d9f0b0e399abcc888584c157d1ffa080e41.chunk",
+              "size_bytes": 845802,
+              "sha256": "acb9cb7e44594a3512533497ea790d9f0b0e399abcc888584c157d1ffa080e41"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cudnn_cu12-8.9.7.29-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 704741186,
+          "sha256": "adf4f59ed7a1341103822ed8df6e144f4d47ea8b10d9bf0ea0047ba738fd7b02",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/e7c76f29e782db6a7beee12c33bf7ebf37e323cf503eba41807696410323fe15.chunk",
+              "size_bytes": 67108864,
+              "sha256": "e7c76f29e782db6a7beee12c33bf7ebf37e323cf503eba41807696410323fe15"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/24da1fdc8fce3f7bfc53894b1f05cc243e042bc40392bc3d3c66ff9c40bcb2f0.chunk",
+              "size_bytes": 67108864,
+              "sha256": "24da1fdc8fce3f7bfc53894b1f05cc243e042bc40392bc3d3c66ff9c40bcb2f0"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/bdd504627aec7cde3cb6cbf0e3907765b0ed63e072b9d733fc4890c815426bce.chunk",
+              "size_bytes": 67108864,
+              "sha256": "bdd504627aec7cde3cb6cbf0e3907765b0ed63e072b9d733fc4890c815426bce"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/4ebe81f71ac6d0ecacaca9c305e435f8c38dc3c795113a08a46af56ab048b993.chunk",
+              "size_bytes": 67108864,
+              "sha256": "4ebe81f71ac6d0ecacaca9c305e435f8c38dc3c795113a08a46af56ab048b993"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/ef54fd1f73f1c6f0926b824fe756e3a26097cfcfcff9feef1196dbbe7aa60fcf.chunk",
+              "size_bytes": 67108864,
+              "sha256": "ef54fd1f73f1c6f0926b824fe756e3a26097cfcfcff9feef1196dbbe7aa60fcf"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/478250460dd8d27b7ef543a339d93619939eed51d58ef2a1640dcc0fdc27af00.chunk",
+              "size_bytes": 67108864,
+              "sha256": "478250460dd8d27b7ef543a339d93619939eed51d58ef2a1640dcc0fdc27af00"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/19cb676c1f5bb3b5cbec50781e2b2f5efc1d42c0526a231a5df6eabbe7e52dd7.chunk",
+              "size_bytes": 67108864,
+              "sha256": "19cb676c1f5bb3b5cbec50781e2b2f5efc1d42c0526a231a5df6eabbe7e52dd7"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/43141ad4c94a600d272d575513931d9e438356bb0a76e0f9c1d437687e7c3fe8.chunk",
+              "size_bytes": 67108864,
+              "sha256": "43141ad4c94a600d272d575513931d9e438356bb0a76e0f9c1d437687e7c3fe8"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/92c19d26707c792b7e41a978bb16a1dd97af8ec403f73e1710415a921a75b265.chunk",
+              "size_bytes": 67108864,
+              "sha256": "92c19d26707c792b7e41a978bb16a1dd97af8ec403f73e1710415a921a75b265"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/4f7fcfe0d8d48f229647f8625449915ac203697edcb2456baf3f2fb0ee395f25.chunk",
+              "size_bytes": 67108864,
+              "sha256": "4f7fcfe0d8d48f229647f8625449915ac203697edcb2456baf3f2fb0ee395f25"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/1c13fc18031e7d015b9b2a73e678aa7bc76c5552f98765edc5e9880cf5fc1607.chunk",
+              "size_bytes": 33652546,
+              "sha256": "1c13fc18031e7d015b9b2a73e678aa7bc76c5552f98765edc5e9880cf5fc1607"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cufft_cu12-11.0.8.103-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 98570970,
+          "sha256": "72e961e578f9be9e316ccb4db8652c421dd0b57442624faa71061d452f449a67",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/8e92e9dec0b400386c4769a04416751be91aa9d42b6dfb0a55dfb68ffe9ce717.chunk",
+              "size_bytes": 67108864,
+              "sha256": "8e92e9dec0b400386c4769a04416751be91aa9d42b6dfb0a55dfb68ffe9ce717"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/9eb8cce2bcb6af58bedf6bba7900660e9fb80e03df6b6a6cd743ddb6d8d6cc28.chunk",
+              "size_bytes": 31462106,
+              "sha256": "9eb8cce2bcb6af58bedf6bba7900660e9fb80e03df6b6a6cd743ddb6d8d6cc28"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cusolver_cu12-11.5.2.141-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 124890758,
+          "sha256": "5a85c4653ce34339a5688137f494a0f903e0f0532418550998167f00844161da",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/60b612179203b0d2f305b82baa13befcea182bd403488c82169a536ed1b43ce3.chunk",
+              "size_bytes": 67108864,
+              "sha256": "60b612179203b0d2f305b82baa13befcea182bd403488c82169a536ed1b43ce3"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/c7ac0cf84e11ea4ae127a4ef089963e38a2d178e5382cff51be5029ec05d1ecf.chunk",
+              "size_bytes": 57781894,
+              "sha256": "c7ac0cf84e11ea4ae127a4ef089963e38a2d178e5382cff51be5029ec05d1ecf"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_cusparse_cu12-12.1.2.141-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 195268625,
+          "sha256": "4e13d6a51d2303dcb2a023ba09546811161f0334fc64e13689397bbd3b1eb126",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/6a7f372298616eeb49f9c9a9c4e17542ee9904f8b25109fc656d3e47a683d2dd.chunk",
+              "size_bytes": 67108864,
+              "sha256": "6a7f372298616eeb49f9c9a9c4e17542ee9904f8b25109fc656d3e47a683d2dd"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/06d6c14e683391cf2cf85db25d04c44c509676ff01bcad83d01a9d57d4d7ac60.chunk",
+              "size_bytes": 67108864,
+              "sha256": "06d6c14e683391cf2cf85db25d04c44c509676ff01bcad83d01a9d57d4d7ac60"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/d278110a12591bd722956141a5ffebcf95a53413e69e6aff412640c594e5e03f.chunk",
+              "size_bytes": 61050897,
+              "sha256": "d278110a12591bd722956141a5ffebcf95a53413e69e6aff412640c594e5e03f"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_nccl_cu12-2.18.3-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 218316355,
+          "sha256": "89cf220910c43e53df992f54f7aa2a35c6d606b077c9ae95b1f17c544d3ad3f3",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/11fbe867c187c5b66fa2850e45cb6034ad725b2a3e429ad0e5bdcfc0f5229ae1.chunk",
+              "size_bytes": 67108864,
+              "sha256": "11fbe867c187c5b66fa2850e45cb6034ad725b2a3e429ad0e5bdcfc0f5229ae1"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/3d9fe392359fd4b2cefe93fa434a0be8d7a2e4585a75bda089444f8599814f58.chunk",
+              "size_bytes": 67108864,
+              "sha256": "3d9fe392359fd4b2cefe93fa434a0be8d7a2e4585a75bda089444f8599814f58"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/14fc158c2fe031153a1b4b390d9486fb12fa469faa2e123e1ec07b4a52e4443d.chunk",
+              "size_bytes": 67108864,
+              "sha256": "14fc158c2fe031153a1b4b390d9486fb12fa469faa2e123e1ec07b4a52e4443d"
+            },
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/5eca81393033d08ea1ad0ce5eea732a3512371cc90abc62e22ee456674000fd3.chunk",
+              "size_bytes": 16989763,
+              "sha256": "5eca81393033d08ea1ad0ce5eea732a3512371cc90abc62e22ee456674000fd3"
+            }
+          ]
+        },
+        {
+          "filename": "nvidia_nvjitlink_cu12-12.2.140-py3-none-manylinux1_x86_64.whl",
+          "size_bytes": 20177273,
+          "sha256": "95635cafbf9f96c38bea5200ab145a2e6aefbb5405e0b04c1e4ba54df2d84ec9",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/95635cafbf9f96c38bea5200ab145a2e6aefbb5405e0b04c1e4ba54df2d84ec9.chunk",
+              "size_bytes": 20177273,
+              "sha256": "95635cafbf9f96c38bea5200ab145a2e6aefbb5405e0b04c1e4ba54df2d84ec9"
+            }
+          ]
+        },
+        {
+          "filename": "opt_einsum-3.4.0-py3-none-any.whl",
+          "size_bytes": 71932,
+          "sha256": "69bb92469f86a1565195ece4ac0323943e83477171b91d24c35afe028a90d7cd",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/69bb92469f86a1565195ece4ac0323943e83477171b91d24c35afe028a90d7cd.chunk",
+              "size_bytes": 71932,
+              "sha256": "69bb92469f86a1565195ece4ac0323943e83477171b91d24c35afe028a90d7cd"
+            }
+          ]
+        },
+        {
+          "filename": "optax-0.2.2-py3-none-any.whl",
+          "size_bytes": 223674,
+          "sha256": "411c414a76aae259f4191a60b712663968741a5163ca92fc250b5d5c7d36fb57",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/411c414a76aae259f4191a60b712663968741a5163ca92fc250b5d5c7d36fb57.chunk",
+              "size_bytes": 223674,
+              "sha256": "411c414a76aae259f4191a60b712663968741a5163ca92fc250b5d5c7d36fb57"
+            }
+          ]
+        },
+        {
+          "filename": "orbax_checkpoint-0.5.3-py3-none-any.whl",
+          "size_bytes": 143047,
+          "sha256": "82acdf18acb1e294396dd583634d3b1bd005bbb81f3de650740384c465d735c3",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/82acdf18acb1e294396dd583634d3b1bd005bbb81f3de650740384c465d735c3.chunk",
+              "size_bytes": 143047,
+              "sha256": "82acdf18acb1e294396dd583634d3b1bd005bbb81f3de650740384c465d735c3"
+            }
+          ]
+        },
+        {
+          "filename": "pip-23.3.2-py3-none-any.whl",
+          "size_bytes": 2109393,
+          "sha256": "5052d7889c1f9d05224cd41741acb7c5d6fa735ab34e339624a614eaaa7e7d76",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/5052d7889c1f9d05224cd41741acb7c5d6fa735ab34e339624a614eaaa7e7d76.chunk",
+              "size_bytes": 2109393,
+              "sha256": "5052d7889c1f9d05224cd41741acb7c5d6fa735ab34e339624a614eaaa7e7d76"
+            }
+          ]
+        },
+        {
+          "filename": "protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl",
+          "size_bytes": 343223,
+          "sha256": "89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2.chunk",
+              "size_bytes": 343223,
+              "sha256": "89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2"
+            }
+          ]
+        },
+        {
+          "filename": "pygments-2.21.0-py3-none-any.whl",
+          "size_bytes": 1250147,
+          "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9.chunk",
+              "size_bytes": 1250147,
+              "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
+            }
+          ]
+        },
+        {
+          "filename": "pyyaml-6.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "size_bytes": 770293,
+          "sha256": "9c7708761fccb9397fe64bbc0395abcae8c4bf7b0eac081e12b809bf47700d0b",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/9c7708761fccb9397fe64bbc0395abcae8c4bf7b0eac081e12b809bf47700d0b.chunk",
+              "size_bytes": 770293,
+              "sha256": "9c7708761fccb9397fe64bbc0395abcae8c4bf7b0eac081e12b809bf47700d0b"
+            }
+          ]
+        },
+        {
+          "filename": "rich-15.0.0-py3-none-any.whl",
+          "size_bytes": 310654,
+          "sha256": "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb.chunk",
+              "size_bytes": 310654,
+              "sha256": "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb"
+            }
+          ]
+        },
+        {
+          "filename": "scipy-1.11.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 36442040,
+          "sha256": "933baf588daa8dc9a92c20a0be32f56d43faf3d1a60ab11b3f08c356430f6e56",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/933baf588daa8dc9a92c20a0be32f56d43faf3d1a60ab11b3f08c356430f6e56.chunk",
+              "size_bytes": 36442040,
+              "sha256": "933baf588daa8dc9a92c20a0be32f56d43faf3d1a60ab11b3f08c356430f6e56"
+            }
+          ]
+        },
+        {
+          "filename": "setuptools-68.2.2-py3-none-any.whl",
+          "size_bytes": 807864,
+          "sha256": "b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a.chunk",
+              "size_bytes": 807864,
+              "sha256": "b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a"
+            }
+          ]
+        },
+        {
+          "filename": "tensorstore-0.1.54-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "size_bytes": 14239442,
+          "sha256": "7f5e0e9a81b41cba6c7462b57531855e3c0be320ae05b071b220206f04ab3b99",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/7f5e0e9a81b41cba6c7462b57531855e3c0be320ae05b071b220206f04ab3b99.chunk",
+              "size_bytes": 14239442,
+              "sha256": "7f5e0e9a81b41cba6c7462b57531855e3c0be320ae05b071b220206f04ab3b99"
+            }
+          ]
+        },
+        {
+          "filename": "toolz-1.2.0-py3-none-any.whl",
+          "size_bytes": 60789,
+          "sha256": "890f820b1cb8152785aaf9386d8707770110809035800985ca65cb24ce1120ef",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/890f820b1cb8152785aaf9386d8707770110809035800985ca65cb24ce1120ef.chunk",
+              "size_bytes": 60789,
+              "sha256": "890f820b1cb8152785aaf9386d8707770110809035800985ca65cb24ce1120ef"
+            }
+          ]
+        },
+        {
+          "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+          "size_bytes": 45571,
+          "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8.chunk",
+              "size_bytes": 45571,
+              "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+            }
+          ]
+        },
+        {
+          "filename": "wheel-0.41.3-py3-none-any.whl",
+          "size_bytes": 65801,
+          "sha256": "488609bc63a29322326e05560731bf7bfea8e48ad646e1f5e40d366607de0942",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/488609bc63a29322326e05560731bf7bfea8e48ad646e1f5e40d366607de0942.chunk",
+              "size_bytes": 65801,
+              "sha256": "488609bc63a29322326e05560731bf7bfea8e48ad646e1f5e40d366607de0942"
+            }
+          ]
+        },
+        {
+          "filename": "zipp-4.1.2-py3-none-any.whl",
+          "size_bytes": 10581,
+          "sha256": "b30cb6cd253122169c47de245ca24a86bac2a5d3802ba15bf7ba6414eb9e144d",
+          "chunks": [
+            {
+              "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/b30cb6cd253122169c47de245ca24a86bac2a5d3802ba15bf7ba6414eb9e144d.chunk",
+              "size_bytes": 10581,
+              "sha256": "b30cb6cd253122169c47de245ca24a86bac2a5d3802ba15bf7ba6414eb9e144d"
+            }
+          ]
+        }
+      ],
+      "source": {
+        "filename": "s5-source.zip",
+        "size_bytes": 1887684,
+        "sha256": "6700b9255a0d096e6e7372cb8b20dbe091f5d722c515a06c7d0d0e5a8e3636c8",
+        "chunks": [
+          {
+            "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/6700b9255a0d096e6e7372cb8b20dbe091f5d722c515a06c7d0d0e5a8e3636c8.chunk",
+            "size_bytes": 1887684,
+            "sha256": "6700b9255a0d096e6e7372cb8b20dbe091f5d722c515a06c7d0d0e5a8e3636c8"
+          }
+        ],
+        "revision": "3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+        "members": {
+          ".gitignore": {
+            "size_bytes": 3136,
+            "sha256": "11ef005af684644405ce03deab8610aa677a8bd608b6cb40a2299a9c7efe13a3"
+          },
+          "CITATION.cff": {
+            "size_bytes": 438,
+            "sha256": "3a23692a32337d32a13098bfcf17550510b104780c3d5f8d3d3549f6fd4bb983"
+          },
+          "LICENSE": {
+            "size_bytes": 1069,
+            "sha256": "42bcf00502c8963f9b3cb9f75d2bc98432226d55764506b4780ee830b5065cf3"
+          },
+          "README.md": {
+            "size_bytes": 6105,
+            "sha256": "c4f285c33a2da9dd8b33c9bf979755e95c14ab0e099bb913470ff4287b304463"
+          },
+          "bin/download_aan.sh": {
+            "size_bytes": 184,
+            "sha256": "cd66772ebaa788a34fb5625b340b5ce33bdc44bdfd7e75907a404159300d9fab"
+          },
+          "bin/download_all.sh": {
+            "size_bytes": 158,
+            "sha256": "848353f1875563edc53df313c9ded174e765a3e8a91566a9da82035a6800be4d"
+          },
+          "bin/download_lra.sh": {
+            "size_bytes": 398,
+            "sha256": "bc65d6fd553f421c448669c18d0b88abf9628c93903e78fdf4239a55d1fffc25"
+          },
+          "bin/download_sc35.sh": {
+            "size_bytes": 115,
+            "sha256": "c726ed70fa6878a0371d4a5c8e11f55e11543b228f7d69e5d042281cb5dd3d63"
+          },
+          "bin/python_scripts/download_sc.py": {
+            "size_bytes": 297,
+            "sha256": "0f3aa23ae53062c75209dbd3d3706e14ac3e51daa978827ad4b73e3bf75f0bf3"
+          },
+          "bin/run_experiments/run_lra_aan.sh": {
+            "size_bytes": 428,
+            "sha256": "4ad286688294bc063819bd1eee895c0de01d2fe980eefbd8242f02c9a6beb68a"
+          },
+          "bin/run_experiments/run_lra_cifar.sh": {
+            "size_bytes": 409,
+            "sha256": "97b70ff19958ff8e73b232f8e335c7a44b6fa95ab75f7c84efb0598fe2a1da2b"
+          },
+          "bin/run_experiments/run_lra_imdb.sh": {
+            "size_bytes": 468,
+            "sha256": "2766c75f74c647bab5b4411bb1d9c09c4c413093b694f670bfa9d97720558cf3"
+          },
+          "bin/run_experiments/run_lra_listops.sh": {
+            "size_bytes": 412,
+            "sha256": "e735eeaa040590070b0094996fb9520ff6a4d18ba5a9a34b54297e052209bfe6"
+          },
+          "bin/run_experiments/run_lra_pathfinder.sh": {
+            "size_bytes": 439,
+            "sha256": "296787a262f86abad6f97029f4472a46a7642f74446939dc3298f468a3b438de"
+          },
+          "bin/run_experiments/run_lra_pathx.sh": {
+            "size_bytes": 443,
+            "sha256": "84c2c8730b5df3e2a3354a890b07e5525e508edff535bceeb3895c92e1066cd4"
+          },
+          "bin/run_experiments/run_speech35.sh": {
+            "size_bytes": 385,
+            "sha256": "b921686eb16a95eb5a76c4b8035bfe5d78863dccd317478a2de6c331f4747cf8"
+          },
+          "docs/figures/pdfs/s3-block-diagram-2.pdf": {
+            "size_bytes": 145640,
+            "sha256": "3b57da17577b0e75bd1d6ab51b0198cdce83b84452b6a881d42df5ff242b3fb9"
+          },
+          "docs/figures/pdfs/s4-matrix-blocks.pdf": {
+            "size_bytes": 208979,
+            "sha256": "370c3034071b9a4965671e441d53ccbc988cd18facfeed36eac593e225b71551"
+          },
+          "docs/figures/pdfs/s4-s3-block-diagram-2.pdf": {
+            "size_bytes": 200326,
+            "sha256": "7785092d5b3034335cff58f736b9697b16bcd263771b09ef08e91431f3617842"
+          },
+          "docs/figures/pdfs/s5-matrix-blocks.pdf": {
+            "size_bytes": 208351,
+            "sha256": "fad49a4e7c13268616a1c3c7dff0caaecc4c0f7503a791c77ecbe0105dded5bc"
+          },
+          "docs/figures/pngs/pendulum.png": {
+            "size_bytes": 233340,
+            "sha256": "c9dc9e76b21cae6518fc4c4f9c8a232305a1fad001b6a21c45dc98d121911173"
+          },
+          "docs/figures/pngs/s3-block-diagram-2.png": {
+            "size_bytes": 188256,
+            "sha256": "15de77ee7dd0359c286ddf3b2745c162b59bd03f5d51838845df7db783a84de5"
+          },
+          "docs/figures/pngs/s4-matrix-blocks.png": {
+            "size_bytes": 396273,
+            "sha256": "aeae29ecf3732a442c89cf1c65104dac3b3480e2fee3ac9dd59b6b70b90d1320"
+          },
+          "docs/figures/pngs/s4-s3-block-diagram-2.png": {
+            "size_bytes": 409778,
+            "sha256": "957bb9f311862541f5ff610d783f31ba9dda7915172a3756f3c57b7567e26a4e"
+          },
+          "docs/figures/pngs/s5-matrix-blocks.png": {
+            "size_bytes": 258483,
+            "sha256": "78b58a5f16da2c4834d318257f07a93c1ad6e62c06d0e48d55dcf8c207c656a5"
+          },
+          "docs/s5_blog.md": {
+            "size_bytes": 6513,
+            "sha256": "07566a495f9b98141d4d55e36df2be28fa0e4986774d302e655221e283000176"
+          },
+          "requirements_cpu.txt": {
+            "size_bytes": 139,
+            "sha256": "618ea292f5760ab92ab9afb33cf9f93c2b9fef4c2cdbca604c1197368caede66"
+          },
+          "requirements_gpu.txt": {
+            "size_bytes": 170,
+            "sha256": "ce5979d77bcbf8becad5b0c13dbeae2e5c1fe7999862432847b3f6a804c182fe"
+          },
+          "run_train.py": {
+            "size_bytes": 5254,
+            "sha256": "0655cb78e390bb08d45acbde16c859474282a68f116697dc92b99fbe0d649fb9"
+          },
+          "s5/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "s5/dataloaders/README.md": {
+            "size_bytes": 667,
+            "sha256": "64264e2a9c5b51f6f45ea4bac2c222f955a10f56346071ab9d96a452ba3097e1"
+          },
+          "s5/dataloaders/__init__.py": {
+            "size_bytes": 60,
+            "sha256": "32ac677aaaa15457fbc9713619159637c40bc8433f47b9c6cafd37d4ecad0440"
+          },
+          "s5/dataloaders/audio.py": {
+            "size_bytes": 31136,
+            "sha256": "3764d26d5b8ea99efe64f1c7227e9885661c9c0b28aea12a92323d2f6ff4096f"
+          },
+          "s5/dataloaders/base.py": {
+            "size_bytes": 13708,
+            "sha256": "b4e9320576a2e380a0385b13f223bc94e532660eab39f09ee0f4bd794a817cbe"
+          },
+          "s5/dataloaders/basic.py": {
+            "size_bytes": 9482,
+            "sha256": "0b263f6d89f31d0d3258c633aabc91c23d43712028b49e33d41f0cc083d760ca"
+          },
+          "s5/dataloaders/lra.py": {
+            "size_bytes": 27075,
+            "sha256": "f54d2153d06bc024dd0085e92e76b6cb223e7f1b0e579d902577fcb9e67bedad"
+          },
+          "s5/dataloaders/sc.py": {
+            "size_bytes": 17210,
+            "sha256": "0111ebe5db698c04741614df17dc04df39e7baebf898c8fa0540c5ff0d371109"
+          },
+          "s5/dataloading.py": {
+            "size_bytes": 14500,
+            "sha256": "d94ec9b350781849992f864dac4e132f3a40e32a5b8b5e7b244162006007a022"
+          },
+          "s5/layers.py": {
+            "size_bytes": 3323,
+            "sha256": "87a2c9ff50ff5ab19da5660f756f2c89324513a60f976020206ae54bc76f169e"
+          },
+          "s5/seq_model.py": {
+            "size_bytes": 12849,
+            "sha256": "ac5decb2b1b1d89cbd23063e88f10925173cd53bc76f3dc75fe78c5863a5d025"
+          },
+          "s5/ssm.py": {
+            "size_bytes": 11823,
+            "sha256": "d893684e5fe6fa3a231fb4ff3fa2811b44a2a8a31e70fb1ac77808d7328fe183"
+          },
+          "s5/ssm_init.py": {
+            "size_bytes": 5147,
+            "sha256": "5a4a0484c66ae7245ec561251ad562b8124aae600da0504625fc6f8a65df5daa"
+          },
+          "s5/train.py": {
+            "size_bytes": 13894,
+            "sha256": "f89c8660f5d7bd10b2b82fa0cf2d330a15bba355d14a6e764956784d21dc9053"
+          },
+          "s5/train_helpers.py": {
+            "size_bytes": 15634,
+            "sha256": "5283227ce0e930b3447ecd5864831c4ac3612fbb55075a3bd1d90d373da77c1f"
+          },
+          "s5/utils/__init__.py": {
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "s5/utils/permutations.py": {
+            "size_bytes": 6349,
+            "sha256": "6dcf4389a46236d4b9a6aeaaac5de0a35053c0b6849f0273aa4ce67b0de31605"
+          },
+          "s5/utils/util.py": {
+            "size_bytes": 506,
+            "sha256": "40d16c96a717965ad14f9299f2387a504c4d54bbae26959f24a2be45db478e0f"
+          },
+          "setup.py": {
+            "size_bytes": 256,
+            "sha256": "04af52d4fdcabe141ce0b51bb387e8f77dd66c2d841fca5960ea95d99aac98a9"
+          }
+        }
+      }
+    }
+  },
+  "build_headers": {
+    "filename": "python310-ubuntu-amd64-headers.zip",
+    "size_bytes": 240896,
+    "sha256": "3e6bc23e712c2a6bde8364f63725f15523e145c59532d222ac14a4df2473da5e",
+    "chunks": [
+      {
+        "path": "qkan-mamba/install-dependencies/strong-cp310-20261104-v1/3e6bc23e712c2a6bde8364f63725f15523e145c59532d222ac14a4df2473da5e.chunk",
+        "size_bytes": 240896,
+        "sha256": "3e6bc23e712c2a6bde8364f63725f15523e145c59532d222ac14a4df2473da5e"
+      }
+    ],
+    "members": {
+      "python3.10/Python.h": {
+        "size_bytes": 3224,
+        "sha256": "70b04c40833bdfcdd72b0d3771afe67c74340ff2683b7d26b0dc8e95289263a7"
+      },
+      "python3.10/abstract.h": {
+        "size_bytes": 31405,
+        "sha256": "8fa291e5ece081b3cbf643fc451f3fc9620571d98471413fca29aeb38ed8b721"
+      },
+      "python3.10/bltinmodule.h": {
+        "size_bytes": 264,
+        "sha256": "1b5101b4b85409fd910032713906800bbb83580503036469c2a60ac8e80b8f72"
+      },
+      "python3.10/boolobject.h": {
+        "size_bytes": 1224,
+        "sha256": "3b042a5d69f1eb92648007a1b988490a7a9177c8ac353aad05d786356a313a9f"
+      },
+      "python3.10/bytearrayobject.h": {
+        "size_bytes": 1484,
+        "sha256": "a6f332edc796f35283c9ea75bc59b525c82be52129cea32e3371974de08d6ee1"
+      },
+      "python3.10/bytesobject.h": {
+        "size_bytes": 2593,
+        "sha256": "bd8631c90c3726af7c24380026abc169f76404e14962221a3b53b194e076b504"
+      },
+      "python3.10/cellobject.h": {
+        "size_bytes": 720,
+        "sha256": "6a68c1f0d44d668f8080e409d174763cfe75ae11f8c4c667b8e8749a5ae0425d"
+      },
+      "python3.10/ceval.h": {
+        "size_bytes": 5703,
+        "sha256": "ea78be9d45a17b75b1dd89b6661300a726dc41bce140d63d03bb4e2b44ae564a"
+      },
+      "python3.10/classobject.h": {
+        "size_bytes": 1657,
+        "sha256": "0a644a89790992499ad174d492c8d29778d95966498ee569ad8c6d90da54c054"
+      },
+      "python3.10/code.h": {
+        "size_bytes": 318,
+        "sha256": "de21eeb3ae7f1314e296727bd6db61cfe496e177a230ed75071e7af5b02d88b5"
+      },
+      "python3.10/codecs.h": {
+        "size_bytes": 7071,
+        "sha256": "0ca3c6e55e7ff62872b47aeeb7379d784b03ebfc61bbd029b67485fe783baac5"
+      },
+      "python3.10/compile.h": {
+        "size_bytes": 520,
+        "sha256": "28676e6ff63848c7e812c34bb79cd81dfccbc0a9ffc56d5b1439b304df3771ea"
+      },
+      "python3.10/complexobject.h": {
+        "size_bytes": 1806,
+        "sha256": "7c224e629e3d2576ccbf045773863dcbef566f89b78d2a78e61418cae9c282cc"
+      },
+      "python3.10/context.h": {
+        "size_bytes": 1962,
+        "sha256": "012ef77a9683a015e68728c4f43014921a04db0626c1dc9fbcc48a87d4e1012f"
+      },
+      "python3.10/cpython/abstract.h": {
+        "size_bytes": 14054,
+        "sha256": "b13d64198e99f84bea5012b9231b775a806c33a58e9e41f8d4ae18c1f75807b4"
+      },
+      "python3.10/cpython/bytearrayobject.h": {
+        "size_bytes": 769,
+        "sha256": "6c0ff5534ded2fb01ade071fad06e1561ea3ecb55970c4a79b86fd471fa9bd71"
+      },
+      "python3.10/cpython/bytesobject.h": {
+        "size_bytes": 4353,
+        "sha256": "fa33f3e25b5fc184b881c0eeb76bd174a61c4b9cbd9e731fc8c5e968e40536d0"
+      },
+      "python3.10/cpython/ceval.h": {
+        "size_bytes": 1468,
+        "sha256": "44ad300f734116a2d7a454f762155f20e3d15e92f4ae7ca58f6f7a43b01a7af2"
+      },
+      "python3.10/cpython/code.h": {
+        "size_bytes": 7570,
+        "sha256": "6a1c95f95b2c6bfc764d4331f65455d2b369176eed6e9a1b9164a3d0a2ccee68"
+      },
+      "python3.10/cpython/compile.h": {
+        "size_bytes": 2218,
+        "sha256": "87cc83e0e8b89cb0db751222e8104ce05ae694e90affc82c46a78a1f33b59560"
+      },
+      "python3.10/cpython/dictobject.h": {
+        "size_bytes": 3734,
+        "sha256": "4a518731894c42e68002f9e8684a8f28922a1f5aec691c8b3c26b0559bee46a7"
+      },
+      "python3.10/cpython/fileobject.h": {
+        "size_bytes": 723,
+        "sha256": "fd6bc941073264fcfd5d4447247f2f2cd160faa67df665ec87259773134270be"
+      },
+      "python3.10/cpython/fileutils.h": {
+        "size_bytes": 4267,
+        "sha256": "4e7f87aadde1de522a6572ed40e7e43403874499f583320d6d96152e032cf15a"
+      },
+      "python3.10/cpython/frameobject.h": {
+        "size_bytes": 3152,
+        "sha256": "57c0eeeea52ec1239c04b963e1c87d37f83300c17f399f90085d980d9250a0d4"
+      },
+      "python3.10/cpython/import.h": {
+        "size_bytes": 1630,
+        "sha256": "dc0e0f96bdde8dfbc5549cabc219a37268e86f6289e254acc349be220260bc28"
+      },
+      "python3.10/cpython/initconfig.h": {
+        "size_bytes": 7597,
+        "sha256": "0f13f74ceb46d3259d8ebdd0be61cfe8d050882fc03fd482b2642a0c81f7cada"
+      },
+      "python3.10/cpython/interpreteridobject.h": {
+        "size_bytes": 387,
+        "sha256": "8fc79784d556245d7b7f382063ef3797e3aebd0a6b375a95027dd63a5dfa30b6"
+      },
+      "python3.10/cpython/listobject.h": {
+        "size_bytes": 1243,
+        "sha256": "54a8c329c95c5ff936284e789c9bdbb8a023d325a4b49290b25f156b4bf4fd5a"
+      },
+      "python3.10/cpython/methodobject.h": {
+        "size_bytes": 1399,
+        "sha256": "d0356e04561a145b08aeb5c457d69443fd43875415844cba57aae3f5ec77c6be"
+      },
+      "python3.10/cpython/object.h": {
+        "size_bytes": 19613,
+        "sha256": "62dc9ee480a1688a64b46458ba6d5752946a41c8c98c5e91c646f751ab06a59d"
+      },
+      "python3.10/cpython/objimpl.h": {
+        "size_bytes": 3356,
+        "sha256": "a9cb586f7d01b430c267f54c3c31a3ab0c35682f01409a366a4b1fd15d3844a2"
+      },
+      "python3.10/cpython/odictobject.h": {
+        "size_bytes": 1299,
+        "sha256": "ff2b0d77aea871c1edd6f63209489fe70c7c11d4da9c3e2f6ef6858cdb004a0d"
+      },
+      "python3.10/cpython/picklebufobject.h": {
+        "size_bytes": 846,
+        "sha256": "da3dd5626150aa4e00a4a0199baa582b4db9b9362412a44f9ac20ca80b0086ca"
+      },
+      "python3.10/cpython/pyctype.h": {
+        "size_bytes": 1387,
+        "sha256": "10b5ccbc210fd2832e9c34849a3952e8db75f0016add89188358b1da6a8f3dbb"
+      },
+      "python3.10/cpython/pydebug.h": {
+        "size_bytes": 1093,
+        "sha256": "872f99a8bd4d03d9edf3a2d539a137810749c04ee36da531088d3823f74e8e01"
+      },
+      "python3.10/cpython/pyerrors.h": {
+        "size_bytes": 5476,
+        "sha256": "6acd662d252f443195eae92bd034d6e318adc0fcd8cd3c758aed2626c77268a9"
+      },
+      "python3.10/cpython/pyfpe.h": {
+        "size_bytes": 444,
+        "sha256": "ea7bfa7d891a0b5372d8b40a57d1b466b7824296e5c3f8d50b1a7cde084429b7"
+      },
+      "python3.10/cpython/pylifecycle.h": {
+        "size_bytes": 2095,
+        "sha256": "17f4c4198b21510a89fef782ecefaab8afe8c64812674ccaf4df563fcf31a222"
+      },
+      "python3.10/cpython/pymem.h": {
+        "size_bytes": 3379,
+        "sha256": "8a3795a9350b10548e8ad6d37dad69be2abd3870a751e67faa32a19a090608db"
+      },
+      "python3.10/cpython/pystate.h": {
+        "size_bytes": 11914,
+        "sha256": "87381eb1de1a207514496b1d7c7a0ed477c8dc2f569c22dafe77ba8bca953f9b"
+      },
+      "python3.10/cpython/pythonrun.h": {
+        "size_bytes": 4811,
+        "sha256": "da9ac8ec2ae5ac970ca607a1779c0cb519b2fa67992a70171689191ffa4bfc8c"
+      },
+      "python3.10/cpython/pytime.h": {
+        "size_bytes": 9196,
+        "sha256": "47b9238d98c2634ade6f9a7d93d3e6be7a3634f783c0b5b1918c24eaa7250d0d"
+      },
+      "python3.10/cpython/sysmodule.h": {
+        "size_bytes": 506,
+        "sha256": "fd31927001b8cc323e82e8d2526d5f022823aabae3885368288e1f59ea471f40"
+      },
+      "python3.10/cpython/traceback.h": {
+        "size_bytes": 404,
+        "sha256": "0e0b89cc4e8733f23d07c3e46e87b53e4accc7c27471ed7f997c93b3b39b84fc"
+      },
+      "python3.10/cpython/tupleobject.h": {
+        "size_bytes": 975,
+        "sha256": "cbd0b66e2034cc8d2e5d3acab21bd7339c8e6a4046ea97d6736126ff1a2cf521"
+      },
+      "python3.10/cpython/unicodeobject.h": {
+        "size_bytes": 45113,
+        "sha256": "c16ac037a45dd7c907eb9746821ad5eb916d3d792fbeafe5802ada3fc0bff2d5"
+      },
+      "python3.10/datetime.h": {
+        "size_bytes": 9635,
+        "sha256": "7cd737123510f5ddc334cc2550c832bd1ecc1be73b47e46f4c4a5c3ccb9ac1f5"
+      },
+      "python3.10/descrobject.h": {
+        "size_bytes": 3002,
+        "sha256": "44b4ebe9baf5b325fb79946f9bad3080c77386359b112f03476f1d1854f7b00f"
+      },
+      "python3.10/dictobject.h": {
+        "size_bytes": 3853,
+        "sha256": "4ce1828fefe39470df01f54f3ab1bca679ccd72c19ebfece6b55368fba96ac2d"
+      },
+      "python3.10/dynamic_annotations.h": {
+        "size_bytes": 22471,
+        "sha256": "3e4366f7d082835049730358d277a5ad7a60e16d1601f5622f0a045a37c152ac"
+      },
+      "python3.10/enumobject.h": {
+        "size_bytes": 253,
+        "sha256": "2244fe250db9995068fe74dce0e23fd70c12b03fd94751d98b773be8f64896b6"
+      },
+      "python3.10/errcode.h": {
+        "size_bytes": 1700,
+        "sha256": "685786771fcc416cba7f3c51e4d5e42af088b29d28fe6661a4b7ac67db27d9b4"
+      },
+      "python3.10/eval.h": {
+        "size_bytes": 831,
+        "sha256": "8ae7000ff2b0801e8be1af374cdb7aea7fce42517c97dd7eff40861cc707c4ca"
+      },
+      "python3.10/exports.h": {
+        "size_bytes": 1098,
+        "sha256": "f9242de8f731846164d4446745dd2a737ccdf83f754099018edc90485b1cd445"
+      },
+      "python3.10/fileobject.h": {
+        "size_bytes": 1571,
+        "sha256": "4c89937726e6c30d62c361b48567a2de1c0533e7dc8ae8f805d9939842d00a7c"
+      },
+      "python3.10/fileutils.h": {
+        "size_bytes": 508,
+        "sha256": "95c65af8238d2dedc03fdfc55bf30db0442db8e7c21e6da270548c03365e0274"
+      },
+      "python3.10/floatobject.h": {
+        "size_bytes": 4360,
+        "sha256": "20bf507cf87f2b3574f1bd1ffd873e3fc6741cc0891b94fdbcf4237bd34b3f6b"
+      },
+      "python3.10/frameobject.h": {
+        "size_bytes": 337,
+        "sha256": "b69efe6636f05e79e50b5a1f46e3ed2602ac5d5eda9fb57a2d58d4cdc99edfb7"
+      },
+      "python3.10/funcobject.h": {
+        "size_bytes": 4257,
+        "sha256": "f6f08f50fd83a0d2d0d2f7ed4b855990e101813331f9d2a8a2aee2b3e59faab1"
+      },
+      "python3.10/genericaliasobject.h": {
+        "size_bytes": 334,
+        "sha256": "0e53a0b18c114be68eccea9ffd1dd577e204b1f0ada4d3aedc8e7ee0c80fc7f8"
+      },
+      "python3.10/genobject.h": {
+        "size_bytes": 3347,
+        "sha256": "078f30dc42929446625c6e8bc995392c58224897377a945060fb2527704576ad"
+      },
+      "python3.10/graminit.h": {
+        "size_bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "python3.10/import.h": {
+        "size_bytes": 3026,
+        "sha256": "f32a4d416cf558d49d797f8d67d9078917258ed5af1daa734755c8be2c8c76b2"
+      },
+      "python3.10/internal/pycore_abstract.h": {
+        "size_bytes": 479,
+        "sha256": "ac474dbc0e522a5b59cff25c50f02eb75b08bf60b9056d84bdfd06d7202e9af3"
+      },
+      "python3.10/internal/pycore_accu.h": {
+        "size_bytes": 1126,
+        "sha256": "0af5cf048f515646d68566bd8786e973c45a501f23782d80961e390b116adb2b"
+      },
+      "python3.10/internal/pycore_asdl.h": {
+        "size_bytes": 2971,
+        "sha256": "09bb323e0a4658ffd5b7ee1f9efec74c4ec18cadce97a76c863df5d1fb2e2559"
+      },
+      "python3.10/internal/pycore_ast.h": {
+        "size_bytes": 28828,
+        "sha256": "3dcc46771065bb322c71b3e1332675616c25e11dcd19fd76606b85643671d161"
+      },
+      "python3.10/internal/pycore_ast_state.h": {
+        "size_bytes": 6457,
+        "sha256": "54a70b39ad33292983bb2b62817ea1d9b9d2357382b9c6e0f3e74e8842e54c9a"
+      },
+      "python3.10/internal/pycore_atomic.h": {
+        "size_bytes": 16979,
+        "sha256": "95e7118e799ad3faafc8e58a29b2d1f1a4bb94e1aac3273e042f379f8e12d4e6"
+      },
+      "python3.10/internal/pycore_atomic_funcs.h": {
+        "size_bytes": 2438,
+        "sha256": "9d5cfa13ad863a0cc1b0ab06861c1f8cfbdc7d730b9c4603e5777a608263d399"
+      },
+      "python3.10/internal/pycore_bitutils.h": {
+        "size_bytes": 5271,
+        "sha256": "89e4de7907d949dc9d48c4a919bfdaaab429e9eb82c8329ede41b198125dbdf3"
+      },
+      "python3.10/internal/pycore_blocks_output_buffer.h": {
+        "size_bytes": 8688,
+        "sha256": "03fed5054d0d78e3711e73995e484fefb81495c063a5b9ef555c0395d7fc1ebc"
+      },
+      "python3.10/internal/pycore_bytes_methods.h": {
+        "size_bytes": 3384,
+        "sha256": "1534326dbf027e9bb472be5ccf8b82fab48f3282cc7f6a61629b801fc80afc00"
+      },
+      "python3.10/internal/pycore_call.h": {
+        "size_bytes": 870,
+        "sha256": "99ca19ee267b138ed3412505413d3c252cda8b049c42cc7f6f7395d2b438bae6"
+      },
+      "python3.10/internal/pycore_ceval.h": {
+        "size_bytes": 3484,
+        "sha256": "a4a18f5e721f650bcf813bd5930f1ecc14fc801488bb5039c250e101e8951b01"
+      },
+      "python3.10/internal/pycore_code.h": {
+        "size_bytes": 696,
+        "sha256": "461064e166dd278fd527e0bd6215cd04d28abf9d2ca2c9d23ca098425ff806a1"
+      },
+      "python3.10/internal/pycore_compile.h": {
+        "size_bytes": 1045,
+        "sha256": "21506bc00cb04a89618141c76e31b831c0fafdade423c3e5273b98560e0a6d72"
+      },
+      "python3.10/internal/pycore_condvar.h": {
+        "size_bytes": 2809,
+        "sha256": "3d37e1739052022a8d120096ffc8521e29a4a930c339a70e315dade3fadd62f5"
+      },
+      "python3.10/internal/pycore_context.h": {
+        "size_bytes": 822,
+        "sha256": "d8b138e68e09678167dd9e615f036865da3880d6e423ea087f7b87e69a828cbd"
+      },
+      "python3.10/internal/pycore_dtoa.h": {
+        "size_bytes": 646,
+        "sha256": "fb94584844dc81a7f8093119cc8119790d31c57c53e7ba462d6c9e47ccde6d86"
+      },
+      "python3.10/internal/pycore_fileutils.h": {
+        "size_bytes": 1704,
+        "sha256": "f52733d98961556de9190dff2c8f5453bcd16cb0113b3b93a25e1bf99e68961f"
+      },
+      "python3.10/internal/pycore_format.h": {
+        "size_bytes": 480,
+        "sha256": "253cc77e6d11ba20d297813e064650fa965b3653f150bd85f805b94db5f3a98d"
+      },
+      "python3.10/internal/pycore_gc.h": {
+        "size_bytes": 6859,
+        "sha256": "cd380a8a2649d6980a5bd912d3acc3d94eebcba5d1350acae26167e43c60662b"
+      },
+      "python3.10/internal/pycore_getopt.h": {
+        "size_bytes": 490,
+        "sha256": "e93393067b66b557b0300e05c10ee904d4be54cadfb214c5328a9225ad199452"
+      },
+      "python3.10/internal/pycore_gil.h": {
+        "size_bytes": 1565,
+        "sha256": "cf455aacd5651e5b43547ebe69bb324eab84238d92665df53c1df32434bd0d9b"
+      },
+      "python3.10/internal/pycore_hamt.h": {
+        "size_bytes": 3697,
+        "sha256": "a5650972b76b05a4319421a5122493310f0a63bdcee7a068a0c57f79abdd55f4"
+      },
+      "python3.10/internal/pycore_hashtable.h": {
+        "size_bytes": 4197,
+        "sha256": "75e903486d6b6e0468770a6bc3895d8b9423c1b64614e38b29a1d65a1d5bfdf7"
+      },
+      "python3.10/internal/pycore_import.h": {
+        "size_bytes": 346,
+        "sha256": "1f84fef1c3137f2b122485cf2a5f7c53eb24795ce26631b63ebd239c239af60b"
+      },
+      "python3.10/internal/pycore_initconfig.h": {
+        "size_bytes": 5625,
+        "sha256": "77f6cfec6d35a23180b0a5794893e49790f171e72d97c6d79c0579e4ea11155f"
+      },
+      "python3.10/internal/pycore_interp.h": {
+        "size_bytes": 9289,
+        "sha256": "fa9edb1e1dea5b0536d132d0379d3ead6f43d5c1be8cf2105dbaad3ba4a67b04"
+      },
+      "python3.10/internal/pycore_list.h": {
+        "size_bytes": 350,
+        "sha256": "f9531d6503db771166538ec53c69b265f0fe0a16e8f7ee1a90900d6bcd97e1e2"
+      },
+      "python3.10/internal/pycore_long.h": {
+        "size_bytes": 2589,
+        "sha256": "b9d61c7e55ca7529f8e3e8825730acf2c1c9cc33ccfb973c1c440e9215aeb454"
+      },
+      "python3.10/internal/pycore_moduleobject.h": {
+        "size_bytes": 1047,
+        "sha256": "bfdc9d60f792c180fddc18e01906c442a89d4642e796db9788960d8639a82205"
+      },
+      "python3.10/internal/pycore_object.h": {
+        "size_bytes": 5989,
+        "sha256": "55e7e9ae668c7d38cf6e7dceb4c641106b7af9868bbdcb5dcbc44ec6815fba2a"
+      },
+      "python3.10/internal/pycore_parser.h": {
+        "size_bytes": 626,
+        "sha256": "05260556eb3974a843ef4528f0b2d287fe0271260d40a901139fca5840585409"
+      },
+      "python3.10/internal/pycore_pathconfig.h": {
+        "size_bytes": 1981,
+        "sha256": "b491e40de0c3c1b7b41890ee523de040a62b7114ae77660417aa8eccfc02203f"
+      },
+      "python3.10/internal/pycore_pyarena.h": {
+        "size_bytes": 2733,
+        "sha256": "d4f4e513bae78ff985f51ca48fb7d1a4d57055c59393a1eb661e55e6ec3ba61f"
+      },
+      "python3.10/internal/pycore_pyerrors.h": {
+        "size_bytes": 2314,
+        "sha256": "6b499fa85237aad6fd350b42a72ffff0870de23e5b1365113cab495381592df9"
+      },
+      "python3.10/internal/pycore_pyhash.h": {
+        "size_bytes": 206,
+        "sha256": "6e9db9d3e7d7245b10e33598b995fc9b51b3952ce17225830d0248c6fa62dd51"
+      },
+      "python3.10/internal/pycore_pylifecycle.h": {
+        "size_bytes": 4940,
+        "sha256": "6e0f877bd32fb93ef8826b56974c9e01b54463fb4f3a61c6887e3f94d20b5c74"
+      },
+      "python3.10/internal/pycore_pymem.h": {
+        "size_bytes": 3211,
+        "sha256": "c5b5b4b8379b8fa6b7b9aaf938afc848d70e424f01eaef8fe0fcd493f806faeb"
+      },
+      "python3.10/internal/pycore_pystate.h": {
+        "size_bytes": 3938,
+        "sha256": "32c1b74638a2809d3fdc1889b927a15d13f71c87e1428023b48f0dc684ef22be"
+      },
+      "python3.10/internal/pycore_runtime.h": {
+        "size_bytes": 4902,
+        "sha256": "142ae39d5b7488ae8abf48036f9817914b5aff43924c70264054a7800d1335bc"
+      },
+      "python3.10/internal/pycore_structseq.h": {
+        "size_bytes": 386,
+        "sha256": "2199afc79e137be35150f4e06fa2f8d9f42ccbea56bcd68d5f3ecc6a2a14660e"
+      },
+      "python3.10/internal/pycore_symtable.h": {
+        "size_bytes": 5578,
+        "sha256": "514c300c5ce732bb68f7207e502a2726d470d4b7d5265aef0bcb23f69dda5b06"
+      },
+      "python3.10/internal/pycore_sysmodule.h": {
+        "size_bytes": 548,
+        "sha256": "091730828d6b60293756f9ed5f700bb77e7f2419f6b05c9fc0f2e02708617fb5"
+      },
+      "python3.10/internal/pycore_traceback.h": {
+        "size_bytes": 2970,
+        "sha256": "d5c76579b88470869ee5b6bf338c5dabb3f7cae8741fcf3f5c0e1e05eefd9e2a"
+      },
+      "python3.10/internal/pycore_tuple.h": {
+        "size_bytes": 425,
+        "sha256": "7f44d17d0d9500284c7167c9455e597f3c5b7d712ba27ce8eb696d82fd5d8acd"
+      },
+      "python3.10/internal/pycore_ucnhash.h": {
+        "size_bytes": 898,
+        "sha256": "6d9077e875703e5db7daf293a6c7ea3d43d1ee84dec137a950f17a26e9348eb5"
+      },
+      "python3.10/internal/pycore_unionobject.h": {
+        "size_bytes": 629,
+        "sha256": "8ec5586a3ffac58c3006d227ae4e9868a5e8afd5cdbebcb84b26570ca0097dd6"
+      },
+      "python3.10/internal/pycore_warnings.h": {
+        "size_bytes": 633,
+        "sha256": "bb97717b23047f5788708aef722b3c8f761a8ff191a5147681dac18ef6604595"
+      },
+      "python3.10/interpreteridobject.h": {
+        "size_bytes": 334,
+        "sha256": "62d060794f7488f365402db81ded3d588b6d7759eb0de9194329fd01a9374cf6"
+      },
+      "python3.10/intrcheck.h": {
+        "size_bytes": 772,
+        "sha256": "696fe17618c579a8cbaad9b86175f60d43ea0b9e8aaaa1d65ad256d53dc163c1"
+      },
+      "python3.10/iterobject.h": {
+        "size_bytes": 593,
+        "sha256": "fab74e0f2a2cd185f846ade3247b1e348b9ed5b72f875cec7ff6f90e8f167dc3"
+      },
+      "python3.10/listobject.h": {
+        "size_bytes": 1781,
+        "sha256": "fea25ac3a5d8f0b8678cd77eba73cf9c3797490a24c1e6585bf255982ab48c23"
+      },
+      "python3.10/longintrepr.h": {
+        "size_bytes": 3799,
+        "sha256": "28dddc9f2d5db3e383d1e921a7731bdff683ec394b8fd334f6cba14241d5d244"
+      },
+      "python3.10/longobject.h": {
+        "size_bytes": 8606,
+        "sha256": "7159278389a2a2bc9d27dd8def44800c6fbf966582d112021c19d5c4278b03aa"
+      },
+      "python3.10/marshal.h": {
+        "size_bytes": 803,
+        "sha256": "06ba6a68154f85951794529465a07e07444fb852440059a398c98344004a27f5"
+      },
+      "python3.10/memoryobject.h": {
+        "size_bytes": 2764,
+        "sha256": "5a89491cd879fd90ba20525c710c74e278d2432da789ce6c608ee4c65920cd48"
+      },
+      "python3.10/methodobject.h": {
+        "size_bytes": 4147,
+        "sha256": "f4b74f9970a1077df25b79349cae90ce26499736a7cae9612fe32615e3852c6f"
+      },
+      "python3.10/modsupport.h": {
+        "size_bytes": 10333,
+        "sha256": "718c034912af87f742a587863f1cf384a3c6bc69a7d80288b324acc4cdfea901"
+      },
+      "python3.10/moduleobject.h": {
+        "size_bytes": 2458,
+        "sha256": "1c53bd662099c015242581a1c1c96784455a6f5be0e673f569a7734a9841a62e"
+      },
+      "python3.10/namespaceobject.h": {
+        "size_bytes": 349,
+        "sha256": "d282d6d0c6493f56921c039bfa23fd38bc4a643ebb9ace07108d9b170900fbc8"
+      },
+      "python3.10/object.h": {
+        "size_bytes": 28344,
+        "sha256": "ccf9ce9261d28fbbbbcb5c365e10e467c3a9df0bdf408f9449d713389c71e0ab"
+      },
+      "python3.10/objimpl.h": {
+        "size_bytes": 8445,
+        "sha256": "235f2853c721bfa952a98452961ca1ad5200da10b2d76b026a27e45fb11593c2"
+      },
+      "python3.10/opcode.h": {
+        "size_bytes": 5509,
+        "sha256": "831a78176f1e285a4f37bd11253ba7e28870956d8fc5df32d281f2dff88c5e07"
+      },
+      "python3.10/osdefs.h": {
+        "size_bytes": 737,
+        "sha256": "8372e9c507949a88ed3cad5fd0a830190d60a1655e9a3f59ef4d0832c06a041c"
+      },
+      "python3.10/osmodule.h": {
+        "size_bytes": 291,
+        "sha256": "c013935b48f48ca8ce249a4d482c55e3fb6f1cfe786c5a32a57969bb74a779d9"
+      },
+      "python3.10/patchlevel.h": {
+        "size_bytes": 1301,
+        "sha256": "555c37abbc3bd59e24341617511274b05f8387d1bfd4480da417f8ba6b90152a"
+      },
+      "python3.10/py_curses.h": {
+        "size_bytes": 2474,
+        "sha256": "18498ae03ed5fb81815a98e1dde888c9e0ea1c38fead6c7b3698d2583538c7f6"
+      },
+      "python3.10/pycapsule.h": {
+        "size_bytes": 1725,
+        "sha256": "8fed74eb81e83720caae346011dd6deedb147fd462bf94e679eac5065dfa92aa"
+      },
+      "python3.10/pyconfig.h": {
+        "size_bytes": 4159,
+        "sha256": "57dbb3cf21b668da6c0e534ddaea6bf48861e8cbd3b18a3e8a531c78dd8ea729"
+      },
+      "python3.10/pydtrace.h": {
+        "size_bytes": 2413,
+        "sha256": "d342948372e46cb0124ba1311ce5ba9941837ac8a137a76b5a532bca03c696e8"
+      },
+      "python3.10/pyerrors.h": {
+        "size_bytes": 12426,
+        "sha256": "2ae64c563e6b020ef70dc29ad78dab7a32b6074ca5d324d60befc92b092730d5"
+      },
+      "python3.10/pyexpat.h": {
+        "size_bytes": 2450,
+        "sha256": "4bde05b3b7d6dbff5b7565b71ef59a4ce1e796a549d28edb4c75a5cabd00fe96"
+      },
+      "python3.10/pyframe.h": {
+        "size_bytes": 466,
+        "sha256": "92fa396239229cd523e37349f9ae6e8d990061698c5d7e0770a473ce15b39304"
+      },
+      "python3.10/pyhash.h": {
+        "size_bytes": 4223,
+        "sha256": "f6746833402decba260d9d83f98111a0088de3f00bd44ee205b89140027f62e3"
+      },
+      "python3.10/pylifecycle.h": {
+        "size_bytes": 2080,
+        "sha256": "0b3b1923447d6e1224e88994fe00b63ee50786d253832bdeea3323db985fa99b"
+      },
+      "python3.10/pymacconfig.h": {
+        "size_bytes": 2989,
+        "sha256": "06a284cd2ccccbac21c5aa2ce5ea1d05d04a4b5e5038e5d55c7fab260ab30e2c"
+      },
+      "python3.10/pymacro.h": {
+        "size_bytes": 4920,
+        "sha256": "4bed498f025583031bf71f5fde5cb589e3af0744e73143b6b074845fff51f7ef"
+      },
+      "python3.10/pymath.h": {
+        "size_bytes": 8313,
+        "sha256": "3942d5ed97fccb693d4b342ffe3dbf1ceb01927a4566fb54f3b748fb92e348aa"
+      },
+      "python3.10/pymem.h": {
+        "size_bytes": 3891,
+        "sha256": "3e256cc189d68c3fc0a70496e22cf3cd9b34be925b157240699f9e397c9cbd3a"
+      },
+      "python3.10/pyport.h": {
+        "size_bytes": 31684,
+        "sha256": "7f8668d75ea83e4cbb3c187383bc032abb99a585eed5f67791a418b9c7065377"
+      },
+      "python3.10/pystate.h": {
+        "size_bytes": 5250,
+        "sha256": "69aafe4b49dbcb969d56ad795aac8b97f4ed48ea233675d83e0ba93423254197"
+      },
+      "python3.10/pystrcmp.h": {
+        "size_bytes": 436,
+        "sha256": "f401d8338fb6ecf5f12768ee95cd09c262f880b2ee522ca344b890dbdcde4c88"
+      },
+      "python3.10/pystrhex.h": {
+        "size_bytes": 849,
+        "sha256": "2242f90a9a2bf13a32f0016bb056869193df04230ace468b469b18008f56a0f9"
+      },
+      "python3.10/pystrtod.h": {
+        "size_bytes": 1483,
+        "sha256": "df98a492044f55cf016c008fef3181d77d13f1828b84625b5cb1f460e5f5ed2f"
+      },
+      "python3.10/pythonrun.h": {
+        "size_bytes": 1110,
+        "sha256": "0a4dbe8791dae43facabc29e8b298d95bd0d1da615d6ccf3158b5ab033f08fb4"
+      },
+      "python3.10/pythread.h": {
+        "size_bytes": 5989,
+        "sha256": "0997a29a10eb5b6041c05310a7893d8579995c4ec1f21978b03dc10e3945c76a"
+      },
+      "python3.10/rangeobject.h": {
+        "size_bytes": 628,
+        "sha256": "eb9bbb31cf628ffa8c4452aa7d136941b3e93e43e04d44b51c68ba0b16d56381"
+      },
+      "python3.10/setobject.h": {
+        "size_bytes": 3381,
+        "sha256": "822f34d6214a838f9d15ffeb47b4bbae4b0726cb9aa28b1a92ab321175c26161"
+      },
+      "python3.10/sliceobject.h": {
+        "size_bytes": 2516,
+        "sha256": "3215a02de59673a950b8941a0224474cf0bcb62f617d9afc402f1e17713f9c28"
+      },
+      "python3.10/structmember.h": {
+        "size_bytes": 2074,
+        "sha256": "8a7666cbc440aefb0520615dd50a776c34b987bd6781dd4c2d40950ceb603950"
+      },
+      "python3.10/structseq.h": {
+        "size_bytes": 1390,
+        "sha256": "d08c84466646660599c2f6d03af90be06ee8f9f81380a891d9e2a8c8e27e4308"
+      },
+      "python3.10/sysmodule.h": {
+        "size_bytes": 1242,
+        "sha256": "2c1c21db5c8704de23d1580250a30243ca3a924f14f11e4b54376a3fffd8d76f"
+      },
+      "python3.10/token.h": {
+        "size_bytes": 2669,
+        "sha256": "754b9f53780c030f72b1d0ac10f13b89d0da1ad955c07c4eb3bcbc3406347b02"
+      },
+      "python3.10/traceback.h": {
+        "size_bytes": 584,
+        "sha256": "c6db281d9686cf1b6895f7574a05291263b81aaa3f35cd0ca9a2e3219a669b45"
+      },
+      "python3.10/tracemalloc.h": {
+        "size_bytes": 1114,
+        "sha256": "0e5e535fbb5e66400b4dcb3d404ff532971ae964b4a11ac4abb6d73991ad24fe"
+      },
+      "python3.10/tupleobject.h": {
+        "size_bytes": 1614,
+        "sha256": "a0659adc9bdffd1980fca036b3b9eabc1a99540435b6e857f071711054ebb3ed"
+      },
+      "python3.10/typeslots.h": {
+        "size_bytes": 2460,
+        "sha256": "a6387e3e14881e86e1b71433a76db9d0ed8ab3a67be3fafc79edbcc44dcc77e1"
+      },
+      "python3.10/unicodeobject.h": {
+        "size_bytes": 36148,
+        "sha256": "99a0694450678191c1105c5bfdd53caafd7a9bf96af0c894fac0b725194972e7"
+      },
+      "python3.10/warnings.h": {
+        "size_bytes": 1776,
+        "sha256": "d07c5b3d4b5f3b0c651e1d4244cfe7494e312792ece3568a5134dd8169b61eb2"
+      },
+      "python3.10/weakrefobject.h": {
+        "size_bytes": 2863,
+        "sha256": "d64920779d0bdf9b1620eb19afa837d0d74df2e076819b90aa95a3aa0a35c009"
+      },
+      "x86_64-linux-gnu/python3.10/pyconfig.h": {
+        "size_bytes": 48702,
+        "sha256": "4392c022d8ad3bff42e3b8558b7273befc41d77cb5a20a016074ab912409dbff"
+      }
+    },
+    "provenance": {
+      "url": "https://security.ubuntu.com/ubuntu/pool/main/p/python3.10/libpython3.10-dev_3.10.12-1~22.04.18_amd64.deb",
+      "package_sha256": "c058675011ec4b64f5ad803d74b5fe7de0c720c3700683040da68d1fb5b44ed9",
+      "scope": "Unmodified Ubuntu amd64 CPython3.10 headers only; no package installation"
+    }
+  }
+}

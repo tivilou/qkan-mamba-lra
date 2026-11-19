@@ -1,0 +1,262 @@
+{
+  "schema": "qkan-formal-readiness-received.v1",
+  "source_revision": "31639c014a62504f6596e75cf56a1abd5068bce4",
+  "suite": "runs/formal-ready-20261105T042214Z-1e90315e",
+  "exchange_directory": "qkan-mamba/formal-readiness/formal-ready-20261105T042214Z-1e90315e",
+  "gate_report_sha256": "e24db03bbec4af12245112e77fcca34646758d7450a959c3a7b4db0fc44f2f6a",
+  "gate_evidence_sha256": "43093d7ff482204755487357a1f836d4ed009109ec2120f96afbc0207f421a04",
+  "reported_uploaded_at": "2026-11-05T04:55:03.832577+00:00",
+  "status": "passed",
+  "context": {
+    "source_revision": "31639c014a62504f6596e75cf56a1abd5068bce4",
+    "implementation_sha256": "40a9c45635bb273a575304745a7acb020b1ecdd533d501b45b8ebc1e000436e5",
+    "policy_sha256": "dc4e97023eb923f394e425096941d499b81a61800f339640cedbb0cde961a099",
+    "cache": "/root/qkan-cache",
+    "gpus": "0"
+  },
+  "source_probes": {
+    "transformer": true,
+    "mamba1": true,
+    "mega": true,
+    "s5": true,
+    "s4d_minimal": true
+  },
+  "recovery": [
+    {
+      "model": "mamba1",
+      "task": "image",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "mamba1-cuda-fp32-v1",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mamba1",
+      "task": "listops",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "mamba1-cuda-fp32-v1",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mamba1",
+      "task": "pathfinder",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "mamba1-cuda-fp32-v1",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mamba1",
+      "task": "retrieval",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "mamba1-cuda-fp32-v1",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mamba1",
+      "task": "text",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "mamba1-cuda-fp32-v1",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mega",
+      "task": "image",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mega",
+      "task": "listops",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mega",
+      "task": "pathfinder",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mega",
+      "task": "retrieval",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "mega",
+      "task": "text",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s4d_minimal",
+      "task": "image",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s4d_minimal",
+      "task": "listops",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s4d_minimal",
+      "task": "pathfinder",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s4d_minimal",
+      "task": "retrieval",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s4d_minimal",
+      "task": "text",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s5",
+      "task": "image",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s5",
+      "task": "listops",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s5",
+      "task": "pathfinder",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s5",
+      "task": "retrieval",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "s5",
+      "task": "text",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "transformer",
+      "task": "image",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "transformer",
+      "task": "listops",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "transformer",
+      "task": "pathfinder",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "transformer",
+      "task": "retrieval",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    },
+    {
+      "model": "transformer",
+      "task": "text",
+      "passed": true,
+      "fresh_process": true,
+      "agreement": "exact",
+      "trace_semantic_and_replay": true,
+      "test_access": false
+    }
+  ],
+  "certificates": {
+    "transformer": "source_faithful_adapted",
+    "mamba1": "source_faithful_adapted",
+    "mega": "source_faithful_adapted",
+    "s5": "source_faithful_adapted",
+    "s4d_minimal": "source_faithful_adapted"
+  },
+  "formal_jobs": 25,
+  "execution_status": "Default entry calls formal runner after verified gate upload; live collaborator process and completed formal results not inspected",
+  "claim_scope": "Runtime admission for recorded revision/device/protocol only; no formal performance, author-score or SOTA claim",
+  "committed_release_unchanged": true
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "qkan-code-publication.v1",
+  "date": "2026-11-15",
+  "implementation_revision": "af3bf80862af1201f184130854c5d66a47b0e5d4",
+  "branch": "research/collaboration-foundation",
+  "remote_head_verified": "af3bf80862af1201f184130854c5d66a47b0e5d4",
+  "delivery_review": "docs/evidence/optional-padding-delivery-20261115.json",
+  "transport": "Existing key-authenticated, host-verified development relay; direct fallback on same bound server after local proxy refusal.",
+  "model_or_gpu_executed": false,
+  "collaborator_report_received": false
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "qkan-scheduler-dispatch.v1",
+  "observed_at": "2026-10-28T07:47:39.9821904Z",
+  "project": "qkan-mamba",
+  "scope": "CPU-only data curation and structural qualification; no model training",
+  "source_revision": "ac8e0d40d428b6e131905516e11a7a309995d170",
+  "recipe": {
+    "id": "lra-pair-qualification-v1",
+    "kind": "audit",
+    "timeout_seconds": 7200,
+    "max_attempts": 1,
+    "replay_safe": false,
+    "resources": {
+      "cpu": 1,
+      "ram_mb": 128,
+      "disk_mb": 2048,
+      "gpus": 0,
+      "gpu_mb": 0
+    },
+    "required_outputs": [
+      "build-manifest.json",
+      "pair-curation.json",
+      "diagnostics.json",
+      "qualification-assessment.json"
+    ]
+  },
+  "selection": {
+    "node": "owner-recovery-3080ti",
+    "server_id": "3080Ti-recovery-20261021",
+    "reason": "Only node authorized to qkan-mamba; online and already holds the pinned source data.",
+    "gpu_visible_to_scheduler": false,
+    "alternatives": [
+      {
+        "server_id": "gpushare-i1-54996-titan5",
+        "decision": "not_selected",
+        "reason": "offline and not authorized to qkan-mamba"
+      },
+      {
+        "node": "q-duet-p4-canary",
+        "decision": "not_selected",
+        "reason": "authorized to other projects, not qkan-mamba"
+      }
+    ]
+  },
+  "task": {
+    "id": "d18c07ab03a342f990d68730d8f5a208",
+    "idempotency_key": "qkan-lra-pair-qualification-ac8e0d4-v1",
+    "state": "queued",
+    "active_attempt": null,
+    "admission_observation": {
+      "worker_available_ram_mb": 0,
+      "worker_available_disk_mb": 7464,
+      "fleet_available_ram_mb": 1475,
+      "reason": "Shared 1 GiB worker cgroup is under file-cache and concurrent-service pressure. Resource budget was not lowered and no unrelated process or global cache was disturbed."
+    }
+  },
+  "code_delivery": {
+    "github_status": "pending",
+    "github_reason": "HTTPS TLS reads and SSH port 22 were unreachable from the owner workstation during this run.",
+    "temporary_git_bundle": {
+      "sha256": "7b39d60dd1d51ad2563f0caecc2eabf2cb6f30c137d5bc65e176c3bd94e3100d",
+      "bytes": 256970,
+      "server_path": "/home/qkan-mamba-lra/data/staging/qkan-ac8e0d4.bundle",
+      "verified_revision_on_server": "ac8e0d40d428b6e131905516e11a7a309995d170"
+    }
+  },
+  "release_gate": {
+    "formal_baseline_allowed": false,
+    "status": "stop",
+    "reason": "The scheduled qualification audit has not run, and license, Retrieval relation-unit, and learnability gates remain open."
+  }
+}

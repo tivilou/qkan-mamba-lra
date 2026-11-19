@@ -1,0 +1,322 @@
+{
+  "schema_version": "qkan-source-evidence.v1",
+  "date": "2026-10-21",
+  "scope": "source and dataset protocol investigation, not a complete related-work survey",
+  "requests": [
+    {
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/listops/input_pipeline.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/listops/input_pipeline.py",
+      "retrieved_at": "2026-10-21T07:52:53.402636+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "197293ac87b2f51b204b4e620751113d0a96528d586150f6192e6175d4c9018f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/matching/input_pipeline.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/matching/input_pipeline.py",
+      "retrieved_at": "2026-10-21T07:52:54.816389+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "0b48b22245f60eae9093f177be2d609e749b3f60a5823add4ccca9ca693767d3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/text_classification/input_pipeline.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/text_classification/input_pipeline.py",
+      "retrieved_at": "2026-10-21T07:52:56.186578+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "6086595f01c35efa54ded9e4b961e2b9a26d78a25d19af82c39689c9bac90c7f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/image/input_pipeline.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/image/input_pipeline.py",
+      "retrieved_at": "2026-10-21T07:52:57.599497+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "3ea68956c9ead8bfc4a6ef15ed62572288665bacfc396c41779d5b7c6c2ad2af"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/LICENSE",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/LICENSE",
+      "retrieved_at": "2026-10-21T07:52:58.983786+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/image/configs/pathfinder32/base_pathfinder32_config.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/lra_benchmarks/image/configs/pathfinder32/base_pathfinder32_config.py",
+      "retrieved_at": "2026-10-21T07:53:00.415156+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "87366a68f66327f74a3ecd0878b9d79d4f74ffc996ab2f408999d0ee8b077545"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/README.md",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/README.md",
+      "retrieved_at": "2026-10-21T07:53:01.902966+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "e711753b5708ec9cf10be1cfeb2c2dee0b405be7e785c5332139d4facd67ad64"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/lra/data_process.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/lra/data_process.py",
+      "retrieved_at": "2026-10-21T07:53:03.290738+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "579c586664dabfec3dd737fbc49895eb6c96f5c9836bab466917afbed501a30a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/LICENSE",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/LICENSE",
+      "retrieved_at": "2026-10-21T07:53:04.674027+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "1c2ca6f91a3653966d1cf932ead267df9f6d8ffe47ba9c4d0a404e8a2b83e72f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/data/indexed_dataset.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/data/indexed_dataset.py",
+      "retrieved_at": "2026-10-21T07:53:06.077787+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "1f1093deee5eaf30f617a38d1dae2b2b294c4b8f698f7c7f7bf2032898b9ed04"
+    },
+    {
+      "url": "https://api.github.com/repos/google-research/long-range-arena",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "4dc8b6170376779b3eb621561447835c9587eebfcfadf257bb74377fdf76d478"
+    },
+    {
+      "url": "https://api.github.com/repos/google-research/long-range-arena/commits/main",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "b12c0fa69fb08c10e6d36fd24575c4f891d1e4b72bbc6aa29d252bb689e551d3"
+    },
+    {
+      "url": "https://api.github.com/repos/google-research/long-range-arena/git/trees/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8?recursive=1",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "a89ba21821c7c2dc581628a8b9b387d3fb8edf57e8022e93950b860e663245b4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google-research/long-range-arena/cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8/README.md",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "ebfd4228fb8ad5b91f321084e54ca77cde0e5543533bd19ed52b016613f63448"
+    },
+    {
+      "url": "https://api.github.com/repos/facebookresearch/mega",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "8712549250f2a6eba23064dbb867b9a6b487d8fad2e8e8bc07076551e6a9464e"
+    },
+    {
+      "url": "https://api.github.com/repos/facebookresearch/mega/commits/main",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "f9481e925646550a0e471800c2a750e2fe66cffb67abe3d9d0817d65044329a7"
+    },
+    {
+      "url": "https://api.github.com/repos/facebookresearch/mega/git/trees/aeaa4b44592cd1d60a9a34554e359eda2a62b03b?recursive=1",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "fe2dba126cf4b2cdbca25c9898f5e6d94be05851f9942eedc64dddf0a4ae78dd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/README.md",
+      "method": "GET",
+      "status": 200,
+      "cache": "previous retrieval in this session; original response timestamp unavailable",
+      "sha256": "14861e52d0db9a116ebeb55f6c078964555cfd12e3bbde0a9e86a1be49f03db3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/README.lra.md",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/examples/mega/README.lra.md",
+      "retrieved_at": "2026-10-21T07:59:25.023344+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "80a3620af776cbb16261207b2682b44617403bfbdfee80d675b5e5fa745b6679"
+    },
+    {
+      "url": "https://www.kaggle.com/datasets/a24998667/long-range-arena-processed",
+      "method": "GET",
+      "final_url": "https://www.kaggle.com/datasets/a24998667/long-range-arena-processed",
+      "retrieved_at": "2026-10-21T07:59:26.402660+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "d80eac2596878adb8cd8d717b9d08151609a81d30dda8c93edfbe31626208e54"
+    },
+    {
+      "url": "https://www.kaggle.com/api/v1/datasets/view/a24998667/long-range-arena-processed",
+      "method": "GET",
+      "final_url": "https://www.kaggle.com/api/v1/datasets/view/a24998667/long-range-arena-processed",
+      "retrieved_at": "2026-10-21T07:59:27.777424+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "8298d7e1bfad7d372f548a08eb94db72841d962b25930eec3a91286d183414ae"
+    },
+    {
+      "url": "https://www.kaggle.com/api/v1/datasets/list/a24998667/long-range-arena-processed",
+      "method": "GET",
+      "final_url": "https://www.kaggle.com/api/v1/datasets/list/a24998667/long-range-arena-processed",
+      "retrieved_at": "2026-10-21T07:59:29.242808+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "36372b563c45b2e5a0a2db17379783662a78187b7cc1a8c999ec03e9c0a1fc6c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/data/dictionary.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/data/dictionary.py",
+      "retrieved_at": "2026-10-21T08:06:23.206896+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "3288e20a45fa0299e18313d87a8ec0b6cf1f5d42a3061fffc4e0c7b0bd89b809"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/tasks/long_range_arena.py",
+      "method": "GET",
+      "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/tasks/long_range_arena.py",
+      "retrieved_at": "2026-10-21T08:09:18.608070+00:00",
+      "status": 200,
+      "cache": "fresh",
+      "classification": "primary-source",
+      "sha256": "d82d758e8296deba38cf31ea2cdaa36a0115ed7f8b3ad10c68c292bd2296ead2"
+    }
+  ],
+  "source_revisions": {
+    "google-research/long-range-arena": "cd31e5c6b8e5bceabd28de2d2afb23f7ae5d36d8",
+    "facebookresearch/mega": "aeaa4b44592cd1d60a9a34554e359eda2a62b03b"
+  },
+  "kaggle": {
+    "ref": "a24998667/long-range-arena-processed",
+    "version": 1,
+    "license_claim_on_card": "CC0: Public Domain",
+    "description": "empty",
+    "total_file_bytes": 22281022099,
+    "file_list": [
+      {
+        "name": "lra-image.dev.pickle",
+        "size_bytes": 20984514
+      },
+      {
+        "name": "lra-image.test.pickle",
+        "size_bytes": 41969524
+      },
+      {
+        "name": "lra-image.train.pickle",
+        "size_bytes": 188864594
+      },
+      {
+        "name": "lra-listops.dev.pickle",
+        "size_bytes": 16577453
+      },
+      {
+        "name": "lra-listops.test.pickle",
+        "size_bytes": 16577453
+      },
+      {
+        "name": "lra-listops.train.pickle",
+        "size_bytes": 795743641
+      },
+      {
+        "name": "lra-pathfinder128-curv_contour_length_14.dev.pickle",
+        "size_bytes": 1311780177
+      },
+      {
+        "name": "lra-pathfinder128-curv_contour_length_14.test.pickle",
+        "size_bytes": 1311780177
+      },
+      {
+        "name": "lra-pathfinder128-curv_contour_length_14.train.pickle",
+        "size_bytes": 10494240457
+      },
+      {
+        "name": "lra-pathfinder32-curv_contour_length_14.dev.pickle",
+        "size_bytes": 83359456
+      },
+      {
+        "name": "lra-pathfinder32-curv_contour_length_14.test.pickle",
+        "size_bytes": 83359456
+      },
+      {
+        "name": "lra-pathfinder32-curv_contour_length_14.train.pickle",
+        "size_bytes": 666879736
+      },
+      {
+        "name": "lra-retrieval.dev.pickle",
+        "size_bytes": 595612756
+      },
+      {
+        "name": "lra-retrieval.test.pickle",
+        "size_bytes": 574112729
+      },
+      {
+        "name": "lra-retrieval.train.pickle",
+        "size_bytes": 4842806314
+      },
+      {
+        "name": "lra-text.dev.pickle",
+        "size_bytes": 412124554
+      },
+      {
+        "name": "lra-text.test.pickle",
+        "size_bytes": 412124554
+      },
+      {
+        "name": "lra-text.train.pickle",
+        "size_bytes": 412124554
+      }
+    ]
+  },
+  "access_observations": [
+    {
+      "url": "https://storage.googleapis.com/long-range-arena/lra_release.gz",
+      "method": "HEAD",
+      "status": 403,
+      "action": "stopped access; used separately public author-linked MEGA source"
+    },
+    {
+      "url": "https://dl.fbaipublicfiles.com/mega/data/lra.zip",
+      "method": "HEAD",
+      "status": 200,
+      "size_bytes": 1447223076
+    }
+  ]
+}

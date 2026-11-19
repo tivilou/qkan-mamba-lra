@@ -1,0 +1,411 @@
+{
+  "schema_version": "qkan-data-build.v1",
+  "profile": "mega-independent-v1",
+  "status": "built_not_qualified",
+  "archive_sha256": "b141aacd5537ad6108862117597c41d9d2a67d6420c54f74c76df615073fee13",
+  "code_sha256": "bf2510f88dddbf47d8344f4dd0dee4979d6ad91f3cad3123d6e7be139ba09398",
+  "numpy_version": "2.2.6",
+  "tasks": [
+    {
+      "task": "listops",
+      "source_prefix": "lra/listops",
+      "padded_length": 2048,
+      "pad_id": 1,
+      "eos_id": 2,
+      "unk_id": 3,
+      "input_token_ids": "unchanged MEGA dictionary IDs; EOS retained; right pad=1",
+      "label_mapping": {
+        "4": "0",
+        "5": "9",
+        "6": "1",
+        "7": "4",
+        "8": "8",
+        "9": "3",
+        "10": "5",
+        "11": "6",
+        "12": "2",
+        "13": "7"
+      },
+      "splits": {
+        "train": {
+          "file": "train.npz",
+          "sha256": "b3a27129a126f7d85fca66fa145862808506c0b8bae90fc6254a5956d066b315",
+          "size_bytes": 67613740,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                96000,
+                2048
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                96000
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "val": {
+          "file": "val.npz",
+          "sha256": "f1b0026bbf38964853151fa3df9b07b004c291ee823971b0f652586a15712870",
+          "size_bytes": 1408408,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                2000,
+                2048
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                2000
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "test": {
+          "file": "test.npz",
+          "sha256": "ccf452b4027bfccf00b7b349615a6c2e96a5cbad571af91bc41f55143e99e5c1",
+          "size_bytes": 1410597,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                2000,
+                2048
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                2000
+              ],
+              "dtype": "int64"
+            }
+          }
+        }
+      }
+    },
+    {
+      "task": "text",
+      "source_prefix": "lra/imdb-4000",
+      "padded_length": 4000,
+      "pad_id": 1,
+      "eos_id": 2,
+      "unk_id": 3,
+      "input_token_ids": "unchanged MEGA dictionary IDs; EOS retained; right pad=1",
+      "label_mapping": {
+        "4": "0",
+        "5": "1"
+      },
+      "splits": {
+        "train": {
+          "file": "train.npz",
+          "sha256": "4f6dddc0612182e47e8027e60c238fef9da787271e1546294760eeb89a21e325",
+          "size_bytes": 15057343,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                19877,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                19877
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "val": {
+          "file": "val.npz",
+          "sha256": "4a3df1d3051b136a2e3e5bb7641b4b93e2365762bd9bb036d0307ea811c15dea",
+          "size_bytes": 3812913,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                5000,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                5000
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "test": {
+          "file": "test.npz",
+          "sha256": "620c6955731aeeb0fdc15cb58ee26ef6c81a347674460cd4470497dbc82e6ae3",
+          "size_bytes": 18610109,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                25000,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                25000
+              ],
+              "dtype": "int64"
+            }
+          }
+        }
+      },
+      "original_valid_equals_test_inputs": true,
+      "split_repair": {
+        "policy": "group identical encoded input; SHA-256 ordering with qkan-text-split-v1 salt; 2500 per class validation target",
+        "validation_class_counts": {
+          "0": 2500,
+          "1": 2500
+        },
+        "excluded_train_test_overlap_rows": 123,
+        "excluded_conflicting_training_rows": 0,
+        "test_access": "input identities only for exclusion; no test labels or performance used to choose validation",
+        "comparability": "adapted independent validation protocol; not the original LRA/MEGA validation protocol"
+      }
+    },
+    {
+      "task": "retrieval",
+      "source_prefix": "lra/aan",
+      "padded_length": 4000,
+      "pad_id": 1,
+      "eos_id": 2,
+      "unk_id": 3,
+      "input_token_ids": "unchanged MEGA dictionary IDs; EOS retained; right pad=1",
+      "label_mapping": {
+        "4": "1",
+        "5": "0"
+      },
+      "splits": {
+        "train": {
+          "file": "train.npz",
+          "sha256": "244217977f1deaa378b280343ae2c1dfa1833a941d0be1b6aa5e451df72f56ae",
+          "size_bytes": 487121736,
+          "arrays": {
+            "inputs1": {
+              "shape": [
+                147086,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "inputs2": {
+              "shape": [
+                147086,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                147086
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "val": {
+          "file": "val.npz",
+          "sha256": "92a9d674af01d8131dd6407d408ab742981c999f28fc3fecfaf04f013f47e692",
+          "size_bytes": 59875667,
+          "arrays": {
+            "inputs1": {
+              "shape": [
+                18090,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "inputs2": {
+              "shape": [
+                18090,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                18090
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "test": {
+          "file": "test.npz",
+          "sha256": "2ca4d9e3c99b5ec6fc0c8d8d2c05c8ba3897a5c64c13f4d7eeb1ace6797c2e5b",
+          "size_bytes": 58042949,
+          "arrays": {
+            "inputs1": {
+              "shape": [
+                17437,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "inputs2": {
+              "shape": [
+                17437,
+                4000
+              ],
+              "dtype": "uint16"
+            },
+            "labels": {
+              "shape": [
+                17437
+              ],
+              "dtype": "int64"
+            }
+          }
+        }
+      }
+    },
+    {
+      "task": "image",
+      "source_prefix": "lra/cifar10",
+      "representation": "unchanged 0..255 grayscale uint8 pixels in row-major order; normalization deferred to frozen runner",
+      "splits": {
+        "train": {
+          "file": "train.npz",
+          "sha256": "94c933d6a6e4c1bc89c7655d3540fe832b8e0565bca7f2437ea9124ce2dbe886",
+          "size_bytes": 42965405,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                45000,
+                1024
+              ],
+              "dtype": "uint8"
+            },
+            "labels": {
+              "shape": [
+                45000
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "val": {
+          "file": "val.npz",
+          "sha256": "e219d64014640eaf3068219ef7d5bbf6d8a712f12e1b6ada1fa1d3438279f3ce",
+          "size_bytes": 4773087,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                5000,
+                1024
+              ],
+              "dtype": "uint8"
+            },
+            "labels": {
+              "shape": [
+                5000
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "test": {
+          "file": "test.npz",
+          "sha256": "dc5d537b0c1e1a0a314dc5a80040be00c9e809820493d63629c165ecdd6be58d",
+          "size_bytes": 9544741,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                10000,
+                1024
+              ],
+              "dtype": "uint8"
+            },
+            "labels": {
+              "shape": [
+                10000
+              ],
+              "dtype": "int64"
+            }
+          }
+        }
+      }
+    },
+    {
+      "task": "pathfinder",
+      "source_prefix": "lra/pathfinder",
+      "representation": "unchanged 0..255 grayscale uint8 pixels in row-major order; normalization deferred to frozen runner",
+      "splits": {
+        "train": {
+          "file": "train.npz",
+          "sha256": "142392969b85b94de420b13da2dcd6e1bc14b3d253e86df33996e030f76a8028",
+          "size_bytes": 48908870,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                160000,
+                1024
+              ],
+              "dtype": "uint8"
+            },
+            "labels": {
+              "shape": [
+                160000
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "val": {
+          "file": "val.npz",
+          "sha256": "b9a8ceaf79cf3e2747b10e2828ebfd8ee0941946b1fcac6c6a8c24aa31e6d66e",
+          "size_bytes": 6116259,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                20000,
+                1024
+              ],
+              "dtype": "uint8"
+            },
+            "labels": {
+              "shape": [
+                20000
+              ],
+              "dtype": "int64"
+            }
+          }
+        },
+        "test": {
+          "file": "test.npz",
+          "sha256": "af14f0bbed13a7468ad8c2cc97a03780dc52892e6f1ed4f3870cbf2b9cc406d3",
+          "size_bytes": 6108175,
+          "arrays": {
+            "inputs": {
+              "shape": [
+                20000,
+                1024
+              ],
+              "dtype": "uint8"
+            },
+            "labels": {
+              "shape": [
+                20000
+              ],
+              "dtype": "int64"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "claim_boundary": "An adapted five-task protocol; historical scores cannot be mixed with this data version."
+}

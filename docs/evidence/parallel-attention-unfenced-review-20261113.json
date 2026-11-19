@@ -1,0 +1,60 @@
+{
+  "schema": "qkan-parallel-attention-unfenced-review.v1",
+  "date": "2026-11-13",
+  "receipt": {
+    "path": "qkan-mamba/parallel-attention/parallel-attention-20261113T005247Z-6a526c1a/parallel-attention.json",
+    "size_bytes": 44560,
+    "sha256": "a7e48fd0656d28602c0af3b06c5ab4cdebbbac95d08d855cffc3df4ea576af81",
+    "authenticated_download_verified": true
+  },
+  "executed_revision": "a39f7637f40e65cd621becbcd56d7499eb3a9169",
+  "stage_fences": false,
+  "stage": "fresh_process_recovery",
+  "child": {
+    "pid": 233018,
+    "outcome": "phase_timeout",
+    "exit_code": -9,
+    "elapsed_seconds": 326.49340350180864,
+    "termination": {
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": [],
+      "escalated": true
+    }
+  },
+  "last_phase": "gradient_merge",
+  "last_progress_sequence": 102,
+  "signal_stack_code_locations": [
+    {
+      "file": "experiments/baseline_delivery/parallel_attention.py",
+      "line": 22,
+      "function": "<genexpr>"
+    },
+    {
+      "file": "experiments/baseline_delivery/parallel_attention.py",
+      "line": 22,
+      "function": "fixed_merge"
+    },
+    {
+      "file": "experiments/baseline_delivery/parallel_attention.py",
+      "line": 67,
+      "function": "backward"
+    },
+    {
+      "file": "torch/autograd/function.py",
+      "line": 600,
+      "function": "wrapper"
+    },
+    {
+      "file": "torch/autograd/function.py",
+      "line": 307,
+      "function": "apply"
+    }
+  ],
+  "interpretation": "Unfenced execution still stalls, with Python stack at tensor-add during fixed gradient merge; GPU kernel/workspace cause remains unconfirmed. Prior fenced pass established only serialized observation.",
+  "original_checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+  "original_step": 12683,
+  "formal_training_started": false,
+  "speedup_established": false,
+  "next": "Isolate capture streams and cuBLAS workspace keys using public explicit CUDA Graph capture, then run exact unfenced recovery and immutable840 full-update calibration."
+}

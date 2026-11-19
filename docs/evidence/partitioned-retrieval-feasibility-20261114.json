@@ -1,0 +1,211 @@
+{
+  "schema": "qkan-partitioned-retrieval-feasibility.v1",
+  "date": "2026-11-14",
+  "status": "source_review_and_analytic_checks_only",
+  "owner_execution": "stdlib_only",
+  "runtime_changed": false,
+  "model_or_framework_imported": false,
+  "native_capture_tested": false,
+  "native_speed_measured": false,
+  "active_training_reference": "adaptive-migrated-20261114T040717Z-233292",
+  "local_runtime_sources": {
+    "models.py": {
+      "bytes": 7611,
+      "sha256": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386"
+    },
+    "parallel_attention.py": {
+      "bytes": 14726,
+      "sha256": "2fa002f6c5b6bb40094778ffce80e8ba7ab139debe60ebf72a6a6984c4f72e43"
+    },
+    "torch_acceleration.py": {
+      "bytes": 31136,
+      "sha256": "9bddeabb52ba5ed64dcb693e9537faf0319c992e8d131ab879cae82886d66c7a"
+    },
+    "adaptive_memory.py": {
+      "bytes": 12140,
+      "sha256": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584"
+    },
+    "logical_batch.py": {
+      "bytes": 9184,
+      "sha256": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611"
+    },
+    "worker.py": {
+      "bytes": 37676,
+      "sha256": "2c145e20dc93ee6d37c60e0b5c3fa5f05903523e07fe54f733715b5c4e825dbf"
+    }
+  },
+  "pytorch_version": "2.7.1",
+  "upstream_sources": {
+    "generator": {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.7.1/aten/src/ATen/cuda/CUDAGeneratorImpl.cpp",
+      "bytes": 18153,
+      "sha256": "0e36e37728b8b032d481d4b71287000089ad45e6c0c3201f9cbd89fd818ea7ae",
+      "relevant_lines": [
+        112,
+        196
+      ]
+    },
+    "attention": {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.7.1/aten/src/ATen/native/transformers/cuda/attention.cu",
+      "bytes": 67496,
+      "sha256": "f7e7146d32c6a48ba359ec684e2a6672882da744fae26b1232e62c19c6b7b821",
+      "relevant_lines": [
+        1223
+      ]
+    },
+    "graphs": {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.7.1/torch/cuda/graphs.py",
+      "bytes": 22135,
+      "sha256": "6582d64b263e2e52e7cbbea482dcf545c21832aae5ee9bba6972ae9864180ef1",
+      "relevant_lines": [
+        346,
+        357,
+        303
+      ]
+    },
+    "transformer": {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.7.1/torch/nn/modules/transformer.py",
+      "bytes": 49735,
+      "sha256": "40269ff005f7d147c4b410b43d7d83e1f796225a7f54ea8d30bd5f0a044fae38",
+      "relevant_lines": [
+        411,
+        513
+      ]
+    },
+    "memory": {
+      "url": "https://raw.githubusercontent.com/pytorch/pytorch/v2.7.1/docs/source/notes/cuda.rst",
+      "bytes": 67348,
+      "sha256": "99115567af601cb7562e258e313dc97850ea6c305b5d9937448d811020c26361",
+      "relevant_lines": [
+        1497,
+        1505
+      ]
+    }
+  },
+  "assumptions": {
+    "logical_batch": 128,
+    "layers": 4,
+    "heads": 4,
+    "length": 4000,
+    "width": 128,
+    "documents": 2,
+    "precision": "fp32",
+    "rng_limit": 4294967295,
+    "rng_bound_per_row_layer": 67072000
+  },
+  "arithmetic_candidates": [
+    {
+      "segment_layers": 4,
+      "segments_per_document": 1,
+      "micro_batch": 16,
+      "logical_batch": 128,
+      "micro_slices": 8,
+      "estimated_rng_per_forward_graph": 4292608000,
+      "graph_forward_backward_replays": 32,
+      "attention_forward_calls": 64,
+      "attention_backward_calls": 64,
+      "analytic_row_layer_work": 1024,
+      "one_hidden_tensor_mib": 31.25
+    },
+    {
+      "segment_layers": 2,
+      "segments_per_document": 2,
+      "micro_batch": 16,
+      "logical_batch": 128,
+      "micro_slices": 8,
+      "estimated_rng_per_forward_graph": 2146304000,
+      "graph_forward_backward_replays": 64,
+      "attention_forward_calls": 64,
+      "attention_backward_calls": 64,
+      "analytic_row_layer_work": 1024,
+      "one_hidden_tensor_mib": 31.25
+    },
+    {
+      "segment_layers": 2,
+      "segments_per_document": 2,
+      "micro_batch": 32,
+      "logical_batch": 128,
+      "micro_slices": 4,
+      "estimated_rng_per_forward_graph": 4292608000,
+      "graph_forward_backward_replays": 32,
+      "attention_forward_calls": 32,
+      "attention_backward_calls": 32,
+      "analytic_row_layer_work": 1024,
+      "one_hidden_tensor_mib": 62.5
+    },
+    {
+      "segment_layers": 1,
+      "segments_per_document": 4,
+      "micro_batch": 64,
+      "logical_batch": 128,
+      "micro_slices": 2,
+      "estimated_rng_per_forward_graph": 4292608000,
+      "graph_forward_backward_replays": 32,
+      "attention_forward_calls": 16,
+      "attention_backward_calls": 16,
+      "analytic_row_layer_work": 1024,
+      "one_hidden_tensor_mib": 125.0
+    }
+  ],
+  "four_row_granularity": [
+    {
+      "micro_batch": 20,
+      "full_slices": 6,
+      "tail_rows": 8,
+      "two_layer_rng_budget": 2682880000,
+      "accepted_by_current_divisor_policy": false
+    },
+    {
+      "micro_batch": 24,
+      "full_slices": 5,
+      "tail_rows": 8,
+      "two_layer_rng_budget": 3219456000,
+      "accepted_by_current_divisor_policy": false
+    },
+    {
+      "micro_batch": 28,
+      "full_slices": 4,
+      "tail_rows": 16,
+      "two_layer_rng_budget": 3756032000,
+      "accepted_by_current_divisor_policy": false
+    },
+    {
+      "micro_batch": 32,
+      "full_slices": 4,
+      "tail_rows": 0,
+      "two_layer_rng_budget": 4292608000,
+      "accepted_by_current_divisor_policy": true
+    }
+  ],
+  "replica_sync_opportunities": {
+    "current_sync_rounds_per_logical_update": 8,
+    "proposed_sync_rounds_per_logical_update": 1,
+    "speedup_unmeasured": true
+  },
+  "design_findings": [
+    "Each segment needs its input VJP as well as parameter gradients; current token-only wrapper rejects differentiable inputs.",
+    "Preserve padding-mask canonicalization, positions once, all layer order, final norm/pooling once, and canonical checkpoint keys.",
+    "Per document capture F0,F1,B1,B0; use separate document streams/pools, and serialize all stochastic forward segments across documents.",
+    "Graph partition changes require a new capacity-ceiling identity; tier-list changes require migration by physical value, not saved index.",
+    "Current runtime retains one shape; fine tiers need bounded cache/tail handling and coherent generation, validation and build accounting.",
+    "Compare candidate against incumbent Graph micro16 in addition to same-micro native eager; no-gain incumbent replacement is not established by eager-only calibration.",
+    "Current promotion multiplies the entire peak by the micro ratio, including fixed model/optimizer/rollback memory; a measured fixed-plus-variable model may reduce premature rejection after the RNG ceiling is resolved."
+  ],
+  "native_acceptance": {
+    "matched_micro_eager_numerics": "rtol1e-5_atol1e-6",
+    "rng": "exact",
+    "fresh_process_resume": "exact_with_recorded_controller",
+    "source": "latest_active_suite_checkpoint",
+    "timing": "balanced_AB_BA_full_update_with_optimizer_and_steady_incumbent_Graph_comparison",
+    "rollback": "exact_zero_committed_samples_and_updates",
+    "speed_gain_threshold": 0.0,
+    "fallback": "retain_measured_incumbent_if_new_candidate_has_no_gain",
+    "automatic_artifact_return": "reuse_authenticated_hash_receipts"
+  },
+  "limitations": [
+    "Kernel-call counts are structural projections for full non-tail updates, not profiler observations.",
+    "The RNG expression is a conservative bound; boundary tensor bytes are not peak VRAM estimates.",
+    "No GPU, model, framework, training process or remote executor was accessed.",
+    "Splitting graphs alone does not reduce attention FLOPs; native memory feasibility, gradients, RNG and sustained gain remain unverified."
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "qkan-primary-source-receipt.v1",
+  "policy": {
+    "requests_max": 4,
+    "retries": 0,
+    "per_origin_concurrency": 1,
+    "minimum_delay_seconds": 1.5,
+    "browser_escalations": 0,
+    "purpose": "Original authors dataset-release intent and task-specific use evidence; no inferred open redistribution license"
+  },
+  "sources": [
+    {
+      "id": "maas-paper-page",
+      "url": "https://aclanthology.org/P11-1015/",
+      "method": "GET",
+      "retrieved_at": "2026-11-04T07:22:10.539519+00:00",
+      "access_mode": "public_http",
+      "cache_state": "miss",
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://aclanthology.org/P11-1015/",
+      "sha256": "8534850ae01c7166476e607b86ff83572795e534a22b540f59bb28abae7eef74",
+      "size_bytes": 36449,
+      "response_classification": "public_primary_source"
+    },
+    {
+      "id": "maas-paper",
+      "url": "https://aclanthology.org/P11-1015.pdf",
+      "method": "GET",
+      "retrieved_at": "2026-11-04T07:22:19.212273+00:00",
+      "access_mode": "public_http",
+      "cache_state": "miss",
+      "status": "fresh",
+      "http_status": 200,
+      "final_url": "https://aclanthology.org/P11-1015.pdf",
+      "sha256": "319e8ed97b9255ca3e929c268ff9ee7515fd0d0a218f89c40b2446325f74d1be",
+      "size_bytes": 156182,
+      "response_classification": "public_primary_source"
+    },
+    {
+      "id": "stanford-publisher-card",
+      "url": "https://huggingface.co/datasets/stanfordnlp/imdb/raw/main/README.md",
+      "method": "GET",
+      "retrieved_at": "2026-11-04T07:22:36.474721+00:00",
+      "access_mode": "public_http",
+      "cache_state": "miss",
+      "status": "failed",
+      "failure_reason": "<urlopen error timed out>",
+      "http_status": null
+    },
+    {
+      "id": "exact-author-footnote-link",
+      "url": "https://www.andrew-maas.net/data/sentiment",
+      "method": "GET",
+      "retrieved_date": "2026-11-04",
+      "access_mode": "public_http",
+      "cache_state": "miss",
+      "status": "failed",
+      "http_status": 404,
+      "failure_reason": "404; original paper is recovered independently, no website terms inferred"
+    }
+  ]
+}

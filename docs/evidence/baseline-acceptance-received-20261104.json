@@ -1,0 +1,16 @@
+{
+  "schema": "qkan-reviewed-acceptance.v1",
+  "observed_date": "2026-11-04",
+  "exchange_namespace": "qkan-mamba/acceptance/acceptance-bacaa36685de",
+  "source_revision": "7c053891f27ae6b01aff3acacd93a02c84d8e2cc",
+  "review_method": "Read report.json and both canary receipts directly from authorized exchange storage",
+  "status": "engineering_checks_complete",
+  "adapter_probes_passed": ["transformer", "s4d_minimal", "mamba1"],
+  "canaries": {
+    "mamba1-listops-s42": {"passed": true, "updates": 6, "agreement": "mamba1-cuda-fp32-v1", "trace_semantic_and_replay": true},
+    "transformer-retrieval-s42": {"passed": true, "updates": 6, "agreement": "exact", "trace_semantic_and_replay": true}
+  },
+  "scope": "Bounded CUDA checks on two task/model combinations; not all-task or long-horizon validation, nor paper-level fidelity certification",
+  "formal_release_allowed": false,
+  "remaining": ["dataset source/use qualification", "evidence-grounded cohort freeze", "reviewed per-model fidelity certificates"]
+}

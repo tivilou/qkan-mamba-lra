@@ -1,0 +1,9 @@
+{
+  "schema": "qkan-optional-optimizations.v1",
+  "optimizations": {
+    "padding_trim": {"enabled": true, "length_alignment": 128},
+    "bf16_amp": {"enabled": false},
+    "flash_attention": {"enabled": false},
+    "fp32_attention_tuned": {"enabled": false}
+  }
+}

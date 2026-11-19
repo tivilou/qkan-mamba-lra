@@ -1,0 +1,41 @@
+{
+  "schema": "qkan-admission-evidence-restoration.v1",
+  "date": "2026-11-08",
+  "status": "implemented_stdlib_verified_collaborator_resume_pending",
+  "executor_revision": "9ce7f00d45d2e38b73194ca7dfbf379fc05fd5fb",
+  "suite": "runs/adaptive-migrated-20261108T082557Z-145040",
+  "observed_failure": [
+    "Old readiness reentry selected compile_graph then overwrote original eager admission before rejecting saved config",
+    "Subsequent admitted entry correctly rejected Runtime evidence changed"
+  ],
+  "recovery": "Authenticate original source, policy, sealed gate evidence and all certificate files; inspect every certificate-bound artifact before mutation. Only acceleration-admission records with an embedded copy serializing to the original certificate SHA-256 may be backed up and atomically restored. Repeat original complete runtime validation before scheduler.",
+  "preserved": [
+    "Original executor revision and tracked source",
+    "Saved job configurations and selected modes",
+    "Runtime release, certificates and gate-evidence bytes",
+    "Two completed original9a results",
+    "Existing Retrieval full-state checkpoint and migration receipts"
+  ],
+  "prevention": "Future readiness reentry reads and validates recorded admission instead of overwriting original fallback attempts. Supervisor invokes separate admitted entry, not readiness.",
+  "automatic_return": "Compact repair receipt or fixed failure stage/type/project code frames through existing authenticated admitted-entry exchange; overwritten bytes stay local; delivery failure retains retryable receipt.",
+  "validation": {
+    "stdlib_mock_checks": 141,
+    "admitted_entry_checks": 19,
+    "authentic_embedded_admission_hash_matches": 18,
+    "retrieval_original_admission_sha256": "577ed0a4b5d7467d32b45c9b3cd4c68bd3037eda644f7534cda4439aa89ff5d9",
+    "real_runtime_validator_regression": "Overwritten admission restored, original full certificate validator then permits scheduler; repeated resume idempotent; other artifact/certificate/gate/config/policy drift stops before repair.",
+    "owner_framework_imported": false,
+    "owner_gpu_queried": false,
+    "dependencies_installed": false,
+    "training_executed": false,
+    "collaborator_native_relaunch": "Pending; no claim of native passage or measured speedup"
+  },
+  "artifacts": {
+    "scripts/run_admitted.py": "00481d965c9c4eaa316d63a56c6c24c466cd7436ff583ac1b6cd5fc0fcd3ed7e",
+    "scripts/formal_progress.py": "17ff28f75fd7521fbc663af3ff2b5b407b3db93fd0cd6381b2ed81b5cdaadfb6",
+    "experiments/baseline_delivery/readiness.py": "bbd06c205f17319f3876e1c0239cae640511210bec26b3a32ddb387ce3aa3b83",
+    "tests/test_baseline_admitted_entry.py": "a2296a34f0a2bbec0191bc8021df392ead115080ca7c9b528188be946ee16c74",
+    "tests/test_baseline_torch_acceleration.py": "473cb5736c20c6386642b115bb997a29d463029c65acb24ec2c0e034eeda4bb0",
+    "docs/baselines/torch-acceleration.md": "c0811ebe6982ab4796fb30ffe413e58014b09d93b53404ad4b780261274c2b39"
+  }
+}

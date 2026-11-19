@@ -1,0 +1,16 @@
+{
+  "schema": "qkan-baseline-release.v1",
+  "status": "not_released",
+  "cohort_frozen": false,
+  "certificates": {},
+  "blocked_by": [
+    "No runtime evidence exists for current implementation. Committed release remains closed; reviewed fidelity-policy.json permits a run-local release only after all source, all-task recovery and trace gates pass."
+  ],
+  "available_operations": [
+    "prepare",
+    "preflight",
+    "upload",
+    "formal-readiness"
+  ],
+  "formal_run_allowed": false
+}

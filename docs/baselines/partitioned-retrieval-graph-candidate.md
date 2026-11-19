@@ -1,0 +1,63 @@
+# Retrieval 两层 Graph 候选的验证入口
+
+本版实现隔离候选 `eager_partitioned`，每张 Graph 覆盖连续两层，目标是把物理 micro 从16提高到32。逻辑 batch 维持128，FP32、注意力实现、dropout、样本预算、优化器和学习率时钟保持原配置。
+
+2026-11-15 已复核11月14日修订版 a440393 的原生回传：micro16/32 新进程精确恢复、数值/RNG和回滚通过。两组 AB/BA 完整逻辑128更新中，现有 Graph16 中位耗时7.96931秒，分层 Graph32 为7.57475秒，吞吐提高5.21%，每次更新时间减少4.95%。每个计时样本前后均保持同一已校验捕获版本，校验次数不变；本次对照排除了上版混入计时的重新校验。相同 micro32 的普通执行8.69115秒、分层 Graph7.76444秒，吞吐提高11.94%，这是另一基准的对照，两种提升比例不可相加。正式分层续训尚未接入，诊断没有启动训练。
+
+本次核查见 [稳态原生结果复核](../evidence/partitioned-retrieval-native-v2-review-20261115.json)。源 b07 断点 step14268 未改变；两项已完成结果保留，7个子进程均退出并清理。诊断快照显示 allocator reserved21.82GiB、全卡使用约22.28GiB、剩余1.41GiB；预留、张量分配和全卡占用分别记录，这些快照不是长期正式训练峰值。当前 `eager` 编译后端加手动 CUDA Graph 回放未启用 Inductor 融合。
+
+历史 v1 对照混入重新校验，所报2.70%相对收益仍不采纳，保留在 [历史结果复核](../evidence/partitioned-retrieval-native-review-20261114.json)。此次只有一个断点、一个设备、两组计时，不代表长时间训练或全部25项任务的收益；下一步是将已验证的固定 micro32 路线接入显式续训入口，并重新执行绑定最新源断点的准入。
+
+## 实现范围
+
+- 每个文档有独立流与图池，池内按 F0、F1、B1、B0 捕获；第二段的隐藏输入梯度继续传回第一段。
+- embedding、位置编码、末尾 LayerNorm 和池化各执行一次，原始模型与 checkpoint 参数名保持一致。
+- 分段路线每次完整更新同步一次副本，取代每个 micro 都同步。该副本优化与分层共同组成此次候选，暂不分别归因收益。
+- 诊断强制 micro16/32；旧整图容量上限仅在该诊断控制器中解除。OOM、容量失败或回退均阻止该候选通过，避免把实际 micro16 报为32。
+- 先分别执行 micro16、32 的新进程恢复和 trace 检查，再从最新 b07 完整断点测试 micro32 的完整逻辑128更新。
+- 候选必须通过相同 micro 的普通执行数值/RNG检验，并且同时快于同 micro 普通执行及现有整图 Graph micro16。任意测得正收益均可通过，没有最低百分比门槛。
+- Graph16/32 的 AB/BA 计时包含参数同步、梯度合并、优化器和更新边界等待；各次从同一快照开始。预热、重建和数值校验计时排除，单独记录准备峰值。测速时只驻留一路图池，另记稳定 allocated/reserved/free/peak。
+- Graph16/32 对比使用 `qkan-incumbent-graph-comparison.v2`。清图后执行有界准备，直到当前捕获版本处于 resident/validated 状态；每个计时样本的 `steady_validation.before/after` 必须完全一致。旧 v1 报告不再满足该对照准入。
+- 两种 micro 的随机数与浮点轨迹可能不同，跨 micro 不声明逐位等价。各路线分别通过同 micro 的数值/RNG检查，恢复仍要求精确一致，最终恢复原始模型/Adam/调度器/RNG，样本与更新提交均为0。
+
+当前普通训练入口仍使用已有 `eager_parallel`；新分层候选仅允许隔离诊断。micro20/24/28、步长4、多形状尾批缓存和新的动态升档器不在本版实现范围内，须先依据32的原生结果决定是否需要。
+
+## 使用条件与指令
+
+运行中的训练继续使用 b07。准备代码可以随时做；下面的 GPU 诊断需等当前训练按既有流程暂停、完整断点保存并退出后再运行，或另选空闲 GPU。入口检查源 Suite/worker 锁及 GPU 进程，不会停止现有任务。
+
+源实验必须是当前 b07 续训目录，使用该目录届时最新断点；不使用历史840断点或诊断 Suite 作为训练源。两项已完成结果保留原字节及出处。源目录保持原有 b07 HEAD，目标使用独立工作目录。
+
+在协作者现有代码目录执行以下准备步骤。`prepare_adaptive_checkout.sh` 只准备独立目录与共享本地运行环境，不启动 GPU 任务；它打印的通用 readiness 提示不是本候选入口。
+
+```bash
+bash scripts/prepare_adaptive_checkout.sh &&
+QKAN_CANDIDATE_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${QKAN_CANDIDATE_REV:0:12}" &&
+.venv-baselines/bin/python -B -m experiments.baseline_delivery.exchange_config --configure
+```
+
+在选定 GPU 可用且源实验已正常暂停后，从刚准备的候选目录执行：
+
+```bash
+bash scripts/check_partitioned_attention.sh \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-b07d98e17ad0/runs/adaptive-migrated-20261114T040717Z-233292 \
+  --cache /root/qkan-cache --gpu 0 \
+  --child-timeout 900 --stall-timeout 300
+```
+
+每个诊断子进程最多900秒；内部阶段300秒无变化会终止并回收该诊断自己的进程组。固定 micro32 遇到资源或数值问题会返回失败报告，不会自动减少样本或切回普通执行后宣布成功。
+
+## 输出与判定
+
+输出位于独立的 `runs/partitioned-attention-<时间>-<标识>/`。入口自动回传 `partitioned-attention.json` 到认证交换的 `qkan-mamba/partitioned-attention/<Suite>/`，验证 SHA-256 回执；上传失败保留原地报告与可重试 manifest。权重、输入、逐样本 trace、原始日志保持私有，不上传此类原始载荷。
+
+报告含16/32恢复证据、源 checkpoint hash/step、设备/配置身份、完整更新数值/RNG、普通执行对照、Graph16/32原始AB/BA计时、准备/稳定显存快照、图回放与副本同步统计、精确回滚及子进程清理结果。只有两类速度对照和全部恢复/数值要求通过，顶层 `passed` 才为true。
+
+诊断不会启动正式训练；通过后先审阅原生回传，再决定将分层路线接入续训。五个 baseline 的静态 fidelity 状态仍为 `not_verifiable`，既有正式准入要求保持生效。
+
+当前实验回退就是从原 b07 目录用原入口续跑，它的代码、完整断点及已完成结果保持可用。实现层的逐文件补丁、候选副本、验证记录和可执行回滚另存于本机私有交付目录 `.runtime/partitioned-graph-candidate-20261114/`。
+
+测速修订的独立原件/候选/补丁/执行验证/回滚保存在 `.runtime/partitioned-timing-fix-20261114/`。本修订不改变原生编码器、分层求导、双流或优化器实现；已通过的原生正确性保留为829版本的历史证据，新版本仍从最新 b07 断点重新绑定诊断身份。
+
+研究依据与边界计算见 [分层 Graph 研究](partitioned-retrieval-graph-research-20261114.md)。

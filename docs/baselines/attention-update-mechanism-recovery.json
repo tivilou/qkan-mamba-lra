@@ -1,0 +1,140 @@
+{
+  "schema_version": "experiment-grounded-ideation.mechanism-recovery.v2",
+  "evidence_packet": {
+    "path": "docs/evidence/attention-precision-native-review-20261115.json",
+    "sha256": "a45e8b710faa7875fe8edc25e670ffb33580a6c078b6f0b028fcad7d946b6dfb",
+    "code_revision": "9f343373e403734310666886d31f2e3e4d7146f2",
+    "validity_status": "clean"
+  },
+  "causal_trace": {
+    "intervention_execution": {
+      "claim": "Native BF16 efficient SDPA ran with original FP32 projected QKV and masks.",
+      "evidence_refs": [
+        "docs/evidence/attention-precision-native-review-20261115.json",
+        "docs/evidence/partitioned-retrieval-native-v2-review-20261115.json",
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ]
+    },
+    "intended_intermediate": {
+      "claim": "Attention median fell from116.6331 to39.7222ms; real-loss full-model gradients remain unmeasured.",
+      "evidence_refs": [
+        "docs/evidence/attention-precision-native-review-20261115.json",
+        "docs/evidence/partitioned-retrieval-native-v2-review-20261115.json",
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ]
+    },
+    "observable_output": {
+      "claim": "Dropout-off output relative L2 .3486percent and worst QKV gradient .9559percent; same-route dropout replay exact.",
+      "evidence_refs": [
+        "docs/evidence/attention-precision-native-review-20261115.json",
+        "docs/evidence/partitioned-retrieval-native-v2-review-20261115.json",
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ]
+    },
+    "task_utility": {
+      "claim": "End-to-end update gain and convergence are unknown. FP32 partitioned Graph32 gain5.2089percent is a separate comparison.",
+      "evidence_refs": [
+        "docs/evidence/attention-precision-native-review-20261115.json",
+        "docs/evidence/partitioned-retrieval-native-v2-review-20261115.json",
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ]
+    }
+  },
+  "failure_analysis": {
+    "primary_explanation": {
+      "statement": "Unchanged FP32 compilation/PAD routes do not reduce this observed dense attention workload enough; BF16 changes its arithmetic path.",
+      "evidence_refs": [
+        "docs/evidence/compiler-phase-profile-20261110.json",
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ],
+      "confidence": "medium"
+    },
+    "alternative_explanations": [
+      {
+        "statement": "Full-model projections/FFN/optimizer, loss-gradient sensitivity or extra cast traffic could erase isolated attention gains.",
+        "evidence_refs": [
+          "docs/evidence/attention-precision-native-review-20261115.json",
+          "docs/evidence/partitioned-retrieval-native-v2-review-20261115.json",
+          "docs/evidence/padding-opportunity-review-20261115.json"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "discriminating_measurement": {
+      "uncertainty": "Does the real-loss full-update preserve useful numerical agreement and reduce elapsed time?",
+      "measurement": "Matched micro16/logical128 FP32 versus attention-only BF16: actual loss, raw gradients, Adam deltas, four-update trajectory; fresh-process exact BF16 recovery and full-value train trace; balanced AB/BA timing.",
+      "primary_outcome": "Finite numerics within fixed gates, exact same-route recovery/rollback, faster complete update.",
+      "alternative_outcome": "Reject on numerical/recovery/trace failure; report no gain without changing thresholds."
+    },
+    "closed_family": {
+      "id": "unchanged-fp32-compilation-and-zero-opportunity-padding",
+      "rejected_variant_refs": [
+        "docs/evidence/compiler-phase-profile-20261110.json",
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ],
+      "closure_evidence_refs": [
+        "docs/evidence/compiler-phase-profile-20261110.json",
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ],
+      "forbidden_rescue_variants": [
+        "Repeat unchanged closed probes",
+        "Relax correctness thresholds after observing results",
+        "Treat isolated attention gain as whole-training gain"
+      ]
+    }
+  },
+  "positive_carryovers": [
+    {
+      "id": "native-bf16-attention",
+      "mechanism": "BF16 efficient SDPA reduces measured attention work while FP32 master projection/gradient policy remains available.",
+      "evidence_refs": [
+        "docs/evidence/attention-precision-native-review-20261115.json"
+      ],
+      "transport_constraint": "First layer/document Gaussian cotangent does not transport to real full-update loss without native tests."
+    }
+  ],
+  "recovery_outcome": {
+    "disposition": "candidate",
+    "selected_candidate": {
+      "id": "bf16-attention-full-update-v1",
+      "title": "Optional attention-only BF16 real-loss update",
+      "positive_carryover_ids": [
+        "native-bf16-attention"
+      ],
+      "recovery_mode": "new_causal_path",
+      "causal_difference": "Replace all eight attention calls per microbatch with BF16 SDPA; retain FP32 projection/residual/FFN/head/loss/Adam and original token/mask/sample schedule.",
+      "changed_causal_links": [
+        "intervention_execution",
+        "intended_intermediate",
+        "observable_output",
+        "task_utility"
+      ],
+      "discriminating_measurement": "Real-loss gradients and Adam deltas plus complete-update time; private paired full-value train trace.",
+      "success_gate": "Numerical gates, four-update finite trajectory, exact recovery/rollback, complete trace replay and positive matched median update gain.",
+      "kill_condition": "Any integrity/kernel/recovery/trace/numerical failure; no positive speed gain => no admission.",
+      "authorization_boundary": "Collaborator isolated diagnostic only; no formal migration or owner framework/model/GPU execution."
+    }
+  },
+  "trace_adequacy": {
+    "status": "partial",
+    "schema_version": "sample-trace.v2",
+    "artifact_refs": [
+      "docs/evidence/attention-precision-native-review-20261115.json"
+    ],
+    "selection_rule": "Mechanism first16 train rows; new predeclared first2 train rows for paired complete-value trace.",
+    "covered_stages": [
+      "aggregate attention mechanism"
+    ],
+    "missing_stages": [
+      "native full-model producer lineage",
+      "real loss gradient",
+      "full-update replay"
+    ],
+    "target_boundary": "Train labels only consumed by loss after logits; no validation/test data; original latest checkpoint is not best-validation."
+  },
+  "limitations": [
+    "Changed precision is approximate; no cross-precision bitwise trajectory/RNG equality.",
+    "Short four-update trajectory is a screening test, not convergence certification.",
+    "BF16+Graph and formal training remain disabled pending a separate native admission."
+  ]
+}

@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "plan_id": "optional-optimizations",
+  "plan_version": 1,
+  "workstream": "baseline-delivery",
+  "status": "active",
+  "objective": "Develop individually switchable training optimizations from measured bottlenecks, preserving scientific and recovery contracts.",
+  "focus_step_id": "OP05",
+  "next_action": "BF16+Graph actual-worker opt-in entry delivered: independent latest-state fork, automatic eager2/Graph2/Graph1+fresh1/trace/auth-return gate then integrated formal dashboard. Collaborator executes published command; next audit compact actual-worker report and sustained training speed. Existing isolated native diagnostic already passed; do not repeat. Formal convergence pending.",
+  "blocker": null,
+  "steps": [
+    {
+      "id": "OP01",
+      "title": "Explicit optional plugin boundary",
+      "status": "done",
+      "objective": "Keep all-off identity and reject unavailable/conflicting requests.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "experiments/baseline_delivery/optimization_plugins.py"
+      ],
+      "depends_on": [],
+      "acceptance_checks": [
+        "Resolver and null adapter tests pass"
+      ],
+      "evidence_paths": [
+        "tests/test_baseline_optional_optimizations.py"
+      ],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP02",
+      "title": "Train-only PAD opportunity tool",
+      "status": "done",
+      "objective": "Deliver bounded statistics and token/position audit without model/device or duplicate arrays.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "experiments/baseline_delivery/padding_profile.py",
+        "scripts/profile_optional_padding.sh"
+      ],
+      "depends_on": [
+        "OP01"
+      ],
+      "acceptance_checks": [
+        "Control-plane tests, actual CLI and Bash dispatch pass",
+        "Protected baseline hashes unchanged"
+      ],
+      "evidence_paths": [
+        "docs/evidence/optional-padding-delivery-20261115.json"
+      ],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP03",
+      "title": "Review collaborator length statistics",
+      "status": "done",
+      "objective": "Measure whether common trailing PAD presents a useful candidate.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Authenticated padding-profile.json review"
+      ],
+      "depends_on": [
+        "OP02"
+      ],
+      "acceptance_checks": [
+        "Train SHA/config/plugin identities and row coverage match",
+        "Review prefix sampling limitation; kill zero-opportunity PAD route"
+      ],
+      "evidence_paths": [
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [
+        "Actual collaborator result pending; no native runtime claim.",
+        "Authenticated report verified:4096pairs/128micro32 batches, alignment128; both execution widths4000 throughout, attention cells reduction0. Fixed-prefix scope only; skip native PAD integration under this observed setting."
+      ],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP04",
+      "title": "Native PAD candidate if warranted",
+      "status": "skipped",
+      "objective": "Bind mechanism dossier and v2 plan; implement trace and original checkpoint recovery plus full-update timing.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Optional native PAD adapter and bounded trace fixture"
+      ],
+      "depends_on": [
+        "OP03"
+      ],
+      "acceptance_checks": [
+        "Numerical/RNG/trace/recovery/rollback agreement",
+        "Positive matched AB/BA full-update gain against Graph32"
+      ],
+      "evidence_paths": [
+        "docs/evidence/padding-opportunity-review-20261115.json"
+      ],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [
+        "Predeclared kill criterion met: zero matrix-cell reduction at micro32/alignment128 in the fixed train prefix. No native PAD candidate or expensive GPU check; retain disabled diagnostic for other future data/settings."
+      ],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP05",
+      "title": "Optional precision and attention candidates",
+      "status": "active",
+      "objective": "Research BF16/Flash or FP32 tuned kernels using measured attention bottleneck.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Separate optional plugin candidate and offline pinned prerequisites"
+      ],
+      "depends_on": [
+        "OP01"
+      ],
+      "acceptance_checks": [
+        "Declare FP32 versus changed-precision comparisons",
+        "Actual kernel trace and convergence/resource/rollback checks"
+      ],
+      "evidence_paths": [
+        "docs/baselines/attention-precision-diagnostic.md",
+        "docs/baselines/attention-precision-plugin-plan.json",
+        "docs/evidence/attention-precision-native-review-20261115.json",
+        "docs/evidence/attention-update-delivery-20261115.json",
+        "docs/evidence/attention-update-native-review-20261115.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-bias-postprocess-delivery-20261116.json",
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/research-log/20261116T-080816Z-bf16-key-bias-diagnostic.md",
+        "docs/evidence/key-bias-consistency-delivery-20261116.json",
+        "docs/baselines/attention-attribution-key-bias-screen.md",
+        "docs/baselines/attention-attribution-key-bias-plan.json",
+        "docs/evidence/key-bias-native-review-20261116.json",
+        "docs/research-log/20261116T-090926Z-key-bias-numerical-screen.md",
+        "docs/evidence/key-bias-recovery-delivery-20261116.json",
+        "docs/baselines/attention-key-bias-recovery.md",
+        "docs/baselines/attention-attribution-key-bias-recovery-plan.json",
+        "docs/evidence/key-bias-recovery-startup-fix-20261116.json",
+        "docs/evidence/key-bias-recovery-native-review-20261116.json",
+        "docs/research-log/20261116T-120747Z-key-bias-recovery-trace.md",
+        "docs/evidence/key-bias-benchmark-delivery-20261116.json",
+        "docs/baselines/attention-key-bias-benchmark.md",
+        "docs/baselines/attention-key-bias-benchmark-plan.json",
+        "docs/evidence/key-bias-benchmark-native-review-20261116.json",
+        "docs/research-log/20261116T-124533Z-key-bias-full-update-benchmark.md",
+        "docs/evidence/key-bias-stability-delivery-20261116.json",
+        "docs/baselines/attention-key-bias-stability.md",
+        "docs/baselines/attention-key-bias-stability-plan.json",
+        "docs/evidence/key-bias-stability-partial-review-20261117.json",
+        "docs/evidence/key-bias-stability-retry-delivery-20261117.json",
+        "docs/evidence/key-bias-compiler-cache-native-review-20261117.json",
+        "docs/evidence/key-bias-compiler-cache-delivery-20261117.json",
+        "docs/evidence/key-bias-stability-native-review-20261117.json",
+        "docs/baselines/attention-key-bias-admission-readiness.md",
+        "docs/research-log/20261117T-050617Z-key-bias-stability-incumbents.md",
+        "docs/baselines/attention-key-bias-worker-plan.json",
+        "docs/baselines/attention-key-bias-worker-admission.md",
+        "docs/evidence/key-bias-worker-bootstrap-native-review-20261117.json",
+        "docs/evidence/key-bias-worker-bootstrap-delivery-20261117.json",
+        "docs/evidence/key-bias-worker-migration-receipt-native-review-20261117.json",
+        "docs/evidence/key-bias-worker-migration-receipt-delivery-20261117.json",
+        "docs/evidence/key-bias-worker-native-review-20261117.json",
+        "docs/evidence/key-bias-formal-entry-delivery-20261117.json",
+        "docs/evidence/key-bias-progress-display-delivery-20261117.json",
+        "docs/evidence/unified-experiment-entry-delivery-20261118.json"
+      ],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [
+        "Unavailable flags reject enabled requests until their implementation and native evidence exist.",
+        "Scoped BF16 mechanism probe implemented behind default-off registry; source FP32 training unchanged. Native trace, full-update recovery and convergence remain pending.",
+        "Authenticated native mechanism return verified: micro16 first-layer/document1 BF16 efficient SDPA 2.936222x vs FP32; output relative L2 0.348621 percent, max gradient0.955918 percent, exact same-route replay/input-RNG rollback. Full-update/convergence/trace admission pending.",
+        "Delivered independently switchable BF16 SDPA complete-update candidate;377 guarded controls,20 new tests,8 protected core hashes unchanged. Native/convergence acceptance pending; no formal training.",
+        "Full-update numerical gate rejected Adam relative L2 .2105257684 above unchanged .20; recovery exact. Authenticated attribution localized98.3495percent update error energy in4packed attention biases. Delivered CPU-only read-only Q/K/V postprocessor with407guarded controls; real segment statistics pending. No repeated GPU update, changed gate or formal integration.",
+        "Authenticated CPU report459887bytes/SHA703c52f3...65890c reviewed with270paired summaries:K512elements carry98.3486876percent global Adam-error energy;near-zero FP32gradient4.552e-8 vs BF166.457e-5,allreference Kdenominators within2eps. Stored-moment adaptive route difference residual4.384e-7. CPU3.2162s,clean child,zero new model/update work;original gate still failed. Causal intervention and new candidate remain unmeasured.",
+        "Delivered independent bf16-key-bias-analytic-zero-v1;explicit new gradient definition K[128:256]=0,Q/V exact,all53parameters and Adam histories/steps/weight decay retained. One supervised3update screen,no unchanged BF16 rerun;64raw/corrected callbacks private,compact key-bias.json auto-return.424guarded controls/421pass/3skip,7file patch/rollback,8core+10reused hashes unchanged;new dossier/v2plan valid. Native result pending;architecture approved/trace blocked;no inherited formal/recovery admission.",
+        "Authenticated91b8df6 native screen32412bytes/SHA1bcffacd...108edc reviewed:FP32 analytic Adam0.00164983628,BF16 analytic0.02710353760 vs original0.21052576842,all fixed gates pass;53parameters/807170elements,original histories/nonK parity,64callbacks,rollback and clean child verified. New-policy recovery/trace/trajectory/timing/convergence and formal admission remain pending;OP05 stays active.",
+        "Delivered independent strategy-bound recovery/trace preflight:4supervised children,continuous2 vs interrupt1+freshprocess1 with original dropout,micro16/logical128;fixed first2 originalcursor rows trace/dropout0,complete raw/corrected/clipped packed gradients/Adam/bias values and exact replays.442guarded controls/439pass/3skip,18new;5file patch/rollback/replay,19frozen files including8core unchanged. Native fixture/recovery pending;architecture approved/trace blocked/formal off.",
+        "Authenticated failed Suite key-bias-recovery-20261116T111848Z-993e447c:6918bytes/SHAa70162e3...eaca64,first uninterrupted child exit1/0.203665s/worker_import,empty results,source unchanged,clean group. Exact startup reproduction found supervisor precreates output/diagnostics but worker mkdir(exist_ok=False) fails before native. New prepare_worker_output permits supervisor diagnostics and rejects stale outputs/symlinks.445guarded controls/442pass/3skip,3new incl actual supervisor subprocess;3file patch/rollback/replay verified,21frozen incl8core unchanged. Native recovery/trace remain pending;formal off.",
+        "Authenticated33ee6dd recovery/trace Suite120747Z passed:73651bytes SHA5b4eea0f...9e5c4e,16Git bindings/8core,continuous2 vs fresh1+1 exact9components/dropout0.1,128callbacks,2fixed rows/2routes/320complete-value artifacts/replay,4clean children/source unchanged/0commits. Owner compact-only audit;native fixture validated,formal pending;executed plugin plan unchanged. OP05 remains active for trajectory/performance/convergence.",
+        "Delivered isolated post-preflight benchmark:3routes x4shortupdates,CEabs<=.10,2profiles/4warmups/8timings,all4pairs+median positive,same-route fullstate exact;454controls451pass3skip/9new,5file patchrollback/11commands/8core unchanged;owner stdlib only/native pending/formal off.",
+        "Authenticated b3a337d full-update benchmark151569bytes/SHAb358b9a6...0df6:16Git bindings/8core,4steps/3routes match,median9.0291202813->3.8053162526s/2.37276475x,all4paired gains positive,efficientSDPAproof,same-route fullstate exact/prior interrupt agreement,1clean child/source intact/0commits. Owner compact stdlib audit;no heldout utility/convergence/formal admission.",
+        "Delivered7child pilot:3x64 original-dropout updates/8192epoch rows,online8step mean loss gate,BF16 32+32 recovery,independent Graph16/partition32 vs BF16eager ABBAx2 with resident validated generation unchanged.466guarded463pass3skip/12new;6file patchrollback/11commands,8core+6reused unchanged. Native pilot pending/formal off.",
+        "Authenticated5d7ec8f:64step gates/exact32+32 and Graph16vsBF16 2.098773499x passed;last partition32 AccelerationRequired unknown cause. Diagnostic retention/reuse fix471guarded controls passed;no owner native run/formal admission.",
+        "Authenticated664b912retry:one child,6old results exact,7timings,third capture FailOnRecompileLimitHit/recompile_budget. Isolated cache-reset fix475guarded controls passed;native patched result pending,formal off.",
+        "Authenticated5fe8636Suite050617Z:273986bytes/SHA c0b7da89...fd4b7,23bindings/8core,6prefix exact+1cleanexit0child.All7pilot results pass,64step gates/exact32+32;Graph32 7.574034879->3.705730844s/2.043870750x,all4pairspositive;3cache resets/stateexact/thirdcapturepass. Full convergence and finalworker admission remain pending,OP05active.",
+        "Final-worker explicit default-off BF16 analytic strategy and versioned full checkpoint implemented; frozen4-child0+2+1+1 native admission prepared. Prior64step/performance evidence reused; native final-worker and full convergence remain pending.",
+        "Authenticated09b0382 first migration failed entry109 before checkpoint preparation because Supervisor precreated diagnostics. Reuse unchanged prepare_worker_output;actual bootstrap3new controls,490tests487pass3skip;8cores/frozenprotocol unchanged;native retry pending.",
+        "7829579 actualworker reached receipt after zero-update save/reopen comparison,then TypeError target_contract duplicated.4new full production migration-branch state-fake controls;494tests491pass3skip/0frameworks;numericbody/protocol unchanged;native retry pending.",
+        "Authenticated b23e1da Suite113204Z:69785bytes/SHA cd53b6ee...92f8d8,21 bindings;4clean exit0children;zero-update migration,26scientific components and update records exact2vs1+1,actual paused worker paired val0/1 trace16680224bytes/replay pass. Source and2completed intact,8owned generations removed. Final-worker native fixture validated;formal start entry/full convergence remain pending.",
+        "Separate formal entry delivered: 515 guarded controls/512 pass/3 skip, 21 native bindings unchanged; six-file patch/rollback/reapply and 16 literal commands verified. Native zero-update/selection preparation and formal start pending collaborator; full convergence unclaimed.",
+        "User screenshot shows formal Retrieval step14527 increasing,2/25 computed,0 failed; screenshot only,not new native receipt audit. Reused original Dashboard/Terminal and v1 origin fallback;522 controls519pass3skip,21nativebindings unchanged,five-file patch/rollback/reapply/14commands and readonly fixture unchanged.",
+        "User requested unified launch cleanup and final optimized-suite integrated resume command. One recommended entry/five operations;44 original script Git blobs+21nativebindings retained;550 guarded controls547pass3skip,28new;9filepatch/20literalcommands/rollback/reapply/read-only fixture unchanged. New screenshot paused1/running0/computed2;native status audit pending."
+      ],
+      "supersedes": [],
+      "superseded_by": []
+    },
+    {
+      "id": "OP06",
+      "title": "Combination and formal continuation decision",
+      "status": "todo",
+      "objective": "Test accepted options individually and together before new formal integration.",
+      "inputs": [
+        "Current source/evidence and user-approved optional-plugin design"
+      ],
+      "outputs": [
+        "Matched resource/performance ablations and admitted continuation"
+      ],
+      "depends_on": [
+        "OP04",
+        "OP05"
+      ],
+      "acceptance_checks": [
+        "No regression from all-off baseline",
+        "Preserved completed results/latest original checkpoint",
+        "New final implementation source/recovery/trace/migration admission"
+      ],
+      "evidence_paths": [],
+      "owner": "baseline-delivery",
+      "blocker": null,
+      "notes": [],
+      "supersedes": [],
+      "superseded_by": []
+    }
+  ],
+  "change_log": [
+    {
+      "from_version": 0,
+      "to_version": 1,
+      "date": "2026-11-15",
+      "reason": "User released design-only mode and authorized optional-plugin implementation.",
+      "trigger": [
+        "docs/baselines/optional-training-optimizations.md"
+      ],
+      "impact": "Deliver phase1 CPU opportunity code now; native and future precision/kernel candidates remain separate.",
+      "cursor_migration": "Design -> OP03"
+    }
+  ],
+  "updated_at": "2026-11-18"
+}

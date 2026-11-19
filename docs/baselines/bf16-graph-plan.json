@@ -1,0 +1,19 @@
+{
+  "schema": "qkan-bf16-graph-plan.v1",
+  "scope": "isolated diagnostic; no formal integration",
+  "source": "latest paused BF16 analytic formal checkpoint, never old FP32 migration source",
+  "micro_batch": 16,
+  "logical_batch": 128,
+  "dropout": 0.1,
+  "reference": "bf16_analytic_eager16",
+  "candidate": "bf16_analytic_per_document_graph16",
+  "compiler_backend": "none",
+  "parity": {"rtol": 0.00001, "atol": 0.000001, "rng_and_controls": "exact"},
+  "recovery": {"continuous": 2, "interrupt": 1, "resume_fresh_process": 1},
+  "timing_order": ["incumbent", "candidate", "candidate", "incumbent", "incumbent", "candidate", "candidate", "incumbent"],
+  "timing_gate": "median throughput gain > 0 and all four paired gains > 0",
+  "timing_scope": "CPU gather/H2D/BF16 forward/head/CE/backward/analytic hook/clip/Adam/sample clock/finite checks; exclude prepare/capture/restore/hash",
+  "on_failure": "stop without fallback; retain compact partial diagnosis and automatically return; leave formal checkpoint unchanged",
+  "candidate_admitted": false,
+  "training_samples_committed": 0
+}

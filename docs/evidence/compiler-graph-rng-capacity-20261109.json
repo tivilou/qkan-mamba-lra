@@ -1,0 +1,111 @@
+{
+  "schema": "qkan-compiler-graph-rng-capacity.v1",
+  "date": "2026-11-09",
+  "status": "implemented_stdlib_mock_verified_native_pending",
+  "authentic_return": {
+    "namespace": "formal-readiness/failure-580268ade788",
+    "sha256": "163ab49607a74a94b230e69e70059383cee174218b9ffdfd7c0d60cb60c84912",
+    "source_revision": "e07a91c7876edd20ae7c320be12339cb0c409c21",
+    "suite": "runs/adaptive-migrated-20261109T122440Z-221992",
+    "error_type": "AccelerationRequired",
+    "formal_training_started": false
+  },
+  "observation": {
+    "fx_synthetic_exact_recovery": true,
+    "fx_synthetic_graph_replays": [
+      200,
+      224
+    ],
+    "fx_real_stage": "graph_capture",
+    "fx_real_category": "rng_capture",
+    "fx_real_microbatch": 16,
+    "fx_real_graph_replays": 0,
+    "real_calibration_updates_committed": 0,
+    "real_calibration_rollback_exact": true,
+    "inductor": "Exact recovery differs: model max_abs3.40743054e-6; Adam7.4505806e-9",
+    "aot": "Synthetic model/gradient/logit/RNG disagreement; no real calibration"
+  },
+  "leading_cause": {
+    "status": "source_grounded_inference_not_raw_exception_confirmation",
+    "reason": "Whole-pair dropout Philox reservation can exceed uint32 intra-graph offset",
+    "length_per_document": 4000,
+    "layers": 4,
+    "heads": 4,
+    "width": 128,
+    "documents": 2,
+    "uint32_limit": 4294967295,
+    "whole_pair_attention_only_increment_at_micro16": 8192000000,
+    "whole_pair_conservative_increment_at_micro16": 8585216000,
+    "per_document_conservative_increment_at_micro16": 4292608000,
+    "literal_native_error_available": false,
+    "oom_confirmed": false
+  },
+  "migration_source": {
+    "revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+    "suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "restored_step": 12683,
+    "checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "completed_jobs": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ],
+    "original_completion_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+    "full_scientific_state_preserved": true
+  },
+  "implementation": {
+    "policy": "qkan-torch-acceleration.v4",
+    "compiler": "torch.compile backend=eager fullgraph=True native autograd",
+    "graph_partition": "Two document encoders in separate private pools; native pair features and classification head",
+    "capture_capacity": "Explicit before-capture bound; same full-update rollback, physical downgrade only, persistent ceiling",
+    "oom": "Native OOM remains independent; arbitrary runtime/RNG exceptions do not become capacity retries",
+    "admission": "Unchanged exact fresh-process recovery, real-update numerics, exact zero-commit rollback, actual replay and positive complete-update gain"
+  },
+  "validation": {
+    "standard_library_mock_checks": 204,
+    "new_capacity_checks": 16,
+    "framework_imported": false,
+    "gpu_queried": false,
+    "dependencies_installed": false,
+    "training_executed": false,
+    "thresholds_relaxed": false,
+    "native_graph_passed": false,
+    "sustained_speedup_established": false
+  },
+  "primary_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CUDAGeneratorImpl.cpp",
+      "sha256": "0e36e37728b8b032d481d4b71287000089ad45e6c0c3201f9cbd89fd818ea7ae"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CUDAGraph.cpp",
+      "sha256": "a30b1e386fe19cb1d13b6c6716d345292fab442e6ca1de9aa57865fcceac350c"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/transformers/cuda/attention.cu",
+      "sha256": "f7e7146d32c6a48ba359ec684e2a6672882da744fae26b1232e62c19c6b7b821"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/native/cuda/Dropout.cu",
+      "sha256": "540ca715c3f19d7d972a76cf3f25f1058afb9bfdcc4064312ca16cf0bf02f115"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/nn/functional.py",
+      "sha256": "0c02464c208daff72bcfcb3f0eed09a136e0766d926c08c4bfd0038eb977bc28"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py",
+      "sha256": "4729ca4d7cc5981778c869aab462e5bc4eceabb0b1c40dc3609fa568fd957d71"
+    }
+  ],
+  "artifacts": {
+    "experiments/baseline_delivery/torch_acceleration.py": "0293c964123bc3943dfdc93fe5759980671ad5ed27f986973ec40a306a24cf62",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+    "experiments/baseline_delivery/logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+    "experiments/baseline_delivery/worker.py": "78241681bceb5b742c17c118741fc798f4ef261841f578b0160248162e8757cb",
+    "experiments/baseline_delivery/runner.py": "5a57c27caecb9c1a14f057c9ef7c419f4841598ce202c3fc39ee6a3fcfa5d265",
+    "scripts/formal_progress.py": "781aae278db5e6e8404ae2421ff60ce40968057d3159e4dbb97958cf959b4015",
+    "tests/test_baseline_graph_rng_capacity.py": "75acd799016f0c4f04cc14d0e1d5ecd1d4181fbe5e8699385f2d87cdaa38c386",
+    "docs/baselines/torch-acceleration.md": "f7456c28c4e3a4252e6276b5e3ffb53d563cb07a6e1565464583a7461f09f7fa"
+  }
+}

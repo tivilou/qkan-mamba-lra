@@ -1,0 +1,8 @@
+# Bootstrap constraints, including every subsequent Mamba dependency resolution.
+torch==2.7.1+cu126
+numpy==2.2.6
+einops==0.8.1
+triton==3.3.1
+transformers==4.51.3
+setuptools==80.9.0
+mamba-ssm==2.2.4

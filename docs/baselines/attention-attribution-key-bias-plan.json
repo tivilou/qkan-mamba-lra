@@ -1,0 +1,354 @@
+{
+  "schema_version": "research-plugin-architecture.plugin-plan.v2",
+  "project": "QKAN-Mamba",
+  "authorization": "approved",
+  "baseline": {
+    "entry_point": "Original Classifier/AdamW/sample schedule with attention option disabled",
+    "code_revision": "3f55401dbc2fcd2130017b7aaa97ee673e38928c",
+    "equivalence_test": "Disabled hook is identity without model/runtime inspection; native original FP32 must exactly match saved original route; FP32 analytic control is additional, never the global-gate reference."
+  },
+  "core_invariants": [
+    "Original b07 checkpoint/data/cache and completed results immutable;source locks and single idle GPU required.",
+    "All-off original route untouched. Candidate forward equals existing BF16;only K-bias derivative is newly defined as zero.",
+    "All53parameter tensors/807170elements retained in actual global gates;Q/V and non-K values must match saved routes.",
+    "Keep original Adam group membership,lr,eps,betas,weight decay,moments and step;no state reset/freezing/gradient exclusion.",
+    "One native child,three routes,one update each,dropout0,micro16/logical128,original checkpoint train rows/full4000.",
+    "Owner stdlib/fakes only;offline collaborator;compact authenticated auto-return;private full paired values capped128MiB.",
+    "Numerical screen has no new recovery/trajectory/timing/sample-trace certification;approved architecture remains unimplemented pending real trace fixture."
+  ],
+  "interfaces": [
+    {
+      "id": "attention_update",
+      "type": "transformer",
+      "input_schema": "Original FP32 pre-norm hidden, PAD mask; original train cursor/logical128",
+      "output_schema": "FP32 residual attention output and real-loss FP32 master gradients",
+      "invariants": [
+        "Original sample order, full4000 positions, mask and loss normalization",
+        "Option disabled is identity; no global monkeypatch"
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "id": "baseline.fp32_attention",
+      "version": "1",
+      "insertion_point": "Original unchanged Classifier/MHA/CE/AdamW complete update",
+      "hypothesis": "Control for attention precision comparison",
+      "input_schema": "FP32 hidden/projection and original key PAD mask",
+      "output_schema": "FP32 out projection, actual logits/loss/master gradients",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "This screen:one original FP32 update,one FP32 analytic control,one BF16 analytic candidate;no trajectory/recovery/timing.",
+      "failure_signatures": [
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "tokens",
+          "mask",
+          "QKV",
+          "source_row"
+        ],
+        "output_fields": [
+          "attention",
+          "encoder",
+          "pooled",
+          "logits",
+          "loss",
+          "projection_gradient"
+        ],
+        "input_refs": [
+          "private native trace train source row and original checkpoint SHA"
+        ],
+        "output_refs": [
+          "private native trace complete values and hashes"
+        ],
+        "emitted_fields": [
+          "complete train values",
+          "original-coordinate reader",
+          "FP32/BF16 dtype and efficient kernel proof",
+          "same-route exact replay"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "structural schema",
+          "semantic hash/coordinate values",
+          "same-input model replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "baseline",
+      "interface": "attention_update"
+    },
+    {
+      "id": "precision.bf16_amp",
+      "version": "1",
+      "insertion_point": "Scoped per-instance Transformer layer _sa_block",
+      "hypothesis": "BF16 QKV efficient attention may reduce forward/backward time",
+      "input_schema": "FP32 hidden/projection and original key PAD mask",
+      "output_schema": "FP32 out projection, actual logits/loss/master gradients",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "This screen:one original FP32 update,one FP32 analytic control,one BF16 analytic candidate;no trajectory/recovery/timing.",
+      "failure_signatures": [
+        "numerical_screen_failed",
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "tokens",
+          "mask",
+          "QKV",
+          "source_row"
+        ],
+        "output_fields": [
+          "attention",
+          "encoder",
+          "pooled",
+          "logits",
+          "loss",
+          "projection_gradient"
+        ],
+        "input_refs": [
+          "private native trace train source row and original checkpoint SHA"
+        ],
+        "output_refs": [
+          "private native trace complete values and hashes"
+        ],
+        "emitted_fields": [
+          "complete train values",
+          "original-coordinate reader",
+          "FP32/BF16 dtype and efficient kernel proof",
+          "same-route exact replay"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "structural schema",
+          "semantic hash/coordinate values",
+          "same-input model replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "idea",
+      "interface": "attention_update"
+    },
+    {
+      "id": "gradient.key_bias_analytic_zero",
+      "version": "1",
+      "type": "transformer",
+      "insertion_point": "Instance-local leaf packed-bias backward hook before accumulation and clipping",
+      "hypothesis": "Suppress spurious gradient in the exact row-shift-invariant K-bias direction before Adam.",
+      "input_schema": "Four FP32 packed QKV bias gradients [384],Q[0:128],K[128:256],V[256:384]",
+      "output_schema": "FP32 [384]; Q/V exact, K zero; parameter and Adam slots retained",
+      "requires": [
+        "precision.bf16_amp"
+      ],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "One supervised three-route single-update screen; no timing or formal training",
+      "failure_signatures": [
+        "gradient_scope_mismatch",
+        "nonfinite_raw_gradient",
+        "qv_changed",
+        "hook_count_mismatch",
+        "global_gate_failed"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "same packed-bias raw gradients",
+          "original Adam slots/counters",
+          "same train row IDs"
+        ],
+        "output_fields": [
+          "corrected packed gradients",
+          "actual full parameter deltas",
+          "callback removal proof"
+        ],
+        "input_refs": [
+          "Private original paired-parameters.pt;hash-bound original checkpoint and train request"
+        ],
+        "output_refs": [
+          "runs/key-bias-*/screen/paired-updates.pt",
+          "runs/key-bias-*/key-bias.json"
+        ],
+        "emitted_fields": [
+          "K zeros/QV equality/callback counts",
+          "all53 parameter global numerical metrics",
+          "retained starting moments/counters",
+          "private complete paired values receipt",
+          "exact full-state rollback"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "same raw inputs;forward exact;non-K exact",
+          "K zero and8calls per layer",
+          "original history/parameter population retained",
+          "original global numerical gates",
+          "private full-value reopen;exact rollback",
+          "future full sample-trace.v2 readiness before formal admission"
+        ],
+        "deterministic_replay": true
+      },
+      "interface": "attention_update",
+      "role": "idea"
+    }
+  ],
+  "discovery": {
+    "mode": "explicit_allowlist",
+    "allowlist": [
+      "baseline.fp32_attention",
+      "precision.bf16_amp",
+      "gradient.key_bias_analytic_zero"
+    ]
+  },
+  "composition": {
+    "mode": "sequential",
+    "order": [
+      "precision.bf16_amp",
+      "gradient.key_bias_analytic_zero"
+    ],
+    "merge_rule": "BF16 forward then analytic leaf K-bias derivative in backward;all other combinations rejected.",
+    "interaction_ablations": [
+      "Original FP32 vs FP32 analytic control;existing saved BF16 vs BF16 analytic candidate;original FP32 remains acceptance reference."
+    ]
+  },
+  "validation": {
+    "baseline_equivalence": "Disabled hook is identity without model/runtime inspection; native original FP32 must exactly match saved original route; FP32 analytic control is additional, never the global-gate reference.",
+    "tests": [
+      "baseline_equivalence",
+      "plugin_isolation",
+      "deterministic_replay",
+      "interaction_ablation",
+      "configuration_schema",
+      "train_only_aggregate_coverage",
+      "trace_structural_validation",
+      "trace_semantic_validation",
+      "trace_replay",
+      "zero_k_qv_exact",
+      "retained_adam_history",
+      "callback_cleanup",
+      "all_parameter_gate",
+      "private_reopen_and_return"
+    ]
+  },
+  "reproducibility": {
+    "config_path": "experiments/baseline_delivery/optimization-presets/key-bias-consistency.json",
+    "dataset_identity": "Same original128 train rows/cursor at14268;changed source stops before native execution.",
+    "environment": "Existing Torch2.7.1/NumPy2.2.6/CUDA BF16 support; deterministic true, TF32 false; no installs.",
+    "seeds": [
+      42
+    ],
+    "output_manifest": "runs/key-bias-*/key-bias.json"
+  },
+  "case_study_execution": {
+    "mode": "training_capture",
+    "checkpoint_policy": "Original latest must equal reviewed14268 source;no new training/checkpoint written.",
+    "dependency_refs": [
+      "Hash-bound original train/cache/checkpoint; pinned existing runtime"
+    ],
+    "replay_command": [
+      ".venv-baselines/bin/python",
+      "-B",
+      "-m",
+      "experiments.baseline_delivery.key_bias_diagnostic",
+      "--source-suite",
+      "ORIGINAL_B07_SUITE",
+      "--cache",
+      "/root/qkan-cache",
+      "--attribution-from",
+      "COMPLETED_ATTRIBUTION_SUITE",
+      "--optimizations",
+      "experiments/baseline_delivery/optimization-presets/key-bias-consistency.json"
+    ],
+    "intermediate_policy": "retain_selected",
+    "training_capture_reason": "First-stage private full parameter evidence only;new-policy per-sample trace is an explicitly pending later stage,not emitted by this screen."
+  },
+  "trace_contract": {
+    "enabled": true,
+    "schema": "sample-trace.v2",
+    "artifact_path": "runs/key-bias-*/future-trace/sample-trace.json",
+    "sample_selection_rule": "Future trace:first2 row IDs of original128 training population,selected before outputs;paired unmodified FP32 vs new candidate.",
+    "target_boundary": "Train labels only consumed by loss after logits; no validation/test data; original latest checkpoint is not best-validation.",
+    "required_stages": [
+      "data",
+      "preprocess",
+      "scoring",
+      "training"
+    ],
+    "semantic_roles": [
+      "baseline",
+      "intervention"
+    ],
+    "required_representations": [
+      "tokens/mask/positions",
+      "first-layer QKV/attention for both documents",
+      "encoder/pooled/logits/real loss",
+      "first-layer projection gradient",
+      "raw and corrected K-bias backward values",
+      "original and updated Adam moments/step"
+    ],
+    "producer_owned_lineage": [
+      "Source train SHA/row -> tokens/mask/positions -> original FP32 projection -> SDPA -> encoder/pool/head -> CE loss -> projection gradient"
+    ],
+    "readiness_checks": [
+      "structural schema",
+      "complete detached values/hash/coverage",
+      "reader slices equal values",
+      "same-sample baseline/intervention replay"
+    ]
+  },
+  "trace_readiness": {
+    "status": "blocked",
+    "fixture_path": "runs/key-bias-*/future-trace/sample-trace.json",
+    "structural_validation": "New-policy per-sample native fixture not run by numerical screen.",
+    "semantic_validation": "New-policy full per-sample lineage/complete detached values not yet validated.",
+    "replay_test": "New-policy same-sample trace replay and fresh-process recovery pending numerical pass."
+  },
+  "limitations": [
+    "Analytic zero is the derivative of exact standard dot-product attention in the common K-bias direction, not the literal finite-precision forward map.",
+    "Adam exp_avg/exp_avg_sq/step and weight decay are retained. Zero gradient is not grad=None or frozen parameter; existing momentum continues to update it.",
+    "This delivery stops at a bounded numerical screen; full recovery/trace/trajectory/timing remain gated future work.",
+    "No Graph/formal integration or owner model/native execution.",
+    "Real collaborator numerical evidence pending;owner fake controls do not certify the native mechanism."
+  ],
+  "recovery_contract": {
+    "dossier_path": "docs/baselines/attention-attribution-key-bias-recovery.json",
+    "dossier_sha256": "c71444836d0a843abb79db468bfd1c344cde3f1676a8cc811b2cde1a64303c67",
+    "candidate_id": "bf16-key-bias-analytic-zero-v1",
+    "discriminating_intermediate_measurement": "Three same-state single updates:original FP32,FP32 analytic control,BF16 analytic candidate. Verify original against stored FP32,each analytic forward/non-K values against its stored unmodified route,32hook callbacks,zero K gradients,all53parameter metrics and exact rollback."
+  }
+}

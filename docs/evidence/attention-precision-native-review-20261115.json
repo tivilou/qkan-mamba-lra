@@ -1,0 +1,182 @@
+{
+  "schema": "qkan-attention-precision-native-review.v1",
+  "date": "2026-11-15",
+  "status": "native_local_bf16_attention_mechanism_and_speed_verified",
+  "authentic_return": {
+    "namespace": "qkan-mamba/attention-precision/attention-precision-20261115T081547Z-39eb773b",
+    "file": "attention-precision.json",
+    "bytes": 12181,
+    "sha256": "b03f2a7d533d9da79f587d866d36b0fe53d4fd7b95eea5a01f7c9c7b098622e6"
+  },
+  "execution_revision": "9f343373e403734310666886d31f2e3e4d7146f2",
+  "plugin_tree_sha256": "1c2a0038065f343206eebb8b7ebc11463052760c9e9f3be2f2583c77f961dbb0",
+  "checkpoint": {
+    "sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9",
+    "step": 14268,
+    "matches_previous_authenticated_checkpoint": true,
+    "original_checkpoint_and_metadata_unchanged": true
+  },
+  "environment": {
+    "torch": "2.7.1+cu126",
+    "numpy": "2.2.6",
+    "cuda": "12.6",
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "deterministic_algorithms": true,
+    "tf32": false
+  },
+  "population": {
+    "split": "train",
+    "rows": 16,
+    "document": "inputs1",
+    "selection": "fixed first micro_batch source rows",
+    "train_sha256": "15ebe5d8dc3364238aeadd8119ae6dd1b3c0a3e4c8dddaf0b960b8339d88ff39",
+    "input_sha256": "974a1d87bca78a087e17ab027e89ee261992a50b10394b09fedef6ed1a6116e3",
+    "label_values_used": false,
+    "test_access": false
+  },
+  "qkv_shape": [
+    16,
+    4,
+    4000,
+    32
+  ],
+  "measurement": {
+    "scope": "First layer/document1 train-prefix attention forward+backward; not full-update admission",
+    "includes": "BF16 QKV/upstream casts, attention forward, backward, CUDA synchronization",
+    "excludes": "Full encoder/pair head/loss/optimizer/data transfer/checkpoint/Graph and preparation costs",
+    "upstream": "Independent fixed Gaussian cotangent; not the full-model loss gradient",
+    "dropout_timing": 0.1,
+    "pairs": 2,
+    "samples_per_route": 4,
+    "fp32_samples_seconds": [
+      0.11708851903676987,
+      0.11636636033654213,
+      0.11589261516928673,
+      0.1168997772037983
+    ],
+    "bf16_samples_seconds": [
+      0.03966382518410683,
+      0.03975959122180939,
+      0.039698924869298935,
+      0.039745379239320755
+    ],
+    "fp32_median_ms": 116.63306877017021,
+    "bf16_median_ms": 39.722152054309845,
+    "speed_factor": 2.9362223026261125,
+    "local_throughput_gain_percent": 193.62223026261125,
+    "local_time_reduction_percent": 65.94263318871955,
+    "all_bf16_samples_faster_than_all_fp32_samples": true
+  },
+  "numerical_screen": {
+    "dropout": 0,
+    "metrics": [
+      {
+        "finite": true,
+        "relative_l2": 0.003486208152025938,
+        "max_absolute": 0.03846484422683716
+      },
+      {
+        "finite": true,
+        "relative_l2": 0.009559176862239838,
+        "max_absolute": 0.06327380985021591
+      },
+      {
+        "finite": true,
+        "relative_l2": 0.0075255464762449265,
+        "max_absolute": 0.7416114807128906
+      },
+      {
+        "finite": true,
+        "relative_l2": 0.004973393399268389,
+        "max_absolute": 0.6390724182128906
+      }
+    ],
+    "relative_l2_percent": {
+      "output": 0.3486208152025938,
+      "dQ": 0.9559176862239838,
+      "dK": 0.7525546476244926,
+      "dV": 0.4973393399268389
+    },
+    "output_limit_percent": 2,
+    "gradient_limit_percent": 5,
+    "passed": true,
+    "meaning": "Mechanism triage only; not cross-precision equality, full-model loss agreement, or convergence."
+  },
+  "same_route_replay": {
+    "fp32": {
+      "output_and_gradients_exact": true,
+      "end_rng_exact": true,
+      "output_dtype": "torch.float32",
+      "gradient_dtypes": [
+        "torch.float32",
+        "torch.float32",
+        "torch.float32"
+      ]
+    },
+    "bf16": {
+      "output_and_gradients_exact": true,
+      "end_rng_exact": true,
+      "output_dtype": "torch.bfloat16",
+      "gradient_dtypes": [
+        "torch.float32",
+        "torch.float32",
+        "torch.float32"
+      ]
+    }
+  },
+  "kernel_proof": {
+    "fp32": {
+      "efficient_forward": true,
+      "efficient_backward": true,
+      "operators": [
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "silent_other_backend": false
+    },
+    "bf16": {
+      "efficient_forward": true,
+      "efficient_backward": true,
+      "operators": [
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "silent_other_backend": false
+    }
+  },
+  "memory_observation": {
+    "fp32_peak_allocated_mib": 458.322265625,
+    "bf16_peak_allocated_mib": 442.4443359375,
+    "peak_allocated_reduction_mib": 15.8779296875,
+    "peak_allocated_reduction_percent": 3.4643592245835464,
+    "fp32_incremental_peak_mib": 225.953125,
+    "bf16_incremental_peak_mib": 210.0751953125,
+    "incremental_peak_reduction_percent": 7.027090104418776,
+    "reserved_mib": 648.0,
+    "meaning": "Profiler observation after both routes warmed; shared allocator reserve, not isolated-route footprint."
+  },
+  "rollback": {
+    "inputs_exact": true,
+    "rng_exact": true,
+    "leaf_gradients_unmodified": true
+  },
+  "clean_children": 1,
+  "child_elapsed_seconds": 11.039216384291649,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "optimizer_updates": 0,
+  "claim_ceiling": "At micro16 on RTX3090, first-layer/document1 efficient-SDPA F/B with Gaussian cotangent is2.9362x faster in BF16 than FP32; no end-to-end training gain claimed.",
+  "architecture_status": "approved_pending_native_trace",
+  "full_update_admitted": false,
+  "limitations": [
+    "Fixed first16 train rows/document1/firstlayer only; four timing samples per route.",
+    "Gaussian cotangent differs from real model loss gradients; no FFN, projection, head or optimizer benchmark.",
+    "Numerical screen uses dropout-off aggregates; no convergence or cross-precision RNG agreement claim.",
+    "Kernel proof comprises forced efficient ATen dispatch plus precision observations, not a sample-trace.v2 fixture.",
+    "Memory is a shared warmed-allocator observation, not isolated-route or full-training peak.",
+    "Only compact producer report inspected; native tensor/gradient metrics were not independently rerun on owner."
+  ],
+  "next_action": "Prepare independently switchable BF16 attention full-update candidate, source checkpoint recovery, numeric/convergence/trace contract and matched Graph comparison; retain FP32 control and default-off switch."
+}

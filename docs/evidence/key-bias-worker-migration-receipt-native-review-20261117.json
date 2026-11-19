@@ -1,0 +1,84 @@
+{
+  "schema": "qkan-key-bias-worker-migration-receipt-native-review.v1",
+  "source_revision": "7829579cd2da41b5260d8885c5b55bf555582d99",
+  "status": "zero_update_migration_receipt_keyword_collision",
+  "source_report": {
+    "suite": "key-bias-worker-20261117T103302Z-e3e536d0",
+    "namespace": "qkan-mamba/key-bias-worker-admission/key-bias-worker-20261117T103302Z-e3e536d0",
+    "bytes": 13094,
+    "sha256": "b71cf4f94efb57843d97b9ad881269cb9456367169b90e13f69e9b6ec66f8366"
+  },
+  "authenticated_receipt_verified": true,
+  "executed_binding_count": 21,
+  "executed_code_sha256": {
+    "experiments/baseline_delivery/worker.py": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b",
+    "experiments/baseline_delivery/key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+    "experiments/baseline_delivery/execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+    "experiments/baseline_delivery/performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+    "experiments/baseline_delivery/common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+    "experiments/baseline_delivery/diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+    "experiments/baseline_delivery/attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "tools/sample_trace_contract/validate.py": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "native_failure": {
+    "child": "migration",
+    "error_type": "TypeError",
+    "location": {
+      "file": "experiments/baseline_delivery/worker.py",
+      "line": 305
+    },
+    "exit_code": 1,
+    "elapsed_seconds": 17.05718957260251,
+    "termination": {
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": []
+    },
+    "last_recorded_phase": "checkpoint_restore",
+    "reached": "Writing zero-update migration receipt after checkpoint save/reopen comparisons"
+  },
+  "cause": "Candidate migration lineage already contains target_contract;dict(passed=True,**lineage,target_contract=contract) passes the same keyword twice.",
+  "change": "Use lineage as positional mapping;verified receipt fields supplied once as keywords. Preserve all inherited metadata and existing state comparisons.",
+  "completed_result_count": 2,
+  "child_result_count": 0,
+  "training_samples_committed": 0,
+  "source_checkpoint": {
+    "step": 14268,
+    "sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9"
+  },
+  "original_checkpoint_and_metadata_unchanged": true,
+  "disposable_checkpoint_cleanup": {
+    "removed": [
+      {
+        "path": "migration/checkpoints/step-14268-d0ac6e024c9941ff8d29fe0e658d0149.pt",
+        "bytes": 18057571,
+        "sha256": "56bf214c92b771d35492d2e0297e84e7a0097b7eea8e44ade7aa78a032da042d"
+      },
+      {
+        "path": "migration/checkpoints/step-14268-d55aa2bd157d4cd5a55e89bce56bdbfb.pt",
+        "bytes": 18057763,
+        "sha256": "14d2bbb3abcdd08020f1c2191b381682f331c37c69e3ffac72ca6bfaad8f7cf0"
+      }
+    ],
+    "retained_generations": 0,
+    "continuation_source": "original source only; no diagnostic checkpoint admitted"
+  },
+  "control_flow_inference": "Failure location follows exact runtime-field and saved-checkpoint comparisons;no successful migration receipt/result exists.",
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "native_retry_passed": false,
+  "evidence_ceiling": "Authenticated native receipt-writing failure only;no complete final-worker admission,recovery,trace or training result."
+}
