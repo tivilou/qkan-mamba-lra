@@ -1,5 +1,26 @@
 # Mamba BF16 数值与恢复短验证
 
+## 当前下一步：仅 FP32 重复性对照
+
+已有回传表明两条 BF16 路线在中断前第2步就出现独立运行差异，中点加载本身完全一致。使用同一入口的 `--fp32-repeat`，只跑两个全新 FP32 进程、每个2步，总共4次一次性更新，保持原micro/logical/sample-clock/dropout。每步返回完整状态组件hash和损失，能发现“损失相同但梯度/参数已不同”。不启动BF16或Graph，也不重跑旧测速/40步验证。
+
+在服务器执行整段（使用绝对路径，任意当前工作目录均可）：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-ff58cd8feab6 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MAMBA_REPEAT_REV=$(git rev-parse FETCH_HEAD) &&
+MAMBA_REPEAT_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MAMBA_REPEAT_REV:0:12}" &&
+cd "$MAMBA_REPEAT_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-validate -- \
+  --fp32-repeat \
+  --source-suite /root/projects/qkan-mamba-lra-adaptive-14d681111173/runs/bf16-graph-formal-20261119T014456Z-1cb7160c \
+  --cache "$QKAN_CACHE" --gpu 0
+```
+
+检查点SHA必须等于已审计BF16报告的输入（step24981），源若已推进则停止，不回滚源。两个进程初始完整状态及每步样本/损失/组件都精确一致才返回0；观察到差异返回76，同时显示首次差异步并自动回传 `qkan-mamba/mamba-repeat/<运行名>/mamba-repeat.json`。控制完成与重复性通过有区别，精确一致也不解锁BF16。新报告含旧审计hash以复用BF16证据；每子进程900秒/单阶段300秒，独占空闲GPU、源锁、退出清理沿用原实现。临时复制的检查点自动清理，原正式Suite和七个完成结果保留。
+
 已审计测速见 [实测记录](../evidence/mamba-speed-native-review-20261123.json)：BF16 eager 吞吐 +45.22%，BF16 Graph +48.91%，两者单更新量相对差异约22.86%。本入口只补充数值和恢复证据，不重复四路线计时，不将Transformer阈值或K偏置策略用于Mamba。
 
 ## 执行指令
