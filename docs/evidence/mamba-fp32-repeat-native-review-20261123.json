@@ -1,0 +1,76 @@
+{
+  "schema": "qkan-mamba-fp32-repeat-native-review.v1",
+  "date": "2026-11-23",
+  "status": "original_fp32_path_not_bitwise_repeatable",
+  "evidence": {
+    "exchange_path": "qkan-mamba/mamba-repeat/mamba-repeat-ed97651debad/mamba-repeat.json",
+    "size_bytes": 22035,
+    "sha256": "f2ffe32cfb2bfa74925b5c4ea69b5f1df83c417501585a873c16c0ffab57086e",
+    "diagnostic_revision": "06551e5475d454451f1ade05de908475ceb3a1b2",
+    "source_step": 24981,
+    "source_checkpoint_sha256": "fc3ccbb796b26c1ee58ac516e5aaa274846066cea9b49660e09aa8c795c4d01b",
+    "previous_bf16_review_sha256": "a5b3eaba9e757555092b1c3e7d70a11699963e405458555b8ce2c52aae905f52"
+  },
+  "checks": {
+    "two_children_exit_zero_and_clean": true,
+    "starting_state_exact": true,
+    "same_samples_and_positions": true,
+    "source_unchanged": true,
+    "all_states_finite": true,
+    "temporary_binaries_removed": true,
+    "micro_batch": 8,
+    "logical_batch": 32,
+    "disposable_updates": 4,
+    "formal_updates_committed": 0,
+    "formal_release_allowed": false
+  },
+  "per_step": [
+    {
+      "update_1based": 1,
+      "loss_a": 0.182586669921875,
+      "loss_b": 0.182586669921875,
+      "loss_absolute_difference": 0.0,
+      "differing_components": [
+        "gradients",
+        "model",
+        "optimizer"
+      ],
+      "matching_components": [
+        "logical",
+        "micro",
+        "rng",
+        "route",
+        "sampler",
+        "scheduler"
+      ]
+    },
+    {
+      "update_1based": 2,
+      "loss_a": 0.03631570190191269,
+      "loss_b": 0.03631569817662239,
+      "loss_absolute_difference": 3.725290298461914e-09,
+      "differing_components": [
+        "gradients",
+        "model",
+        "optimizer"
+      ],
+      "matching_components": [
+        "logical",
+        "micro",
+        "rng",
+        "route",
+        "sampler",
+        "scheduler"
+      ]
+    }
+  ],
+  "conclusions": [
+    "The original FP32 diagnostic update path differs in model/Adam/gradient hashes after update 1 despite exact initial state and identical rows.",
+    "Update 1 loss is equal; update 2 absolute loss difference is 3.725290298461914e-9. Parameter/gradient magnitudes are unavailable from hashes.",
+    "The prior BF16 same-route repeat difference cannot be attributed solely to recovery loading or Graph, and is not established to be as small as FP32 noise.",
+    "Pinned upstream atomic reductions remain a plausible contributor, not causally isolated.",
+    "Bitwise same-route replay currently fails even for original FP32; this is separate from exact checkpoint serialization/loading.",
+    "No thresholds, training code or release rules changed; BF16 remains unadmitted."
+  ],
+  "next_action": "Use original FP32 repeatability as a control when quantifying BF16 repeated gradient/update/state errors; preserve exact saved-state loading and sample/RNG/scheduler checks. Establish numerical criteria prospectively before any formal continuation, rather than rerunning unchanged bitwise tests or treating hash inequality as an error magnitude."
+}
