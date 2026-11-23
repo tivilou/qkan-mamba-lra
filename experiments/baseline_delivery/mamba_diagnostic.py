@@ -70,7 +70,7 @@ def snapshot(source, suite, job, cache):
         return request
 
 
-def native(request_path, route):
+def native(request_path, route, validation=None):
     # Native imports occur exclusively in a supervised collaborator child.
     import numpy as np
     import torch
@@ -104,7 +104,7 @@ def native(request_path, route):
     model=Classifier(config,request['cache']).cuda().train(); opt=optimizer(model,config)
     controller=make_controller(config['adaptive_memory'],config['batch_size'],state['adaptive_memory'])
     micro=controller.micro_batch; logical=planned_batch_size(controller,config,state['step'])
-    ids=state['permutation'][state['cursor']:min(len(train),state['cursor']+logical)].numpy()
+    ids=state['permutation'][state['cursor']:min(len(train),state['cursor']+logical)].numpy().copy()
     if len(ids)!=logical or logical%micro: raise ValueError('Complete logical update required for matched Graph shapes')
     clock_state=state['sample_clock']
     clock=SampleClock(clock_state['total'],clock_state['warmup'],clock_state['base_rates'],
@@ -138,7 +138,7 @@ def native(request_path, route):
         forward=torch.cuda.make_graphed_callables(forward,tuple(batch[k] for k in inputs),num_warmup_iters=3)
         torch.cuda.synchronize();restore();exact()
     setup=time.perf_counter()-setup
-    def update(use_candidate):
+    def update(use_candidate, observe=None):
         nonlocal replays
         arrays=train.numpy_batch(ids,validate=True)
         staged={k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}
@@ -154,11 +154,16 @@ def native(request_path, route):
             if graph and use_candidate:
                 for parameter in model.parameters():
                     if parameter.grad is not None:parameter.grad=parameter.grad.clone()
+        if observe is not None: observe()
         torch.nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
         opt.step();schedule.step(len(ids))
         torch.cuda.synchronize()
         return loss_sum
     def output(): return host(dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(),scheduler=schedule.state_dict()))
+    if validation is not None:
+        return validation(dict(torch=torch,np=np,model=model,opt=opt,schedule=schedule,state=state,
+            micro=micro,logical=logical,ids=ids,train=train,host=host,restore=restore,exact=exact,
+            update=update,output=output,setup_seconds=setup))
     # Uninstrumented warmups, restored before every measurement.
     mark('mamba_warmup',flush=True)
     for candidate in (False,True):restore();update(candidate)

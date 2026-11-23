@@ -30,6 +30,7 @@ DIAGNOSTICS = {
     'partitioned-attention': 'partitioned_diagnostic', 'operator': 'operator_diagnostic',
     'precision': 'attention_precision_diagnostic', 'padding': 'padding_profile',
     'mamba-speed': 'mamba_diagnostic',
+    'mamba-validate': 'mamba_validation',
     'bf16-graph': 'bf16_graph_diagnostic',
 }
 
