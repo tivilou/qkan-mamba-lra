@@ -6,6 +6,8 @@ Deliver faithful,recoverable baselines and measured optional acceleration;preser
 
 ## Current State
 
+- MAMBA NATIVE SPEED REVIEW 2026-11-23: report33419bytes/SHAfd441f0850f4c3f7f4e342a127d8ad8f0cdf8615ecdbdb396ef98a1ce03d73e3; a33420b Suite054541Z-2c025b4b, same checkpoint step24981/micro8/logical32. All4 children exit0/groupclean; source unchanged/0formalupdates. BF16eager median.412777->.284238s, throughput+45.2223%; BF16Graph .413184->.277477s,+48.9076%; FP32Graph+0.7375% only. Both BF16 delta relativeL2~.228644, RNGexact, fullstateinexact; FP32 wrapper control itself delta2.4554e-6/inexact. Timing promising, not formal admission/convergence; do not transplant Transformer thresholds. Single restored batch, no paired BF16Graph-vs-BF16 test, no gradient/case trace. Next: BF16 model-specific numeric attribution, short-prefix and fresh-process recovery; skip standalone FP32Graph. Prior cuBLAS failure now confirmed by user traceback. See docs/evidence/mamba-speed-native-review-20261123.json.
+
 - MAMBA FIRST NATIVE ATTEMPT FAILED 2026-11-23: authenticated 8138-byte report SHA53cb22464d264e37f44a6cd1b7b42aaefe66354ed58d520bb18935c17946ed35. fp32_eager exit1 after12.8386s, no timing output; owned group clean and source unchanged. Old diagnostic did not return exception details and terminal wording obscured failure. Matched original CUBLAS_WORKSPACE_CONFIG=:4096:8; added compact exception return, explicit failed/incomplete summary and finer setup phases. Six focused stdlib tests pass. Actual exit cause awaits collaborator fp32_eager.log traceback; do not equate progress stack or found env omission with confirmed root cause. No native rerun or formal policy change.
 
 - MAMBA SPEED DIAGNOSTIC 2026-11-23: screenshot computed7/running Mamba Retrieval step20085, samples642710/11779000, micro8/logical32, eager, ~69.90 samples/s. Added explicit diagnose mamba-speed: selected latest paused Mamba checkpoint only, FP32/BF16 eager/Graph finite ABBA comparisons, same logical/micro and RNG, source locks, supervised children, compact automatic return. No native owner execution, new speed result or formal strategy admission. Guide docs/baselines/mamba-speed.md. After Retrieval evidence, validate only the promising route and extend to Image/Pathfinder; then MEGA; S5/S4D separate. Existing7 results and original bound Suite stay intact.
@@ -41,7 +43,7 @@ Deliver faithful,recoverable baselines and measured optional acceleration;preser
 
 ## Single Next Action
 
-Collaborator safely pauses current integrated runner, runs diagnose mamba-speed from an independent checkout against the actual latest Mamba Retrieval checkpoint, and returns compact mamba-speed.json. Audit paired full-update timing and numeric deltas before designing a measured formal continuation; do not blindly enable BF16/Graph or repeat Transformer diagnostics.
+Implement bounded Mamba BF16 numerical attribution and same-data short-prefix/fresh-process recovery for promising routes; reuse the audited short timing report without rerunning four-route sweep. Resolve update-delta difference before changing formal executor; then validate actual worker and remaining Mamba input shapes, MEGA next, S5/S4D separately. Current source stays paused/latest preserved until explicit compatible continuation.
 
 ## Validation / Evidence
 

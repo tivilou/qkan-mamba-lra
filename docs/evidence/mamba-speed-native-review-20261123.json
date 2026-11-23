@@ -1,0 +1,120 @@
+{
+  "schema": "qkan-mamba-speed-native-review.v1",
+  "date": "2026-11-23",
+  "source_report": {
+    "exchange_path": "qkan-mamba/mamba-speed/mamba-speed-20261123T054541Z-2c025b4b/mamba-speed.json",
+    "bytes": 33419,
+    "sha256": "fd441f0850f4c3f7f4e342a127d8ad8f0cdf8615ecdbdb396ef98a1ce03d73e3"
+  },
+  "source_revision": "a33420b5408d238acbdea76ceee57c9afc9471ac",
+  "source_checkpoint": {
+    "schema": "qkan-training-checkpoint.v1",
+    "file": "step-24981-9985792ba7204541a464b936ad8adb84.pt",
+    "sha256": "fc3ccbb796b26c1ee58ac516e5aaa274846066cea9b49660e09aa8c795c4d01b",
+    "step": 24981,
+    "contract": "a0e8eea0fd58f6d3e06baf0ad30b8a9245c75a5a095c0ad88f2882ff6de7bc02",
+    "previous": [
+      {
+        "file": "step-24900-ea5704b1c96d45ca979e69b2c31d977d.pt",
+        "sha256": "caa8fe7d3245f5576b3aa764dd430d88c5279b11944d6e184b23369319853439"
+      }
+    ]
+  },
+  "config_sha256": "03d80682f457fe11965fa1e9eadab80b0669379cc4b78ff5951c43ba9bfe90a7",
+  "step": 24981,
+  "micro_batch": 8,
+  "logical_batch": 32,
+  "routes": {
+    "fp32_eager": {
+      "timing": {
+        "reference_median_seconds": 0.41493792459368706,
+        "candidate_median_seconds": 0.41273708269000053,
+        "throughput_gain": 0.005332309588812922,
+        "positive_pairs": 3,
+        "timing_promising": false
+      },
+      "model_relative_l2": 1.2458146826934767e-09,
+      "update_delta_relative_l2": 2.455410025444824e-06,
+      "losses": {
+        "False": 0.182586669921875,
+        "True": 0.182586669921875
+      },
+      "rng_exact": true,
+      "full_state_exact": false,
+      "setup_seconds": 6.92903995513916e-07,
+      "graph_replays": 0
+    },
+    "bf16_eager": {
+      "timing": {
+        "reference_median_seconds": 0.41277727857232094,
+        "candidate_median_seconds": 0.28423816710710526,
+        "throughput_gain": 0.45222326323537043,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "model_relative_l2": 0.00011600848404348339,
+      "update_delta_relative_l2": 0.22864422741791626,
+      "losses": {
+        "False": 0.182586669921875,
+        "True": 0.1756199598312378
+      },
+      "rng_exact": true,
+      "full_state_exact": false,
+      "setup_seconds": 5.029141902923584e-07,
+      "graph_replays": 0
+    },
+    "fp32_graph": {
+      "timing": {
+        "reference_median_seconds": 0.41255280934274197,
+        "candidate_median_seconds": 0.4095326866954565,
+        "throughput_gain": 0.007374558235277995,
+        "positive_pairs": 4,
+        "timing_promising": false
+      },
+      "model_relative_l2": 1.1633723533974913e-09,
+      "update_delta_relative_l2": 2.2929219505545426e-06,
+      "losses": {
+        "False": 0.182586669921875,
+        "True": 0.182586669921875
+      },
+      "rng_exact": true,
+      "full_state_exact": false,
+      "setup_seconds": 1.7202318757772446,
+      "graph_replays": 20
+    },
+    "bf16_graph": {
+      "timing": {
+        "reference_median_seconds": 0.413184167817235,
+        "candidate_median_seconds": 0.2774769514799118,
+        "throughput_gain": 0.48907563534028453,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "model_relative_l2": 0.00011600809589251622,
+      "update_delta_relative_l2": 0.2286434611039497,
+      "losses": {
+        "False": 0.182586669921875,
+        "True": 0.1756199598312378
+      },
+      "rng_exact": true,
+      "full_state_exact": false,
+      "setup_seconds": 1.417906079441309,
+      "graph_replays": 20
+    }
+  },
+  "source_unchanged": true,
+  "clean_child_exits": 4,
+  "formal_updates_committed": 0,
+  "formal_policy_changed": false,
+  "conclusion": "BF16 timing promising; standalone FP32 Graph low gain. BF16 update delta ~0.22864 needs model-specific numeric/prefix and fresh-process recovery checks before production adoption.",
+  "limits": [
+    "One pending training batch; repeated restored measurements, not independent batches or convergence",
+    "Comparison path includes CPU gather/H2D/forward/backward/optimizer/schedule but not production prefetch overlap",
+    "Baseline FP32 wrapper also not full-state exact, delta relative L2 2.4554e-6; do not label Graph alone as the cause of inexactness",
+    "BF16 Graph vs BF16 eager is not a separately paired benchmark; no claimed incremental Graph gain",
+    "Fast-path flags are not executed-kernel provenance",
+    "No per-parameter gradient diagnosis or sample-trace.v2 recorded; no formal trace acceptance inferred",
+    "Do not apply prior Transformer numerical thresholds or analytic K-bias policy to Mamba"
+  ],
+  "next_action": "Bounded BF16 numerical attribution and matched short-prefix/fresh-process recovery; then actual-worker integration only if acceptable. Image/Pathfinder need shape-specific evidence; MEGA next; S5/S4D separate."
+}
