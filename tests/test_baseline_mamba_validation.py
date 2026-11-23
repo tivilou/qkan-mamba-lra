@@ -13,7 +13,7 @@ from experiments.baseline_delivery.common import atomic_json,read
 
 
 def result(mode):
-    n=2 if mode in v.FP32_MODES else 4 if mode.endswith('_interrupt') else 8
+    n=2 if mode in v.FP32_MODES+v.NOISE_MODES else 4 if mode.endswith('_interrupt') else 8
     indices=range(4,8) if mode.endswith('_resume') else range(n)
     return dict(schema='qkan-mamba-validation-child.v1',mode=mode,request_sha256='hash',
         completed_updates=n,source_restored_exact=True,formal_updates_committed=0,
@@ -48,10 +48,12 @@ class Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);original=root/'original.pt';original.write_bytes(b'keep')
             suite=root/'suite';suite.mkdir();(suite/'reference-values.pt').write_bytes(b'discard')
+            (suite/'bf16_graph-noise-values.pt').write_bytes(b'discard')
             (suite/'unrelated.pt').write_bytes(b'keep')
             record=v.cleanup(suite,{})
             self.assertFalse(record['remaining_owned_binaries']);self.assertTrue(original.exists())
             self.assertTrue((suite/'unrelated.pt').exists())
+            self.assertFalse((suite/'bf16_graph-noise-values.pt').exists())
 
     def test_parent_orders_seven_children_returns_only_report_and_cleans(self):
         self.run_parent(False)
@@ -89,7 +91,67 @@ class Tests(unittest.TestCase):
         self.run_parent(True,repeat=True)
         self.run_parent(False,repeat=True,mismatch=True)
 
-    def run_parent(self,fail,repeat=False,differ=False,mismatch=False):
+    def test_noise_parent_six_children_measurement_not_admission(self):
+        self.run_parent(False,noise=True)
+        self.run_parent(False,noise=True,differ=True)
+        self.run_parent(True,noise=True)
+        self.run_parent(False,noise=True,mismatch=True)
+        for mode in v.NOISE_MODES:
+            v.accept(result(mode),'hash',mode)
+            with patch.object(v.speed,'native') as native,patch.object(sys,'argv',[
+                    'validate','--request','suite/request.json','--mode',mode,'--output','suite/'+mode]):
+                self.assertEqual(v.main(),0)
+                expected='fp32_eager' if mode.startswith('fp32') else 'bf16_graph' if 'graph' in mode else 'bf16_eager'
+                self.assertEqual(native.call_args.args,(Path('suite/request.json'),expected))
+
+    def test_noise_tensor_metrics_known_vectors_and_zero_reference(self):
+        import math
+        from types import SimpleNamespace
+        class Vector:
+            dtype='float32'
+            def __init__(self,values):self.values=list(values);self.shape=(len(self.values),)
+            def is_floating_point(self):return True
+            def double(self):return self
+            def flatten(self):return self
+            def norm(self):return math.sqrt(sum(x*x for x in self.values))
+            def sum(self):return sum(self.values)
+            def numel(self):return len(self.values)
+            def abs(self):return Vector(abs(x) for x in self.values)
+            def max(self):return max(self.values)
+            def __sub__(self,other):return Vector(x-y for x,y in zip(self.values,other.values))
+            def __mul__(self,other):return Vector(x*y for x,y in zip(self.values,other.values))
+        torch=SimpleNamespace(is_tensor=lambda x:isinstance(x,Vector),
+            isfinite=lambda x:SimpleNamespace(all=lambda:all(math.isfinite(v) for v in x.values)))
+        a={'weight':Vector([3,4]),'none':None,'group':{'lr':.1}}
+        b={'weight':Vector([0,4]),'none':None,'group':{'lr':.1}}
+        metric=v.tensor_errors(torch,a,b)
+        self.assertEqual(metric['difference_norm'],3);self.assertEqual(metric['relative_l2'],.6)
+        self.assertEqual(metric['max_absolute'],3);self.assertEqual(metric['cosine'],.8)
+        self.assertTrue(metric['nonfloating_controls_equal'])
+        zero=v.tensor_errors(torch,Vector([0,0]),Vector([1,0]))
+        self.assertIsNone(zero['relative_l2']);self.assertTrue(zero['zero_reference'])
+        self.assertEqual(zero['difference_norm'],1)
+        b['group']['lr']=.2;self.assertFalse(v.tensor_errors(torch,a,b)['nonfloating_controls_equal'])
+        with self.assertRaises(ValueError):v.tensor_errors(torch,a,{})
+        with self.assertRaises(ValueError):v.tensor_errors(torch,Vector([float('inf')]),Vector([0]))
+
+    def test_noise_completion_requires_each_comparison_and_invariants(self):
+        children={}
+        for mode in v.NOISE_MODES:
+            names=({'repeat'} if mode.endswith('_b') else set())|({'vs_fp32_a'} if mode.startswith('bf16') else set())
+            children[mode]={'numerical_comparisons':{k:dict(starting_scientific_state_exact=True,
+                invariants_exact=True,steps=[{},{}]) for k in names}}
+        self.assertTrue(v.measurements_complete(children))
+        children['bf16_graph_noise_b']['numerical_comparisons']['repeat']['invariants_exact']=False
+        self.assertFalse(v.measurements_complete(children))
+        children['bf16_graph_noise_b']['numerical_comparisons'].pop('repeat')
+        self.assertFalse(v.measurements_complete(children))
+        suite=Path('suite')
+        with patch.object(sys,'argv',['validate','--fp32-repeat','--measure-noise']),contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as e:v.main()
+        self.assertEqual(e.exception.code,2)
+
+    def run_parent(self,fail,repeat=False,differ=False,mismatch=False,noise=False):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);source=root/'source';cache=root/'cache';calls=[];exports=[]
             def snapshot(source,suite,job,cache):
@@ -106,6 +168,10 @@ class Tests(unittest.TestCase):
                     if fail:return 1
                     receipt=result(mode);receipt['request_sha256']=v.digest(log.parent/'request.json')
                     if differ and mode==v.FP32_MODES[1]:receipt['updates'][0]['components']={'model':'different'}
+                    if noise:
+                        names=({'repeat'} if mode.endswith('_b') else set())|({'vs_fp32_a'} if mode.startswith('bf16') else set())
+                        receipt['numerical_comparisons']={k:dict(starting_scientific_state_exact=True,
+                            invariants_exact=not differ,steps=[{},{}]) for k in names}
                     atomic_json(log.parent/mode/'result.json',receipt);return 0
             self_outer=self
             review=root/'review.json';atomic_json(review,{'routes':{'bf16_eager':{'timing':{'timing_promising':True}}}})
@@ -119,20 +185,23 @@ class Tests(unittest.TestCase):
                  patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value={'idle':True}),\
                  patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',Supervisor),\
                  patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:exports.append(a)),\
-                 patch.object(sys,'argv',['validate','--source-suite',str(source),'--cache',str(cache)]+(['--fp32-repeat'] if repeat else [])),\
+                 patch.object(sys,'argv',['validate','--source-suite',str(source),'--cache',str(cache)]+(['--measure-noise'] if noise else ['--fp32-repeat'] if repeat else [])),\
                  contextlib.redirect_stdout(io.StringIO()):
                 if mismatch:
                     with self.assertRaisesRegex(ValueError,'checkpoint differs'):v.main()
                 else:self.assertEqual(v.main(),76 if fail or differ else 0)
-            modes=v.FP32_MODES if repeat else v.MODES
+            modes=v.NOISE_MODES if noise else v.FP32_MODES if repeat else v.MODES
             self.assertEqual(calls,[] if mismatch else [modes[0]] if fail else list(modes))
-            filename='mamba-repeat.json' if repeat else 'mamba-validation.json'
+            filename='mamba-noise.json' if noise else 'mamba-repeat.json' if repeat else 'mamba-validation.json'
             self.assertEqual(exports[0][2],[filename])
             report=read(exports[0][0]/filename)
             self.assertFalse((exports[0][0]/'reference-values.pt').exists())
             self.assertFalse(report['formal_release_allowed'])
             if not mismatch:self.assertTrue(report['source_unchanged'])
-            if repeat:self.assertEqual(report['prefix_steps'],2)
+            if repeat or noise:self.assertEqual(report['prefix_steps'],2)
+            if noise and not mismatch:
+                self.assertEqual(report['measurement_completed'],not fail and not differ)
+                self.assertIn('not_evaluated',report['numeric_acceptance'])
 
 
 if __name__=='__main__':unittest.main()

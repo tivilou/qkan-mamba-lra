@@ -1,6 +1,29 @@
 # Mamba BF16 数值与恢复短验证
 
-## 当前下一步：仅 FP32 重复性对照
+## 当前下一步：量化三条路线的重复误差
+
+FP32重复对照已完成，首步梯度/参数/Adam哈希不同，第二步损失仅差3.725290298461914e-9；BF16此前的重复误差幅度仍未知。使用现有入口新增的 `--measure-noise`：FP32、BF16 eager、BF16 Graph各两个独立进程，每个2步，固定共12步。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-06551e5475d4 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MAMBA_NOISE_REV=$(git rev-parse FETCH_HEAD) &&
+MAMBA_NOISE_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MAMBA_NOISE_REV:0:12}" &&
+cd "$MAMBA_NOISE_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-validate -- \
+  --measure-noise \
+  --source-suite /root/projects/qkan-mamba-lra-adaptive-14d681111173/runs/bf16-graph-formal-20261119T014456Z-1cb7160c \
+  --cache "$QKAN_CACHE" --gpu 0
+```
+
+- 每步量化裁剪前累积梯度、裁剪后梯度、模型参数、Adam状态和本步参数更新量；报告整体范数、差异范数、相对L2、余弦、最大绝对差及按绝对差异范数排序的前8个参数。参考范数为零时相对L2/余弦留空，保留绝对差，不制造无限或任意巨大比值。
+- 每条路线比较A与B的重复误差；两个BF16重复各自另与FP32 A比较，分清路线自身波动与跨精度偏移。只有两个重复、两个批次，属于描述性测量，不是统计噪声上界、收敛证据或可直接移植到其他任务的阈值。旧测速/8步损失证据继续复用；旧哈希报告缺原始数值，无法替代此次量化。
+- 仍要求相同检查点SHA、初始科学状态、每步样本和位置、RNG、采样器、样本学习率时钟、Adam步计数及非浮点控制字段一致。原micro8/logical32/dropout/AdamW分组等不变；不进行新恢复测试，不覆盖原正式Suite或七个已完成结果。
+- A运行的原始数值仅存本次Suite中3个已声明临时文件（每个128MiB上限），保存后重开并核对完整值/哈希；B读取带请求hash/创建模式绑定的文件再比较。全部临时数值及复制的源检查点在finally清理，不上传原始数组。每子进程900秒/阶段300秒，沿用独占空闲GPU、源锁与进程清理。
+- 自动回传 `qkan-mamba/mamba-noise/<运行名>/mamba-noise.json`。退出0仅表示6个进程完成且上述控制项一致；`numeric_acceptance`始终未评价、`formal_release_allowed`始终false。数值很大也如实报告，不能将采集成功解释为数值通过；不完整或控制字段不一致返回76。`--measure-noise`与`--fp32-repeat`互斥，历史入口仍保留。
+
+## 已完成：仅 FP32 重复性对照
 
 已有回传表明两条 BF16 路线在中断前第2步就出现独立运行差异，中点加载本身完全一致。使用同一入口的 `--fp32-repeat`，只跑两个全新 FP32 进程、每个2步，总共4次一次性更新，保持原micro/logical/sample-clock/dropout。每步返回完整状态组件hash和损失，能发现“损失相同但梯度/参数已不同”。不启动BF16或Graph，也不重跑旧测速/40步验证。
 
