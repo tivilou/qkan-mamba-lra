@@ -13,7 +13,7 @@ from experiments.baseline_delivery.common import atomic_json,read
 
 
 def result(mode):
-    n=2 if mode in v.FP32_MODES+v.NOISE_MODES else 4 if mode.endswith('_interrupt') else 8
+    n=2 if mode in v.FP32_MODES+v.NOISE_MODES+v.PROJECTION_MODES else 4 if mode.endswith('_interrupt') else 8
     indices=range(4,8) if mode.endswith('_resume') else range(n)
     return dict(schema='qkan-mamba-validation-child.v1',mode=mode,request_sha256='hash',
         completed_updates=n,source_restored_exact=True,formal_updates_committed=0,
@@ -104,6 +104,69 @@ class Tests(unittest.TestCase):
                 expected='fp32_eager' if mode.startswith('fp32') else 'bf16_graph' if 'graph' in mode else 'bf16_eager'
                 self.assertEqual(native.call_args.args,(Path('suite/request.json'),expected))
 
+    def test_projection_four_children_failure_cleanup_and_native_binding(self):
+        self.run_parent(False,projection=True)
+        self.run_parent(False,projection=True,differ=True)
+        self.run_parent(True,projection=True)
+        self.run_parent(False,projection=True,mismatch=True)
+        for mode in v.PROJECTION_MODES[2:]:
+            with patch.object(v.speed,'native') as native,patch.object(sys,'argv',[
+                    'validate','--request','suite/request.json','--mode',mode,'--output','suite/'+mode]):
+                self.assertEqual(v.main(),0)
+                self.assertEqual(native.call_args.args,(Path('suite/request.json'),'projection_bf16_eager'))
+        command=[sys.executable,'-B','-m','experiments.baseline_delivery.mamba_validation',
+            '--projection-bf16','--measure-noise']
+        self.assertEqual(subprocess.run(command,capture_output=True).returncode,2)
+
+    def test_projection_scope_dtype_original_forward_and_exception_restore(self):
+        from types import SimpleNamespace
+        from experiments.baseline_delivery import mamba_diagnostic as d
+        enabled=[False];inner_calls=[]
+        @contextlib.contextmanager
+        def autocast(device,enabled=True,**kwargs):
+            prior=active[0];active[0]=enabled
+            try:yield
+            finally:active[0]=prior
+        active=enabled
+        class Tensor:
+            shape=(2,8,4)
+            def __init__(self,dtype='fp32'):self.dtype=dtype
+            def float(self):return Tensor()
+            def __matmul__(self,other):return Tensor('bf16' if active[0] else 'fp32')
+            def __neg__(self):return self
+        def inner(*args,**kwargs):
+            self.assertFalse(active[0])
+            self.assertTrue(all(x is None or x.dtype=='fp32' for x in args))
+            self.assertEqual(kwargs['delta_bias'].dtype,'fp32')
+            self.assertTrue(kwargs['delta_softplus']);inner_calls.append(args);return Tensor()
+        class Mamba:
+            use_fast_path=True
+            def __init__(self):
+                for name in ('in_proj','conv1d','x_proj','dt_proj','out_proj'):
+                    setattr(self,name,SimpleNamespace(weight=Tensor(),bias=None if name!='dt_proj' else Tensor()))
+                self.A_log=Tensor();self.D=Tensor()
+            def parameters(self):return [self.in_proj.weight]
+            def forward(self,hidden_states,inference_params=None):return 'original'
+        module=SimpleNamespace(__file__='fixture.py',Mamba=Mamba,causal_conv1d_fn=True,
+            rearrange=lambda value,*args,**kwargs:value,mamba_inner_fn=inner)
+        torch=SimpleNamespace(float32='fp32',bfloat16='bf16',exp=lambda x:x,autocast=autocast)
+        mixer=Mamba();model=SimpleNamespace(blocks=[SimpleNamespace(mixer=mixer)])
+        weight=mixer.in_proj.weight
+        with patch('importlib.import_module',return_value=module),patch.object(d,'digest',return_value=d.InputProjectionBF16.source_sha256):
+            policy=d.InputProjectionBF16(torch,model)
+            self.assertEqual(mixer.forward(Tensor()),'original')
+            with policy.activate():self.assertEqual(mixer.forward(Tensor()).dtype,'fp32')
+            self.assertEqual(policy.calls,1);self.assertEqual(len(inner_calls),1)
+            self.assertIs(mixer.in_proj.weight,weight)
+            with self.assertRaisesRegex(ValueError,'FP32 training inputs'):
+                with policy.activate():mixer.forward(Tensor('bf16'))
+            self.assertFalse(policy.active);self.assertEqual(mixer.forward(Tensor()),'original')
+            policy.close();self.assertNotIn('forward',mixer.__dict__)
+            mixer.use_fast_path=False
+            with self.assertRaisesRegex(ValueError,'fused training path'):d.InputProjectionBF16(torch,model)
+        with patch('importlib.import_module',return_value=module),patch.object(d,'digest',return_value='wrong'):
+            with self.assertRaisesRegex(ValueError,'pinned Mamba source'):d.InputProjectionBF16(torch,model)
+
     def test_noise_tensor_metrics_known_vectors_and_zero_reference(self):
         import math
         from types import SimpleNamespace
@@ -151,7 +214,7 @@ class Tests(unittest.TestCase):
             with self.assertRaises(SystemExit) as e:v.main()
         self.assertEqual(e.exception.code,2)
 
-    def run_parent(self,fail,repeat=False,differ=False,mismatch=False,noise=False):
+    def run_parent(self,fail,repeat=False,differ=False,mismatch=False,noise=False,projection=False):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);source=root/'source';cache=root/'cache';calls=[];exports=[]
             def snapshot(source,suite,job,cache):
@@ -168,10 +231,13 @@ class Tests(unittest.TestCase):
                     if fail:return 1
                     receipt=result(mode);receipt['request_sha256']=v.digest(log.parent/'request.json')
                     if differ and mode==v.FP32_MODES[1]:receipt['updates'][0]['components']={'model':'different'}
-                    if noise:
-                        names=({'repeat'} if mode.endswith('_b') else set())|({'vs_fp32_a'} if mode.startswith('bf16') else set())
+                    if noise or projection:
+                        names=({'repeat'} if mode.endswith('_b') else set())|({'vs_fp32_a'} if v.native_route(mode)!='fp32_eager' else set())
                         receipt['numerical_comparisons']={k:dict(starting_scientific_state_exact=True,
                             invariants_exact=not differ,steps=[{},{}]) for k in names}
+                    if mode.startswith('projection_'):
+                        receipt['projection_mechanism']={'observed_projection_calls':1}
+                        receipt['paired_timing']={'summary':{}} if mode.endswith('_b') else None
                     atomic_json(log.parent/mode/'result.json',receipt);return 0
             self_outer=self
             review=root/'review.json';atomic_json(review,{'routes':{'bf16_eager':{'timing':{'timing_promising':True}}}})
@@ -185,21 +251,21 @@ class Tests(unittest.TestCase):
                  patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value={'idle':True}),\
                  patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',Supervisor),\
                  patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:exports.append(a)),\
-                 patch.object(sys,'argv',['validate','--source-suite',str(source),'--cache',str(cache)]+(['--measure-noise'] if noise else ['--fp32-repeat'] if repeat else [])),\
+                 patch.object(sys,'argv',['validate','--source-suite',str(source),'--cache',str(cache)]+(['--projection-bf16'] if projection else ['--measure-noise'] if noise else ['--fp32-repeat'] if repeat else [])),\
                  contextlib.redirect_stdout(io.StringIO()):
                 if mismatch:
                     with self.assertRaisesRegex(ValueError,'checkpoint differs'):v.main()
                 else:self.assertEqual(v.main(),76 if fail or differ else 0)
-            modes=v.NOISE_MODES if noise else v.FP32_MODES if repeat else v.MODES
+            modes=v.PROJECTION_MODES if projection else v.NOISE_MODES if noise else v.FP32_MODES if repeat else v.MODES
             self.assertEqual(calls,[] if mismatch else [modes[0]] if fail else list(modes))
-            filename='mamba-noise.json' if noise else 'mamba-repeat.json' if repeat else 'mamba-validation.json'
+            filename='mamba-projection.json' if projection else 'mamba-noise.json' if noise else 'mamba-repeat.json' if repeat else 'mamba-validation.json'
             self.assertEqual(exports[0][2],[filename])
             report=read(exports[0][0]/filename)
             self.assertFalse((exports[0][0]/'reference-values.pt').exists())
             self.assertFalse(report['formal_release_allowed'])
             if not mismatch:self.assertTrue(report['source_unchanged'])
-            if repeat or noise:self.assertEqual(report['prefix_steps'],2)
-            if noise and not mismatch:
+            if repeat or noise or projection:self.assertEqual(report['prefix_steps'],2)
+            if (noise or projection) and not mismatch:
                 self.assertEqual(report['measurement_completed'],not fail and not differ)
                 self.assertIn('not_evaluated',report['numeric_acceptance'])
 

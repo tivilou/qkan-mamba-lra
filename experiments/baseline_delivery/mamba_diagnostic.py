@@ -1,6 +1,6 @@
 """Finite Mamba update comparisons; no formal continuation or source mutation."""
 import argparse
-from contextlib import ExitStack
+from contextlib import ExitStack, contextmanager
 import copy
 import datetime as dt
 import math
@@ -15,6 +15,68 @@ from .common import ROOT, atomic_json, digest, fingerprint, lock, read, revision
 
 JOBS = tuple('mamba1-'+task+'-s42' for task in ('retrieval','image','pathfinder'))
 ROUTES = ('fp32_eager','bf16_eager','fp32_graph','bf16_graph')
+
+
+class InputProjectionBF16:
+    """Disposable, eager-only projection policy for the pinned fused Mamba path.
+
+    Direct weight matmul bypasses Linear.forward in upstream Mamba. Keep the
+    original fused inner function, its FP32 arguments and all parameter objects.
+    """
+    source_sha256='a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3'
+
+    def __init__(self,torch,model):
+        import importlib
+        module=importlib.import_module('mamba_ssm.modules.mamba_simple')
+        if digest(Path(module.__file__))!=self.source_sha256:
+            raise ValueError('Projection candidate requires the reviewed pinned Mamba source')
+        mixers=[b.mixer for b in model.blocks]
+        if (not mixers or any(type(m) is not module.Mamba or not m.use_fast_path
+                or any(p.dtype!=torch.float32 for p in m.parameters()) for m in mixers)
+                or module.causal_conv1d_fn is None):
+            raise ValueError('FP32 parameters and the original fused training path required')
+        self.active=False;self.calls=0;self.installed=[]
+        self.mechanism=dict(policy='mamba-in-proj-bf16-inner-fp32-v1',
+            upstream_source_sha256=self.source_sha256,blocks=len(mixers),graph=False,
+            bf16_operations=['in_proj.weight @ hidden_states'],
+            fp32_operations=['projection bias','conv1d','x_proj','dt_proj','selective_scan','out_proj'],
+            parameter_dtype='float32',optimizer='original_fp32_adamw')
+        for mixer in mixers:
+            original=mixer.forward
+            def forward(hidden_states,inference_params=None,_m=mixer,_original=original):
+                if not self.active:return _original(hidden_states,inference_params=inference_params)
+                if inference_params is not None or hidden_states.dtype!=torch.float32:
+                    raise ValueError('Projection candidate supports FP32 training inputs only')
+                length=hidden_states.shape[1]
+                with torch.autocast('cuda',enabled=False):
+                    with torch.autocast('cuda',dtype=torch.bfloat16,cache_enabled=False):
+                        projected=_m.in_proj.weight @ module.rearrange(hidden_states,'b l d -> d (b l)')
+                    if projected.dtype!=torch.bfloat16:raise ValueError('BF16 projection did not execute')
+                    xz=module.rearrange(projected.float(),'d (b l) -> b d l',l=length)
+                    if _m.in_proj.bias is not None:
+                        xz=xz+module.rearrange(_m.in_proj.bias,'d -> d 1')
+                    out=module.mamba_inner_fn(xz,_m.conv1d.weight,_m.conv1d.bias,
+                        _m.x_proj.weight,_m.dt_proj.weight,_m.out_proj.weight,_m.out_proj.bias,
+                        -torch.exp(_m.A_log.float()),None,None,_m.D.float(),
+                        delta_bias=_m.dt_proj.bias.float(),delta_softplus=True)
+                if out.dtype!=torch.float32:raise ValueError('Fused inner output must remain FP32')
+                self.calls+=1
+                return out
+            self.installed.append((mixer,'forward' in mixer.__dict__,original))
+            mixer.forward=forward
+
+    @contextmanager
+    def activate(self):
+        previous=self.active;self.active=True
+        try:yield
+        finally:self.active=previous
+
+    def close(self):
+        self.active=False
+        for mixer,owned,original in self.installed:
+            if owned:mixer.forward=original
+            else:del mixer.forward
+        self.installed=[]
 
 
 def summarize(reference, candidate):
@@ -126,10 +188,13 @@ def native(request_path, route, validation=None):
     restore();exact()
     inputs=tuple(sorted(k for k in train.numpy_batch(ids) if k!='labels'))
     bf16=route.startswith('bf16'); graph=route.endswith('graph'); replays=0
+    projection=InputProjectionBF16(torch,model) if route=='projection_bf16_eager' else None
     class Adapter(torch.nn.Module):
         def __init__(self): super().__init__();self.base=model
         def forward(self,*values):
-            with torch.autocast('cuda',dtype=torch.bfloat16,enabled=bf16,cache_enabled=False):
+            with ExitStack() as stack:
+                stack.enter_context(torch.autocast('cuda',dtype=torch.bfloat16,enabled=bf16,cache_enabled=False))
+                if projection is not None:stack.enter_context(projection.activate())
                 return self.base(dict(zip(inputs,values)),validated_inputs=True)
     forward=Adapter();setup=time.perf_counter()
     if graph:
@@ -161,9 +226,12 @@ def native(request_path, route, validation=None):
         return loss_sum
     def output(): return host(dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(),scheduler=schedule.state_dict()))
     if validation is not None:
-        return validation(dict(torch=torch,np=np,model=model,opt=opt,schedule=schedule,state=state,
-            micro=micro,logical=logical,ids=ids,train=train,host=host,restore=restore,exact=exact,
-            update=update,output=output,setup_seconds=setup))
+        try:
+            return validation(dict(torch=torch,np=np,model=model,opt=opt,schedule=schedule,state=state,
+                micro=micro,logical=logical,ids=ids,train=train,host=host,restore=restore,exact=exact,
+                update=update,output=output,setup_seconds=setup,projection=projection))
+        finally:
+            if projection is not None:projection.close()
     # Uninstrumented warmups, restored before every measurement.
     mark('mamba_warmup',flush=True)
     for candidate in (False,True):restore();update(candidate)

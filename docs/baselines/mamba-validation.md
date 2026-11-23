@@ -2,6 +2,30 @@
 
 三条路线误差量化已完成，见 [实测审阅](../evidence/mamba-noise-native-review-20261123.json)。当前全模型BF16 autocast相对FP32的更新量差异约22.86%～24.49%，明显大于本次各路线自身重复误差；eager与Graph均如此。这版候选未准入，不重复下列已完成诊断。后续若继续BF16，应缩小低精度范围，作为新的数值策略验证；原FP32正式续跑能力保留。
 
+## 当前：仅输入投影 BF16，融合内部 FP32
+
+新候选 `mamba-in-proj-bf16-inner-fp32-v1` 只对每个 Mamba 块的 `in_proj.weight @ hidden_states` 使用 BF16，投影结果立即转回 FP32。投影偏置、卷积、x/dt 投影、选择性递推和输出投影继续执行原来的 FP32 `mamba_inner_fn`；嵌入、LayerNorm、分类头、主参数及原 AdamW 不改。上游输入投影直接访问权重，内部投影又被融合，因此包装 `Linear.forward` 会漏掉这些计算；本候选明确包住实际矩阵乘法，保留原融合快路径。
+
+仅在诊断进程中安装临时实例 forward，FP32 对照仍调用原 forward，退出时还原。绑定既有 Mamba commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9` 的 `mamba_simple.py` SHA256 `a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3`；实际投影 BF16、内部输出 FP32 均有运行时检查。文件/快路径/参数类型不匹配则停止，不修改安装包。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-5efd8123ae99 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MAMBA_PROJ_REV=$(git rev-parse FETCH_HEAD) &&
+MAMBA_PROJ_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MAMBA_PROJ_REV:0:12}" &&
+cd "$MAMBA_PROJ_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-validate -- \
+  --projection-bf16 \
+  --source-suite /root/projects/qkan-mamba-lra-adaptive-14d681111173/runs/bf16-graph-formal-20261119T014456Z-1cb7160c \
+  --cache "$QKAN_CACHE" --gpu 0
+```
+
+- 原检查点 step24981/SHA、micro8/logical32、dropout、样本时钟及 AdamW 分组保持固定。FP32 A/B 与局部 BF16 A/B 共四个全新进程、各两步；复用已有误差量化，返回每步更新量和原始梯度等相对L2/余弦/绝对误差，并比较自身重复误差、跨策略差异和精确控制项。
+- 最后一个进程追加两次预热和 ABBA×2 成对完整更新测速，共10次，合计预算18次一次性更新。每次从相同检查点/RNG/首批样本恢复，计时含 gather/H2D/前后向/裁剪/Adam/样本调度，排除恢复、哈希和数值复制。不重跑全模型BF16、Graph或恢复测试。
+- 源 Suite 和七个完成结果保持原样，原正式训练继续暂停。每子进程900秒/阶段300秒；临时 FP32/局部BF16 数值文件与检查点副本沿用 finally 清理。仅回传 `qkan-mamba/mamba-projection/<运行名>/mamba-projection.json`。
+- 退出0仅表示量化和测速完成、固定控制项一致；不等于数值准入。该候选的收益和误差尚待服务器实测，旧全模型 BF16 的45%提速不适用于它。若输入投影收益有限或误差仍大，应据实停下，不把 Graph 或更多低精度范围直接叠入正式训练。
+
 ## 已完成：量化三条路线的重复误差
 
 FP32重复对照已完成，首步梯度/参数/Adam哈希不同，第二步损失仅差3.725290298461914e-9；BF16此前的重复误差幅度仍未知。使用现有入口新增的 `--measure-noise`：FP32、BF16 eager、BF16 Graph各两个独立进程，每个2步，固定共12步。

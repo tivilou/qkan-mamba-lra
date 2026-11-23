@@ -5,6 +5,7 @@ import math
 import os
 from pathlib import Path
 import sys
+import time
 import uuid
 
 from .common import ROOT,atomic_json,digest,fingerprint,lock,read,revision,worker_failure
@@ -16,24 +17,26 @@ MODES=('reference','bf16_eager','bf16_eager_interrupt','bf16_eager_resume',
 FP32_MODES=('fp32_repeat_a','fp32_repeat_b')
 NOISE_MODES=('fp32_noise_a','fp32_noise_b','bf16_eager_noise_a','bf16_eager_noise_b',
     'bf16_graph_noise_a','bf16_graph_noise_b')
+PROJECTION_MODES=('fp32_noise_a','fp32_noise_b','projection_noise_a','projection_noise_b')
 REVIEW=ROOT/'docs/evidence/mamba-speed-native-review-20261123.json'
 REPEAT_REVIEW=ROOT/'docs/evidence/mamba-validation-native-review-20261123.json'
 
 
 def native_route(mode):
+    if mode.startswith('projection_'):return 'projection_bf16_eager'
     return ('fp32_eager' if mode=='reference' or mode.startswith('fp32_') else
         'bf16_graph' if mode.startswith('bf16_graph') else 'bf16_eager')
 
 
 def spec(suite,mode):
-    if mode not in MODES+FP32_MODES+NOISE_MODES:raise ValueError('Unknown finite validation mode')
+    if mode not in MODES+FP32_MODES+NOISE_MODES+PROJECTION_MODES:raise ValueError('Unknown finite validation mode')
     return dict(target='experiments.baseline_delivery.mamba_validation',cwd=str(ROOT),argv=[
         sys.executable,'-B','-m','experiments.baseline_delivery.mamba_validation',
         '--request',str(suite/'request.json'),'--mode',mode,'--output',str(suite/mode)])
 
 
 def accept(value,request_sha,mode):
-    expected=2 if mode in FP32_MODES+NOISE_MODES else 4 if mode.endswith('_interrupt') else STEPS
+    expected=2 if mode in FP32_MODES+NOISE_MODES+PROJECTION_MODES else 4 if mode.endswith('_interrupt') else STEPS
     if (value.get('schema')!='qkan-mamba-validation-child.v1' or value.get('mode')!=mode
             or value.get('request_sha256')!=request_sha or value.get('completed_updates')!=expected
             or value.get('source_restored_exact') is not True or value.get('formal_updates_committed')!=0
@@ -119,10 +122,10 @@ def numerical_comparison(torch,left,right):
         invariants_exact=all(s['invariants_exact'] and all(m['nonfloating_controls_equal'] for m in s['metrics'].values()) for s in steps),steps=steps)
 
 
-def measurements_complete(children):
-    if set(children)!=set(NOISE_MODES):return False
+def measurements_complete(children,modes=NOISE_MODES):
+    if set(children)!=set(modes):return False
     for mode,child in children.items():
-        expected=({'repeat'} if mode.endswith('_b') else set())|({'vs_fp32_a'} if mode.startswith('bf16') else set())
+        expected=({'repeat'} if mode.endswith('_b') else set())|({'vs_fp32_a'} if native_route(mode)!='fp32_eager' else set())
         values=child.get('numerical_comparisons',{})
         if set(values)!=expected:return False
         if any(not v.get('starting_scientific_state_exact') or not v.get('invariants_exact')
@@ -133,7 +136,7 @@ def measurements_complete(children):
 def cleanup(suite,request):
     # Only exact owned filenames, never source Suite files.
     names=['reference-values.pt','bf16_eager-midpoint.pt','bf16_graph-midpoint.pt']
-    names.extend(route+'-noise-values.pt' for route in ('fp32_eager','bf16_eager','bf16_graph'))
+    names.extend(route+'-noise-values.pt' for route in ('fp32_eager','bf16_eager','bf16_graph','projection_bf16_eager'))
     if request.get('checkpoint'):names.append('source/checkpoints/'+Path(request['checkpoint']['file']).name)
     for name in names:
         path=suite/name
@@ -149,9 +152,9 @@ def operation(c,request_path,mode,output):
     from .runner import compare_states
     from .diagnostic_watch import mark
     torch=c['torch'];suite=request_path.parent;state=c['state'];model=c['model']
-    noise=mode in NOISE_MODES;repeat=mode in FP32_MODES or noise
+    noise=mode in NOISE_MODES+PROJECTION_MODES;repeat=mode in FP32_MODES or noise
     reference_mode=native_route(mode)=='fp32_eager'
-    request_sha=digest(request_path);base='bf16_graph' if mode.startswith('bf16_graph') else 'bf16_eager'
+    request_sha=digest(request_path);base=native_route(mode)
     total=2 if repeat else STEPS
     start=4 if mode.endswith('_resume') else 0;end=4 if mode.endswith('_interrupt') else total
     if state['cursor']+total*c['logical']>len(c['train']):
@@ -257,13 +260,32 @@ def operation(c,request_path,mode,output):
         if not reference_mode:
             comparisons['vs_fp32_a']=numerical_comparison(torch,
                 load_private(suite/'fp32_eager-noise-values.pt','fp32_noise_a'),measured)
+    timing=None;mechanism=None
+    if mode.startswith('projection_'):
+        policy=c['projection']
+        if policy.calls<=0:raise ValueError('Projection policy did not execute')
+        mechanism=dict(policy.mechanism,observed_projection_calls=policy.calls)
+        if mode=='projection_noise_b':
+            # Reuse the restored first batch; exclude numerical copies/hashes from timing.
+            c['ids'][:]=state['permutation'][state['cursor']:state['cursor']+c['logical']].numpy()
+            for candidate in (False,True):c['restore']();c['update'](candidate)
+            times={False:[],True:[]}
+            for index,candidate in enumerate((False,True,True,False)*2):
+                c['restore']();torch.cuda.synchronize();mark('mamba_projection_timing_'+str(index),flush=True)
+                began=time.perf_counter();loss=float(c['update'](candidate))
+                times[candidate].append(time.perf_counter()-began)
+                if not math.isfinite(loss):raise ValueError('Nonfinite projection timing loss')
+            timing=dict(reference_seconds=times[False],candidate_seconds=times[True],
+                summary=speed.summarize(times[False],times[True]),disposable_updates=10,
+                includes='CPU gather, H2D, forward/backward, clip, Adam and sample schedule',
+                excludes='restore, hashes, CPU numerical copies and setup')
     # Restore the immutable source into this disposable process before claiming zero commits.
     c['restore']();c['exact']()
     atomic_json(output/'result.json',dict(schema='qkan-mamba-validation-child.v1',mode=mode,
         request_sha256=request_sha,completed_updates=end,updates=updates,finite=True,
         micro_batch=c['micro'],logical_batch=c['logical'],starting_state_sha256=starting_hash,
         state_sha256=state_hash(final),components=components,attribution=attribution,
-        numerical_comparisons=comparisons,
+        numerical_comparisons=comparisons,projection_mechanism=mechanism,paired_timing=timing,
         source_restored_exact=True,formal_updates_committed=0,formal_release_allowed=False,
         claim=('Two-update numerical measurements only; no error threshold or formal admission.' if noise else
             'Two-update original FP32 repeat control; no formal admission.' if repeat else
@@ -277,7 +299,8 @@ def main():
     selection=p.add_mutually_exclusive_group()
     selection.add_argument('--fp32-repeat',action='store_true',help='Only two fresh original-FP32 two-update prefixes; four disposable updates')
     selection.add_argument('--measure-noise',action='store_true',help='FP32/BF16 eager/BF16 Graph, two fresh two-update prefixes each; measure errors only')
-    p.add_argument('--request',type=Path);p.add_argument('--mode',choices=MODES+FP32_MODES+NOISE_MODES);p.add_argument('--output',type=Path)
+    selection.add_argument('--projection-bf16',action='store_true',help='Input projection BF16, fused inner FP32: four two-update prefixes plus ten timing updates; no Graph')
+    p.add_argument('--request',type=Path);p.add_argument('--mode',choices=MODES+FP32_MODES+NOISE_MODES+PROJECTION_MODES);p.add_argument('--output',type=Path)
     a=p.parse_args()
     if a.request:
         if not a.mode or a.output!=a.request.parent/a.mode:p.error('Bound child mode/output required')
@@ -293,14 +316,14 @@ def main():
     check_exchange();gpus,inventory=discover_gpus(a.gpu)
     if len(gpus)!=1 or not gpu_preflight(inventory[gpus[0]])['idle']:raise ValueError('Original runner must be paused; choose one idle GPU')
     if not read(REVIEW)['routes']['bf16_eager']['timing']['timing_promising']:raise ValueError('Reviewed positive BF16 timing required')
-    experiment='mamba-noise' if a.measure_noise else 'mamba-repeat' if a.fp32_repeat else 'mamba-validation'
-    modes=NOISE_MODES if a.measure_noise else FP32_MODES if a.fp32_repeat else MODES
+    experiment='mamba-projection' if a.projection_bf16 else 'mamba-noise' if a.measure_noise else 'mamba-repeat' if a.fp32_repeat else 'mamba-validation'
+    modes=PROJECTION_MODES if a.projection_bf16 else NOISE_MODES if a.measure_noise else FP32_MODES if a.fp32_repeat else MODES
     suite=ROOT/'runs'/(experiment+'-'+uuid.uuid4().hex[:12]);supervisor=Supervisor(900,300)
     report=dict(schema='qkan-mamba-validation.v1',children={},recovery={},formal_release_allowed=False,
-        reuse_speed_review_sha256=digest(REVIEW),prefix_steps=2 if a.fp32_repeat or a.measure_noise else STEPS,training_updates_committed=0)
+        reuse_speed_review_sha256=digest(REVIEW),prefix_steps=2 if a.fp32_repeat or a.measure_noise or a.projection_bf16 else STEPS,training_updates_committed=0)
     request=speed.snapshot(a.source_suite,suite,a.job,a.cache)
     try:
-        if a.fp32_repeat or a.measure_noise:
+        if a.fp32_repeat or a.measure_noise or a.projection_bf16:
             reviewed=read(REPEAT_REVIEW)
             if request['checkpoint']['sha256']!=reviewed['evidence']['source_checkpoint_sha256']:
                 raise ValueError('Latest checkpoint differs from reviewed BF16 input; source preserved, no rollback')
@@ -310,7 +333,7 @@ def main():
             for path in (source/'progress-supervisor.lock',source/'suite.lock',source/'jobs'/a.job/'worker.lock'):
                 held.enter_context(lock(path))
             if any(digest(path)!=sha for path,sha in request['source_files'].items()):raise ValueError('Source advanced; use latest checkpoint')
-            print('Mamba '+('numerical measurements' if a.measure_noise else 'FP32 repeat control' if a.fp32_repeat else 'numerical/recovery')+' Suite: '+str(suite),flush=True)
+            print('Mamba '+('input projection BF16' if a.projection_bf16 else 'numerical measurements' if a.measure_noise else 'FP32 repeat control' if a.fp32_repeat else 'numerical/recovery')+' Suite: '+str(suite),flush=True)
             for mode in modes:
                 print('Mamba finite validation: '+mode,flush=True)
                 code=supervisor.run(spec(suite,mode),suite/(mode+'.log'),dict(os.environ,
@@ -329,20 +352,26 @@ def main():
                     report['recovery'][route]=recovery_agreement(*(report['children'][k]
                         for k in (route,route+'_interrupt',route+'_resume')))
             report['source_unchanged']=all(digest(path)==sha for path,sha in request['source_files'].items())
-            if a.measure_noise:
-                report['measurement_completed']=measurements_complete(report['children']) and report['source_unchanged']
+            if a.measure_noise or a.projection_bf16:
+                report['measurement_completed']=measurements_complete(report['children'],modes) and report['source_unchanged']
                 report['numeric_acceptance']='not_evaluated; two repeats do not establish a noise bound'
+            if a.projection_bf16:
+                candidates=[report['children'].get(k,{}) for k in PROJECTION_MODES[2:]]
+                report['measurement_completed'] &= all(
+                    (c.get('projection_mechanism') or {}).get('observed_projection_calls',0)>0 for c in candidates)
+                report['measurement_completed'] &= bool(candidates[-1].get('paired_timing'))
+                report['disposable_update_budget']=18
     finally:
         report.update(request=request,child_executions=supervisor.records,gpu_identity=inventory[gpus[0]],
             cleanup=cleanup(suite,request))
         atomic_json(suite/(experiment+'.json'),report)
         from .return_artifacts import upload_declared
         upload_declared(suite,experiment,[experiment+'.json'])
-    if a.measure_noise:
+    if a.measure_noise or a.projection_bf16:
         complete=report.get('measurement_completed') is True
         print(('Numerical measurements completed; inspect magnitudes, no numerical admission.' if complete else
             'Numerical measurements incomplete or invariant mismatch; inspect returned report.')+
-            ' Original training remains paused; see mamba-noise.json.',flush=True)
+            ' Original training remains paused; see '+experiment+'.json.',flush=True)
         return 0 if complete else 76
     if a.fp32_repeat:
         comparison=report.get('repeatability',{})
