@@ -1,0 +1,98 @@
+{
+  "schema": "qkan-mamba-validation-native-review.v1",
+  "date": "2026-11-23",
+  "status": "blocked_same_route_repeatability_before_interruption",
+  "evidence": {
+    "exchange_path": "qkan-mamba/mamba-validation/mamba-validation-9362890dc258/mamba-validation.json",
+    "size_bytes": 174946,
+    "sha256": "885a1ffcdd540d0cafe6692f1f3d8936ed012a977bcbaacf7ba108e66f44ff4f",
+    "diagnostic_revision": "ff58cd8feab6f5e36d066e54cdaa202b3c966b59",
+    "source_checkpoint_sha256": "fc3ccbb796b26c1ee58ac516e5aaa274846066cea9b49660e09aa8c795c4d01b",
+    "source_step": 24981,
+    "micro_batch": 8,
+    "logical_batch": 32
+  },
+  "checks": {
+    "seven_children_exit_zero_and_clean": true,
+    "source_unchanged": true,
+    "all_states_finite": true,
+    "temporary_binaries_removed": true,
+    "formal_updates_committed": 0,
+    "formal_release_allowed": false
+  },
+  "routes": {
+    "bf16_eager": {
+      "recovery_load_exact": true,
+      "final_state_exact": false,
+      "mismatched_components": [
+        "model",
+        "optimizer",
+        "gradients"
+      ],
+      "matching_components": [
+        "logical",
+        "micro",
+        "rng",
+        "route",
+        "sampler",
+        "scheduler"
+      ],
+      "all_row_identities_match": true,
+      "first_pre_interrupt_loss_difference_update_1based": 2,
+      "first_different_loss": {
+        "continuous": 0.04263715818524361,
+        "independent": 0.04280176758766174
+      },
+      "fixed_8step_loss_mean": 0.22274172632023692,
+      "fp32_fixed_8step_loss_mean": 0.2280098986811936,
+      "first_update_relative_l2": {
+        "gradients": 0.4632213663233469,
+        "delta": 0.22864387382233556
+      }
+    },
+    "bf16_graph": {
+      "recovery_load_exact": true,
+      "final_state_exact": false,
+      "mismatched_components": [
+        "model",
+        "optimizer",
+        "gradients"
+      ],
+      "matching_components": [
+        "logical",
+        "micro",
+        "rng",
+        "route",
+        "sampler",
+        "scheduler"
+      ],
+      "all_row_identities_match": true,
+      "first_pre_interrupt_loss_difference_update_1based": 2,
+      "first_different_loss": {
+        "continuous": 0.04266567528247833,
+        "independent": 0.042802296578884125
+      },
+      "fixed_8step_loss_mean": 0.22291047358885407,
+      "fp32_fixed_8step_loss_mean": 0.2280098986811936,
+      "first_update_relative_l2": {
+        "gradients": 0.46322641925138386,
+        "delta": 0.22864282858786134
+      }
+    }
+  },
+  "upstream": {
+    "revision": "95d8aba8a8c75aedcaa6143713b11e745e7cd0d9",
+    "selective_scan_bwd_kernel_sha256": "4aa885e6e06e2263fc995173a3088df85e9be49cfe18ef641d3c795eb191cb11",
+    "url": "https://github.com/state-spaces/mamba/blob/95d8aba8a8c75aedcaa6143713b11e745e7cd0d9/csrc/selective_scan/selective_scan_bwd_kernel.cuh",
+    "observed": "gpuAtomicAdd in backward for dB/dC and dA/dD/delta_bias; custom backward invoked by selective_scan_interface.py",
+    "interpretation": "Atomic floating reductions are a plausible shared source of nondeterminism; causal isolation has not been executed."
+  },
+  "conclusions": [
+    "Independent same-route prefixes differ at update 2, before interruption; recovery loading alone does not explain this failure.",
+    "Identical midpoint load, sample identities, final sampler/scheduler/RNG hashes; model/Adam/gradient hashes differ.",
+    "Lower eight-step BF16 loss does not establish convergence, utility, or numerical acceptance.",
+    "BF16-vs-FP32 gradient/update differences and same-route nondeterminism are separate questions; neither is waived.",
+    "No training code, acceptance threshold, formal source or completed job was changed."
+  ],
+  "next_action": "Bounded original-FP32 repeat control: same checkpoint, two independent two-update prefixes (four disposable updates); reuse all BF16 timing/prefix evidence. Resolve repeatability before formal BF16 integration."
+}
