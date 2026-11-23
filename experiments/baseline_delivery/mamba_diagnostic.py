@@ -88,16 +88,19 @@ def native(request_path, route):
     torch.use_deterministic_algorithms(True); torch.backends.cudnn.benchmark=False
     torch.backends.cuda.matmul.allow_tf32=False; torch.backends.cudnn.allow_tf32=False
     mark('mamba_restore',flush=True)
+    mark('mamba_data_identity',flush=True)
     train=Split(request['data'],config['task'],'train',request['cache'],config['data_hashes']['train'])
     val=Split(request['data'],config['task'],'val',request['cache'],config['data_hashes']['val'])
     vocab,dict_sha=vocabulary(request['data'],config['task'])
     if vocab!=config['vocabulary']: raise ValueError('Vocabulary changed')
     contract=fingerprint(dict(config=config,train=train.identity,val=val.identity,dictionary=dict_sha))
+    mark('mamba_checkpoint_load',flush=True)
     state=load_checkpoint(suite/'source',contract)
     if state['runtime']!={'torch':torch.__version__,'numpy':np.__version__,'device_type':'cuda'}:
         raise ValueError('Use the original Mamba Torch/NumPy runtime')
     if state['training_complete'] or state['cursor']>=len(train):
         raise ValueError('Use a latest checkpoint with a pending training update')
+    mark('mamba_model_prepare',flush=True)
     model=Classifier(config,request['cache']).cuda().train(); opt=optimizer(model,config)
     controller=make_controller(config['adaptive_memory'],config['batch_size'],state['adaptive_memory'])
     micro=controller.micro_batch; logical=planned_batch_size(controller,config,state['step'])
@@ -119,6 +122,7 @@ def native(request_path, route):
         for name,value in dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state()).items():
             compare_states(state[name],host(value))
         compare_states(clock_state,schedule.state_dict())
+    mark('mamba_state_roundtrip',flush=True)
     restore();exact()
     inputs=tuple(sorted(k for k in train.numpy_batch(ids) if k!='labels'))
     bf16=route.startswith('bf16'); graph=route.endswith('graph'); replays=0
@@ -156,6 +160,7 @@ def native(request_path, route):
         return loss_sum
     def output(): return host(dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(),scheduler=schedule.state_dict()))
     # Uninstrumented warmups, restored before every measurement.
+    mark('mamba_warmup',flush=True)
     for candidate in (False,True):restore();update(candidate)
     times={False:[],True:[]};results={};losses={}
     for index,candidate in enumerate((False,True,True,False)*2):
@@ -202,7 +207,12 @@ def main():
     args=p.parse_args()
     if args.request:
         if not args.route or args.output!=args.request.parent/args.route:p.error('Bound child route/output required')
-        native(args.request,args.route);return 0
+        try: native(args.request,args.route)
+        except Exception as error:
+            from .common import worker_failure
+            worker_failure(args.output,error)
+            raise
+        return 0
     if not args.source_suite or not args.cache:p.error('source-suite and cache required')
     from .bootstrap import check_exchange
     from .runner import discover_gpus
@@ -227,10 +237,16 @@ def main():
             for route in ROUTES:
                 print('Mamba short comparison: '+route,flush=True)
                 spec=child_spec(suite,route)
-                code=supervisor.run(spec,suite/(route+'.log'),{**os.environ,'CUDA_VISIBLE_DEVICES':gpus[0]})
+                code=supervisor.run(spec,suite/(route+'.log'),{**os.environ,'CUDA_VISIBLE_DEVICES':gpus[0],
+                    'CUBLAS_WORKSPACE_CONFIG':':4096:8'})
                 path=suite/(route+'.json')
                 value=read(path) if code==0 and path.exists() else dict(status='failed',exit_status=code)
+                failure=suite/route/'worker-error.json'
+                if code!=0 and failure.is_file():value['error']=read(failure)
                 report['routes'][route]=value
+                if code!=0:
+                    print('Mamba route FAILED: '+route+' | exit '+str(code)+' | '+
+                        value.get('error',{}).get('error_type','inspect local log')+' | '+str(suite/(route+'.log')),flush=True)
                 # Candidate errors get one isolated process; no repeat or fallback claim.
                 if route==ROUTES[0] and code!=0:break
         finally:
@@ -239,8 +255,11 @@ def main():
             atomic_json(suite/'mamba-speed.json',report)
             from .return_artifacts import upload_declared
             upload_declared(suite,'mamba-speed',['mamba-speed.json'])
-    print('Short comparisons returned; original training remains paused. No formal policy changed.',flush=True)
-    return 0 if all('timing' in v for v in report['routes'].values()) and len(report['routes'])==4 else 76
+    complete=all('timing' in v for v in report['routes'].values()) and len(report['routes'])==4
+    print(('Four comparisons completed and returned.' if complete else
+           'Comparisons FAILED/incomplete; partial diagnostics returned, no speed result established.')+
+          ' Original training remains paused. No formal policy changed.',flush=True)
+    return 0 if complete else 76
 
 
 if __name__=='__main__':raise SystemExit(main())
