@@ -1,0 +1,134 @@
+{
+  "schema": "qkan-mamba-projection-native-review.v1",
+  "date": "2026-11-23",
+  "status": "completed_but_no_useful_measured_speedup",
+  "evidence": {
+    "exchange_path": "qkan-mamba/mamba-projection/mamba-projection-f7a88cb85e38/mamba-projection.json",
+    "bytes": 235004,
+    "sha256": "00f1acc5d0d0fdc229c0c95bed772f8d1ee96427a1cae59383820552735c978d",
+    "revision": "63676e9581d78657db9a343c5c61478e27b6a850",
+    "source_checkpoint_sha256": "fc3ccbb796b26c1ee58ac516e5aaa274846066cea9b49660e09aa8c795c4d01b",
+    "request_sha256": "b17c0928a6aa13b3724122cd85575528e762d99ff202d640e8991835042f905b"
+  },
+  "checks": {
+    "four_children_clean_finite": true,
+    "source_unchanged": true,
+    "all_initial_and_execution_controls_exact": true,
+    "owned_binaries_removed": true,
+    "disposable_updates": 18,
+    "formal_updates_committed": 0
+  },
+  "timing": {
+    "reference_seconds": [
+      0.4117635190486908,
+      0.4134879410266876,
+      0.4136394262313843,
+      0.4135291948914528
+    ],
+    "candidate_seconds": [
+      0.41290678083896637,
+      0.4117998629808426,
+      0.41235504671931267,
+      0.41233959421515465
+    ],
+    "summary": {
+      "reference_median_seconds": 0.4135085679590702,
+      "candidate_median_seconds": 0.41234732046723366,
+      "throughput_gain": 0.0028161877965418025,
+      "positive_pairs": 3,
+      "timing_promising": false
+    },
+    "disposable_updates": 10,
+    "includes": "CPU gather, H2D, forward/backward, clip, Adam and sample schedule",
+    "excludes": "restore, hashes, CPU numerical copies and setup"
+  },
+  "mechanism": {
+    "policy": "mamba-in-proj-bf16-inner-fp32-v1",
+    "upstream_source_sha256": "a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3",
+    "blocks": 6,
+    "graph": false,
+    "bf16_operations": [
+      "in_proj.weight @ hidden_states"
+    ],
+    "fp32_operations": [
+      "projection bias",
+      "conv1d",
+      "x_proj",
+      "dt_proj",
+      "selective_scan",
+      "out_proj"
+    ],
+    "parameter_dtype": "float32",
+    "optimizer": "original_fp32_adamw",
+    "causal_conv1d_available": false,
+    "inner_paths": [
+      "original_unfused",
+      "original_unfused",
+      "original_unfused",
+      "original_unfused",
+      "original_unfused",
+      "original_unfused"
+    ],
+    "source_expression_replacements": 1,
+    "observed_projection_calls": 96
+  },
+  "errors": {
+    "fp32_noise_a": {},
+    "fp32_noise_b": {
+      "repeat": [
+        {
+          "raw_gradients": 2.3578194607450476e-07,
+          "delta": 2.182886180884751e-06
+        },
+        {
+          "raw_gradients": 8.703289112288805e-07,
+          "delta": 2.8660730254181398e-06
+        }
+      ]
+    },
+    "projection_noise_a": {
+      "vs_fp32_a": [
+        {
+          "raw_gradients": 0.014440856373934637,
+          "delta": 0.006128367978356311
+        },
+        {
+          "raw_gradients": 0.014632994254975157,
+          "delta": 0.006428801071854381
+        }
+      ]
+    },
+    "projection_noise_b": {
+      "repeat": [
+        {
+          "raw_gradients": 0.0006782276084426902,
+          "delta": 0.0004032060949137753
+        },
+        {
+          "raw_gradients": 0.006506654061528193,
+          "delta": 0.0012088769579671498
+        }
+      ],
+      "vs_fp32_a": [
+        {
+          "raw_gradients": 0.014440620617857064,
+          "delta": 0.006128822249904458
+        },
+        {
+          "raw_gradients": 0.014233113296748432,
+          "delta": 0.006459164663378132
+        }
+      ]
+    }
+  },
+  "conclusions": [
+    "Input-projection BF16 throughput gain only 0.2816%; no demonstrated useful acceleration.",
+    "Cross-policy update relative L2 about 0.6128%-0.6459%, raw gradients 1.4233%-1.4633%; lower than prior whole-model BF16 but above observed repeats. No numerical admission inferred.",
+    "Optional causal_conv1d unavailable; all six blocks execute original unfused forward. Earlier forced fast-path prerequisite is incompatible with this environment.",
+    "Next investigate pinned optional convolution/fused FP32 path; profiling/timing and numerical effects remain unmeasured. Do not repeat unchanged projection diagnostic or resume formal training from it."
+  ],
+  "limits": [
+    "Two batches/two repetitions and four timing pairs; no convergence or confidence-bound claim.",
+    "Kernel availability does not establish bottleneck or predict speedup."
+  ]
+}
