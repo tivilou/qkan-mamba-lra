@@ -18,49 +18,59 @@ ROUTES = ('fp32_eager','bf16_eager','fp32_graph','bf16_graph')
 
 
 class InputProjectionBF16:
-    """Disposable, eager-only projection policy for the pinned fused Mamba path.
+    """Disposable input-projection policy, preserving the pinned native path.
 
     Direct weight matmul bypasses Linear.forward in upstream Mamba. Keep the
-    original fused inner function, its FP32 arguments and all parameter objects.
+    original forward except that one expression and all parameter objects.
     """
     source_sha256='a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3'
 
     def __init__(self,torch,model):
         import importlib
+        import inspect
+        import textwrap
         module=importlib.import_module('mamba_ssm.modules.mamba_simple')
         if digest(Path(module.__file__))!=self.source_sha256:
             raise ValueError('Projection candidate requires the reviewed pinned Mamba source')
         mixers=[b.mixer for b in model.blocks]
-        if (not mixers or any(type(m) is not module.Mamba or not m.use_fast_path
-                or any(p.dtype!=torch.float32 for p in m.parameters()) for m in mixers)
-                or module.causal_conv1d_fn is None):
-            raise ValueError('FP32 parameters and the original fused training path required')
+        if (not mixers or any(type(m) is not module.Mamba
+                or any(p.dtype!=torch.float32 for p in m.parameters()) for m in mixers)):
+            raise ValueError('Pinned Mamba instances with FP32 parameters required')
         self.active=False;self.calls=0;self.installed=[]
+        def project(weight,values):
+            with torch.autocast('cuda',dtype=torch.bfloat16,cache_enabled=False):
+                projected=weight @ values
+            if projected.dtype!=torch.bfloat16:raise ValueError('BF16 projection did not execute')
+            self.calls+=1
+            return projected.float()
+        # Reuse the entire pinned forward, including its optional-convolution
+        # branch. Linear.forward hooks miss this direct weight access.
+        source=textwrap.dedent(inspect.getsource(module.Mamba.forward))
+        expression='self.in_proj.weight @ rearrange(hidden_states, "b l d -> d (b l)")'
+        if source.count(expression)!=1:raise ValueError('Pinned projection expression boundary changed')
+        namespace=dict(vars(module),_qkan_input_projection_bf16=project)
+        exec(compile(source.replace(expression,
+            '_qkan_input_projection_bf16(self.in_proj.weight, rearrange(hidden_states, "b l d -> d (b l)"))'),
+            module.__file__,'exec'),namespace)
+        projected_forward=namespace['forward']
         self.mechanism=dict(policy='mamba-in-proj-bf16-inner-fp32-v1',
             upstream_source_sha256=self.source_sha256,blocks=len(mixers),graph=False,
             bf16_operations=['in_proj.weight @ hidden_states'],
             fp32_operations=['projection bias','conv1d','x_proj','dt_proj','selective_scan','out_proj'],
-            parameter_dtype='float32',optimizer='original_fp32_adamw')
+            parameter_dtype='float32',optimizer='original_fp32_adamw',
+            causal_conv1d_available=module.causal_conv1d_fn is not None,
+            inner_paths=['fused' if m.use_fast_path and module.causal_conv1d_fn is not None
+                else 'original_unfused' for m in mixers],
+            source_expression_replacements=1)
         for mixer in mixers:
             original=mixer.forward
             def forward(hidden_states,inference_params=None,_m=mixer,_original=original):
                 if not self.active:return _original(hidden_states,inference_params=inference_params)
                 if inference_params is not None or hidden_states.dtype!=torch.float32:
                     raise ValueError('Projection candidate supports FP32 training inputs only')
-                length=hidden_states.shape[1]
                 with torch.autocast('cuda',enabled=False):
-                    with torch.autocast('cuda',dtype=torch.bfloat16,cache_enabled=False):
-                        projected=_m.in_proj.weight @ module.rearrange(hidden_states,'b l d -> d (b l)')
-                    if projected.dtype!=torch.bfloat16:raise ValueError('BF16 projection did not execute')
-                    xz=module.rearrange(projected.float(),'d (b l) -> b d l',l=length)
-                    if _m.in_proj.bias is not None:
-                        xz=xz+module.rearrange(_m.in_proj.bias,'d -> d 1')
-                    out=module.mamba_inner_fn(xz,_m.conv1d.weight,_m.conv1d.bias,
-                        _m.x_proj.weight,_m.dt_proj.weight,_m.out_proj.weight,_m.out_proj.bias,
-                        -torch.exp(_m.A_log.float()),None,None,_m.D.float(),
-                        delta_bias=_m.dt_proj.bias.float(),delta_softplus=True)
-                if out.dtype!=torch.float32:raise ValueError('Fused inner output must remain FP32')
-                self.calls+=1
+                    out=projected_forward(_m,hidden_states,inference_params=inference_params)
+                if out.dtype!=torch.float32:raise ValueError('Original inner output must remain FP32')
                 return out
             self.installed.append((mixer,'forward' in mixer.__dict__,original))
             mixer.forward=forward

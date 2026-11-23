@@ -2,14 +2,16 @@
 
 三条路线误差量化已完成，见 [实测审阅](../evidence/mamba-noise-native-review-20261123.json)。当前全模型BF16 autocast相对FP32的更新量差异约22.86%～24.49%，明显大于本次各路线自身重复误差；eager与Graph均如此。这版候选未准入，不重复下列已完成诊断。后续若继续BF16，应缩小低精度范围，作为新的数值策略验证；原FP32正式续跑能力保留。
 
-## 当前：仅输入投影 BF16，融合内部 FP32
+## 当前：仅输入投影 BF16，保留原计算路径和内部 FP32
 
-新候选 `mamba-in-proj-bf16-inner-fp32-v1` 只对每个 Mamba 块的 `in_proj.weight @ hidden_states` 使用 BF16，投影结果立即转回 FP32。投影偏置、卷积、x/dt 投影、选择性递推和输出投影继续执行原来的 FP32 `mamba_inner_fn`；嵌入、LayerNorm、分类头、主参数及原 AdamW 不改。上游输入投影直接访问权重，内部投影又被融合，因此包装 `Linear.forward` 会漏掉这些计算；本候选明确包住实际矩阵乘法，保留原融合快路径。
+新候选 `mamba-in-proj-bf16-inner-fp32-v1` 只对每个 Mamba 块的 `in_proj.weight @ hidden_states` 使用 BF16，投影结果立即转回 FP32。投影偏置、卷积、x/dt 投影、选择性递推和输出投影保持 FP32；嵌入、LayerNorm、分类头、主参数及原 AdamW 不改。上游输入投影直接访问权重，包装 `Linear.forward` 会漏掉实际计算。
 
-仅在诊断进程中安装临时实例 forward，FP32 对照仍调用原 forward，退出时还原。绑定既有 Mamba commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9` 的 `mamba_simple.py` SHA256 `a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3`；实际投影 BF16、内部输出 FP32 均有运行时检查。文件/快路径/参数类型不匹配则停止，不修改安装包。
+首次运行 `mamba-projection-2e3a7f239062` 的两个FP32子进程完成，候选在新增的类/参数/快路径兼容性检查处退出，尚无候选更新或测速；回传75074字节/SHA `7d7a1519b8fd870903f0ec12a46d2df96089e69a6afdb1664baa5fd29b9505da`。源文件未变，临时数组已清理。修复删除对快路径的额外要求：从固定源码提取原 `Mamba.forward`，只替换唯一输入投影表达式为 BF16→FP32 辅助调用，其余代码原样复用。因此沿用原生 `use_fast_path` 和可选 `causal_conv1d_fn` 分支，支持融合路径和原有普通卷积/scan路径，不安装依赖、不强制切换路径。报告新增每块实际路径、可选卷积可用性及表达式替换次数。错误摘要未区分旧兼容性检查的各子条件，不能仅从摘要认定具体缺失依赖。
+
+仅在诊断进程中安装临时实例 forward，FP32 对照仍调用原 forward，退出时还原。绑定既有 Mamba commit `95d8aba8a8c75aedcaa6143713b11e745e7cd0d9` 的 `mamba_simple.py` SHA256 `a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3`；实际投影 BF16、内部输出 FP32 均有运行时检查。文件/唯一表达式边界/类或参数类型不匹配则停止，不修改安装包。
 
 ```bash
-cd /root/projects/qkan-mamba-lra-adaptive-5efd8123ae99 &&
+cd /root/projects/qkan-mamba-lra-adaptive-5fdbeba08593 &&
 bash scripts/prepare_adaptive_checkout.sh &&
 MAMBA_PROJ_REV=$(git rev-parse FETCH_HEAD) &&
 MAMBA_PROJ_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MAMBA_PROJ_REV:0:12}" &&
@@ -18,10 +20,11 @@ CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-validate -- \
   --projection-bf16 \
   --source-suite /root/projects/qkan-mamba-lra-adaptive-14d681111173/runs/bf16-graph-formal-20261119T014456Z-1cb7160c \
-  --cache "$QKAN_CACHE" --gpu 0
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0
 ```
 
 - 原检查点 step24981/SHA、micro8/logical32、dropout、样本时钟及 AdamW 分组保持固定。FP32 A/B 与局部 BF16 A/B 共四个全新进程、各两步；复用已有误差量化，返回每步更新量和原始梯度等相对L2/余弦/绝对误差，并比较自身重复误差、跨策略差异和精确控制项。
+- 已完成的FP32报告保留；上次临时张量按既定 finally 策略删除，新测试必须重新生成同批FP32张量才可计算跨策略误差，不从哈希或标量伪造数组。旧全模型BF16/Graph/恢复测试继续复用。
 - 最后一个进程追加两次预热和 ABBA×2 成对完整更新测速，共10次，合计预算18次一次性更新。每次从相同检查点/RNG/首批样本恢复，计时含 gather/H2D/前后向/裁剪/Adam/样本调度，排除恢复、哈希和数值复制。不重跑全模型BF16、Graph或恢复测试。
 - 源 Suite 和七个完成结果保持原样，原正式训练继续暂停。每子进程900秒/阶段300秒；临时 FP32/局部BF16 数值文件与检查点副本沿用 finally 清理。仅回传 `qkan-mamba/mamba-projection/<运行名>/mamba-projection.json`。
 - 退出0仅表示量化和测速完成、固定控制项一致；不等于数值准入。该候选的收益和误差尚待服务器实测，旧全模型 BF16 的45%提速不适用于它。若输入投影收益有限或误差仍大，应据实停下，不把 Graph 或更多低精度范围直接叠入正式训练。

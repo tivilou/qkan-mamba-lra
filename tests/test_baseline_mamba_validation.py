@@ -134,11 +134,10 @@ class Tests(unittest.TestCase):
             def float(self):return Tensor()
             def __matmul__(self,other):return Tensor('bf16' if active[0] else 'fp32')
             def __neg__(self):return self
-        def inner(*args,**kwargs):
+        def inner(value,path):
             self.assertFalse(active[0])
-            self.assertTrue(all(x is None or x.dtype=='fp32' for x in args))
-            self.assertEqual(kwargs['delta_bias'].dtype,'fp32')
-            self.assertTrue(kwargs['delta_softplus']);inner_calls.append(args);return Tensor()
+            self.assertEqual(value.dtype,'fp32')
+            inner_calls.append(path);return Tensor()
         class Mamba:
             use_fast_path=True
             def __init__(self):
@@ -148,11 +147,19 @@ class Tests(unittest.TestCase):
             def parameters(self):return [self.in_proj.weight]
             def forward(self,hidden_states,inference_params=None):return 'original'
         module=SimpleNamespace(__file__='fixture.py',Mamba=Mamba,causal_conv1d_fn=True,
-            rearrange=lambda value,*args,**kwargs:value,mamba_inner_fn=inner)
+            rearrange=lambda value,*args,**kwargs:value,original_inner=inner,
+            mamba_inner_fn=lambda *args,**kwargs:inner(args[0],'fused'))
+        source='''def forward(self,hidden_states,inference_params=None):
+    xz=self.in_proj.weight @ rearrange(hidden_states, "b l d -> d (b l)")
+    path='fused' if self.use_fast_path and causal_conv1d_fn is not None else 'original_unfused'
+    return original_inner(xz,path)
+'''
         torch=SimpleNamespace(float32='fp32',bfloat16='bf16',exp=lambda x:x,autocast=autocast)
         mixer=Mamba();model=SimpleNamespace(blocks=[SimpleNamespace(mixer=mixer)])
         weight=mixer.in_proj.weight
-        with patch('importlib.import_module',return_value=module),patch.object(d,'digest',return_value=d.InputProjectionBF16.source_sha256):
+        with patch('importlib.import_module',return_value=module),\
+                patch('inspect.getsource',return_value=source),\
+                patch.object(d,'digest',return_value=d.InputProjectionBF16.source_sha256):
             policy=d.InputProjectionBF16(torch,model)
             self.assertEqual(mixer.forward(Tensor()),'original')
             with policy.activate():self.assertEqual(mixer.forward(Tensor()).dtype,'fp32')
@@ -162,8 +169,20 @@ class Tests(unittest.TestCase):
                 with policy.activate():mixer.forward(Tensor('bf16'))
             self.assertFalse(policy.active);self.assertEqual(mixer.forward(Tensor()),'original')
             policy.close();self.assertNotIn('forward',mixer.__dict__)
-            mixer.use_fast_path=False
-            with self.assertRaisesRegex(ValueError,'fused training path'):d.InputProjectionBF16(torch,model)
+            self.assertEqual(inner_calls,['fused'])
+            for flag,convolution in ((False,True),(True,None)):
+                mixer.use_fast_path=flag;module.causal_conv1d_fn=convolution
+                policy=d.InputProjectionBF16(torch,model)
+                with policy.activate():self.assertEqual(mixer.forward(Tensor()).dtype,'fp32')
+                self.assertEqual(inner_calls[-1],'original_unfused')
+                self.assertEqual(policy.mechanism['inner_paths'],['original_unfused'])
+                self.assertEqual(mixer.use_fast_path,flag);self.assertIs(module.causal_conv1d_fn,convolution)
+                policy.close();self.assertNotIn('forward',mixer.__dict__)
+            mixer.in_proj.weight=Tensor('bf16')
+            with self.assertRaisesRegex(ValueError,'FP32 parameters'):d.InputProjectionBF16(torch,model)
+            mixer.in_proj.weight=weight
+            with patch('inspect.getsource',return_value=source.replace(' @ ',' * ')):
+                with self.assertRaisesRegex(ValueError,'expression boundary'):d.InputProjectionBF16(torch,model)
         with patch('importlib.import_module',return_value=module),patch.object(d,'digest',return_value='wrong'):
             with self.assertRaisesRegex(ValueError,'pinned Mamba source'):d.InputProjectionBF16(torch,model)
 
