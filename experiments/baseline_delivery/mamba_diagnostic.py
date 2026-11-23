@@ -146,6 +146,9 @@ def native(request_path, route, validation=None):
     # Native imports occur exclusively in a supervised collaborator child.
     import numpy as np
     import torch
+    if route=='conv_fused_fp32':
+        from .mamba_convolution import prepare_native
+        prepare_native(torch,read(request_path))
     from .worker import load_checkpoint, rng_state, restore_rng
     from .models import Classifier, optimizer
     from .data import Split, vocabulary
@@ -199,6 +202,9 @@ def native(request_path, route, validation=None):
     inputs=tuple(sorted(k for k in train.numpy_batch(ids) if k!='labels'))
     bf16=route.startswith('bf16'); graph=route.endswith('graph'); replays=0
     projection=InputProjectionBF16(torch,model) if route=='projection_bf16_eager' else None
+    if route=='conv_fused_fp32':
+        from .mamba_convolution import FusedFP32
+        projection=FusedFP32(torch,model)
     class Adapter(torch.nn.Module):
         def __init__(self): super().__init__();self.base=model
         def forward(self,*values):

@@ -13,7 +13,7 @@ from experiments.baseline_delivery.common import atomic_json,read
 
 
 def result(mode):
-    n=2 if mode in v.FP32_MODES+v.NOISE_MODES+v.PROJECTION_MODES else 4 if mode.endswith('_interrupt') else 8
+    n=2 if mode in v.FP32_MODES+v.NOISE_MODES+v.PROJECTION_MODES+v.CONV_MODES else 4 if mode.endswith('_interrupt') else 8
     indices=range(4,8) if mode.endswith('_resume') else range(n)
     return dict(schema='qkan-mamba-validation-child.v1',mode=mode,request_sha256='hash',
         completed_updates=n,source_restored_exact=True,formal_updates_committed=0,
@@ -233,7 +233,7 @@ class Tests(unittest.TestCase):
             with self.assertRaises(SystemExit) as e:v.main()
         self.assertEqual(e.exception.code,2)
 
-    def run_parent(self,fail,repeat=False,differ=False,mismatch=False,noise=False,projection=False):
+    def run_parent(self,fail,repeat=False,differ=False,mismatch=False,noise=False,projection=False,conv=False):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);source=root/'source';cache=root/'cache';calls=[];exports=[]
             def snapshot(source,suite,job,cache):
@@ -250,12 +250,15 @@ class Tests(unittest.TestCase):
                     if fail:return 1
                     receipt=result(mode);receipt['request_sha256']=v.digest(log.parent/'request.json')
                     if differ and mode==v.FP32_MODES[1]:receipt['updates'][0]['components']={'model':'different'}
-                    if noise or projection:
+                    if noise or projection or conv:
                         names=({'repeat'} if mode.endswith('_b') else set())|({'vs_fp32_a'} if v.native_route(mode)!='fp32_eager' else set())
                         receipt['numerical_comparisons']={k:dict(starting_scientific_state_exact=True,
                             invariants_exact=not differ,steps=[{},{}]) for k in names}
                     if mode.startswith('projection_'):
                         receipt['projection_mechanism']={'observed_projection_calls':1}
+                        receipt['paired_timing']={'summary':{}} if mode.endswith('_b') else None
+                    if mode.startswith('conv_'):
+                        receipt['convolution_mechanism']={'observed_fused_calls':1}
                         receipt['paired_timing']={'summary':{}} if mode.endswith('_b') else None
                     atomic_json(log.parent/mode/'result.json',receipt);return 0
             self_outer=self
@@ -264,27 +267,28 @@ class Tests(unittest.TestCase):
                 'source_checkpoint_sha256':'wrong' if mismatch else 'checkpoint'}})
             with patch.object(v,'ROOT',root),patch.object(v,'REVIEW',review),\
                  patch.object(v,'REPEAT_REVIEW',repeat_review),\
+                 patch('experiments.baseline_delivery.mamba_convolution.stage',return_value={'root':'isolated-fixture'}),\
                  patch.object(v.speed,'snapshot',side_effect=snapshot),\
                  patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
                  patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':'gpu'})),\
                  patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value={'idle':True}),\
                  patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',Supervisor),\
                  patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:exports.append(a)),\
-                 patch.object(sys,'argv',['validate','--source-suite',str(source),'--cache',str(cache)]+(['--projection-bf16'] if projection else ['--measure-noise'] if noise else ['--fp32-repeat'] if repeat else [])),\
+                 patch.object(sys,'argv',['validate','--source-suite',str(source),'--cache',str(cache)]+(['--fused-fp32'] if conv else ['--projection-bf16'] if projection else ['--measure-noise'] if noise else ['--fp32-repeat'] if repeat else [])),\
                  contextlib.redirect_stdout(io.StringIO()):
                 if mismatch:
                     with self.assertRaisesRegex(ValueError,'checkpoint differs'):v.main()
                 else:self.assertEqual(v.main(),76 if fail or differ else 0)
-            modes=v.PROJECTION_MODES if projection else v.NOISE_MODES if noise else v.FP32_MODES if repeat else v.MODES
+            modes=v.CONV_MODES if conv else v.PROJECTION_MODES if projection else v.NOISE_MODES if noise else v.FP32_MODES if repeat else v.MODES
             self.assertEqual(calls,[] if mismatch else [modes[0]] if fail else list(modes))
-            filename='mamba-projection.json' if projection else 'mamba-noise.json' if noise else 'mamba-repeat.json' if repeat else 'mamba-validation.json'
+            filename='mamba-convolution.json' if conv else 'mamba-projection.json' if projection else 'mamba-noise.json' if noise else 'mamba-repeat.json' if repeat else 'mamba-validation.json'
             self.assertEqual(exports[0][2],[filename])
             report=read(exports[0][0]/filename)
             self.assertFalse((exports[0][0]/'reference-values.pt').exists())
             self.assertFalse(report['formal_release_allowed'])
             if not mismatch:self.assertTrue(report['source_unchanged'])
-            if repeat or noise or projection:self.assertEqual(report['prefix_steps'],2)
-            if (noise or projection) and not mismatch:
+            if repeat or noise or projection or conv:self.assertEqual(report['prefix_steps'],2)
+            if (noise or projection or conv) and not mismatch:
                 self.assertEqual(report['measurement_completed'],not fail and not differ)
                 self.assertIn('not_evaluated',report['numeric_acceptance'])
 

@@ -2,7 +2,32 @@
 
 三条路线误差量化已完成，见 [实测审阅](../evidence/mamba-noise-native-review-20261123.json)。当前全模型BF16 autocast相对FP32的更新量差异约22.86%～24.49%，明显大于本次各路线自身重复误差；eager与Graph均如此。这版候选未准入，不重复下列已完成诊断。后续若继续BF16，应缩小低精度范围，作为新的数值策略验证；原FP32正式续跑能力保留。
 
-## 当前实测结论：局部 BF16 无实用提速，停止重复该试验
+## 当前待测：离线可选卷积＋原版融合路径，保持 FP32
+
+已准备 `causal-conv1d 1.5.2` 的官方 Linux x86_64 / CPython3.11 / Torch2.7 / CUDA12 / CXX11 ABI TRUE wheel，133024393字节。下载SHA256 `fa25189970ad71ece008551f11e4b7ce1a6d702ea0609617624d205d2c4408e5` 与 GitHub 官方发布摘要相同；两个离线分块已上传并核验收据，清单 `experiments/baseline_delivery/mamba-conv-wheel.json`。实验机仅从现有认证交换服务下载，不访问外网、不编译、不执行 pip。
+
+`--fused-fp32` 在新诊断工作树的 `.bootstrap` 解包，只有候选子进程将该目录加入 Python 搜索路径。原 `.venv-baselines` 不变。原 Mamba2.2.4 期待旧式CUDA返回值接口；1.5.2改为输出缓冲区接口，其官方 `cpp_functions.py` 正好提供旧式7参数前向／10参数反向的包装。诊断仅将 Mamba 的 CUDA 调用绑定到这两个官方包装，不修改上游源码、二进制或模型参数。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-63676e9581d7 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MAMBA_CONV_REV=$(git rev-parse FETCH_HEAD) &&
+MAMBA_CONV_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MAMBA_CONV_REV:0:12}" &&
+cd "$MAMBA_CONV_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-validate -- \
+  --fused-fp32 \
+  --source-suite /root/projects/qkan-mamba-lra-adaptive-14d681111173/runs/bf16-graph-formal-20261119T014456Z-1cb7160c \
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0
+```
+
+- 复用现有四进程量化入口，FP32普通路径A/B与FP32融合路径A/B各2步，最后一个进程2次预热＋ABBA×2完整更新测速，共18次一次性更新。保持micro8/logical32/dropout/Adam/样本时钟。没有BF16、Graph、新恢复试验或正式更新。
+- 同一测速进程的原路径通过临时关闭可选卷积函数保持原 `nn.Conv1d + selective_scan`；候选才启用原 Mamba 的融合分支。记录实际 `mamba_inner_fn` 调用次数，比较完整更新耗时、每步梯度／更新量与重复误差。不预设会更快或数值相同。
+- 原源码SHA、wheel及解包成员SHA绑定；运行时检查Torch2.7.1+cu126／Python3.11／CXX11 ABI TRUE。导入、ABI或算子执行失败则停止并返回紧凑错误，不自动安装或切换策略。官方wheel的原生导入和GPU执行尚待实验机验证。
+- 源Suite仍固定24981检查点，7个完成结果不重跑；原始训练继续暂停。临时数值／复制检查点沿用 finally 清理，离线依赖缓存保留供复用。自动回传 `qkan-mamba/mamba-convolution/<运行名>/mamba-convolution.json`；退出0表示测量完整和控制项一致，不表示数值准入或正式启用。
+- 官方来源：[v1.5.2发布](https://github.com/Dao-AILab/causal-conv1d/releases/tag/v1.5.2)、[CUDA接口包装](https://github.com/Dao-AILab/causal-conv1d/blob/v1.5.2/causal_conv1d/cpp_functions.py)。本地18项针对性标准库检查通过，包含离线解包／篡改拒绝、ABI前置拒绝、返回值转接、路径切换／异常还原、4子进程选择／失败／控制不一致与旧诊断兼容；无本地模型/GPU或依赖安装。
+
+## 已完成实测：局部 BF16 无实用提速，停止重复该试验
 
 2026-11-23 的 `mamba-projection-f7a88cb85e38` 已完成四个进程、18次一次性更新并自动回传。证据见 [局部投影原生审阅](../evidence/mamba-projection-native-review-20261123.json)。
 
