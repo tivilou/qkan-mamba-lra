@@ -116,7 +116,8 @@ def prepare(args,suite):
 
 def child_spec(suite,job,mode='formal'):
     return dict(target=WORKER,cwd=str(ROOT),argv=[sys.executable,'-B','-m',WORKER,
-        '--request',str(suite/'mamba-input.json'),'--job',job,'--mode',mode])
+        '--request',str(suite/'mamba-input.json'),'--job',job,
+        '--output',str(suite/'jobs'/job if mode=='formal' else suite/'preflight'/mode),'--mode',mode])
 
 
 def accept(result,r,mode,input_sha):

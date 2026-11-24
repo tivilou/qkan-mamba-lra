@@ -33,6 +33,28 @@ class Tests(unittest.TestCase):
         spec=f.child_spec(Path('suite'),f.JOB,'resume')
         self.assertEqual(spec['target'],spec['argv'][3]);self.assertEqual(spec['argv'][-1],'resume')
 
+    def test_supervisor_launch_requires_exact_output_for_every_mode(self):
+        from experiments.baseline_delivery.diagnostic_watch import Supervisor
+        suite=Path('runs/fused-fixture')
+        class Accepted(Exception):pass
+        for mode in (*f.MODES,'formal'):
+            launch=f.child_spec(suite,f.JOB,mode)
+            argv=launch['argv'];self.assertEqual(argv.count('--output'),1)
+            output=Path(argv[argv.index('--output')+1])
+            expected=suite/('jobs/'+f.JOB if mode=='formal' else 'preflight/'+mode)
+            self.assertEqual(output,expected)
+            self.assertEqual(w.checked_output(suite/'mamba-input.json',f.JOB,mode,output),expected)
+            with self.assertRaisesRegex(ValueError,'output differs'):
+                w.checked_output(suite/'mamba-input.json',f.JOB,mode,Path('wrong'))
+            # Exercise the real Supervisor argument parser, stopping immediately
+            # before filesystem/process creation. No model worker is launched.
+            with patch.object(Path,'mkdir',side_effect=Accepted):
+                with self.assertRaises(Accepted):Supervisor().run(launch,Path('fixture.log'),{})
+        with patch.object(sys,'argv',['worker','--request','suite/mamba-input.json','--job',f.JOB,
+                    '--output','wrong','--mode','resume']),patch.object(w,'native') as native,                    patch.object(w,'worker_failure'):
+            with self.assertRaisesRegex(ValueError,'output differs'):w.main()
+            native.assert_not_called()
+
     def test_actual_targets_help_without_framework_import(self):
         for target in (f.__name__,w.__name__):
             proc=subprocess.run([sys.executable,'-B','-c',
@@ -112,6 +134,8 @@ class Tests(unittest.TestCase):
                     def __init__(self,*a):self.records=[]
                     def run(self,spec,log,env):
                         mode=spec['argv'][-1];calls.append(mode)
+                        self_output=Path(spec['argv'][spec['argv'].index('--output')+1])
+                        assert self_output==suite/'preflight'/mode
                         self.records.append(dict(exit_code=1 if fail else 0,termination=dict(group_verified=True)))
                         atomic_json(suite/'preflight'/mode/'checkpoints/step-1.pt',dict(disposable=True))
                         atomic_json(suite/'preflight'/mode/'result.json',dict(passed=True,mode=mode,job=f.JOB,

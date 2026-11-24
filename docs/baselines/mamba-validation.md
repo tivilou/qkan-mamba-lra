@@ -4,12 +4,14 @@
 
 ## 当前执行：FP32 融合正式入口＋原美化进度
 
+首次正式入口 `75459d4` 的Suite `mamba-fused-formal-20261124T051405Z-56444863` 在监督器检查阶段退出：启动向量遗漏其要求的唯一 `--output`。认证失败报告574字节/SHA `050b643c57e1e87a90bbee9654886a058601709e2fec87f7a7c68987d242fc9c`；预检报告280字节/SHA `79faa94b9f5bacd55d7dc3e1982b89433d8c628a5f38c9e6551fe53ef8618b45`，子进程记录为空、结果为空、正式更新0。报告中的disposable_updates=4是计划预算，本次实际0。修复仅补齐启动向量的输出目录，并由worker核对它与Suite/job/mode的绑定；不改变训练/恢复策略。旧失败Suite保留证据，不在原固定revision上改文件；下面命令准备修复工作树，并从未变的原训练Suite重新准备。
+
 `start --profile mamba-fused` 创建独立Suite，保留原25任务名单、七个完成结果以及原配置/检查点；仅三个未完成Mamba任务使用已测过的FP32融合训练路径。原worker及其相对导入从原固定checkout加载，进程内包装模型前向、检查点执行标记与心跳；原文件和虚拟环境不改。验证/测试保持普通FP32路径，micro/logical自适应与原样本时钟继续使用，执行器固定eager（无BF16/Graph）。保持科学配置不变，新增融合执行谱系与实现SHA绑定。
 
 同一命令先自动运行实际worker连续2步、单步保存、新进程恢复1步，共4次临时更新；复制完整状态精确核验，恢复起点精确，结束状态按既有rtol1e-5/atol1e-6比较全部科学字段，RNG/样本/时钟/控制项精确。复用FP32非逐位确定性的已有证据，不要求浮点哈希完全相同。检查通过、临时检查点清理并自动回传后，自动从原24981检查点继续正式训练，临时更新不进入正式状态。失败则停在紧凑报告，不开启训练、不自动回退。服务器实际恢复验证待执行；本地仅标准库/模拟验证。
 
 ```bash
-cd /root/projects/qkan-mamba-lra-adaptive-bcec44653a10 &&
+cd /root/projects/qkan-mamba-lra-adaptive-75459d42205c &&
 bash scripts/prepare_adaptive_checkout.sh &&
 MAMBA_FUSED_REV=$(git rev-parse FETCH_HEAD) &&
 MAMBA_FUSED_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MAMBA_FUSED_REV:0:12}" &&

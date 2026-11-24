@@ -130,11 +130,20 @@ def native(path,job,mode):
         formal.unchanged(r)
 
 
+def checked_output(path,job,mode,output):
+    expected=path.parent/('jobs/'+job if mode=='formal' else 'preflight/'+mode)
+    if output.is_symlink() or output.resolve()!=expected.resolve():raise ValueError('Worker output differs from bound Suite/mode')
+    return expected
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--request',type=Path,required=True);p.add_argument('--job',required=True)
+    p.add_argument('--output',type=Path,required=True)
     p.add_argument('--mode',choices=(*formal.MODES,'formal'),required=True);a=p.parse_args()
-    try:return native(a.request,a.job,a.mode)
+    try:
+        checked_output(a.request,a.job,a.mode,a.output)
+        return native(a.request,a.job,a.mode)
     except BaseException as error:
         worker_failure(a.request.parent/('preflight/'+a.mode if a.mode!='formal' else 'jobs/'+a.job),error);raise
 
