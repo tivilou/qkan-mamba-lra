@@ -1,0 +1,6 @@
+# Memory-for-speed analysis
+
+- User asks for other memory-for-speed methods. Read current performance/staging/rollback code and earlier Graph measurements; no experiments, code edits, installations or training actions.
+- Concrete Mamba-specific candidate: upstream pinned commit95d8aba8 selective_scan_interface.py forward defaults checkpoint_lvl=1, clears convolution output/delta, backward recomputes both. Original Mamba.forward omits override, as does current plugin wrapper. checkpoint_lvl=0 retains both; can be supplied by instance plugin without changing training core. Official source fetched read-only and matched branch behavior. No speedup percentage promised.
+- Existing CPU lookahead, pinned staging and reusable same-device rollback are not new opportunities. True GPU double buffering with separate copy stream is conditional on measured data/transfer cost. Old unfused FP32Graph gain0.737% has limited priority and does not certify current fused Graph.
+- Recommendation: keep micro8/logical32, prioritize a short matched lvl1/lvl0 test when proceeding; report complete-update time/memory/gradient-update differences. Native behavior and recovery remain unverified for this new option. Do not rerun all historical checks or modify active fixed executor.
