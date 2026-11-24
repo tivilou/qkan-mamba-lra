@@ -1,0 +1,9 @@
+# Three memory-for-speed methods
+
+- User authorized all three proposed methods. Collaborator remains experiment executor; owner delivers code and instruction. Baseline Git5a42cb49f9760d85d81e9a2e159ab1a5379612b9. No active Suite changes.
+- Added diagnostic-only adapters for retained activations/checkpoint_lvl0, same-input double-GPU buffering/copy stream, and FP32 fused Graph. Reuse existing native update and explicit instance plugin; no worker/core, optimizer, dataset or formal configuration changes.
+- Exact source restore before each <=4batch block; two baseline repeats and one candidate warmup, then ABBAx2. <=44temporary updates/method, <=176including conditional independently faster combination. Graph build excluded/time reported. Compare model/update/clipped gradient/Adam and RNG/scheduler against repeat noise. True copy-event/compute-event/host-reuse ownership; graph wraps separate module, eager baseline intact.
+- Validation:36focused stdlib tests pass;6affected followups after report/cleanup change and5after final completion fields. No framework/model/native/GPU imports or installs. Original source/helper behavior reused; no global hook replacement.
+- Three children always attempted independently; structured failures returned. Campaign exit0 only after all requested attempts, verified groups/source/owned cleanup and successful compact upload; individual failures are not successful methods. At least2independently promising >=3%/3of4paired wins plus exact RNG/scheduler add one combo with separately immutable request binding.
+- Guide docs/baselines/mamba-validation.md gives isolated test then original89353fc Suite resume with integrated dashboard. Package .runtime/mamba-memory-20261124 provides bounded candidate/diff/literal verification/guarded runnable rollback.
+- Pending native collaborator result and separate formal fresh-process recovery. No measured acceleration or numerical equivalence claimed.

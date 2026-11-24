@@ -12,6 +12,7 @@ import time
 import uuid
 
 from .common import ROOT, atomic_json, digest, fingerprint, lock, read, revision
+from .mamba_memory_benchmark import METHODS as MEMORY_METHODS,COMBINED as MEMORY_COMBINED
 
 JOBS = tuple('mamba1-'+task+'-s42' for task in ('retrieval','image','pathfinder'))
 ROUTES = ('fp32_eager','bf16_eager','fp32_graph','bf16_graph')
@@ -105,10 +106,11 @@ def summarize(reference, candidate):
 
 
 def child_spec(suite, route):
-    if route not in (*ROUTES,MICRO_ROUTE): raise ValueError('Unknown Mamba comparison route')
+    if route not in (*ROUTES,MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED): raise ValueError('Unknown Mamba comparison route')
     return dict(target='experiments.baseline_delivery.mamba_diagnostic',cwd=str(ROOT),argv=[
         sys.executable,'-B','-m','experiments.baseline_delivery.mamba_diagnostic',
-        '--request',str(suite/'request.json'),'--route',route,'--output',str(suite/route)])
+        '--request',str(suite/('combined-request.json' if route==MEMORY_COMBINED else 'request.json')),
+        '--route',route,'--output',str(suite/route)])
 
 
 def snapshot(source, suite, job, cache):
@@ -227,7 +229,7 @@ def native(request_path, route, validation=None):
     # Native imports occur exclusively in a supervised collaborator child.
     import numpy as np
     import torch
-    if route in ('conv_fused_fp32',MICRO_ROUTE):
+    if route in ('conv_fused_fp32',MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED):
         from .mamba_convolution import prepare_native
         prepare_native(torch,read(request_path))
     from .worker import load_checkpoint, rng_state, restore_rng
@@ -281,12 +283,12 @@ def native(request_path, route, validation=None):
     mark('mamba_state_roundtrip',flush=True)
     restore();exact()
     inputs=tuple(sorted(k for k in train.numpy_batch(ids) if k!='labels'))
-    bf16=route.startswith('bf16'); graph=route.endswith('graph'); replays=0
+    bf16=route.startswith('bf16'); graph=route in ('fp32_graph','bf16_graph'); replays=0
     projection=InputProjectionBF16(torch,model) if route=='projection_bf16_eager' else None
     if route=='conv_fused_fp32':
         from .mamba_convolution import FusedFP32
         projection=FusedFP32(torch,model)
-    elif route==MICRO_ROUTE:
+    elif route in (MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED):
         from .execution_plugins import create
         projection=create(dict(plugin='mamba.fused_fp32',version=2),config,torch,model)
     class Adapter(torch.nn.Module):
@@ -303,28 +305,34 @@ def native(request_path, route, validation=None):
         forward=torch.cuda.make_graphed_callables(forward,tuple(batch[k] for k in inputs),num_warmup_iters=3)
         torch.cuda.synchronize();restore();exact()
     setup=time.perf_counter()-setup
-    def update(use_candidate, observe=None, *, micro_batch=None):
+    def update(use_candidate, observe=None, *, micro_batch=None,batch_ids=None,staged_batch=None,
+            forward_override=None,graph_gradients=False,after_forward=None):
         nonlocal replays
         width=micro if micro_batch is None else micro_batch
         if type(width) is not int or width not in (micro,8,16,32) or logical%width or (graph and width!=micro):
             raise ValueError('Unsupported micro-batch comparison shape')
-        arrays=train.numpy_batch(ids,validate=True)
-        staged={k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}
+        selected_ids=ids if batch_ids is None else batch_ids
+        if len(selected_ids)!=logical:raise ValueError('Complete original logical batch required')
+        if staged_batch is None:
+            arrays=train.numpy_batch(selected_ids,validate=True)
+            staged={k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}
+        else:staged=staged_batch
         opt.zero_grad(set_to_none=True);loss_sum=0.
-        for start in range(0,len(ids),width):
+        for start in range(0,len(selected_ids),width):
             batch={k:v[start:start+width] for k,v in staged.items()}
             if use_candidate:
-                logits=forward(*(batch[k] for k in inputs));replays+=int(graph)
+                logits=(forward_override if forward_override is not None else forward)(*(batch[k] for k in inputs));replays+=int(graph or graph_gradients)
             else: logits=model(batch,validated_inputs=True)
-            loss=torch.nn.functional.cross_entropy(logits.float(),batch['labels'],reduction='sum')/len(ids)
+            if start==0 and after_forward is not None:after_forward()
+            loss=torch.nn.functional.cross_entropy(logits.float(),batch['labels'],reduction='sum')/len(selected_ids)
             loss.backward();loss_sum+=loss.detach()
             # Graph backward returns static storage; detach accumulated gradients.
-            if graph and use_candidate:
+            if (graph or graph_gradients) and use_candidate:
                 for parameter in model.parameters():
                     if parameter.grad is not None:parameter.grad=parameter.grad.clone()
         if observe is not None: observe()
         torch.nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
-        opt.step();schedule.step(len(ids))
+        opt.step();schedule.step(len(selected_ids))
         torch.cuda.synchronize()
         return loss_sum
     def output(): return host(dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(),scheduler=schedule.state_dict()))
@@ -332,7 +340,7 @@ def native(request_path, route, validation=None):
         try:
             return validation(dict(torch=torch,np=np,model=model,opt=opt,schedule=schedule,state=state,
                 micro=micro,logical=logical,ids=ids,train=train,host=host,restore=restore,exact=exact,
-                update=update,output=output,setup_seconds=setup,projection=projection))
+                update=update,output=output,setup_seconds=setup,projection=projection,forward=forward,inputs=inputs))
         finally:
             if projection is not None:projection.close()
     # Uninstrumented warmups, restored before every measurement.
@@ -378,14 +386,18 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source-suite',type=Path);p.add_argument('--cache',type=Path)
     p.add_argument('--job',choices=JOBS,default=JOBS[0]);p.add_argument('--gpu',default='0')
-    p.add_argument('--micro-benchmark',action='store_true',help='FP32 fused micro8/16/32, logical32; one finite child, no formal configuration change')
-    p.add_argument('--request',type=Path);p.add_argument('--route',choices=(*ROUTES,MICRO_ROUTE))
+    mode=p.add_mutually_exclusive_group()
+    mode.add_argument('--micro-benchmark',action='store_true',help='FP32 fused micro8/16/32, logical32; one finite child, no formal configuration change')
+    mode.add_argument('--memory-benchmark',action='store_true',help='FP32 micro8: retained activations, GPU double buffer and fused Graph; finite isolated comparisons')
+    p.add_argument('--request',type=Path);p.add_argument('--route',choices=(*ROUTES,MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED))
     p.add_argument('--output',type=Path,help=argparse.SUPPRESS)
     args=p.parse_args()
     if args.request:
         if not args.route or args.output!=args.request.parent/args.route:p.error('Bound child route/output required')
-        try: native(args.request,args.route,
-            validation=(lambda c:micro_benchmark(c,args.request)) if args.route==MICRO_ROUTE else None)
+        from .mamba_memory_benchmark import operation
+        callback=((lambda c:operation(c,args.request,args.route)) if args.route in (*MEMORY_METHODS,MEMORY_COMBINED) else
+            (lambda c:micro_benchmark(c,args.request)) if args.route==MICRO_ROUTE else None)
+        try: native(args.request,args.route,validation=callback)
         except Exception as error:
             from .common import worker_failure
             worker_failure(args.output,error)
@@ -399,10 +411,11 @@ def main():
     check_exchange();gpus,inventory=discover_gpus(args.gpu)
     if len(gpus)!=1 or not gpu_preflight(inventory[gpus[0]])['idle']:
         raise ValueError('Pause and wait for the original runner; selected GPU must be idle')
-    experiment='mamba-micro-benchmark' if args.micro_benchmark else 'mamba-speed'
-    routes=(MICRO_ROUTE,) if args.micro_benchmark else ROUTES
+    experiment='mamba-memory-benchmark' if args.memory_benchmark else 'mamba-micro-benchmark' if args.micro_benchmark else 'mamba-speed'
+    routes=list(MEMORY_METHODS) if args.memory_benchmark else [MICRO_ROUTE] if args.micro_benchmark else list(ROUTES)
     suite=ROOT/'runs'/(experiment+'-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
-    supervisor=Supervisor(900,300);report=dict(schema='qkan-mamba-speed.v1',routes={},formal_release_allowed=False)
+    supervisor=Supervisor(900,300);report=dict(schema='qkan-mamba-memory.v1' if args.memory_benchmark else 'qkan-mamba-speed.v1',
+        routes={},formal_release_allowed=False)
     with ExitStack() as held:
         source=args.source_suite.resolve()
         # Hold the source locks for the entire diagnostic, including all children.
@@ -412,47 +425,76 @@ def main():
             held.enter_context(lock(path))
         if any(digest(path)!=sha for path,sha in request['source_files'].items()):
             raise ValueError('Source advanced while acquiring diagnostic locks; take a fresh snapshot')
-        if args.micro_benchmark:
-            from .mamba_convolution import stage
-            request.update(convolution_package=stage(),execution_plugin=dict(plugin='mamba.fused_fp32',version=2),
-                adaptive_observation=adaptive_observation(source/'jobs'/args.job))
-            atomic_json(suite/'request.json',request)
-        print('Mamba diagnostic Suite: '+str(suite),flush=True)
         try:
+            if args.micro_benchmark or args.memory_benchmark:
+                from .mamba_convolution import stage
+                request.update(convolution_package=stage(),execution_plugin=dict(plugin='mamba.fused_fp32',version=2),
+                    adaptive_observation=adaptive_observation(source/'jobs'/args.job))
+                atomic_json(suite/'request.json',request)
+            print('Mamba diagnostic Suite: '+str(suite),flush=True)
             for route in routes:
                 print('Mamba short comparison: '+route,flush=True)
                 spec=child_spec(suite,route)
                 code=supervisor.run(spec,suite/(route+'.log'),{**os.environ,'CUDA_VISIBLE_DEVICES':gpus[0],
                     'CUBLAS_WORKSPACE_CONFIG':':4096:8'})
                 path=suite/(route+'.json')
-                value=read(path) if code==0 and path.exists() else dict(status='failed',exit_status=code)
+                value=read(path) if path.exists() else dict(status='failed',exit_status=code)
+                if code!=0:value.update(status='failed',exit_status=code)
                 failure=suite/route/'worker-error.json'
-                if code!=0 and failure.is_file():value['error']=read(failure)
+                if code!=0 and failure.is_file():value['worker_error' if 'error' in value else 'error']=read(failure)
                 report['routes'][route]=value
                 if code!=0:
                     print('Mamba route FAILED: '+route+' | exit '+str(code)+' | '+
                         value.get('error',{}).get('error_type','inspect local log')+' | '+str(suite/(route+'.log')),flush=True)
                 # Candidate errors get one isolated process; no repeat or fallback claim.
                 if route==ROUTES[0] and code!=0:break
+                if args.memory_benchmark and route==MEMORY_METHODS[-1]:
+                    from .mamba_memory_benchmark import combination
+                    flags=combination(report['routes'])
+                    if len(flags)>=2:
+                        combined_request={**request,'memory_combination':flags}
+                        atomic_json(suite/'combined-request.json',combined_request)
+                        report['combination_request']=combined_request
+                        # Existing receipts remain bound to original request.json.
+                        routes.append(MEMORY_COMBINED)
         finally:
             report.update(source_unchanged=all(digest(path)==sha for path,sha in request['source_files'].items()),
                 request=request,child_executions=supervisor.records,gpu_identity=inventory[gpus[0]])
             copied=suite/'source/checkpoints'
             for path in copied.glob('step-*.pt'):path.unlink()
             report['copied_checkpoint_removed']=not any(copied.glob('step-*.pt'))
+            if args.memory_benchmark:
+                report['campaign_completed']=(all(method in report['routes'] for method in MEMORY_METHODS)
+                    and report['source_unchanged'] and report['copied_checkpoint_removed']
+                    and len(supervisor.records)==len(report['routes'])
+                    and all(row['termination']['group_verified'] for row in supervisor.records))
+                report['all_methods_measured']=all(report['routes'].get(method,{}).get('measurement_completed') is True
+                    and report['routes'][method].get('status')!='failed' for method in MEMORY_METHODS)
+                report['disposable_updates_recorded']=sum(value.get('disposable_updates',0) for value in report['routes'].values())
+                report['formal_updates_committed']=0
             atomic_json(suite/(experiment+'.json'),report)
             from .return_artifacts import upload_declared
             upload_declared(suite,experiment,[experiment+'.json'])
+    if args.memory_benchmark:
+        complete=report['campaign_completed']
+        for method,value in report['routes'].items():
+            if value.get('measurement_completed') and value.get('status')!='failed':
+                print(method+': '+str(round(100*value['timing']['throughput_gain'],2))+'% throughput; '+
+                    ('timing promising' if value['timing']['timing_promising'] else 'keep baseline'),flush=True)
+            else:print(method+': FAILED; compact diagnostics returned',flush=True)
+        print('Memory comparison campaign '+('completed' if complete else 'incomplete')+
+            '; formal configuration unchanged. Independent method failure does not switch policy.',flush=True)
+        return 0 if complete else 76
     if args.micro_benchmark:
         value=report['routes'].get(MICRO_ROUTE,{})
-        complete=value.get('measurement_completed') is True and report['source_unchanged']
+        complete=value.get('measurement_completed') is True and value.get('status')!='failed' and report['source_unchanged']
         if complete:
             for tier,row in value['tiers'].items():
                 print('micro '+tier+': '+(str(round(row['samples_per_second'],2))+' samples/s' if row['status']=='measured' else 'OOM'),flush=True)
             print('Recommended micro: '+str(value['recommended_micro_batch'])+'; formal configuration unchanged.',flush=True)
         else:print('Micro comparison failed/incomplete; inspect returned report.',flush=True)
         return 0 if complete else 76
-    complete=all('timing' in v for v in report['routes'].values()) and len(report['routes'])==4
+    complete=all('timing' in v and v.get('status')!='failed' for v in report['routes'].values()) and len(report['routes'])==4
     print(('Four comparisons completed and returned.' if complete else
            'Comparisons FAILED/incomplete; partial diagnostics returned, no speed result established.')+
           ' Original training remains paused. No formal policy changed.',flush=True)

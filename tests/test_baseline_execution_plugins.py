@@ -83,16 +83,22 @@ class Tests(unittest.TestCase):
         original=copy.copy(vars(module));other=Mamba();model=SimpleNamespace(training=True,blocks=[SimpleNamespace(mixer=Mamba())])
         with patch.object(conv.importlib,'import_module',side_effect=modules.__getitem__),patch.object(conv,'digest',side_effect=digest), \
                 patch.object(Path,'read_text',return_value='pinned fixture'), \
-                patch.object(conv,'private_definitions',return_value={'mamba_inner_fn':lambda x:'private fused'}):
+                patch.object(conv,'private_definitions',return_value={'mamba_inner_fn':lambda x,**kw:'retained' if kw.get('checkpoint_lvl')==0 else 'private fused'}):
             policy=conv.InstanceFusedFP32(SimpleNamespace(float32='fp32'),model)
             self.assertEqual(other.forward(1),'old fused')
             self.assertEqual(model.blocks[0].mixer.forward(1),'ordinary')
             with policy.activate():
                 self.assertEqual(model.blocks[0].mixer.forward(1),'private fused')
                 model.training=False;self.assertEqual(model.blocks[0].mixer.forward(1),'ordinary')
+                with self.assertRaises(ValueError):policy.set_checkpoint_level(0)
+            policy.set_checkpoint_level(0);model.training=True
+            with policy.activate():self.assertEqual(model.blocks[0].mixer.forward(1),'retained')
+            self.assertEqual(policy.level_calls,{0:1,1:1})
+            for invalid in (True,2,-1):
+                with self.assertRaises(ValueError):policy.set_checkpoint_level(invalid)
             policy.close();self.assertNotIn('forward',model.blocks[0].mixer.__dict__)
             self.assertEqual(vars(module),original);self.assertIs(scan.causal_conv1d_cuda,sentinel)
-            self.assertEqual(policy.calls,1)
+            self.assertEqual(policy.calls,2)
 
     def test_micro_driver_balanced_restored_and_oom_isolated(self):
         for fail in (False,True):

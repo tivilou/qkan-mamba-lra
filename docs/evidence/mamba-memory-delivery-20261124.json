@@ -1,0 +1,39 @@
+{
+  "schema": "qkan-code-delivery.v1",
+  "baseline_revision": "5a42cb49f9760d85d81e9a2e159ab1a5379612b9",
+  "scope": "Three finite memory-for-speed Mamba adapters in existing diagnose mamba-speed",
+  "methods": {
+    "memory_retain": "checkpoint_lvl0 retains conv output/delta",
+    "memory_prefetch": "same CPU lookahead/pinned staging plus separate-stream two-GPU-slot prefetch",
+    "memory_graph": "FP32 fused Graph wrapper with eager reference intact"
+  },
+  "local_validation": {
+    "focused_tests_passed": 36,
+    "after_delta_followups": [
+      {
+        "tests_passed": 6,
+        "scope": "driver report and parent cleanup"
+      },
+      {
+        "tests_passed": 5,
+        "scope": "final campaign completion and stream cleanup"
+      }
+    ],
+    "owner_native_or_gpu_execution": false,
+    "framework_imports": false
+  },
+  "scientific_core_changed": false,
+  "formal_config_changed": false,
+  "micro_batch": 8,
+  "logical_batch": 32,
+  "maximum_disposable_updates_per_method": 44,
+  "maximum_methods": 4,
+  "maximum_disposable_updates": 176,
+  "combination": "only >=2 independently promising methods with exact RNG/scheduler",
+  "actual_native_result": "pending collaborator execution",
+  "native_recovery_admission": false,
+  "output": "qkan-mamba/mamba-memory-benchmark/<run>/mamba-memory-benchmark.json",
+  "exit_semantics": "0 means complete campaign with verified process cleanup/source integrity and successful upload; individual method failures remain explicitly failed",
+  "guide": "docs/baselines/mamba-validation.md",
+  "runtime_package": ".runtime/mamba-memory-20261124"
+}

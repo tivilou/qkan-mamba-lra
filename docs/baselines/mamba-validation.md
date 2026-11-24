@@ -1,15 +1,24 @@
 # Mamba 加速测试与续跑
 
-## 当前：micro8/16/32 测速，完成后原界面续跑
+## 当前：三种显存换速度方法，测试后原界面续跑
 
-2026-11-24 用户截图显示 `89353fc83f89` 的融合实验已运行至step27415、micro8/logical32，
-约80.33 samples/s、显存4.38/24 GiB；这是界面观察，不是本次测速结果。
-保留该固定执行器和最新完整断点，本次不回到原24981，不重跑七个已完成任务。
+已完成micro8/16/32测试：micro8最快89.83samples/s；16与32分别慢14.04%和19.86%，
+保持FP32、micro8、logical32。见[实测核验](../evidence/mamba-micro-native-review-20261124.json)。
+本次只测试三项新方法，不重复micro/BF16/噪声历史实验：
 
-**先在原训练窗口按一次 Ctrl-C，等待保存并回到提示符**。GPU空闲后运行下面一条命令。
-它准备独立测试checkout，复用已有离线依赖，对最新断点的一批32行进行micro8/16/32测速，
-自动回传紧凑报告；成功后回到原89353fc执行器续跑，仍是训练与美化进度同屏。
-测试失败则停在报告处，原实验保持暂停。不要并发抢占同一张GPU测速。
+1. `memory_retain`：融合算子 `checkpoint_lvl=0` 保留卷积输出和delta，减少反向重算。
+2. `memory_prefetch`：相同CPU lookahead和锁页staging基础上，用独立copy stream＋两个GPU输入槽，
+   在当前第一段前向已派发后传输下一批；事件保护GPU和锁页内存复用。
+3. `memory_graph`：当前FP32融合模型的独立Graph包装，基线仍为eager；保持micro8。
+
+每项一个独立子进程，与同断点eager基线成对比较连续最多4批（每批32行）。
+先做两次基线重复和一次候选预热以记录重复噪声，再ABBA×2计时；最多44次临时更新/方法。
+若至少两项各自中位吞吐提升≥3%、4组至少3组更快且RNG/时钟一致，再追加一次组合测试。
+总预算最多176次临时优化器更新；Graph构建/预热单列耗时，不计入更新测速。
+同时记录参数/更新量/末步裁剪梯度/Adam差异、峰值allocated/reserved显存、实际融合和Graph调用。
+这是有限机制筛选，不是收敛或正式保存恢复认证，不自动开启新策略。
+
+**若原训练仍在运行，在原窗口按一次Ctrl-C，等待保存退出**，然后执行：
 
 ```bash
 cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
@@ -21,24 +30,21 @@ cd "/root/projects/qkan-mamba-lra-adaptive-${MAMBA_TEST_REV:0:12}" &&
 CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-speed -- \
   --source-suite "$MAMBA_SOURCE_SUITE" \
-  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --micro-benchmark &&
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --memory-benchmark &&
 cd "$MAMBA_SOURCE_ROOT" &&
 CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py resume --suite "$MAMBA_SOURCE_SUITE"
 ```
 
-测试预算是一个子进程、6次预热＋12次交错测速，最多18次临时更新尝试。
-FP32融合/eager、逻辑batch32不变；OOM仅标记该档并恢复，原训练状态不提交任何更新。
-报告包含吞吐、allocated/reserved显存、最近自适应事件与建议档位，自动回传至
-`qkan-mamba/mamba-micro-benchmark/<测试运行名>/mamba-micro-benchmark.json`。
-建议需满足中位吞吐至少提升3%且4组至少3组更快；结果不自动切换正式micro。
-固定一批的测速不代表全数据速度或数值等价；实际结果待师弟回传。
+保留原固定89353fc执行器、最新完整断点（之前已到34149，实际以最新为准）和七个完成结果。
+新checkout仅用于临时测速，原训练文件/环境/检查点不修改。单项失败回传紧凑错误后继续其余项，
+所有子进程清理及源状态核对通过、报告回传完成后，命令自动恢复原实验和同屏美化进度。
+退出0表示测试批次完整执行并回传，可包含明确标记的单项失败；不表示所有候选成功或正式准入。
+回传失败、源变化或进程清理未确认则停止；恢复原任务可用下方命令，不必重跑测试。
 
-结构调整见 [执行架构](execution-architecture.md)：新v2使用显式插件接口与实例级适配，
-不替换训练器或上游模块的全局函数。旧实验保留89353fc；新正式v2仍待服务器保存恢复验证，
-本条测速命令不启动新正式Suite。
-
-如果测试失败，原训练可单独恢复：
+报告自动回传 `qkan-mamba/mamba-memory-benchmark/<运行名>/mamba-memory-benchmark.json`。
+固定连续批次不代表整数据集收益。计时包含CPU取数/锁页staging/H2D/前反向/裁剪/Adam/调度/同步，
+排除断点恢复、Graph构建、数值拷贝和线程关闭；进程显存峰值包含常驻对照/候选buffer及Graph池。
 
 ```bash
 cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
@@ -46,6 +52,8 @@ CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py resume \
   --suite "$PWD/runs/mamba-fused-formal-20261124T061405Z-b57105a1"
 ```
+
+执行结构见[插件边界](execution-architecture.md)。本次不迁移正式Suite，不修改稳定worker训练循环。
 
 ## 历史诊断与交付记录
 

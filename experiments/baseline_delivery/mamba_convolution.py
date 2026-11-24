@@ -146,9 +146,11 @@ class InstanceFusedFP32:
             raise ValueError('Pinned FP32 Mamba and optional convolution required')
         private=private_definitions(Path(scan.__file__).read_text(encoding='utf8'),
             {**vars(scan),'causal_conv1d_cuda':legacy_cuda_api(functions)},('MambaInnerFn','mamba_inner_fn'))
-        self.active=False;self.calls=0;self.installed=[]
+        self.active=False;self.calls=0;self.installed=[];self.checkpoint_level=1;self.level_calls={0:0,1:0}
         def counted(*args,**kwargs):
-            self.calls+=1;return private['mamba_inner_fn'](*args,**kwargs)
+            self.calls+=1;self.level_calls[self.checkpoint_level]+=1
+            if self.checkpoint_level==0:kwargs={**kwargs,'checkpoint_lvl':0}
+            return private['mamba_inner_fn'](*args,**kwargs)
         original=module.Mamba.forward
         def local_forward(fused):
             namespace={**original.__globals__,'causal_conv1d_fn':module.causal_conv1d_fn if fused else None,
@@ -160,12 +162,18 @@ class InstanceFusedFP32:
             baseline_path='original_unfused',candidate_path='original_fused',
             convolution_version='1.5.2',cuda_api_adapter='official_cpp_functions_return_values',
             upstream_globals_modified=False,installed_into_original_environment=False)
+        self.mechanism['checkpoint_lvl']=1
         for block in model.blocks:
             mixer=block.mixer;owned='forward' in mixer.__dict__;saved=mixer.forward
             def forward(this,hidden_states,inference_params=None):
                 if inference_params is not None:raise ValueError('Execution plugin supports full-sequence batches only')
                 return (fused if self.active and model.training else ordinary)(this,hidden_states,inference_params=None)
             self.installed.append((mixer,owned,saved));mixer.forward=MethodType(forward,mixer)
+
+    def set_checkpoint_level(self,level):
+        if type(level) is not int or level not in (0,1):raise ValueError('Unsupported checkpoint level')
+        if self.active:raise ValueError('Change checkpoint level outside active forward')
+        self.checkpoint_level=level;self.mechanism['checkpoint_lvl']=level
 
     @contextmanager
     def activate(self):
