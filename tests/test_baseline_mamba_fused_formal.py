@@ -97,6 +97,14 @@ class Tests(unittest.TestCase):
         fake=SimpleNamespace(Classifier=lambda *a,**k:Model(),save_checkpoint=save,atomic_json=atomic_json,
             request_pause=lambda *a:None,load_checkpoint=lambda folder,contract:read(Path(folder)/'checkpoints'/read(Path(folder)/'checkpoints/latest.json')['file']))
         def run(config,data,cache,folder,device,resume,stop_after):
+            # Match the real pinned worker: Executor receives five positional
+            # arguments (including synthetic and publish), plus named callbacks.
+            from experiments.baseline_delivery import torch_acceleration as acceleration
+            runtime=SimpleNamespace(set_mode=lambda mode:self.assertEqual(mode,'eager'))
+            executor=acceleration.Executor(runtime,acceleration.policy(),None,False,lambda _:None,
+                trial=lambda _:None,read_state=lambda:None,compare=lambda *a:None)
+            self.assertTrue(executor.snapshot()['benchmarked'])
+            self.assertEqual(executor.snapshot()['reason'],'measured_fp32_fused_eager')
             state=fake.load_checkpoint(folder,'original');model=fake.Classifier(config,cache)
             for i in range(stop_after-state['step']):
                 model.training=True;model.forward();model.training=False;model.forward()
@@ -105,6 +113,7 @@ class Tests(unittest.TestCase):
                 fake.atomic_json(Path(folder)/'heartbeat.json',dict(optimizer_step=state['step']))
             fake.save_checkpoint(folder,state);return 75
         fake.run=run
+        fake.__package__='experiments.baseline_delivery'
         return r,fake,Policy
 
     def test_actual_worker_continuous_and_fresh_resume_fixture(self):

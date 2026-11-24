@@ -65,10 +65,10 @@ def native(path,job,mode):
     old_executor=acceleration.Executor if acceleration else None
     if old_executor:
         class FusedEager(old_executor):
-            def __init__(self,runtime,config,saved=None,**kwargs):
+            def __init__(self,runtime,config,saved=None,*args,**kwargs):
                 if config.get('required') is not None:raise ValueError('FP32 fusion needs an optional eager execution route')
                 saved={**(saved or {}),'mode':'eager','benchmarked':True,'reason':'measured_fp32_fused_eager','benchmark':None}
-                super().__init__(runtime,config,saved=saved,**kwargs)
+                super().__init__(runtime,config,saved,*args,**kwargs)
         acceleration.Executor=FusedEager
     old_classifier=w.Classifier;old_save=w.save_checkpoint;old_json=w.atomic_json;policy=None
     def classifier(*args,**kwargs):

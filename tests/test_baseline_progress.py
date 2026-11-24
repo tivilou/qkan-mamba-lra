@@ -160,10 +160,16 @@ runpy.run_path(sys.argv[0],run_name='__main__')
         stream=io.StringIO()
         with patch('scripts.formal_progress.sys.stdout',stream),patch.object(stream,'isatty',return_value=True), \
                 patch.dict(os.environ,{'TERM':'xterm'}),patch('scripts.formal_progress.shutil.get_terminal_size',return_value=os.terminal_size((40,12))):
-            terminal=Terminal('auto');terminal.show('进度 '*100);terminal.show('下一帧');terminal.close()
+            terminal=Terminal('auto');terminal.show('进度 '*100+'\n旧第二行');terminal.show('下一帧')
+            before=stream.getvalue();terminal.show('下一帧')
+            self.assertEqual(stream.getvalue(),before)
+            terminal.close()
         output=stream.getvalue()
         self.assertEqual(output.count('\x1b[?1049h'),1)
-        self.assertEqual(output.count('\x1b[H\x1b[J'),2)
+        self.assertEqual(output.count('\x1b[H\x1b[J'),1)
+        self.assertIn('\x1b[2;1H\x1b[K',output)
+        self.assertEqual(output.count('\x1b[?2026h'),2)
+        self.assertEqual(output.count('\x1b[?2026l'),2)
         self.assertTrue(output.endswith('\x1b[?25h\x1b[?1049l'))
 
     def test_owned_dashboard_never_sends_a_liveness_signal(self):

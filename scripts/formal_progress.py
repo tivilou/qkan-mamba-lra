@@ -51,24 +51,36 @@ class Terminal:
     def __init__(self, mode):
         self.live=mode!='append' and sys.stdout.isatty() and os.environ.get('TERM','')!='dumb'
         self.entered=False
+        self.previous=[];self.size=None
 
     def show(self, text):
         if not self.live:
             print(text,flush=True);return
-        if not self.entered:
-            sys.stdout.write('\x1b[?1049h\x1b[?25l')
-            self.entered=True
         size=shutil.get_terminal_size(fallback=(100,30))
         lines=text.strip('\n').splitlines();height=max(1,size.lines-1)
         if len(lines)>height:
             lines=lines[:max(0,height-1)]+['窗口高度不足；放大窗口，或使用 --display append 查看完整快照。']
-        frame='\n'.join(fit_line(line,size.columns) for line in lines)
-        sys.stdout.write('\x1b[H\x1b[J'+frame);sys.stdout.flush()
+        frame=[fit_line(line,size.columns) for line in lines]
+        reset=not self.entered or size!=self.size
+        previous=[] if reset else self.previous
+        changes=[]
+        for row in range(max(len(frame),len(previous))):
+            line=frame[row] if row<len(frame) else ''
+            if reset or row>=len(previous) or line!=previous[row]:
+                changes.append(f'\x1b[{row+1};1H'+line+'\x1b[K')
+        if changes or reset:
+            # One buffered frame; ordinary refreshes only replace changed rows.
+            prefix='' if self.entered else '\x1b[?1049h\x1b[?25l'
+            clear='\x1b[H\x1b[J' if reset else ''
+            sys.stdout.write('\x1b[?2026h'+prefix+clear+''.join(changes)+'\x1b[?2026l')
+            sys.stdout.flush()
+        self.entered=True;self.previous=frame;self.size=size
 
     def close(self):
         if self.entered:
             sys.stdout.write('\x1b[?25h\x1b[?1049l');sys.stdout.flush()
             self.entered=False
+            self.previous=[];self.size=None
 
 
 def read(path, default=None):
