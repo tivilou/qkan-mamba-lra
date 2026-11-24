@@ -2,7 +2,13 @@
 
 三条路线误差量化已完成，见 [实测审阅](../evidence/mamba-noise-native-review-20261123.json)。当前全模型BF16 autocast相对FP32的更新量差异约22.86%～24.49%，明显大于本次各路线自身重复误差；eager与Graph均如此。这版候选未准入，不重复下列已完成诊断。后续若继续BF16，应缩小低精度范围，作为新的数值策略验证；原FP32正式续跑能力保留。
 
-## 当前待测：离线可选卷积＋原版融合路径，保持 FP32
+## 已完成实测：FP32 融合路径吞吐提升17.29%，正式接入待完成
+
+2026-11-24 回传 `mamba-convolution-25d12e7bcca1` 已核验，见 [实测审阅](../evidence/mamba-convolution-native-review-20261124.json)。四个进程退出0且完成清理；FP32完整更新中位耗时 **0.413793646秒 → 0.352782322秒**，吞吐 **+17.2943%**、耗时约 **-14.7444%**，四组成对测速均更快。候选每个两步前缀记录96次实际融合调用，保持FP32、micro8/logical32、原Adam与dropout，未开启BF16或Graph。
+
+相对普通FP32，更新量相对L2 **4.60e-6～5.15e-6**，原始梯度 **7.94e-7～1.17e-6**；同路线重复的更新量差异 **2.36e-6～3.22e-6**。跨路径差异很小但略高于本次重复差异，两步观测不等于收敛或统计误差上界。科学初态、样本/RNG/时钟等控制一致；完整初态哈希含不同执行策略元数据，不要求跨策略哈希相同。
+
+原生依赖导入、兼容包装与融合前后向已在实验机执行成功，源检查点未变，临时二进制已清理，正式提交0更新。原训练仍暂停。下一步只做原worker的FP32融合接入与有限保存/恢复验证，再交付同终端进度界面的续跑入口；不重复本次测速、不扩大到全量检查。以下为已执行的诊断命令与交付细节，保留备查。
 
 已准备 `causal-conv1d 1.5.2` 的官方 Linux x86_64 / CPython3.11 / Torch2.7 / CUDA12 / CXX11 ABI TRUE wheel，133024393字节。下载SHA256 `fa25189970ad71ece008551f11e4b7ce1a6d702ea0609617624d205d2c4408e5` 与 GitHub 官方发布摘要相同；两个离线分块已上传并核验收据，清单 `experiments/baseline_delivery/mamba-conv-wheel.json`。实验机仅从现有认证交换服务下载，不访问外网、不编译、不执行 pip。
 
@@ -23,7 +29,7 @@ CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 
 - 复用现有四进程量化入口，FP32普通路径A/B与FP32融合路径A/B各2步，最后一个进程2次预热＋ABBA×2完整更新测速，共18次一次性更新。保持micro8/logical32/dropout/Adam/样本时钟。没有BF16、Graph、新恢复试验或正式更新。
 - 同一测速进程的原路径通过临时关闭可选卷积函数保持原 `nn.Conv1d + selective_scan`；候选才启用原 Mamba 的融合分支。记录实际 `mamba_inner_fn` 调用次数，比较完整更新耗时、每步梯度／更新量与重复误差。不预设会更快或数值相同。
-- 原源码SHA、wheel及解包成员SHA绑定；运行时检查Torch2.7.1+cu126／Python3.11／CXX11 ABI TRUE。导入、ABI或算子执行失败则停止并返回紧凑错误，不自动安装或切换策略。官方wheel的原生导入和GPU执行尚待实验机验证。
+- 原源码SHA、wheel及解包成员SHA绑定；运行时检查Torch2.7.1+cu126／Python3.11／CXX11 ABI TRUE。导入、ABI或算子执行失败则停止并返回紧凑错误，不自动安装或切换策略。官方wheel的原生导入和GPU融合前后向已由本次回传验证。
 - 源Suite仍固定24981检查点，7个完成结果不重跑；原始训练继续暂停。临时数值／复制检查点沿用 finally 清理，离线依赖缓存保留供复用。自动回传 `qkan-mamba/mamba-convolution/<运行名>/mamba-convolution.json`；退出0表示测量完整和控制项一致，不表示数值准入或正式启用。
 - 官方来源：[v1.5.2发布](https://github.com/Dao-AILab/causal-conv1d/releases/tag/v1.5.2)、[CUDA接口包装](https://github.com/Dao-AILab/causal-conv1d/blob/v1.5.2/causal_conv1d/cpp_functions.py)。本地18项针对性标准库检查通过，包含离线解包／篡改拒绝、ABI前置拒绝、返回值转接、路径切换／异常还原、4子进程选择／失败／控制不一致与旧诊断兼容；无本地模型/GPU或依赖安装。
 
