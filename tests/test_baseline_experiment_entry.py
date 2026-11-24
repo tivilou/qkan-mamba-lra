@@ -79,7 +79,7 @@ class UnifiedTests(unittest.TestCase):
 
     def test_six_profiles_flatten_wrapper_chain_into_explicit_flags(self):
         for profile,flags in e.PROFILES.items():
-            if profile in ('key-bias','bf16-graph'):continue
+            if profile in ('key-bias','bf16-graph','mamba-fused'):continue
             command=e.start_command(self.args(profile=profile),self.root,self.suite)
             self.assertIn('--gates-only',command)
             self.assertIn('experiments.baseline_delivery.readiness',command)

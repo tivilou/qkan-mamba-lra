@@ -23,7 +23,7 @@ PROFILES = {
     'performance': ['--adaptive-memory', '--dynamic-logical-batch', '--performance'],
     'accelerated': ['--adaptive-memory', '--dynamic-logical-batch', '--performance', '--torch-acceleration'],
     'parallel': ['--adaptive-memory', '--dynamic-logical-batch', '--performance', '--torch-acceleration', '--parallel-retrieval-graph'],
-    'key-bias': [], 'bf16-graph': [],
+    'key-bias': [], 'bf16-graph': [], 'mamba-fused': [],
 }
 DIAGNOSTICS = {
     'attention-update': 'attention_update_diagnostic', 'parallel-attention': 'attention_diagnostic',
@@ -52,9 +52,15 @@ def confined_suite(root, suite, existing=True):
 
 
 def validate_executor(root, suite):
+    fused = suite/'mamba-input.json'
     graph = suite/'graph-input.json'
     formal = suite/'formal-input.json'
-    if graph.exists():
+    if fused.exists():
+        value = read(fused)
+        if value.get('schema') != 'qkan-mamba-fused-formal.v1':
+            raise ValueError('Unknown Mamba fused Suite schema')
+        expected = value['source_revision']
+    elif graph.exists():
         value = read(graph)
         if value.get('schema') != 'qkan-bf16-graph-formal-input.v1':
             raise ValueError('Unknown Graph formal Suite schema')
@@ -73,7 +79,7 @@ def validate_executor(root, suite):
     dirty = subprocess.check_output(['git', '-C', str(root), 'status', '--porcelain', '--untracked-files=no'], text=True).strip()
     if actual != expected or dirty: raise ValueError('Use unchanged original executor revision '+expected)
     # The original child validates all scientific bindings, data and receipts.
-    return 'bf16-graph' if graph.exists() else 'key-bias' if formal.exists() else 'admitted'
+    return 'mamba-fused' if fused.exists() else 'bf16-graph' if graph.exists() else 'key-bias' if formal.exists() else 'admitted'
 
 
 def module(name, *args):
@@ -82,6 +88,8 @@ def module(name, *args):
 
 def resume_command(root, suite, upload=False):
     kind = validate_executor(root, suite)
+    if kind == 'mamba-fused':
+        return module('mamba_fused_formal', '--resume', suite, *(['--upload-only'] if upload else []))
     if kind == 'bf16-graph':
         return module('bf16_graph_formal', '--resume', suite, *(['--upload-only'] if upload else []))
     if kind == 'key-bias':
@@ -92,6 +100,11 @@ def resume_command(root, suite, upload=False):
 
 def start_command(args, root, suite):
     graph_from = getattr(args, 'graph_from', None)
+    if args.profile == 'mamba-fused':
+        if not args.migrate_from or graph_from or args.worker_from or args.output:
+            raise ValueError('mamba-fused requires migrate-from/cache and allocates its own Suite')
+        return module('mamba_fused_formal', '--source-suite', args.migrate_from,
+            '--cache', args.cache, '--gpu', args.gpu, '--prepare-only')
     if args.profile == 'bf16-graph':
         if not args.migrate_from or not graph_from or args.worker_from or args.output:
             raise ValueError('bf16-graph requires migrate-from/graph-from and allocates its own Suite')
@@ -227,7 +240,7 @@ def main(argv=None):
             tail = args.arguments[1:] if args.arguments[:1] == ['--'] else args.arguments
             return subprocess.call(module(DIAGNOSTICS[args.kind], *tail), cwd=root)
         if args.operation == 'start':
-            suite = None if args.profile in ('key-bias','bf16-graph') else confined_suite(root,
+            suite = None if args.profile in ('key-bias','bf16-graph','mamba-fused') else confined_suite(root,
                 args.output or ('runs/formal-ready-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8]), False)
             if suite and suite.exists(): raise ValueError('New start needs a NEW Suite; use resume for existing progress')
             command = start_command(args, root, suite)

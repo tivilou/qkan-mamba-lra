@@ -260,6 +260,12 @@ class Dashboard:
                     lines.append(f"  Graph 实际执行：捕获代数 {runtime.get('graph_builds','?')} | "
                         f"完整 micro {execution.get('full_graph_micros',0)} | 短尾 eager {execution.get('eager_tail_micros',0)} | "
                         f"前向/反向 replay {runtime.get('forward_replays',0)}/{runtime.get('backward_replays',0)}")
+            fused=read(folder/'mamba-fused-execution.json',{})
+            if config.get('model')=='mamba1' and (self.suite/'mamba-input.json').exists():
+                current=(fused.get('pid')==state.get('pid') and started is not None
+                         and fused.get('updated_at',0)>=started and fused.get('observed_fused_calls',0)>0)
+                lines.append('  Mamba FP32：'+('原版融合训练路径（实际调用已确认）；验证/测试原路径' if current
+                             else '融合路径待当前进程首个更新确认'))
             adaptive=hb.get('adaptive_memory')
             if adaptive:
                 lines.append(f"  显存适配：本步 micro-batch {adaptive['used_micro_batch']} | 下一步 {adaptive['micro_batch']} | "
@@ -342,6 +348,12 @@ def startup_lines(suite,launch,now):
         else:
             lines.append('  BF16＋Graph 正式前校验：'+str(graph.get('mode','准备'))+
                 f" | 已完成 {graph.get('completed',0)}/4；使用临时副本，尚未推进正式训练。")
+    if (suite/'mamba-input.json').exists():
+        if (suite/'mamba-ready.json').exists():
+            lines.append('  Mamba FP32 融合 worker 保存/恢复通过；正在派发正式续跑。')
+        else:
+            lines.append('  Mamba FP32 融合 worker 校验：'+str(graph.get('mode','准备'))+
+                f" | 已完成 {graph.get('completed',0)}/3；4次临时更新，正式训练尚未推进。")
     for name,label in (('setup.log','环境检查'),('progress-parent.log','入口日志')):
         path=suite/name
         try:

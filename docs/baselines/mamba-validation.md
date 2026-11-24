@@ -2,6 +2,29 @@
 
 三条路线误差量化已完成，见 [实测审阅](../evidence/mamba-noise-native-review-20261123.json)。当前全模型BF16 autocast相对FP32的更新量差异约22.86%～24.49%，明显大于本次各路线自身重复误差；eager与Graph均如此。这版候选未准入，不重复下列已完成诊断。后续若继续BF16，应缩小低精度范围，作为新的数值策略验证；原FP32正式续跑能力保留。
 
+## 当前执行：FP32 融合正式入口＋原美化进度
+
+`start --profile mamba-fused` 创建独立Suite，保留原25任务名单、七个完成结果以及原配置/检查点；仅三个未完成Mamba任务使用已测过的FP32融合训练路径。原worker及其相对导入从原固定checkout加载，进程内包装模型前向、检查点执行标记与心跳；原文件和虚拟环境不改。验证/测试保持普通FP32路径，micro/logical自适应与原样本时钟继续使用，执行器固定eager（无BF16/Graph）。保持科学配置不变，新增融合执行谱系与实现SHA绑定。
+
+同一命令先自动运行实际worker连续2步、单步保存、新进程恢复1步，共4次临时更新；复制完整状态精确核验，恢复起点精确，结束状态按既有rtol1e-5/atol1e-6比较全部科学字段，RNG/样本/时钟/控制项精确。复用FP32非逐位确定性的已有证据，不要求浮点哈希完全相同。检查通过、临时检查点清理并自动回传后，自动从原24981检查点继续正式训练，临时更新不进入正式状态。失败则停在紧凑报告，不开启训练、不自动回退。服务器实际恢复验证待执行；本地仅标准库/模拟验证。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-bcec44653a10 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MAMBA_FUSED_REV=$(git rev-parse FETCH_HEAD) &&
+MAMBA_FUSED_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MAMBA_FUSED_REV:0:12}" &&
+cd "$MAMBA_FUSED_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py start \
+  --profile mamba-fused \
+  --migrate-from /root/projects/qkan-mamba-lra-adaptive-14d681111173/runs/bf16-graph-formal-20261119T014456Z-1cb7160c \
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0
+```
+
+新Suite路径显示在界面和退出信息中。之后对该Suite使用同一固定checkout的 `scripts/experiment.py resume --suite <新Suite绝对路径>`，继续同屏显示；不要重复start创建第二份。Ctrl-C沿用原安全暂停。源Suite由锁和文件SHA保护，保持暂停；七份完成结果不重新计算。回退可在新入口退出、无新进程后使用原固定checkout的原Suite续跑，原进度保留；融合后新增进度留在新Suite，不声称可以回写旧执行器。
+
+预检自动回传 `qkan-mamba/mamba-fused-worker/<新Suite>--preflight/preflight.json`；正式计算全部完成时回传执行谱系快照与原白名单结果。代码交付未代替服务器上的实际保存/恢复验证，也未证明image/pathfinder的具体加速幅度。MEGA/S5/S4D仍走原执行器。
+
 ## 已完成实测：FP32 融合路径吞吐提升17.29%，正式接入待完成
 
 2026-11-24 回传 `mamba-convolution-25d12e7bcca1` 已核验，见 [实测审阅](../evidence/mamba-convolution-native-review-20261124.json)。四个进程退出0且完成清理；FP32完整更新中位耗时 **0.413793646秒 → 0.352782322秒**，吞吐 **+17.2943%**、耗时约 **-14.7444%**，四组成对测速均更快。候选每个两步前缀记录96次实际融合调用，保持FP32、micro8/logical32、原Adam与dropout，未开启BF16或Graph。
