@@ -15,19 +15,29 @@ from .migration import checked_pointer,completed_files,copy_verified,verify_comp
 
 JOB='mamba1-retrieval-s42'
 MODES=('continuous','interrupt','resume')
-SCHEMA='qkan-mamba-fused-formal.v1'
+SCHEMA='qkan-mamba-fused-formal.v2'
 WORKER='experiments.baseline_delivery.mamba_fused_worker'
 REVIEW=ROOT/'docs/evidence/mamba-convolution-native-review-20261124.json'
 
 
 def binding():
-    names=('mamba_fused_formal.py','mamba_fused_worker.py','mamba_convolution.py','mamba-conv-wheel.json')
+    names=('mamba_fused_formal.py','mamba_fused_worker.py','mamba_convolution.py','mamba-conv-wheel.json',
+        'execution_plugins.py','worker.py','models.py','adaptive_memory.py','logical_batch.py',
+        'execution.py','performance.py','torch_acceleration.py','data.py')
     paths=[ROOT/'experiments/baseline_delivery'/n for n in names]
-    paths += [REVIEW,ROOT/'scripts/experiment.py',ROOT/'scripts/formal_progress.py']
+    paths += [REVIEW]
     return {p.relative_to(ROOT).as_posix():digest(p) for p in paths}
 
 
-def lineage(r):return dict(policy='mamba-causal-conv-fused-fp32-v1',implementation=r['binding'])
+def lineage(r):return dict(policy='mamba-causal-conv-fused-fp32-v2',implementation=r['binding'])
+
+
+def source_context(source):
+    fused=source/'mamba-input.json'
+    value=read(fused if fused.exists() else source/'graph-input.json')
+    if fused.exists() and value.get('schema') not in ('qkan-mamba-fused-formal.v1',SCHEMA):
+        raise ValueError('Unknown source execution schema')
+    return value
 
 
 def checked_executor(root,expected):
@@ -49,6 +59,7 @@ def verify(path,ready=False):
             or r['plan_sha256']!=digest(suite/'migration-source/plan.json')):raise ValueError('Bound fused Suite changed')
     manifest=read(suite/'suite.json')
     if len(manifest['jobs'])!=25 or {j['id'] for j in manifest['jobs']}!=original.JOBS:raise ValueError('Roster changed')
+    if r.get('execution_plugin')!=dict(plugin='mamba.fused_fp32',version=2):raise ValueError('Bound execution plugin changed')
     for job in manifest['jobs']:
         if fingerprint(read(suite/'jobs'/job['id']/'config.json'))!=job['config_sha256']:raise ValueError('Scientific config changed')
         if job.get('preserved_completion'):verify_completed(suite,job)
@@ -66,12 +77,14 @@ def prepare(args,suite):
     from .mamba_convolution import stage
     source=args.source_suite.resolve();manifest=read(source/'suite.json');statuses=read(source/'status.json')
     if len(manifest['jobs'])!=25 or {j['id'] for j in manifest['jobs']}!=original.JOBS:raise ValueError('Original roster required')
-    controller=read(source/'graph-input.json')
+    controller=source_context(source)
     checked_executor(source.parent.parent,controller['source_revision'])
+    if (source/'mamba-input.json').exists():files_controller='mamba-input.json'
+    else:files_controller='graph-input.json'
     review=read(REVIEW)
     if review['timing']['summary']['timing_promising'] is not True:raise ValueError('Reviewed speed evidence required')
     if str(args.cache.resolve())!=controller['cache']:raise ValueError('Use original cache')
-    files={str(source/n):digest(source/n) for n in ('suite.json','status.json','graph-input.json')}
+    files={str(source/n):digest(source/n) for n in ('suite.json','status.json',files_controller)}
     jobs=[];states={};plan={};candidates={}
     for entry in manifest['jobs']:
         name=entry['id'];src=source/'jobs'/name;dst=suite/'jobs'/name;job=copy.deepcopy(entry)
@@ -100,7 +113,9 @@ def prepare(args,suite):
             plan[name]=dict(checkpoint=pointer,completion=None);states[name]=dict(state='paused' if pointer else 'pending',started_training=False)
         jobs.append(job)
     cp=candidates[JOB]['checkpoint'];expected=review['evidence']['source_checkpoint_sha256']
-    if cp is None or cp['sha256']!=expected:raise ValueError('Use reviewed latest source checkpoint; advanced source requires a bounded reassessment')
+    if cp is None:raise ValueError('Latest full Mamba checkpoint required')
+    if not (source/'mamba-input.json').exists() and cp['sha256']!=expected:
+        raise ValueError('Use reviewed latest source checkpoint; advanced source requires a bounded reassessment')
     atomic_json(suite/'suite.json',{**manifest,'source_revision':revision(),'jobs':jobs})
     atomic_json(suite/'status.json',states)
     atomic_json(suite/'migration-source/plan.json',dict(jobs=plan,source_suite=str(source),optimizer_updates=0))
@@ -110,7 +125,8 @@ def prepare(args,suite):
         data=manifest['data'],cache=str(args.cache.resolve()),source_files=files,candidates=candidates,
         manifest_sha256=digest(suite/'suite.json'),plan_sha256=digest(suite/'migration-source/plan.json'),
         target_config=inherited.get('target_config'),checkpoint=inherited.get('checkpoint'),
-        implementation=inherited.get('implementation'),convolution_package=stage())
+        implementation=inherited.get('implementation'),convolution_package=stage(),
+        execution_plugin=dict(plugin='mamba.fused_fp32',version=2))
     atomic_json(suite/'mamba-input.json',r);verify(suite/'mamba-input.json');return r
 
 
@@ -179,7 +195,7 @@ def validate_result(suite,r,job):
 
 def execute(args,suite):
     path=suite/'mamba-input.json';source=Path(read(path)['origin_suite']) if path.exists() else args.source_suite.resolve()
-    controller=read(source/'graph-input.json')
+    controller=source_context(source)
     with ExitStack() as held:
         for origin in dict.fromkeys((str(source),controller['origin_suite'],controller['source_suite'])):
             for p in (Path(origin)/'progress-supervisor.lock',Path(origin)/'suite.lock',

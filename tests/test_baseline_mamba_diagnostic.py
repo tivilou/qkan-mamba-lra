@@ -30,6 +30,41 @@ class Tests(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertIn('--source-suite',result.stdout)
 
+    def test_micro_parent_exact_single_child_return_cleanup_and_no_training(self):
+        from experiments.baseline_delivery.diagnostic_watch import Supervisor as ActualSupervisor
+        spec=d.child_spec(Path('runs/example'),d.MICRO_ROUTE)
+        class Accepted(Exception):pass
+        with patch.object(Path,'mkdir',side_effect=Accepted):
+            with self.assertRaises(Accepted):ActualSupervisor().run(spec,Path('log'),{})
+        for failed in (False,True):
+            with tempfile.TemporaryDirectory() as tmp,contextlib.ExitStack() as held:
+                root=Path(tmp);calls=[];uploads=[]
+                def snapshot(source,suite,job,cache):
+                    atomic_json(suite/'source/checkpoints/step-1.pt',dict(disposable=True))
+                    request=dict(source_files={},checkpoint=dict(sha256='latest'));atomic_json(suite/'request.json',request);return request
+                class Supervisor:
+                    records=[]
+                    def __init__(self,*a):pass
+                    def run(self,spec,log,env):
+                        calls.append(spec)
+                        atomic_json(log.parent/(d.MICRO_ROUTE+'.json'),dict(measurement_completed=True,
+                            tiers={'8':dict(status='measured',samples_per_second=80)},recommended_micro_batch=8))
+                        return 1 if failed else 0
+                held.enter_context(patch.object(d,'ROOT',root));held.enter_context(patch.object(d,'snapshot',side_effect=snapshot))
+                held.enter_context(patch('experiments.baseline_delivery.bootstrap.check_exchange'))
+                held.enter_context(patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':'GPU, uuid'})))
+                held.enter_context(patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value={'idle':True}))
+                held.enter_context(patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',Supervisor))
+                held.enter_context(patch('experiments.baseline_delivery.mamba_convolution.stage',return_value={'fixture':True}))
+                held.enter_context(patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:uploads.append(a)))
+                held.enter_context(patch.object(sys,'argv',['mamba','--source-suite',str(root/'source'),'--cache',str(root/'cache'),'--micro-benchmark']))
+                held.enter_context(contextlib.redirect_stdout(io.StringIO()))
+                self.assertEqual(d.main(),76 if failed else 0)
+                self.assertEqual(len(calls),1);self.assertEqual(calls[0]['argv'][3],spec['target'])
+                self.assertEqual(uploads[0][1:3],('mamba-micro-benchmark',['mamba-micro-benchmark.json']))
+                report=json.loads((uploads[0][0]/'mamba-micro-benchmark.json').read_text())
+                self.assertTrue(report['copied_checkpoint_removed']);self.assertFalse(report['formal_release_allowed'])
+
     def test_selected_snapshot_preserves_source_and_blocks_live_or_complete(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);source=root/'formal';suite=root/'diagnostic';folder=source/'jobs'/d.JOBS[0]

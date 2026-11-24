@@ -1,8 +1,59 @@
-# Mamba BF16 数值与恢复短验证
+# Mamba 加速测试与续跑
+
+## 当前：micro8/16/32 测速，完成后原界面续跑
+
+2026-11-24 用户截图显示 `89353fc83f89` 的融合实验已运行至step27415、micro8/logical32，
+约80.33 samples/s、显存4.38/24 GiB；这是界面观察，不是本次测速结果。
+保留该固定执行器和最新完整断点，本次不回到原24981，不重跑七个已完成任务。
+
+**先在原训练窗口按一次 Ctrl-C，等待保存并回到提示符**。GPU空闲后运行下面一条命令。
+它准备独立测试checkout，复用已有离线依赖，对最新断点的一批32行进行micro8/16/32测速，
+自动回传紧凑报告；成功后回到原89353fc执行器续跑，仍是训练与美化进度同屏。
+测试失败则停在报告处，原实验保持暂停。不要并发抢占同一张GPU测速。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
+MAMBA_SOURCE_ROOT="$PWD" &&
+MAMBA_SOURCE_SUITE="$PWD/runs/mamba-fused-formal-20261124T061405Z-b57105a1" &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MAMBA_TEST_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${MAMBA_TEST_REV:0:12}" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-speed -- \
+  --source-suite "$MAMBA_SOURCE_SUITE" \
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --micro-benchmark &&
+cd "$MAMBA_SOURCE_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py resume --suite "$MAMBA_SOURCE_SUITE"
+```
+
+测试预算是一个子进程、6次预热＋12次交错测速，最多18次临时更新尝试。
+FP32融合/eager、逻辑batch32不变；OOM仅标记该档并恢复，原训练状态不提交任何更新。
+报告包含吞吐、allocated/reserved显存、最近自适应事件与建议档位，自动回传至
+`qkan-mamba/mamba-micro-benchmark/<测试运行名>/mamba-micro-benchmark.json`。
+建议需满足中位吞吐至少提升3%且4组至少3组更快；结果不自动切换正式micro。
+固定一批的测速不代表全数据速度或数值等价；实际结果待师弟回传。
+
+结构调整见 [执行架构](execution-architecture.md)：新v2使用显式插件接口与实例级适配，
+不替换训练器或上游模块的全局函数。旧实验保留89353fc；新正式v2仍待服务器保存恢复验证，
+本条测速命令不启动新正式Suite。
+
+如果测试失败，原训练可单独恢复：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py resume \
+  --suite "$PWD/runs/mamba-fused-formal-20261124T061405Z-b57105a1"
+```
+
+## 历史诊断与交付记录
 
 三条路线误差量化已完成，见 [实测审阅](../evidence/mamba-noise-native-review-20261123.json)。当前全模型BF16 autocast相对FP32的更新量差异约22.86%～24.49%，明显大于本次各路线自身重复误差；eager与Graph均如此。这版候选未准入，不重复下列已完成诊断。后续若继续BF16，应缩小低精度范围，作为新的数值策略验证；原FP32正式续跑能力保留。
 
-## 当前执行：FP32 融合正式入口＋原美化进度
+### 历史v1交付：FP32 融合正式入口＋原美化进度
+
+以下24981启动命令仅为历史记录；已经运行的融合实验使用上方最新Suite，不再执行旧迁移命令。
 
 第二次 `94ee8f3` 的Suite `mamba-fused-formal-20261124T052156Z-812b3fc0` 在首个continuous子进程调用原worker时退出，正式更新0；认证预检4990字节/SHA `8a516d74f4301fa756a0073f13f45aed8fef08f1e0f0c4c8009b8d1d5014cf5d`，错误类型TypeError。固定原worker以5个位置参数构造Executor，新FusedEager只接收3个；标准库复现相同接口失败。已透传其余位置参数，保留synthetic/publish及原回调。看板改为同步提交变化行，仅首次进入或终端尺寸变化时整屏清理；相同画面不重复写，缩短画面会擦除旧行。退出恢复终端是正常行为，准备页/看板/提示符切换并不表示训练在反复重启。本地针对调用、恢复包装、监督器和显示验证；实际GPU保存/恢复仍待下面命令完成，不再运行已完成的测速/噪声试验。
 

@@ -97,12 +97,12 @@ def evaluate(model,split,device,microbatch):
     return {'loss':loss/total,'accuracy':correct/total,'samples':total}
 
 
-def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False,strategy_admission=None):
+def run(config,data,cache,output,device,resume=False,stop_after=None,synthetic=False,migration_check_only=False,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False,strategy_admission=None,execution=None):
     with ExitStack() as resources:
-        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source,operator_profile_only,probe_micro_batch,compare_incumbent,strategy_admission)
+        return _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source,operator_profile_only,probe_micro_batch,compare_incumbent,strategy_admission,execution)
 
 
-def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False,strategy_admission=None):
+def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,migration_check_only,acceleration_probe_source=None,operator_profile_only=False,probe_micro_batch=None,compare_incumbent=False,strategy_admission=None,execution=None):
     if os.environ.get('QKAN_DIAGNOSTIC_STAGE_FENCES')=='1' and (not synthetic or acceleration_probe_source is not None):
         raise ValueError('Stage fences are synthetic diagnostics only; no training or timed calibration')
     run_started_at=time.time()
@@ -165,6 +165,11 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
     contract=fingerprint({'config':config,'train':train.identity,'val':val.identity,'dictionary':dict_sha})
     mark('model_prepare',flush=True)
     model=Classifier(config,cache).to(device); opt=optimizer(model,config)
+    if execution is not None:resources.enter_context(execution.model_context(model))
+    def persist(payload):
+        if execution is not None:execution.before_save(payload)
+        save_checkpoint(output,payload)
+        if execution is not None:execution.after_save(payload)
     import importlib.metadata
     import platform
     atomic_json(output/'environment.json',{'python':platform.python_version(),'platform':platform.platform(),
@@ -223,6 +228,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         from .execution import BatchPrefetch,RollbackBuffer,StatusWriter,restore_optimizer_in_place
         from .logical_batch import make_controller,logical_size,SampleClock,TorchSampleSchedule
         adaptive=make_controller(config['adaptive_memory'],config['batch_size'],state.get('adaptive_memory'))
+        if execution is not None:execution.configure_controller(adaptive,state)
         prefetch=resources.enter_context((Lookahead if performance else BatchPrefetch)(
             lambda ids:train.numpy_batch(np.asarray(ids),validate=True)))
         staging=PinnedStaging(torch,max(adaptive.policy.get('logical_tiers',[config['batch_size']])))
@@ -300,7 +306,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 sample_budget=clock.state['total'],anchor_rates=clock.rates(),
                 optimizer_counter='preserved; not rescaled',warmup_restart=False)
         state['adaptive_memory']=adaptive.snapshot()
-        save_checkpoint(output,state)
+        persist(state)
         compare_states(state,load_checkpoint(output,contract))
         atomic_json(output/'migration-validation.json',dict(state['migration'],passed=True,
             state_roundtrip='exact before first adaptive optimizer update',
@@ -328,7 +334,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
         if adaptive: state['adaptive_memory']=adaptive.snapshot()
         if dynamic: state['sample_clock']=clock.snapshot()
         if acceleration: state['torch_acceleration']=acceleration.snapshot()
-        save_checkpoint(output,state);last_save=now
+        persist(state);last_save=now
     acceleration=None;active_snapshot=None;update_observation={};observed_micros=set();incumbent_comparison=None
     if config.get('torch_acceleration'):
         if not adaptive or not device.startswith('cuda'):
@@ -392,7 +398,7 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
             try: return observer.collect(observed,synchronize)
             finally: profile=previous
         acceleration=Executor(torch_runtime(torch,model,rng_state,restore_rng,config['torch_acceleration']),
-            config['torch_acceleration'],state.get('torch_acceleration'),synthetic,publish_acceleration,
+            config['torch_acceleration'],execution.acceleration_state(state.get('torch_acceleration')) if execution is not None else state.get('torch_acceleration'),synthetic,publish_acceleration,
             trial=profile_trial,read_state=acceleration_state,compare=acceleration_compare,
             diagnose=diagnose_acceleration,operators=diagnose_operators)
         publish_acceleration(acceleration.snapshot())
@@ -595,10 +601,13 @@ def _run(config,data,cache,output,device,resume,stop_after,synthetic,resources,m
                 status_writer.emit(lambda write:(write(output/'heartbeat.json',heartbeat),
                     write(output/'adaptive-memory.json',dict(policy=adaptive.policy,state=adaptive.snapshot(),
                         last_update=adaptive_status,step=state['step'])),
-                    publish_acceleration(acceleration.snapshot()) if acceleration else None),
+                    publish_acceleration(acceleration.snapshot()) if acceleration else None,
+                    execution.on_progress(heartbeat) if execution is not None else None),
                     force=PAUSE or (stop_after is not None and state['step']>=stop_after),
                     token=adaptive.state['transitions'])
-            else: atomic_json(output/'heartbeat.json',heartbeat)
+            else:
+                atomic_json(output/'heartbeat.json',heartbeat)
+                if execution is not None:execution.on_progress(heartbeat)
             if PAUSE or (stop_after is not None and state['step']>=stop_after):
                 save()
                 if candidate and strategy_admission.trace:

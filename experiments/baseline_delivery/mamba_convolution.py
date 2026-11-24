@@ -111,3 +111,74 @@ class FusedFP32:
     def close(self):
         self.module.causal_conv1d_fn=self.function;self.module.mamba_inner_fn=self.inner
         self.scan.causal_conv1d_cuda=self.cuda;self.active=False
+
+
+def private_definitions(source, namespace, names):
+    """Reuse verified upstream definitions unchanged in plugin-owned globals."""
+    import ast
+    tree=ast.parse(source)
+    selected=[node for node in tree.body if isinstance(node,(ast.ClassDef,ast.FunctionDef)) and node.name in names]
+    if len(selected)!=len(names) or {node.name for node in selected}!=set(names):
+        raise ValueError('Pinned private definition boundary changed')
+    private=dict(namespace)
+    exec(compile(ast.Module(body=selected,type_ignores=[]),'<pinned-mamba-execution-plugin>','exec'),private)
+    return private
+
+
+class InstanceFusedFP32:
+    """Per-model extension. Upstream module globals and parameter keys are intact.
+
+    The legacy FusedFP32 above remains solely for historical diagnostic replay.
+    Both private autograd definitions are byte-identical ASTs from pinned source;
+    only their CUDA ABI dependency is supplied by the verified official bridge.
+    """
+    def __init__(self,torch,model):
+        from types import FunctionType,MethodType
+        from .mamba_diagnostic import InputProjectionBF16
+        module=importlib.import_module('mamba_ssm.modules.mamba_simple')
+        scan=importlib.import_module('mamba_ssm.ops.selective_scan_interface')
+        functions=importlib.import_module('causal_conv1d.cpp_functions')
+        if (digest(Path(module.__file__))!=InputProjectionBF16.source_sha256
+                or digest(Path(scan.__file__))!='c79f4432536402fe4d6c1026ccf8d5fc0aaa62b790e9a622295aee14ac45dbcc'
+                or module.causal_conv1d_fn is None or not model.blocks
+                or any(type(b.mixer) is not module.Mamba or not b.mixer.use_fast_path
+                    or any(p.dtype!=torch.float32 for p in b.mixer.parameters()) for b in model.blocks)):
+            raise ValueError('Pinned FP32 Mamba and optional convolution required')
+        private=private_definitions(Path(scan.__file__).read_text(encoding='utf8'),
+            {**vars(scan),'causal_conv1d_cuda':legacy_cuda_api(functions)},('MambaInnerFn','mamba_inner_fn'))
+        self.active=False;self.calls=0;self.installed=[]
+        def counted(*args,**kwargs):
+            self.calls+=1;return private['mamba_inner_fn'](*args,**kwargs)
+        original=module.Mamba.forward
+        def local_forward(fused):
+            namespace={**original.__globals__,'causal_conv1d_fn':module.causal_conv1d_fn if fused else None,
+                'mamba_inner_fn':counted if fused else module.mamba_inner_fn}
+            return FunctionType(original.__code__,namespace,original.__name__,original.__defaults__,original.__closure__)
+        fused=local_forward(True);ordinary=local_forward(False)
+        self.mechanism=dict(policy='mamba-causal-conv-fused-fp32-v2',blocks=len(model.blocks),
+            parameter_dtype='float32',compute_dtype='float32',graph=False,scope='model_instance',
+            baseline_path='original_unfused',candidate_path='original_fused',
+            convolution_version='1.5.2',cuda_api_adapter='official_cpp_functions_return_values',
+            upstream_globals_modified=False,installed_into_original_environment=False)
+        for block in model.blocks:
+            mixer=block.mixer;owned='forward' in mixer.__dict__;saved=mixer.forward
+            def forward(this,hidden_states,inference_params=None):
+                if inference_params is not None:raise ValueError('Execution plugin supports full-sequence batches only')
+                return (fused if self.active and model.training else ordinary)(this,hidden_states,inference_params=None)
+            self.installed.append((mixer,owned,saved));mixer.forward=MethodType(forward,mixer)
+
+    @contextmanager
+    def activate(self):
+        if self.active:raise ValueError('Nested execution plugin activation')
+        self.active=True
+        try:yield self
+        finally:self.active=False
+
+    def __enter__(self):self.active=True;return self
+    def __exit__(self,*args):self.close()
+    def close(self):
+        self.active=False
+        for mixer,owned,saved in self.installed:
+            if owned:mixer.forward=saved
+            else:del mixer.forward
+        self.installed=[]

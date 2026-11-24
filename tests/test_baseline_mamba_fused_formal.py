@@ -14,6 +14,7 @@ from experiments.baseline_delivery import mamba_fused_formal as f,mamba_fused_wo
 from experiments.baseline_delivery.common import atomic_json,read,digest,fingerprint
 from experiments.baseline_delivery import mamba_convolution as conv
 from experiments.baseline_delivery import attention_update_native as update,key_bias_stability_native as values
+from experiments.baseline_delivery import execution_plugins as plugins
 
 spec=importlib.util.spec_from_file_location('unified_fused_entry',Path('scripts/experiment.py'))
 entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
@@ -62,16 +63,6 @@ class Tests(unittest.TestCase):
                 "sys.modules['torch']=None;sys.modules['numpy']=None;runpy.run_module('"+target+"',run_name='__main__')"],capture_output=True,text=True)
             self.assertEqual(proc.returncode,0,proc.stderr)
 
-    def test_original_relative_import_isolated(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            p=Path(tmp)/'experiments/baseline_delivery';p.mkdir(parents=True)
-            (p/'worker.py').write_text('from .fixture import token\n')
-            (p/'fixture.py').write_text('token="original"\n')
-            try:self.assertEqual(w.original_worker(tmp).token,'original')
-            finally:
-                for key in list(sys.modules):
-                    if key.startswith('_qkan_mamba_original'):sys.modules.pop(key)
-
     def fixture(self,suite):
         source=suite/'jobs'/f.JOB;source.mkdir(parents=True)
         config=dict(model='mamba1',task='retrieval');atomic_json(source/'config.json',config)
@@ -84,34 +75,45 @@ class Tests(unittest.TestCase):
                 sha256=digest(path),contract='original',step=state['step'],previous=[]))
         save(source,state);base=read(source/'checkpoints/latest.json')
         r=dict(candidates={f.JOB:dict(checkpoint=base,execution_root='original',execution_revision='old')},
-            data='data',cache='cache',binding=dict(code='bound'),source_files={})
+            data='data',cache='cache',binding=dict(code='bound'),source_files={},
+            execution_plugin=dict(plugin='mamba.fused_fp32',version=2))
         atomic_json(suite/'mamba-input.json',r)
         class Model:
             training=True
             def forward(self):return self.training
         class Policy:
-            def __init__(self,torch,model):self.calls=0;self.mechanism=dict(policy='fused');self.closed=False
+            def __init__(self,torch,model):
+                self.calls=0;self.mechanism=dict(policy='fused');self.closed=False;self.model=model;self.original=model.forward
+                def forward():
+                    if model.training:self.calls+=1
+                    return self.original()
+                model.forward=forward
+            def __enter__(self):return self
+            def __exit__(self,*args):self.close()
             @contextmanager
             def activate(self):self.calls+=1;yield
-            def close(self):self.closed=True
+            def close(self):self.closed=True;self.model.forward=self.original
         fake=SimpleNamespace(Classifier=lambda *a,**k:Model(),save_checkpoint=save,atomic_json=atomic_json,
             request_pause=lambda *a:None,load_checkpoint=lambda folder,contract:read(Path(folder)/'checkpoints'/read(Path(folder)/'checkpoints/latest.json')['file']))
-        def run(config,data,cache,folder,device,resume,stop_after):
+        def run(config,data,cache,folder,device,resume,stop_after,execution=None):
             # Match the real pinned worker: Executor receives five positional
             # arguments (including synthetic and publish), plus named callbacks.
             from experiments.baseline_delivery import torch_acceleration as acceleration
             runtime=SimpleNamespace(set_mode=lambda mode:self.assertEqual(mode,'eager'))
-            executor=acceleration.Executor(runtime,acceleration.policy(),None,False,lambda _:None,
+            executor=acceleration.Executor(runtime,acceleration.policy(),execution.acceleration_state(None),False,lambda _:None,
                 trial=lambda _:None,read_state=lambda:None,compare=lambda *a:None)
             self.assertTrue(executor.snapshot()['benchmarked'])
             self.assertEqual(executor.snapshot()['reason'],'measured_fp32_fused_eager')
             state=fake.load_checkpoint(folder,'original');model=fake.Classifier(config,cache)
-            for i in range(stop_after-state['step']):
-                model.training=True;model.forward();model.training=False;model.forward()
-                state['step']+=1;state['cursor']+=32;state['sample_clock']['progress']+=32
-                state['model']['weight']+=.01
-                fake.atomic_json(Path(folder)/'heartbeat.json',dict(optimizer_step=state['step']))
-            fake.save_checkpoint(folder,state);return 75
+            with execution.model_context(model):
+                for i in range(stop_after-state['step']):
+                    model.training=True;model.forward();model.training=False;model.forward()
+                    state['step']+=1;state['cursor']+=32;state['sample_clock']['progress']+=32
+                    state['model']['weight']+=.01
+                    heartbeat=dict(optimizer_step=state['step'])
+                    fake.atomic_json(Path(folder)/'heartbeat.json',heartbeat);execution.on_progress(heartbeat)
+                execution.before_save(state);fake.save_checkpoint(folder,state);execution.after_save(state)
+            return 75
         fake.run=run
         fake.__package__='experiments.baseline_delivery'
         return r,fake,Policy
@@ -120,10 +122,10 @@ class Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp,ExitStack() as stack:
             suite=Path(tmp);r,fake,policy=self.fixture(suite);original=fake.Classifier
             stack.enter_context(patch.object(f,'verify',return_value=r))
-            stack.enter_context(patch.object(w,'original_worker',return_value=fake))
+            stack.enter_context(patch.object(w,'worker_core',return_value=fake))
             stack.enter_context(patch.dict(sys.modules,{'torch':SimpleNamespace(),'numpy':SimpleNamespace()}))
             stack.enter_context(patch.object(conv,'prepare_native'))
-            stack.enter_context(patch.object(conv,'FusedFP32',policy))
+            stack.enter_context(patch.object(plugins,'create',side_effect=lambda value,config,torch,model:policy(torch,model)))
             stack.enter_context(patch.object(update.NativeUpdate,'state_hash',side_effect=lambda _,v:fingerprint(v)))
             stack.enter_context(patch.object(values,'compare_values',side_effect=lambda _,a,b:self.assertEqual(a,b)))
             for mode in f.MODES:self.assertEqual(w.native(suite/'mamba-input.json',f.JOB,mode),0)
@@ -193,6 +195,16 @@ class Tests(unittest.TestCase):
             self.assertEqual(read(suite/'jobs'/f.JOB/'config.json'),read(source/'jobs'/f.JOB/'config.json'))
             self.assertTrue(f.verify(suite/'mamba-input.json'))
             with self.assertRaises(FileNotFoundError):f.verify(suite/'mamba-input.json',ready=True)
+            # Accept the latest advanced v1/v2 fused checkpoint, never rewind it
+            # to the historical 24981 speed-review input.
+            atomic_json(source/'mamba-input.json',dict(schema='qkan-mamba-fused-formal.v1',source_revision='old',
+                cache=str((root/'cache').resolve()),source_suite='legacy',original_root='original'))
+            path=folder/'checkpoints/step-24981.pt';atomic_json(path,dict(latest_advanced=True))
+            pointer.update(step=27415,sha256=digest(path));atomic_json(folder/'checkpoints/latest.json',pointer)
+            second=root/'new/runs/mamba-fused-formal-latest';second.mkdir(parents=True)
+            latest=f.prepare(SimpleNamespace(source_suite=source,cache=root/'cache'),second)
+            self.assertEqual(latest['candidates'][f.JOB]['checkpoint']['step'],27415)
+            self.assertEqual(latest['execution_plugin'],dict(plugin='mamba.fused_fp32',version=2))
             atomic_json(source/'status.json',{})
             with self.assertRaisesRegex(ValueError,'source changed'):f.unchanged(r)
 

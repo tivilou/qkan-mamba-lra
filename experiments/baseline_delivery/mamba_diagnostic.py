@@ -15,6 +15,8 @@ from .common import ROOT, atomic_json, digest, fingerprint, lock, read, revision
 
 JOBS = tuple('mamba1-'+task+'-s42' for task in ('retrieval','image','pathfinder'))
 ROUTES = ('fp32_eager','bf16_eager','fp32_graph','bf16_graph')
+MICRO_ROUTE='micro_fused_fp32'
+MICRO_ORDER=(8,16,32,32,16,8)*2
 
 
 class InputProjectionBF16:
@@ -103,7 +105,7 @@ def summarize(reference, candidate):
 
 
 def child_spec(suite, route):
-    if route not in ROUTES: raise ValueError('Unknown Mamba comparison route')
+    if route not in (*ROUTES,MICRO_ROUTE): raise ValueError('Unknown Mamba comparison route')
     return dict(target='experiments.baseline_delivery.mamba_diagnostic',cwd=str(ROOT),argv=[
         sys.executable,'-B','-m','experiments.baseline_delivery.mamba_diagnostic',
         '--request',str(suite/'request.json'),'--route',route,'--output',str(suite/route)])
@@ -142,11 +144,90 @@ def snapshot(source, suite, job, cache):
         return request
 
 
+def adaptive_observation(folder):
+    """Return bounded scalar events, not raw worker logs or tensors."""
+    status=read(folder/'adaptive-memory.json') if (folder/'adaptive-memory.json').exists() else {}
+    events=[];journal=folder/'adaptive-events.jsonl'
+    if journal.exists():
+        import json
+        with journal.open('rb') as handle:
+            start=max(0,journal.stat().st_size-65536);handle.seek(start)
+            if start:handle.readline()
+            lines=handle.read(65536).decode('utf8').splitlines()[-32:]
+        keys=('timestamp','step','event','from_micro_batch','to_micro_batch',
+            'from_logical_batch','to_logical_batch','logical_batch','micro_batch')
+        for line in lines:
+            value=json.loads(line);events.append({k:value[k] for k in keys if k in value})
+    return dict(state={k:v for k,v in status.get('state',{}).items()
+        if k in ('index','logical_index','ceiling','wait','baseline','previous','last_event','transitions')},events=events)
+
+
+def micro_benchmark(c,request_path):
+    """One restored batch, 6 warmups + 12 balanced timings; never train the source."""
+    from .diagnostic_watch import mark
+    torch=c['torch'];request=read(request_path);results={};budget=0
+    if c['logical']!=32:raise ValueError('Micro comparison requires the current logical batch to be 32')
+    def measure(tier,timed):
+        nonlocal budget
+        c['restore']();torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats()
+        mark('mamba_micro_'+str(tier),flush=True)
+        started=time.perf_counter();oom=False
+        try:loss=float(c['update'](True,micro_batch=tier))
+        except torch.cuda.OutOfMemoryError:oom=True
+        budget+=1
+        if oom:
+            # Leave the exception block before releasing tensors and restoring.
+            import gc
+            c['opt'].zero_grad(set_to_none=True);gc.collect();torch.cuda.empty_cache()
+            c['restore']();c['exact']()
+            results[tier]=dict(status='oom',micro_batch=tier,logical_batch=32)
+            return
+        elapsed=time.perf_counter()-started
+        if not math.isfinite(loss):raise ValueError('Nonfinite micro-batch comparison')
+        value=results.setdefault(tier,dict(status='measured',micro_batch=tier,logical_batch=32,
+            accumulation_steps=32//tier,seconds=[],losses=[],peak_allocated_bytes=0,peak_reserved_bytes=0))
+        if timed:
+            value['seconds'].append(elapsed);value['losses'].append(loss)
+            value['peak_allocated_bytes']=max(value['peak_allocated_bytes'],torch.cuda.max_memory_allocated())
+            value['peak_reserved_bytes']=max(value['peak_reserved_bytes'],torch.cuda.max_memory_reserved())
+    try:
+        for tier in (8,16,32):
+            for _ in range(2):
+                if results.get(tier,{}).get('status')!='oom':measure(tier,False)
+        for tier in MICRO_ORDER:
+            if results.get(tier,{}).get('status')!='oom':measure(tier,True)
+        if len(results.get(8,{}).get('seconds',[]))!=4:raise ValueError('Reference micro8 did not complete')
+        recommended=8
+        for tier in (8,16,32):
+            value=results[tier]
+            if value['status']=='oom':continue
+            if len(value['seconds'])!=4:raise ValueError('Incomplete micro timing')
+            value['median_seconds']=statistics.median(value['seconds'])
+            value['samples_per_second']=32/value['median_seconds']
+            if tier!=8:
+                value['comparison_to_micro8']=summarize(results[8]['seconds'],value['seconds'])
+                if (value['comparison_to_micro8']['timing_promising']
+                        and value['median_seconds']<results[recommended]['median_seconds']):recommended=tier
+        c['restore']();c['exact']()
+        report=dict(schema='qkan-mamba-micro-benchmark.v1',measurement_completed=True,
+            checkpoint_sha256=request['checkpoint']['sha256'],request_sha256=digest(request_path),
+            tiers={str(k):v for k,v in results.items()},recommended_micro_batch=recommended,
+            logical_batch=32,precision='fp32',backend='eager',graph=False,
+            actual_fused_calls=c['projection'].calls,mechanism=c['projection'].mechanism,
+            rollback_exact=True,disposable_updates=budget,formal_updates_committed=0,
+            formal_release_allowed=False,numerical_acceptance='not evaluated; micro changes can change dropout and reductions',
+            timing_scope='CPU gather/H2D/forward/loss/backward/clip/Adam/schedule/synchronize; excludes restore, warmup and worker transaction snapshot',
+            sample_scope='one complete logical batch from latest checkpoint; no whole-dataset speed claim')
+        if report['actual_fused_calls']<=0:raise ValueError('Execution plugin did not run')
+        atomic_json(request_path.parent/(MICRO_ROUTE+'.json'),report);return report
+    finally:c['restore']()
+
+
 def native(request_path, route, validation=None):
     # Native imports occur exclusively in a supervised collaborator child.
     import numpy as np
     import torch
-    if route=='conv_fused_fp32':
+    if route in ('conv_fused_fp32',MICRO_ROUTE):
         from .mamba_convolution import prepare_native
         prepare_native(torch,read(request_path))
     from .worker import load_checkpoint, rng_state, restore_rng
@@ -205,6 +286,9 @@ def native(request_path, route, validation=None):
     if route=='conv_fused_fp32':
         from .mamba_convolution import FusedFP32
         projection=FusedFP32(torch,model)
+    elif route==MICRO_ROUTE:
+        from .execution_plugins import create
+        projection=create(dict(plugin='mamba.fused_fp32',version=2),config,torch,model)
     class Adapter(torch.nn.Module):
         def __init__(self): super().__init__();self.base=model
         def forward(self,*values):
@@ -219,13 +303,16 @@ def native(request_path, route, validation=None):
         forward=torch.cuda.make_graphed_callables(forward,tuple(batch[k] for k in inputs),num_warmup_iters=3)
         torch.cuda.synchronize();restore();exact()
     setup=time.perf_counter()-setup
-    def update(use_candidate, observe=None):
+    def update(use_candidate, observe=None, *, micro_batch=None):
         nonlocal replays
+        width=micro if micro_batch is None else micro_batch
+        if type(width) is not int or width not in (micro,8,16,32) or logical%width or (graph and width!=micro):
+            raise ValueError('Unsupported micro-batch comparison shape')
         arrays=train.numpy_batch(ids,validate=True)
         staged={k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}
         opt.zero_grad(set_to_none=True);loss_sum=0.
-        for start in range(0,len(ids),micro):
-            batch={k:v[start:start+micro] for k,v in staged.items()}
+        for start in range(0,len(ids),width):
+            batch={k:v[start:start+width] for k,v in staged.items()}
             if use_candidate:
                 logits=forward(*(batch[k] for k in inputs));replays+=int(graph)
             else: logits=model(batch,validated_inputs=True)
@@ -291,12 +378,14 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source-suite',type=Path);p.add_argument('--cache',type=Path)
     p.add_argument('--job',choices=JOBS,default=JOBS[0]);p.add_argument('--gpu',default='0')
-    p.add_argument('--request',type=Path);p.add_argument('--route',choices=ROUTES)
+    p.add_argument('--micro-benchmark',action='store_true',help='FP32 fused micro8/16/32, logical32; one finite child, no formal configuration change')
+    p.add_argument('--request',type=Path);p.add_argument('--route',choices=(*ROUTES,MICRO_ROUTE))
     p.add_argument('--output',type=Path,help=argparse.SUPPRESS)
     args=p.parse_args()
     if args.request:
         if not args.route or args.output!=args.request.parent/args.route:p.error('Bound child route/output required')
-        try: native(args.request,args.route)
+        try: native(args.request,args.route,
+            validation=(lambda c:micro_benchmark(c,args.request)) if args.route==MICRO_ROUTE else None)
         except Exception as error:
             from .common import worker_failure
             worker_failure(args.output,error)
@@ -310,7 +399,9 @@ def main():
     check_exchange();gpus,inventory=discover_gpus(args.gpu)
     if len(gpus)!=1 or not gpu_preflight(inventory[gpus[0]])['idle']:
         raise ValueError('Pause and wait for the original runner; selected GPU must be idle')
-    suite=ROOT/'runs'/('mamba-speed-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
+    experiment='mamba-micro-benchmark' if args.micro_benchmark else 'mamba-speed'
+    routes=(MICRO_ROUTE,) if args.micro_benchmark else ROUTES
+    suite=ROOT/'runs'/(experiment+'-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
     supervisor=Supervisor(900,300);report=dict(schema='qkan-mamba-speed.v1',routes={},formal_release_allowed=False)
     with ExitStack() as held:
         source=args.source_suite.resolve()
@@ -321,9 +412,14 @@ def main():
             held.enter_context(lock(path))
         if any(digest(path)!=sha for path,sha in request['source_files'].items()):
             raise ValueError('Source advanced while acquiring diagnostic locks; take a fresh snapshot')
+        if args.micro_benchmark:
+            from .mamba_convolution import stage
+            request.update(convolution_package=stage(),execution_plugin=dict(plugin='mamba.fused_fp32',version=2),
+                adaptive_observation=adaptive_observation(source/'jobs'/args.job))
+            atomic_json(suite/'request.json',request)
         print('Mamba diagnostic Suite: '+str(suite),flush=True)
         try:
-            for route in ROUTES:
+            for route in routes:
                 print('Mamba short comparison: '+route,flush=True)
                 spec=child_spec(suite,route)
                 code=supervisor.run(spec,suite/(route+'.log'),{**os.environ,'CUDA_VISIBLE_DEVICES':gpus[0],
@@ -341,9 +437,21 @@ def main():
         finally:
             report.update(source_unchanged=all(digest(path)==sha for path,sha in request['source_files'].items()),
                 request=request,child_executions=supervisor.records,gpu_identity=inventory[gpus[0]])
-            atomic_json(suite/'mamba-speed.json',report)
+            copied=suite/'source/checkpoints'
+            for path in copied.glob('step-*.pt'):path.unlink()
+            report['copied_checkpoint_removed']=not any(copied.glob('step-*.pt'))
+            atomic_json(suite/(experiment+'.json'),report)
             from .return_artifacts import upload_declared
-            upload_declared(suite,'mamba-speed',['mamba-speed.json'])
+            upload_declared(suite,experiment,[experiment+'.json'])
+    if args.micro_benchmark:
+        value=report['routes'].get(MICRO_ROUTE,{})
+        complete=value.get('measurement_completed') is True and report['source_unchanged']
+        if complete:
+            for tier,row in value['tiers'].items():
+                print('micro '+tier+': '+(str(round(row['samples_per_second'],2))+' samples/s' if row['status']=='measured' else 'OOM'),flush=True)
+            print('Recommended micro: '+str(value['recommended_micro_batch'])+'; formal configuration unchanged.',flush=True)
+        else:print('Micro comparison failed/incomplete; inspect returned report.',flush=True)
+        return 0 if complete else 76
     complete=all('timing' in v for v in report['routes'].values()) and len(report['routes'])==4
     print(('Four comparisons completed and returned.' if complete else
            'Comparisons FAILED/incomplete; partial diagnostics returned, no speed result established.')+

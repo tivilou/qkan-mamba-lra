@@ -26,6 +26,8 @@ Put rationale and chronology in decisions/*.md instead.
 
 ## Decision Index
 
+- Execution architecture (2026-11-24): new accelerations use explicit worker hooks and model-instance plugins; do not replace shared trainer/upstream globals. Science binding excludes UI/controller, but every Suite retains its original pinned executor. See docs/baselines/execution-architecture.md. Migrate only from latest full state, never a historical fixed step.
+
 <!-- Add one bullet per decision: `- [STATUS] Short title -> [detail](relative/path.md)`. -->
 - [ACTIVE] Implementation roster and claim scope -> [detail](decisions/2026-11-04-implementation-roster.md)
 - [ACTIVE] Assume collaborator has no external internet -> [detail](decisions/2026-11-04-offline-collaborator.md)

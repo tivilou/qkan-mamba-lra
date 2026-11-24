@@ -1,0 +1,27 @@
+{
+  "schema": "qkan-code-delivery.v1",
+  "baseline_revision": "89353fc83f894d5407e358191cbaa4db768ecbc8",
+  "scope": "Explicit worker execution hooks, instance-scoped FP32 Mamba plugin and finite micro8/16/32 comparison",
+  "local_validation": {
+    "tests_run": 41,
+    "passed": 41,
+    "framework_imports": false,
+    "model_or_gpu_execution": false,
+    "covered": ["unchanged scientific update ASTs", "instance and upstream-global isolation", "original optional worker call", "latest full checkpoint inheritance", "finite recovery hooks", "supervised child output arguments", "balanced restored micro timing and OOM isolation", "source checkpoint copy cleanup", "existing unified entry compatibility"]
+  },
+  "runtime_package": ".runtime/mamba-micro-plugin-20261124",
+  "collaborator_test": {
+    "entry": "scripts/experiment.py diagnose mamba-speed -- --micro-benchmark",
+    "micro_batches": [8, 16, 32],
+    "logical_batch": 32,
+    "maximum_disposable_update_attempts": 18,
+    "formal_updates_committed": 0,
+    "actual_hardware_result": "pending collaborator execution",
+    "numerical_equivalence": "not established",
+    "new_formal_plugin_v2_recovery": "pending native verification"
+  },
+  "existing_executor": "89353fc83f89",
+  "existing_suite": "mamba-fused-formal-20261124T061405Z-b57105a1",
+  "command_guide": "docs/baselines/mamba-validation.md",
+  "architecture_guide": "docs/baselines/execution-architecture.md"
+}

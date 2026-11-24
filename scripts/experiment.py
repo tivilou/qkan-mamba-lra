@@ -57,7 +57,7 @@ def validate_executor(root, suite):
     formal = suite/'formal-input.json'
     if fused.exists():
         value = read(fused)
-        if value.get('schema') != 'qkan-mamba-fused-formal.v1':
+        if value.get('schema') not in ('qkan-mamba-fused-formal.v1','qkan-mamba-fused-formal.v2'):
             raise ValueError('Unknown Mamba fused Suite schema')
         expected = value['source_revision']
     elif graph.exists():
