@@ -1,0 +1,52 @@
+{
+  "schema": "qkan-native-review.v1",
+  "run_id": "mamba-micro-benchmark-20261124T071532Z-cc3cbe0b",
+  "source_revision": "3e7adbf7c416cd693895c1342cc6046c5f250c8e",
+  "artifact": {
+    "namespace": "qkan-mamba/mamba-micro-benchmark/mamba-micro-benchmark-20261124T071532Z-cc3cbe0b/mamba-micro-benchmark.json",
+    "bytes": 25202,
+    "sha256": "396bd42afef6b80ed360bd6978e67599573c368153ebbd81756d808fdea4fda0",
+    "uploaded_at": "2026-11-24T07:15:57.482762+00:00"
+  },
+  "source_checkpoint_step": 34149,
+  "source_checkpoint_sha256": "2d1de23d5126af39481c75a7728e6f21e27d966097451c58a903a11d8910539c",
+  "timing": {
+    "8": {
+      "median_seconds": 0.3562443107366562,
+      "samples_per_second": 89.8259959122691,
+      "gain_vs_micro8": 0.0,
+      "peak_allocated_gib": 2.0199155807495117,
+      "peak_reserved_gib": 8.41796875
+    },
+    "16": {
+      "median_seconds": 0.4144521076232195,
+      "samples_per_second": 77.21036860811759,
+      "gain_vs_micro8": -0.1404451704211872,
+      "peak_allocated_gib": 3.9487714767456055,
+      "peak_reserved_gib": 8.41796875
+    },
+    "32": {
+      "median_seconds": 0.44453573785722256,
+      "samples_per_second": 71.98521350442664,
+      "gain_vs_micro8": -0.1986149134963905,
+      "peak_allocated_gib": 7.78251314163208,
+      "peak_reserved_gib": 8.41796875
+    }
+  },
+  "recommended_micro_batch": 8,
+  "physical16_to8_reverts_in_recent32events": 16,
+  "native_child_seconds": 22.47891242057085,
+  "actual_fused_calls": 504,
+  "plugin_policy": "mamba-causal-conv-fused-fp32-v2",
+  "source_unchanged": true,
+  "disposable_copy_removed": true,
+  "rollback_exact": true,
+  "formal_updates_committed": 0,
+  "limits": [
+    "One fixed logical32 batch; no whole-dataset speed claim",
+    "Timing excludes restore/warmup/formal transaction snapshots",
+    "Micro changes alter dropout/reductions; numerical equivalence not established",
+    "Native plugin-v2 finite execution succeeded; formal fresh-process recovery still pending",
+    "Report does not certify live training heartbeat after automatic original-executor resume"
+  ]
+}
