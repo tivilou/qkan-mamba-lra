@@ -2,6 +2,27 @@
 
 日常只使用`scripts/experiment.py`。它负责路由、原美化看板、父进程监督和安全暂停；科学执行器仍由Suite绑定的原版本负责。不是把模型、准入、诊断和回传实现合成一个大脚本，也不改变已有实验轨迹。
 
+## 当前训练顺序：Retrieval 统一放最后（2026-11-25）
+
+所有模型先完成 ListOps、Text、Image、Pathfinder，再处理未完成的 Retrieval。保持原模型顺序及其余数据集的相对顺序；已有结果直接沿用，暂停的 Retrieval 使用自己的最新完整断点。只改变派发顺序，不改变 BF16/Graph/融合策略、batch、学习率或训练预算。
+
+如果原终端仍在训练，先按一次 Ctrl-C，等待保存并显示“实验入口已退出”，再执行以下整段；原本已暂停则直接执行。锁仍被占用时入口拒绝重复启动。
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
+git fetch origin research/collaboration-foundation &&
+mkdir -p .bootstrap &&
+git show FETCH_HEAD:scripts/experiment.py > .bootstrap/experiment.py &&
+git show FETCH_HEAD:scripts/formal_progress.py > .bootstrap/formal_progress.py &&
+.venv-baselines/bin/python -B .bootstrap/experiment.py resume \
+  --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
+  --task-order retrieval-last
+```
+
+仍是一个终端内训练并显示美化看板，不创建新 Suite。原执行 checkout 的受跟踪文件保持不变。控制层在持有锁时记录 `task-order.json`，绑定原清单哈希；只给派发函数提供排序视图，原校验函数继续读取原清单，未替换共享模块全局变量。正式续跑 Suite 默认采用该顺序；历史普通 admitted Suite 保持原行为。`watch` 只读取已记录顺序。
+
+恢复原顺序：安全暂停后，将同一续跑指令末尾改为 `--task-order manifest`。该选项仅恢复清单派发顺序，不回退训练状态。改顺序不重复已通过的恢复诊断，也不重跑已完成任务。
+
 ## 当前速度优化版：一条命令续跑并显示
 
 BF16＋Graph 实际 worker 接入现使用显式 `start --profile bf16-graph`，见[首次切换整段指令](bf16-graph-formal.md)。它自动完成实际 worker 恢复检查，再在同一终端续跑和显示；新 Suite 后续直接 `resume`。以下命令保留为原 BF16 eager Suite 的续跑入口。

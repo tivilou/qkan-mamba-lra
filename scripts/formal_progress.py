@@ -199,6 +199,9 @@ class Dashboard:
         manifest=read(self.suite/'suite.json',{})
         states=read(self.suite/'status.json',{})
         jobs=manifest.get('jobs',[])
+        task_order=read(self.suite/'task-order.json',{}).get('policy')
+        if task_order=='retrieval-last':
+            jobs=sorted(jobs,key=lambda job:'-retrieval-s' in job['id'])
         names=[j['id'] for j in jobs]
         groups={name:[] for name in ('computed','running','pending','failed','paused')}
         for job in names:
@@ -208,6 +211,8 @@ class Dashboard:
         lines=[f'\n[{clock}] 实验：{self.suite.name}',
                f"任务 {len(names)} | 已计算 {len(groups['computed'])} | 运行 {len(groups['running'])} | "
                f"排队 {len(groups['pending'])} | 失败 {len(groups['failed'])} | 暂停 {len(groups['paused'])}"]
+        if task_order=='retrieval-last':
+            lines.append('训练顺序：先完成所有模型的 ListOps / Text / Image / Pathfinder，再续跑 Retrieval（保留断点）')
         preserved=[job['id'] for job in jobs if job.get('preserved_completion')]
         if preserved:
             lines.append('沿用已完成结果（保留原版本，不重跑）：'+', '.join(preserved))

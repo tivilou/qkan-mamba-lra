@@ -2,7 +2,7 @@
 
 四路线测速已完成并审计，下一步使用 [BF16数值与恢复短验证](mamba-validation.md) 的单条诊断指令；无需重复本页测速。
 
-当前顺序：先 Mamba1 Retrieval，再将被证实有效且兼容的实现用于 Image、Pathfinder；然后处理 MEGA。S5/JAX 和 S4D 分开判断。已完成的七项保持原结果，不重跑。
+2026-11-25 起，正式训练顺序改为所有模型先完成 ListOps、Text、Image、Pathfinder，未完成的 Retrieval 统一放到最后并保留断点；见[当前一体化续跑指令](experiment.md)。本页以下为历史短诊断说明；不再表示应优先暂停其他任务去优化 Retrieval。MEGA、S5/JAX 和 S4D 仍分别判断加速策略，已完成结果保持不变。
 
 本次交付是测量入口，尚无新的 GPU 提速结果，也不自动放行新的正式策略。不要给当前训练目录直接加 BF16 或改写绑定配置。
 

@@ -27,6 +27,78 @@ class UnifiedTests(unittest.TestCase):
     def validated(self):
         return patch.object(e.subprocess,'check_output',side_effect=['pinned\n',''])
 
+    def test_retrieval_last_is_global_stable_and_leaves_manifest_and_states_unchanged(self):
+        jobs=[dict(id=model+'-'+task+'-s42', config_sha256='bound')
+              for model in ('transformer','mamba1','mega','s5','s4d_minimal')
+              for task in ('listops','text','retrieval','image','pathfinder')]
+        atomic_json(self.suite/'suite.json',dict(jobs=jobs))
+        atomic_json(self.suite/'status.json',{j['id']:dict(state='paused' if 'retrieval' in j['id'] else 'computed') for j in jobs})
+        before={p.name:p.read_bytes() for p in self.suite.iterdir()}
+        atomic_json(self.suite/'task-order.json',e.queue_record(self.suite,'retrieval-last'))
+        ordered=e.queue_read(self.suite,e.read)(self.suite/'suite.json')['jobs']
+        self.assertEqual(ordered[:20],[j for j in jobs if 'retrieval' not in j['id']])
+        self.assertEqual(ordered[20:],[j for j in jobs if 'retrieval' in j['id']])
+        self.assertEqual(before,{name:(self.suite/name).read_bytes() for name in before})
+        # Explicit rollback changes only the scheduling view.
+        atomic_json(self.suite/'task-order.json',e.queue_record(self.suite,'manifest'))
+        self.assertEqual(e.queue_read(self.suite,e.read)(self.suite/'suite.json')['jobs'],jobs)
+
+    def test_order_record_rejects_changed_manifest(self):
+        atomic_json(self.suite/'suite.json',dict(jobs=[]))
+        atomic_json(self.suite/'task-order.json',e.queue_record(self.suite,'retrieval-last'))
+        atomic_json(self.suite/'suite.json',dict(jobs=[dict(id='unexpected')]))
+        with self.assertRaises(ValueError):e.queue_read(self.suite,e.read)
+
+    def test_dispatcher_view_does_not_change_shared_validator_globals(self):
+        atomic_json(self.suite/'suite.json',dict(jobs=[dict(id='mamba1-retrieval-s42'),dict(id='mega-text-s42')]))
+        atomic_json(self.suite/'task-order.json',e.queue_record(self.suite,'retrieval-last'))
+        from experiments.baseline_delivery import mamba_fused_formal as target
+        def dispatcher(path):return read(path)
+        # A private copy of execute sees ordering; helpers retain their original globals.
+        function=e.private_function(dispatcher,read=e.queue_read(self.suite,e.read))
+        original=target.read
+        self.assertEqual(function(self.suite/'suite.json')['jobs'][0]['id'],'mega-text-s42')
+        self.assertIs(target.read,original)
+        self.assertEqual(e.read(self.suite/'suite.json')['jobs'][0]['id'],'mamba1-retrieval-s42')
+
+    def test_ordered_resume_uses_private_controller_and_original_root(self):
+        with self.validated():command=e.resume_command(self.root,self.suite,task_order='retrieval-last')
+        self.assertIn('_dispatch-queue',command)
+        self.assertEqual(command[command.index('--root')+1],str(self.root))
+        self.assertEqual(command[command.index('--suite')+1],str(self.suite))
+
+    def test_actual_fused_dispatcher_selects_non_retrieval_before_paused_retrieval(self):
+        from experiments.baseline_delivery import mamba_fused_formal as target
+        jobs=[dict(id='mamba1-retrieval-s42'),dict(id='mega-text-s42')]
+        atomic_json(self.suite/'suite.json',dict(jobs=jobs))
+        atomic_json(self.suite/'status.json',{jobs[0]['id']:dict(state='paused'),jobs[1]['id']:dict(state='pending')})
+        atomic_json(self.suite/'mamba-input.json',dict(origin_suite=str(self.root/'source')))
+        atomic_json(self.suite/'mamba-ready.json',{})
+        atomic_json(self.suite/'task-order.json',e.queue_record(self.suite,'retrieval-last'))
+        args=SimpleNamespace(cache=None,upload_only=False,prepare_only=False,gpu='0')
+        controller=dict(origin_suite=str(self.root/'origin'),source_suite=str(self.root/'legacy'))
+        with patch.object(target,'source_context',return_value=controller), \
+                patch.object(target,'lock',side_effect=lambda _:nullcontext()), \
+                patch.object(target,'verify',return_value={}), \
+                patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})), \
+                patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value=dict(idle=True)), \
+                patch.object(target.original,'run_job',return_value=75) as run:
+            function=e.private_function(target.execute,read=e.queue_read(self.suite,target.read))
+            self.assertEqual(function(args,self.suite),75)
+        self.assertEqual(run.call_args.args[2]['id'],'mega-text-s42')
+        self.assertEqual(e.read(self.suite/'status.json')[jobs[0]['id']],dict(state='paused'))
+
+    def test_dashboard_displays_same_global_order_without_starting_process(self):
+        from scripts.formal_progress import Dashboard
+        atomic_json(self.suite/'suite.json',dict(jobs=[dict(id='mamba1-retrieval-s42'),dict(id='mega-text-s42')]))
+        atomic_json(self.suite/'status.json',{})
+        atomic_json(self.suite/'task-order.json',e.queue_record(self.suite,'retrieval-last'))
+        with patch('scripts.formal_progress.subprocess.run',side_effect=AssertionError('No process')):
+            frame=Dashboard(self.root,self.suite).render()
+        self.assertIn('先完成所有模型',frame)
+        pending=next(line for line in frame.splitlines() if line.startswith('排队：'))
+        self.assertLess(pending.index('mega-text-s42'),pending.index('mamba1-retrieval-s42'))
+
     def test_candidate_resume_uses_original_interpreter_and_original_module(self):
         with self.validated(): command=e.resume_command(self.root,self.suite)
         self.assertEqual(command,[sys.executable,'-B','-m','experiments.baseline_delivery.key_bias_formal','--resume',str(self.suite)])

@@ -6,6 +6,8 @@ imports or install in this controller. Existing entrypoints remain compatible.
 import argparse
 from contextlib import ExitStack
 import datetime as dt
+import hashlib
+import importlib
 import json
 import math
 import os
@@ -15,6 +17,7 @@ import signal
 import subprocess
 import sys
 import time
+from types import FunctionType
 import uuid
 
 PROFILES = {
@@ -86,8 +89,56 @@ def module(name, *args):
     return [sys.executable, '-B', '-m', 'experiments.baseline_delivery.'+name, *map(str, args)]
 
 
-def resume_command(root, suite, upload=False):
+def queue_record(suite, task_order):
+    return dict(schema='qkan-task-order.v1', policy=task_order,
+        manifest_sha256=hashlib.sha256((suite/'suite.json').read_bytes()).hexdigest())
+
+
+def queue_read(suite, original_read):
+    """Private dispatcher view; validators continue reading the original bytes."""
+    record = read(suite/'task-order.json')
+    if record != queue_record(suite, record['policy']) or record['policy'] not in ('manifest', 'retrieval-last'):
+        raise ValueError('Task order must match the original Suite manifest')
+    def ordered(path):
+        value = original_read(path)
+        if Path(path).resolve() == (suite/'suite.json').resolve() and record['policy'] == 'retrieval-last':
+            value = dict(value, jobs=sorted(value['jobs'], key=lambda job: '-retrieval-s' in job['id']))
+        return value
+    return ordered
+
+
+def private_function(function, **overrides):
+    """Bind only this controller call; never replace shared module globals."""
+    result = FunctionType(function.__code__, dict(function.__globals__, **overrides),
+        function.__name__, function.__defaults__, function.__closure__)
+    result.__kwdefaults__ = function.__kwdefaults__
+    return result
+
+
+def dispatch_queue(root, suite):
     kind = validate_executor(root, suite)
+    targets = {'mamba-fused': 'mamba_fused_formal', 'bf16-graph': 'bf16_graph_formal',
+               'key-bias': 'key_bias_formal'}
+    if kind not in targets: raise ValueError('Task ordering requires a formal continuation Suite')
+    sys.path.insert(0, str(root))
+    target = importlib.import_module('experiments.baseline_delivery.'+targets[kind])
+    execute = private_function(target.execute, read=queue_read(suite, target.read))
+    entry = private_function(target.main, execute=execute)
+    previous = sys.argv
+    try:
+        sys.argv = [targets[kind], '--resume', str(suite)]
+        return entry()
+    finally:
+        sys.argv = previous
+
+
+def resume_command(root, suite, upload=False, task_order=None):
+    kind = validate_executor(root, suite)
+    if task_order is not None and not upload:
+        if kind not in ('mamba-fused', 'bf16-graph', 'key-bias'):
+            raise ValueError('Task ordering requires a formal continuation Suite')
+        return [sys.executable, '-B', str(Path(__file__).resolve()), '--root', str(root),
+                '_dispatch-queue', '--suite', str(suite)]
     if kind == 'mamba-fused':
         return module('mamba_fused_formal', '--resume', suite, *(['--upload-only'] if upload else []))
     if kind == 'bf16-graph':
@@ -144,7 +195,7 @@ def require_linux():
     if os.name != 'posix': raise ValueError('Training supervision requires collaborator Linux runtime')
 
 
-def supervise(root, suite, command, ui, interval=5, display='auto', after_prepare=False):
+def supervise(root, suite, command, ui, interval=5, display='auto', after_prepare=False, task_order=None):
     """Own one parent, original UI, safe pause and logs; never own scientific state."""
     sys.path.insert(0, str(root))
     from experiments.baseline_delivery.common import lock, atomic_json
@@ -169,6 +220,10 @@ def supervise(root, suite, command, ui, interval=5, display='auto', after_prepar
                 offset = output.tell()
                 while True:
                     if pausing: return 75
+                    if task_order is not None and not after_prepare:
+                        # Only scheduler metadata changes, while no formal parent owns the Suite.
+                        with lock(suite/'suite.lock'):
+                            atomic_json(suite/'task-order.json', queue_record(suite, task_order))
                     child = subprocess.Popen(command, cwd=root, stdout=output, stderr=subprocess.STDOUT,
                         start_new_session=True, env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1',
                             PYTHONUNBUFFERED='1', CUBLAS_WORKSPACE_CONFIG=':4096:8',
@@ -198,7 +253,8 @@ def supervise(root, suite, command, ui, interval=5, display='auto', after_prepar
                     if suite is None: suite = discover_created(root, log, offset)
                     if suite is None: raise ValueError('Preparation returned without an owned Suite')
                     held.enter_context(lock(suite/'progress-supervisor.lock'))
-                    command = resume_command(root, suite)
+                    command = (resume_command(root, suite, task_order=task_order) if task_order is not None
+                               else resume_command(root, suite))
                     after_prepare = False
     finally:
         terminal.close()
@@ -226,6 +282,10 @@ def main(argv=None):
         sub = subs.add_parser(name)
         sub.add_argument('--suite', type=Path, required=True)
         if name == 'watch': sub.add_argument('--once', action='store_true')
+    subs.choices['resume'].add_argument('--task-order', choices=('manifest', 'retrieval-last'),
+        help='Formal continuation default: other four datasets before Retrieval; preserve checkpoints')
+    dispatch = subs.add_parser('_dispatch-queue', help=argparse.SUPPRESS)
+    dispatch.add_argument('--suite', type=Path, required=True)
     diagnostic = subs.add_parser('diagnose', help='Explicit diagnostic only; never automatic during resume')
     diagnostic.add_argument('kind', choices=DIAGNOSTICS)
     diagnostic.add_argument('arguments', nargs=argparse.REMAINDER)
@@ -246,6 +306,7 @@ def main(argv=None):
             command = start_command(args, root, suite)
             return supervise(root, suite, command, display_module(), args.interval, args.display, not args.prepare_only)
         suite = confined_suite(root, args.suite)
+        if args.operation == '_dispatch-queue': return dispatch_queue(root, suite)
         if args.operation == 'watch':
             ui = display_module(); dashboard = ui['Dashboard'](root, suite); terminal = ui['Terminal'](args.display)
             try:
@@ -254,9 +315,13 @@ def main(argv=None):
                     terminal.show(dashboard.render()); time.sleep(args.interval)
             except KeyboardInterrupt: return 0
             finally: terminal.close()
-        command = resume_command(root, suite, args.operation == 'upload')
+        task_order = args.task_order if args.operation == 'resume' else None
+        if args.operation == 'resume' and task_order is None and any(
+                (suite/name).is_file() for name in ('mamba-input.json', 'graph-input.json', 'formal-input.json')):
+            task_order = 'retrieval-last'
+        command = resume_command(root, suite, args.operation == 'upload', task_order=task_order)
         if args.operation == 'upload': return subprocess.call(command, cwd=root)
-        return supervise(root, suite, command, display_module(), args.interval, args.display)
+        return supervise(root, suite, command, display_module(), args.interval, args.display, task_order=task_order)
     except (ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
         print('入口检查未通过：'+str(error), file=sys.stderr); return 2
 
