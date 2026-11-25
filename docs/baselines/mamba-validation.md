@@ -1,6 +1,46 @@
 # Mamba 加速测试与续跑
 
-## 当前：三种显存换速度方法，测试后原界面续跑
+## 当前：融合 FP32＋TF32 单项测速，测试后原界面续跑
+
+当前三项显存测试的观测收益很小，且发现诊断恢复时 Adam CPU step 张量与输入状态共享，
+使对照步数漂移。这些旧结果暂作参考，不据此启用候选。详见
+[回传核验](../evidence/mamba-memory-native-review-20261125.json)。
+本版给 optimizer、样本时钟和 RNG 每次恢复传入独立副本，并在每次恢复及每段更新后，
+用首次加载时冻结的 Python 标量计数核对原始/活动 Adam 状态。
+
+新增现有入口参数 `--tf32-benchmark`，只比较当前融合 FP32 eager 与同路径开启 TF32 matmul。
+保持 micro8/logical32、FP32 参数和 Adam，不启用 BF16、cuDNN TF32、Graph或其他候选。
+每段从最新完整检查点重新恢复，使用相同的连续最多4批训练样本；先两段基线重复和一段候选，
+再 ABBA×2，共最多44次临时更新、一个隔离子进程。记录完整更新吞吐、数值差异与重复噪声、
+实际精度开关、融合调用及每段 Adam 计数；单列是否达到吞吐＋50%，不预设收益。
+TF32改变矩阵乘法精度，测速成功不表示正式数值或收敛准入。
+
+**若原训练正在运行，先在原窗口安全暂停并等保存退出，避免同卡竞争污染测速。**
+让师弟执行下面整段；测试回传与进程清理核对结束后，自动用原配置续跑并显示同屏美化进度：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
+MAMBA_SOURCE_ROOT="$PWD" &&
+MAMBA_SOURCE_SUITE="$PWD/runs/mamba-fused-formal-20261124T061405Z-b57105a1" &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MAMBA_TF32_REV=$(git rev-parse FETCH_HEAD) &&
+cd "/root/projects/qkan-mamba-lra-adaptive-${MAMBA_TF32_REV:0:12}" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py diagnose mamba-speed -- \
+  --source-suite "$MAMBA_SOURCE_SUITE" \
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --tf32-benchmark &&
+cd "$MAMBA_SOURCE_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py resume --suite "$MAMBA_SOURCE_SUITE"
+```
+
+保留原89353fc固定执行器、七份完成结果与最新完整训练断点。新工作树只做临时测速，不迁移正式Suite。
+自动回传 `qkan-mamba/mamba-tf32-benchmark/<运行名>/mamba-tf32-benchmark.json`。
+单项失败也回传错误并明确标记；退出0只表示诊断流程、源检查与进程清理完成，不等于候选成功。
+回传失败、源文件变化或清理失败则停住，不盲目恢复。回退即继续使用下文原执行器的 resume 指令。
+本次只测 TF32，不重复旧的三方法、micro、BF16和恢复认证全套实验。
+
+## 历史：三种显存换速度方法
 
 已完成micro8/16/32测试：micro8最快89.83samples/s；16与32分别慢14.04%和19.86%，
 保持FP32、micro8、logical32。见[实测核验](../evidence/mamba-micro-native-review-20261124.json)。

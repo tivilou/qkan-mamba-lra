@@ -9,7 +9,8 @@ from .performance import PinnedStaging
 
 METHODS=('memory_retain','memory_prefetch','memory_graph')
 COMBINED='memory_combined'
-FLAGS={METHODS[0]:('retain',),METHODS[1]:('prefetch',),METHODS[2]:('graph',)}
+TF32_ROUTE='tf32_fused_fp32'
+FLAGS={METHODS[0]:('retain',),METHODS[1]:('prefetch',),METHODS[2]:('graph',),TF32_ROUTE:('tf32',)}
 ORDER=(False,True,True,False)*2
 
 
@@ -120,7 +121,12 @@ def operation(c,request_path,route):
     peaks={False:dict(allocated=0,reserved=0),True:dict(allocated=0,reserved=0)}
     reference=InputPipeline(t,c['train'],batches,False)
     candidate=InputPipeline(t,c['train'],batches,'prefetch' in flags)
-    def select(enabled):policy.set_checkpoint_level(0 if enabled and 'retain' in flags else 1)
+    original_precision=(t.backends.cuda.matmul.allow_tf32,t.backends.cudnn.allow_tf32)
+    step_checks=[]
+    def select(enabled):
+        policy.set_checkpoint_level(0 if enabled and 'retain' in flags else 1)
+        t.backends.cuda.matmul.allow_tf32=bool(enabled and 'tf32' in flags)
+        t.backends.cudnn.allow_tf32=False
     def output():
         result=c['output']();result['gradients']=c['host']({name:p.grad for name,p in c['model'].named_parameters() if p.grad is not None})
         return result
@@ -142,6 +148,10 @@ def operation(c,request_path,route):
             t.cuda.synchronize();losses=[float(value) for value in losses]
             if not all(math.isfinite(value) for value in losses):raise ValueError('Nonfinite memory comparison')
             elapsed=time.perf_counter()-started
+            step_checks.append(dict(candidate=enabled,updates=count,
+                matmul_allow_tf32=t.backends.cuda.matmul.allow_tf32,
+                cudnn_allow_tf32=t.backends.cudnn.allow_tf32,
+                optimizer_steps=c['check_optimizer_steps'](count)))
             peaks[enabled]['allocated']=max(peaks[enabled]['allocated'],t.cuda.max_memory_allocated())
             peaks[enabled]['reserved']=max(peaks[enabled]['reserved'],t.cuda.max_memory_reserved())
             return elapsed,losses
@@ -181,6 +191,10 @@ def operation(c,request_path,route):
             mechanism={k:v for k,v in policy.mechanism.items() if k!='checkpoint_lvl'},
             reference_execution=dict(checkpoint_lvl=1,gpu_prefetch=False,graph=False),
             candidate_execution=dict(checkpoint_lvl=0 if 'retain' in flags else 1,gpu_prefetch='prefetch' in flags,graph='graph' in flags),
+            precision=dict(parameters='fp32',optimizer='fp32',autocast=False,
+                reference_matmul_tf32=False,candidate_matmul_tf32='tf32' in flags,cudnn_tf32=False),
+            optimizer_step_control=dict(checkpoint=c['checkpoint_optimizer_steps'],blocks=step_checks,passed=True),
+            target_throughput_gain=.5,target_gain_reached=timing['throughput_gain']>=.5,
             source_restored_exact=True,disposable_updates=completed,disposable_update_attempts=attempts,
             formal_updates_committed=0,formal_release_allowed=False,
             timing_scope='complete consecutive updates: CPU lookahead/pinned staging/H2D/forward/backward/clip/Adam/schedule/sync; excludes state restore, graph build, numeric copies and thread shutdown',
@@ -201,4 +215,5 @@ def operation(c,request_path,route):
             try:reference.close()
             finally:candidate.close()
         finally:
+            t.backends.cuda.matmul.allow_tf32,t.backends.cudnn.allow_tf32=original_precision
             policy.set_checkpoint_level(1);c['restore']()

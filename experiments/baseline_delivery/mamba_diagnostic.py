@@ -12,12 +12,33 @@ import time
 import uuid
 
 from .common import ROOT, atomic_json, digest, fingerprint, lock, read, revision
-from .mamba_memory_benchmark import METHODS as MEMORY_METHODS,COMBINED as MEMORY_COMBINED
+from .mamba_memory_benchmark import METHODS as MEMORY_METHODS,COMBINED as MEMORY_COMBINED,TF32_ROUTE
 
 JOBS = tuple('mamba1-'+task+'-s42' for task in ('retrieval','image','pathfinder'))
 ROUTES = ('fp32_eager','bf16_eager','fp32_graph','bf16_graph')
 MICRO_ROUTE='micro_fused_fp32'
 MICRO_ORDER=(8,16,32,32,16,8)*2
+
+
+def optimizer_steps(value):
+    """Freeze counters as Python scalars, independent of mutable Adam tensors."""
+    return {str(key):float(row['step'].item() if hasattr(row['step'],'item') else row['step'])
+        for key,row in value['state'].items() if 'step' in row}
+
+
+def check_optimizer_steps(expected,value,updates=0):
+    wanted={key:step+updates for key,step in expected.items()}
+    actual=optimizer_steps(value)
+    if actual!=wanted:raise ValueError('Diagnostic Adam counter drift: restored block must start from immutable checkpoint counters')
+    return actual
+
+
+def restore_diagnostic_state(model,opt,schedule,state,host,restore_rng):
+    # Optimizer.load_state_dict may retain CPU scalar tensors by reference.
+    # Each load owns a clone; never let a temporary Adam step mutate our input.
+    model.load_state_dict(state['model']);opt.load_state_dict(host(state['optimizer']))
+    schedule.load_state_dict(host(state['sample_clock']))
+    opt.zero_grad(set_to_none=True);restore_rng(host(state['rng']))
 
 
 class InputProjectionBF16:
@@ -106,7 +127,7 @@ def summarize(reference, candidate):
 
 
 def child_spec(suite, route):
-    if route not in (*ROUTES,MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED): raise ValueError('Unknown Mamba comparison route')
+    if route not in (*ROUTES,MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED,TF32_ROUTE): raise ValueError('Unknown Mamba comparison route')
     return dict(target='experiments.baseline_delivery.mamba_diagnostic',cwd=str(ROOT),argv=[
         sys.executable,'-B','-m','experiments.baseline_delivery.mamba_diagnostic',
         '--request',str(suite/('combined-request.json' if route==MEMORY_COMBINED else 'request.json')),
@@ -229,7 +250,7 @@ def native(request_path, route, validation=None):
     # Native imports occur exclusively in a supervised collaborator child.
     import numpy as np
     import torch
-    if route in ('conv_fused_fp32',MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED):
+    if route in ('conv_fused_fp32',MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED,TF32_ROUTE):
         from .mamba_convolution import prepare_native
         prepare_native(torch,read(request_path))
     from .worker import load_checkpoint, rng_state, restore_rng
@@ -245,6 +266,8 @@ def native(request_path, route, validation=None):
     torch.set_num_threads(int(os.environ.get('QKAN_CPU_THREADS','1')))
     torch.use_deterministic_algorithms(True); torch.backends.cudnn.benchmark=False
     torch.backends.cuda.matmul.allow_tf32=False; torch.backends.cudnn.allow_tf32=False
+    if route==TF32_ROUTE and torch.cuda.get_device_capability()[0]<8:
+        raise ValueError('TF32 comparison requires an Ampere or newer CUDA device')
     mark('mamba_restore',flush=True)
     mark('mamba_data_identity',flush=True)
     train=Split(request['data'],config['task'],'train',request['cache'],config['data_hashes']['train'])
@@ -273,13 +296,17 @@ def native(request_path, route, validation=None):
         if isinstance(value,dict): return {k:host(v) for k,v in value.items()}
         if isinstance(value,(tuple,list)): return type(value)(host(v) for v in value)
         return copy.deepcopy(value)
+    frozen_steps=optimizer_steps(state['optimizer'])
+    def check_steps(updates=0):
+        check_optimizer_steps(frozen_steps,state['optimizer'])
+        return check_optimizer_steps(frozen_steps,opt.state_dict(),updates)
     def restore():
-        model.load_state_dict(state['model']);opt.load_state_dict(state['optimizer'])
-        schedule.load_state_dict(clock_state);opt.zero_grad(set_to_none=True);restore_rng(state['rng'])
+        restore_diagnostic_state(model,opt,schedule,state,host,restore_rng);check_steps()
     def exact():
         for name,value in dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state()).items():
             compare_states(state[name],host(value))
         compare_states(clock_state,schedule.state_dict())
+        check_steps()
     mark('mamba_state_roundtrip',flush=True)
     restore();exact()
     inputs=tuple(sorted(k for k in train.numpy_batch(ids) if k!='labels'))
@@ -288,7 +315,7 @@ def native(request_path, route, validation=None):
     if route=='conv_fused_fp32':
         from .mamba_convolution import FusedFP32
         projection=FusedFP32(torch,model)
-    elif route in (MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED):
+    elif route in (MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED,TF32_ROUTE):
         from .execution_plugins import create
         projection=create(dict(plugin='mamba.fused_fp32',version=2),config,torch,model)
     class Adapter(torch.nn.Module):
@@ -340,7 +367,8 @@ def native(request_path, route, validation=None):
         try:
             return validation(dict(torch=torch,np=np,model=model,opt=opt,schedule=schedule,state=state,
                 micro=micro,logical=logical,ids=ids,train=train,host=host,restore=restore,exact=exact,
-                update=update,output=output,setup_seconds=setup,projection=projection,forward=forward,inputs=inputs))
+                update=update,output=output,setup_seconds=setup,projection=projection,forward=forward,inputs=inputs,
+                check_optimizer_steps=check_steps,checkpoint_optimizer_steps=frozen_steps))
         finally:
             if projection is not None:projection.close()
     # Uninstrumented warmups, restored before every measurement.
@@ -389,13 +417,14 @@ def main():
     mode=p.add_mutually_exclusive_group()
     mode.add_argument('--micro-benchmark',action='store_true',help='FP32 fused micro8/16/32, logical32; one finite child, no formal configuration change')
     mode.add_argument('--memory-benchmark',action='store_true',help='FP32 micro8: retained activations, GPU double buffer and fused Graph; finite isolated comparisons')
-    p.add_argument('--request',type=Path);p.add_argument('--route',choices=(*ROUTES,MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED))
+    mode.add_argument('--tf32-benchmark',action='store_true',help='One isolated paired comparison: fused FP32 IEEE vs TF32 matmul, micro8/logical32; no formal policy change')
+    p.add_argument('--request',type=Path);p.add_argument('--route',choices=(*ROUTES,MICRO_ROUTE,*MEMORY_METHODS,MEMORY_COMBINED,TF32_ROUTE))
     p.add_argument('--output',type=Path,help=argparse.SUPPRESS)
     args=p.parse_args()
     if args.request:
         if not args.route or args.output!=args.request.parent/args.route:p.error('Bound child route/output required')
         from .mamba_memory_benchmark import operation
-        callback=((lambda c:operation(c,args.request,args.route)) if args.route in (*MEMORY_METHODS,MEMORY_COMBINED) else
+        callback=((lambda c:operation(c,args.request,args.route)) if args.route in (*MEMORY_METHODS,MEMORY_COMBINED,TF32_ROUTE) else
             (lambda c:micro_benchmark(c,args.request)) if args.route==MICRO_ROUTE else None)
         try: native(args.request,args.route,validation=callback)
         except Exception as error:
@@ -411,10 +440,10 @@ def main():
     check_exchange();gpus,inventory=discover_gpus(args.gpu)
     if len(gpus)!=1 or not gpu_preflight(inventory[gpus[0]])['idle']:
         raise ValueError('Pause and wait for the original runner; selected GPU must be idle')
-    experiment='mamba-memory-benchmark' if args.memory_benchmark else 'mamba-micro-benchmark' if args.micro_benchmark else 'mamba-speed'
-    routes=list(MEMORY_METHODS) if args.memory_benchmark else [MICRO_ROUTE] if args.micro_benchmark else list(ROUTES)
+    experiment='mamba-tf32-benchmark' if args.tf32_benchmark else 'mamba-memory-benchmark' if args.memory_benchmark else 'mamba-micro-benchmark' if args.micro_benchmark else 'mamba-speed'
+    routes=[TF32_ROUTE] if args.tf32_benchmark else list(MEMORY_METHODS) if args.memory_benchmark else [MICRO_ROUTE] if args.micro_benchmark else list(ROUTES)
     suite=ROOT/'runs'/(experiment+'-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
-    supervisor=Supervisor(900,300);report=dict(schema='qkan-mamba-memory.v1' if args.memory_benchmark else 'qkan-mamba-speed.v1',
+    supervisor=Supervisor(900,300);report=dict(schema='qkan-mamba-tf32.v1' if args.tf32_benchmark else 'qkan-mamba-memory.v1' if args.memory_benchmark else 'qkan-mamba-speed.v1',
         routes={},formal_release_allowed=False)
     with ExitStack() as held:
         source=args.source_suite.resolve()
@@ -426,7 +455,7 @@ def main():
         if any(digest(path)!=sha for path,sha in request['source_files'].items()):
             raise ValueError('Source advanced while acquiring diagnostic locks; take a fresh snapshot')
         try:
-            if args.micro_benchmark or args.memory_benchmark:
+            if args.micro_benchmark or args.memory_benchmark or args.tf32_benchmark:
                 from .mamba_convolution import stage
                 request.update(convolution_package=stage(),execution_plugin=dict(plugin='mamba.fused_fp32',version=2),
                     adaptive_observation=adaptive_observation(source/'jobs'/args.job))
@@ -463,26 +492,27 @@ def main():
             copied=suite/'source/checkpoints'
             for path in copied.glob('step-*.pt'):path.unlink()
             report['copied_checkpoint_removed']=not any(copied.glob('step-*.pt'))
-            if args.memory_benchmark:
-                report['campaign_completed']=(all(method in report['routes'] for method in MEMORY_METHODS)
+            if args.memory_benchmark or args.tf32_benchmark:
+                methods=[TF32_ROUTE] if args.tf32_benchmark else MEMORY_METHODS
+                report['campaign_completed']=(all(method in report['routes'] for method in methods)
                     and report['source_unchanged'] and report['copied_checkpoint_removed']
                     and len(supervisor.records)==len(report['routes'])
                     and all(row['termination']['group_verified'] for row in supervisor.records))
                 report['all_methods_measured']=all(report['routes'].get(method,{}).get('measurement_completed') is True
-                    and report['routes'][method].get('status')!='failed' for method in MEMORY_METHODS)
+                    and report['routes'][method].get('status')!='failed' for method in methods)
                 report['disposable_updates_recorded']=sum(value.get('disposable_updates',0) for value in report['routes'].values())
                 report['formal_updates_committed']=0
             atomic_json(suite/(experiment+'.json'),report)
             from .return_artifacts import upload_declared
             upload_declared(suite,experiment,[experiment+'.json'])
-    if args.memory_benchmark:
+    if args.memory_benchmark or args.tf32_benchmark:
         complete=report['campaign_completed']
         for method,value in report['routes'].items():
             if value.get('measurement_completed') and value.get('status')!='failed':
                 print(method+': '+str(round(100*value['timing']['throughput_gain'],2))+'% throughput; '+
                     ('timing promising' if value['timing']['timing_promising'] else 'keep baseline'),flush=True)
             else:print(method+': FAILED; compact diagnostics returned',flush=True)
-        print('Memory comparison campaign '+('completed' if complete else 'incomplete')+
+        print(('TF32' if args.tf32_benchmark else 'Memory')+' comparison campaign '+('completed' if complete else 'incomplete')+
             '; formal configuration unchanged. Independent method failure does not switch policy.',flush=True)
         return 0 if complete else 76
     if args.micro_benchmark:
