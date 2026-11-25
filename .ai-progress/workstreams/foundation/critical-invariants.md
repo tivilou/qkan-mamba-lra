@@ -16,6 +16,7 @@ Put rationale and chronology in decisions/*.md instead.
 - Never connect to the released original 3080Ti endpoint. Resolve replacement explicitly with serverctl before any operation; preserve other projects and services.
 - Preserve upstream 74acc3d and historical report wording; append corrections rather than rewriting old evidence. Do not synthesize the missing historical JSON, checkpoint or sample traces.
 - Keep credentials and endpoint configuration outside Git and portal; all uploads are explicit, namespace-scoped, hash-checked, immutable and recoverable.
+- Owner-side exchange queries load experiments.baseline_delivery.exchange_config.load() and use direct authenticated HTTPS; the private owner profile is configured. Do not fetch tokens over SSH for every result query. SSH is only a repair/bootstrap dependency, with pinned host identity; keep secrets out of logs.
 - Dataset selection and file existence are not qualification. No formal baseline comparison until data is qualified and the cohort/protocol are frozen.
 - Each new formal runner must pass correctness, full-state recovery when long-running, and real sample-trace.v2 structural/semantic/replay gates before handoff.
 - Use actual input samples and recorded intermediate values for Case Study; unavailable historical traces remain explicitly unavailable.

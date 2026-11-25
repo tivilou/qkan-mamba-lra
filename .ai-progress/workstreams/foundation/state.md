@@ -6,6 +6,8 @@
 
 ## Current State
 
+- 2026-11-25: Exchange query repaired. Registered development SSH intermittently times out while HTTPS remains healthy; strict pinned-key authentication succeeded via existing lambeq/Paramiko, then existing exchange_config.save persisted owner profile/CA outside Git under user-only Windows ACL. Fresh QT2 process loaded saved profile and read health/TF32 namespace over HTTPS200 with no SSH. Received81925byte TF32 report and verified its receipt. No server restart, auth-policy change or training operation. Routine queries use exchange_config.load first; do not require SSH each time. Evidence docs/evidence/exchange-query-recovery-20261125.json; scientific review belongs to baseline-delivery.
+
 - 2026-11-10: After the owner rebooted the currently bound development server, strict-key SSH and automatic QKAN exchange startup pass. External HTTPS health returns200 with CA/hostname verification; server-side authenticated namespace read200 and unauthenticated401. Existing failure-37b2622a59ef/failure.json matches its pre-restart SHA256. Shared exchange endpoints also respond. Read-only inspection; no service restart, upload, GPU query or experiment. Evidence: docs/evidence/service-health-20261110.json.
 
 - 2026-11-04: D01 completed. Original IMDb paper recovered from ACL; explicit future-research dataset release plus per-task author-source/acquisition assessment closes use evidence for internal non-commercial research/no-data-redistribution only. docs/evidence/task-internal-use-review-20261104.json and imdb-primary-paper-sources-20261104.json support qualified data; model release remains false. Session: sessions/2026-11/20261104-data-qualified.md.
