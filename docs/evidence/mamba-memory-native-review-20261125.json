@@ -1,0 +1,112 @@
+{
+  "schema": "qkan-native-review.v1",
+  "run_id": "mamba-memory-benchmark-20261124T100011Z-416f2695",
+  "artifact": {
+    "namespace": "qkan-mamba/mamba-memory-benchmark/mamba-memory-benchmark-20261124T100011Z-416f2695/mamba-memory-benchmark.json",
+    "bytes": 135919,
+    "sha256": "391440d21d6c763d676bba327717ddbfe80413e69b6fee597c1cff4cb5580308",
+    "uploaded_at": "2026-11-24T10:01:49.580385+00:00"
+  },
+  "executed_revision": "2b2426328edab53ba0a04a15ca299c95cde4de4f",
+  "source_checkpoint_step": 58937,
+  "source_checkpoint_sha256": "9532afcda30670eb268187da1268fe9dab41952a04e1da2d6742b72842c26371",
+  "transport_and_execution_complete": true,
+  "source_unchanged": true,
+  "owned_checkpoint_copy_removed": true,
+  "clean_child_count": 3,
+  "disposable_updates": 132,
+  "formal_updates_committed": 0,
+  "observations": {
+    "memory_retain": {
+      "reference_samples_per_second": 89.02415507864733,
+      "candidate_samples_per_second": 91.45950000893308,
+      "observed_gain": 0.027356001617024894,
+      "positive_pairs": 4,
+      "timing_promising": false,
+      "reference_allocated_gib": 2.020504951477051,
+      "candidate_allocated_gib": 2.704342842102051,
+      "reference_reserved_gib": 2.75,
+      "candidate_reserved_gib": 2.75,
+      "optimizer_step_control": {
+        "parameter": "/state/0/step",
+        "elements": 1,
+        "reference_norm": 58941.0,
+        "candidate_norm": 58949.0,
+        "difference_norm": 8.0,
+        "relative_l2": 0.00013572894928827133,
+        "max_absolute": 8.0,
+        "cosine": 1.0
+      },
+      "model_delta_relative_l2": 3.085203264290525e-06,
+      "repeat_delta_relative_l2": 3.0729748419992343e-06,
+      "fused_calls": 2112,
+      "graph_forward_replays": 0,
+      "copy_stream_submissions": 0
+    },
+    "memory_prefetch": {
+      "reference_samples_per_second": 89.14703491636128,
+      "candidate_samples_per_second": 89.47826559894672,
+      "observed_gain": 0.0037155546776872495,
+      "positive_pairs": 4,
+      "timing_promising": false,
+      "reference_allocated_gib": 2.0193915367126465,
+      "candidate_allocated_gib": 2.0193915367126465,
+      "reference_reserved_gib": 2.076171875,
+      "candidate_reserved_gib": 2.076171875,
+      "optimizer_step_control": {
+        "parameter": "/state/0/step",
+        "elements": 1,
+        "reference_norm": 58941.0,
+        "candidate_norm": 58949.0,
+        "difference_norm": 8.0,
+        "relative_l2": 0.00013572894928827133,
+        "max_absolute": 8.0,
+        "cosine": 1.0
+      },
+      "model_delta_relative_l2": 3.3486064650304386e-06,
+      "repeat_delta_relative_l2": 3.414035379463311e-06,
+      "fused_calls": 2112,
+      "graph_forward_replays": 0,
+      "copy_stream_submissions": 15
+    },
+    "memory_graph": {
+      "reference_samples_per_second": 89.5499582099402,
+      "candidate_samples_per_second": 89.51944059396685,
+      "observed_gain": -0.00034078872378484615,
+      "positive_pairs": 2,
+      "timing_promising": false,
+      "reference_allocated_gib": 2.145625114440918,
+      "candidate_allocated_gib": 0.2076730728149414,
+      "reference_reserved_gib": 4.205078125,
+      "candidate_reserved_gib": 4.205078125,
+      "optimizer_step_control": {
+        "parameter": "/state/0/step",
+        "elements": 1,
+        "reference_norm": 58941.0,
+        "candidate_norm": 58949.0,
+        "difference_norm": 8.0,
+        "relative_l2": 0.00013572894928827133,
+        "max_absolute": 8.0,
+        "cosine": 1.0
+      },
+      "model_delta_relative_l2": 3.384128811304713e-06,
+      "repeat_delta_relative_l2": 3.2718240598820517e-06,
+      "fused_calls": 1200,
+      "graph_forward_replays": 80,
+      "copy_stream_submissions": 0
+    }
+  },
+  "validity": "provisional; matched optimizer initial state was not preserved",
+  "defect": {
+    "observed": "Across all methods baseline Adam step58941 versus candidate58949; repeat baseline58945. Four-update blocks start with progressively advanced Adam step counters.",
+    "code": "mamba_diagnostic.native.restore loads state optimizer directly; CPU tensor aliasing allows live Adam step to mutate the expected in-memory source state, so exact() compares against a mutable reference.",
+    "scope": "diagnostic in-memory optimizer state; authenticated source checkpoint bytes unchanged",
+    "next_fix": "Clone independent optimizer load state and retain an immutable expected baseline; assert Adam counters before and after each restored block; rerun only these affected comparisons."
+  },
+  "decision": "Keep existing FP32 fused eager micro8/logical32; do not admit any of three methods or infer equivalent optimizer state. No combination was triggered. Retain activations is the only modest observed timing lead; needs corrected matched-state comparison.",
+  "limits": [
+    "No whole-dataset or convergence claim",
+    "Current formal training heartbeat after auto-resume is not included",
+    "Graph allocator pool counters do not establish true total memory reduction"
+  ]
+}
