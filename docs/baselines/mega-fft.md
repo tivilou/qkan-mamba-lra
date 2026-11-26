@@ -1,8 +1,19 @@
-# MEGA FP32 FFT 补齐短测
+# MEGA 一次性优化短测
 
-先测一个具体候选：ListOps 的双向 EMA 使用长度 8190 的 FFT，候选补零到 8192，再保留原卷积截取。模型仍为官方 MEGA，完整注意力、FP32、micro-batch、逻辑 batch、Adam 和样本预算均保持一致。补齐在数学上保留该线性卷积，但浮点误差和实际吞吐必须分别测量；当前没有原生测速结果。
+统一入口 `diagnose mega-fft --all-methods` 一次测试当前已有环境支持的全部候选，最后统一回传一次，再恢复原训练／美化看板。实际速度、数值和支持情况以实验机结果为准。
 
-插件仅挂在临时模型的 EMA 实例上，并校验固定官方源码哈希。训练核心、共享上游源码、已有 Suite 和正式策略都不修改。子进程使用已有 `.venv-mega`（Torch 1.13），不安装或下载依赖，不套用 Transformer 的 Torch 2 编译路径。
+| 单项 | 内容 |
+|---|---|
+| FFT | 双向 EMA FFT 长度补到 2 的幂，ListOps 8190→8192，保留原卷积截取 |
+| BF16 | BF16 autocast，FP32 主参数和 Adam；检查误差，不直接准入 |
+| TF32 | FP32 参数下开启 TF32，单独记录误差 |
+| Graph | 现有 Torch 1.13 CUDA Graph API，仅包装临时模型实例 |
+| micro-down / micro-up | 当前 micro 的一半／两倍，保持逻辑 batch；越界记失败，不改变正式配置 |
+| resident | 临时将同一待训练 batch 驻留 GPU，测消除取数／传输的收益上界 |
+
+此外无条件尝试 FFT＋BF16、FFT＋Graph、BF16＋Graph、FFT＋BF16＋Graph。单项中吞吐中位数提高至少 3%、4 对中至少 3 对更快的候选，自动追加一组兼容组合；上下 micro 只选收益更高者，BF16 与 TF32 不叠加，重复组合不再跑。组合筛选只代表速度候选，不代表数值准入。
+
+每组独立进程，使用相同最新检查点、样本行和逻辑 batch。失败、OOM、当前环境不支持的 Graph 操作或数值非有限，均记入最终报告后继续其他组；进程清理未确认时停止后续派发。稳定训练核心、共享上游文件、正式 Suite、注意力分块和训练预算保持原样。使用已有 `.venv-mega`，不升级或安装依赖。现有环境没有 Torch 2 compile／SDPA，不把升级环境伪装成一个已测试开关。
 
 ## 实验机执行
 
@@ -17,7 +28,7 @@ cd "$MEGA_DIAG_ROOT" &&
 CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py diagnose mega-fft -- \
   --source-suite /root/projects/qkan-mamba-lra-adaptive-89353fc83f89/runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
-  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 &&
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --all-methods &&
 .venv-baselines/bin/python -B scripts/experiment.py \
   --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
   --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
@@ -26,14 +37,14 @@ CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 
 原 Suite 当前须有未完成的 `mega-listops-s42` 完整断点。若任务已结束，不重复它；选择一个已有断点的未完成 MEGA 任务，在诊断参数中添加相应 `--job mega-text-s42` 等。没有断点的任务不在本次短测范围。
 
-这是一个入口串联短测和原训练：短测打印阶段心跳，正常完成并验证回传后恢复原训练、美化看板及 Retrieval 最后顺序。无论测得正收益还是负收益，均恢复原策略。诊断失败或回传失败会停在原暂停状态，保留紧凑报告供排查；再次续跑使用[原统一入口](experiment.md)。
+这是一个入口串联短测和原训练：短测打印阶段心跳，完成全部候选尝试并验证回传后恢复原训练、美化看板及 Retrieval 最后顺序，即使部分或全部候选失败。单项失败保留类型、代码位置和已有部分数值／计时。源状态异常、清理未确认、用户中断或回传失败时停在原暂停状态，保留报告供排查；再次续跑使用[原统一入口](experiment.md)。
 
 ## 结果与边界
 
-- 一个原生子进程，最多 900 秒、单阶段无进展最多 300 秒；这些是超时上限，不是预计时长。
+- 最多 12 个顺序原生子进程，每组最多 300 秒、单阶段无进展最多 180 秒；这些是超时上限，不是预计时长。
 - 取最新完整断点的一个待训练逻辑 batch。每次恢复独立克隆的模型、Adam、RNG 和样本调度状态；独立检查 Adam step 起点及增加量，避免可变引用污染对照。
-- 3 次数值观测兼预热，随后 ABBA×2 的 8 次计时，共 **11 次临时更新、0 次正式更新**。数值比较包括参数、更新量、裁剪后梯度、Adam 状态及 RNG／调度一致性，并提供原策略重复误差作参照。
-- 计时涵盖 CPU 取数、H2D、前后向、裁剪、Adam、样本调度和同步；不计恢复和数值副本开销。本次不测数据预取重叠，不承诺整轮加速或收敛等价。
+- 3 次数值观测兼预热，随后 ABBA×2 的 8 次计时，每组共 **11 次临时更新**，最多 **132 次临时更新、0 次正式更新**。数值比较包括参数、更新量、裁剪后梯度、Adam 状态及 RNG／调度一致性，并提供原策略重复误差作参照。
+- 常规计时涵盖 CPU 取数、H2D、前后向、裁剪、Adam、样本调度和同步；resident 候选不计取数／传输，单独标注为重复 batch 上界。恢复、数值副本和 Graph 首次建图不计入稳态计时，首次观测另报。改变 micro 可能改变 dropout 随机轨迹，误差记录不解释为纯浮点噪声。本次不承诺整轮加速或收敛等价。
 - 记录峰值显存、实际 FFT 调用和长度。结束时精确恢复临时状态，移除自有检查点副本，并验证原文件哈希保持一致。
 - `runs/mega-fft-*/mega-fft.json` 自动回传到 `qkan-mamba/mega-fft/<运行名>`，沿用现有 SHA-256 回执工具。回传失败可重传同一报告，无须重做测速。
 

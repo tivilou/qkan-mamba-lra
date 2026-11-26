@@ -1,4 +1,4 @@
-"""Bounded MEGA FP32 FFT comparison; collaborator CUDA only, zero formal updates."""
+"""Bounded MEGA acceleration comparison; collaborator CUDA only, zero formal updates."""
 import argparse
 from contextlib import ExitStack
 import copy
@@ -12,6 +12,23 @@ import uuid
 from .common import ROOT,atomic_json,digest,fingerprint,lock,read,revision,worker_failure
 
 ORDER=(False,True,True,False)*2
+METHODS=('fft','bf16','tf32','graph','micro-down','micro-up','resident')
+STACKS=('fft+bf16','fft+graph','bf16+graph','fft+bf16+graph')
+
+
+def settings(route):
+    parts=route.split('+')
+    if not parts or len(parts)!=len(set(parts)) or any(p not in METHODS for p in parts):raise ValueError('Unknown MEGA candidate')
+    if 'micro-down' in parts and 'micro-up' in parts:raise ValueError('Conflicting micro tiers')
+    return set(parts)
+
+
+def combined(results):
+    winners=[name for name in METHODS if results.get(name,{}).get('timing',{}).get('timing_promising')]
+    if 'micro-up' in winners and 'micro-down' in winners:
+        remove=min(('micro-up','micro-down'),key=lambda n:results[n]['timing']['throughput_gain']);winners.remove(remove)
+    if 'bf16' in winners and 'tf32' in winners:winners.remove('tf32')
+    return '+'.join(winners) if len(winners)>1 else None
 
 
 def snapshot(source,suite,job,cache):
@@ -36,13 +53,17 @@ def snapshot(source,suite,job,cache):
     atomic_json(suite/'request.json',request);return request
 
 
-def child_spec(suite):
+def child_spec(suite,route=None):
+    if route:settings(route)
     target='experiments.baseline_delivery.mega_diagnostic'
-    return dict(target=target,cwd=str(ROOT),argv=[str(ROOT/'.venv-mega/bin/python'),'-B','-m',target,
-        '--request',str(suite/'request.json'),'--output',str(suite/'child')])
+    spec=dict(target=target,cwd=str(ROOT),argv=[str(ROOT/'.venv-mega/bin/python'),'-B','-m',target,
+        '--request',str(suite/'request.json'),'--output',str(suite/(route or 'child'))])
+    if route:spec['argv'].extend(['--route',route])
+    return spec
 
 
-def native(request_path,output):
+def native(request_path,output,route='fft'):
+    flags=settings(route)
     import numpy as np
     import torch
     from .models import Classifier,optimizer
@@ -82,7 +103,18 @@ def native(request_path,output):
         if isinstance(value,dict):return {k:host(v) for k,v in value.items()}
         if isinstance(value,(list,tuple)):return type(value)(host(v) for v in value)
         return copy.deepcopy(value)
+    candidate_micro=micro
+    if 'micro-up' in flags:candidate_micro=min(logical,micro*2)
+    if 'micro-down' in flags:candidate_micro=max(1,micro//2)
+    if logical%candidate_micro:raise ValueError('Candidate micro must divide fixed logical batch')
+    if flags.intersection(('micro-up','micro-down')) and candidate_micro==micro:raise ValueError('Micro tier already at boundary')
     frozen=optimizer_steps(state['optimizer']);plugin=PowerTwoEMA(model);budget=0;step_proofs=[]
+    resident=None;graphed=None;graph_calls=0
+    def load_batch():
+        arrays=train.numpy_batch(ids,validate=True)
+        return {k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}
+    if 'resident' in flags:
+        resident=load_batch();torch.cuda.synchronize()
     def restore():
         restore_diagnostic_state(model,opt,schedule,state,host,restore_rng)
         check_optimizer_steps(frozen,state['optimizer']);check_optimizer_steps(frozen,opt.state_dict())
@@ -90,14 +122,28 @@ def native(request_path,output):
         for key,value in dict(model=model.state_dict(),optimizer=opt.state_dict(),rng=rng_state(),sample_clock=schedule.state_dict()).items():
             compare_states(state[key],host(value))
     def update(candidate):
-        nonlocal budget
+        nonlocal budget,graphed,graph_calls
         opt.zero_grad(set_to_none=True);total=0.
-        arrays=train.numpy_batch(ids,validate=True)
-        batch={k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}
-        with plugin.activate(candidate),torch.autocast('cuda',enabled=False):
-            for start in range(0,logical,micro):
-                part={k:v[start:start+micro] for k,v in batch.items()}
-                loss=torch.nn.functional.cross_entropy(model(part,validated_inputs=True).float(),part['labels'],reduction='sum')/logical
+        batch=resident if candidate and resident is not None else load_batch()
+        size=candidate_micro if candidate else micro
+        tf32=candidate and 'tf32' in flags
+        torch.backends.cuda.matmul.allow_tf32=tf32;torch.backends.cudnn.allow_tf32=tf32
+        with plugin.activate(candidate and 'fft' in flags),torch.autocast('cuda',enabled=candidate and 'bf16' in flags,dtype=torch.bfloat16,cache_enabled=False):
+            for start in range(0,logical,size):
+                part={k:v[start:start+size] for k,v in batch.items()}
+                if candidate and 'graph' in flags:
+                    keys=tuple(k for k in part if k!='labels');values=tuple(part[k] for k in keys)
+                    if graphed is None:
+                        class Adapter(torch.nn.Module):
+                            def __init__(self):super().__init__();self.base=model
+                            def forward(self,*args):return self.base(dict(zip(keys,args)),validated_inputs=True)
+                        before=rng_state();torch.cuda.synchronize()
+                        with torch.cuda.stream(torch.cuda.Stream()):
+                            graphed=torch.cuda.make_graphed_callables(Adapter(),values)
+                        torch.cuda.synchronize();restore_rng(before);opt.zero_grad(set_to_none=True)
+                    logits=graphed(*values);graph_calls+=1
+                else:logits=model(part,validated_inputs=True)
+                loss=torch.nn.functional.cross_entropy(logits.float(),part['labels'],reduction='sum')/logical
                 loss.backward();total=total+loss.detach()
         torch.nn.utils.clip_grad_norm_(model.parameters(),config['clip_norm'],error_if_nonfinite=True)
         opt.step();schedule.step(logical);torch.cuda.synchronize();budget+=1
@@ -110,32 +156,37 @@ def native(request_path,output):
         restore();torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats();mark('mega_'+label,flush=True)
         start=time.perf_counter();loss=update(candidate);elapsed=time.perf_counter()-start
         step_proofs.append(check_optimizer_steps(frozen,opt.state_dict(),1))
+        atomic_json(output/'last-measurement.json',dict(route=route,phase=label,disposable_updates=budget,seconds=elapsed))
         return dict(seconds=elapsed,loss=loss,peak_allocated_bytes=torch.cuda.max_memory_allocated(),
             peak_reserved_bytes=torch.cuda.max_memory_reserved())
     try:
         restore();exact()
         # Three observations also warm both FFT plans; copies excluded from timing.
-        measure(False,'reference_a');left=capture()
-        measure(False,'reference_b');repeat=capture()
-        measure(True,'candidate');right=capture()
+        setup_observations=[measure(False,'reference_a')];left=capture()
+        setup_observations.append(measure(False,'reference_b'));repeat=capture()
+        setup_observations.append(measure(True,'candidate'));right=capture()
         numerics=dict(repeat=numeric_summary(torch,state['model'],left,repeat),
             candidate=numeric_summary(torch,state['model'],left,right))
+        atomic_json(output/'numeric-observation.json',numerics)
         times={False:[],True:[]};observations=[]
         for i,candidate in enumerate(ORDER):
             row=measure(candidate,'timing_'+str(i));times[candidate].append(row['seconds']);observations.append(dict(row,candidate=candidate))
         restore();exact()
-        if plugin.calls<=0 or not any(a.split('->')[0]!=a.split('->')[1] for a in plugin.lengths):
+        if 'fft' in flags and (plugin.calls<=0 or not any(a.split('->')[0]!=a.split('->')[1] for a in plugin.lengths)):
             raise ValueError('Candidate did not execute a changed FFT length')
-        report=dict(schema='qkan-mega-fft-child.v1',measurement_completed=True,request_sha256=digest(request_path),
+        report=dict(schema='qkan-mega-fft-child.v1',route=route,measurement_completed=True,request_sha256=digest(request_path),
             checkpoint_sha256=request['checkpoint']['sha256'],source_step=state['step'],micro_batch=micro,logical_batch=logical,
-            precision='fp32',backend='eager',fft_source_sha256=SOURCE_SHA,fft_calls=plugin.calls,fft_lengths=plugin.lengths,
-            timing=summarize(times[False],times[True]),observations=observations,numerics=numerics,
+            precision='bf16-autocast-fp32-master' if 'bf16' in flags else 'fp32',backend='graph' if 'graph' in flags else 'eager',
+            tf32='tf32' in flags,candidate_micro_batch=candidate_micro,gpu_resident_batch='resident' in flags,graph_calls=graph_calls,fft_source_sha256=SOURCE_SHA,fft_calls=plugin.calls,fft_lengths=plugin.lengths,
+            timing=summarize(times[False],times[True]),setup_observations=setup_observations,observations=observations,numerics=numerics,
             frozen_adam_steps=frozen,measured_adam_steps=step_proofs,rollback_exact=True,disposable_updates=budget,
             formal_updates_committed=0,formal_release_allowed=False,
-            timing_scope='CPU gather/H2D/forward/backward/clip/Adam/sample schedule/synchronize; restore and numerical copies excluded',
+            timing_scope='forward/backward/clip/Adam/sample schedule/synchronize; CPU gather/H2D included except resident candidate; restore and numerical copies excluded',
+            resident_limit='One repeated batch cached on GPU; upper-bound transfer-elimination screen, not multi-batch prefetch throughput',
             limits='One pending logical batch; no convergence, recovery admission or sustained speed claim')
         atomic_json(output/'result.json',report)
-    finally:plugin.close()
+    finally:
+        plugin.close();torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
 
 
 def campaign(args):
@@ -147,20 +198,44 @@ def campaign(args):
     check_exchange();revision();gpus,inventory=discover_gpus(args.gpu)
     if len(gpus)!=1 or not gpu_preflight(inventory[gpus[0]])['idle']:raise ValueError('Pause original runner; one idle GPU required')
     source=args.source_suite.resolve();suite=ROOT/'runs'/('mega-fft-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
-    supervisor=Supervisor(900,300);report=dict(schema='qkan-mega-fft.v1',measurement_completed=False,formal_release_allowed=False)
+    supervisor=Supervisor(300,180);report=dict(schema='qkan-mega-fft.v1',measurement_completed=False,formal_release_allowed=False)
     with ExitStack() as held:
         for path in (source/'progress-supervisor.lock',source/'suite.lock',source/'jobs'/args.job/'worker.lock'):held.enter_context(lock(path))
         request=snapshot(source,suite,args.job,args.cache)
         print('MEGA FFT diagnostic Suite: '+str(suite),flush=True)
+        results={};failures={};attempted=[];unsafe=False
+        routes=list(METHODS+STACKS) if getattr(args,'all_methods',False) else ['fft']
+        report.update(results=results,failures=failures,attempted=attempted,all_methods=getattr(args,'all_methods',False))
         try:
-            code=supervisor.run(child_spec(suite),suite/'worker.log',dict(os.environ,CUDA_VISIBLE_DEVICES=gpus[0],
-                CUBLAS_WORKSPACE_CONFIG=':4096:8',QKAN_MEGA_SOURCE=str(ROOT/'.bootstrap/strong-upstream/mega')))
-            if code==0:
-                result=read(suite/'child/result.json')
-                if (result.get('request_sha256')!=digest(suite/'request.json') or result.get('rollback_exact') is not True
-                        or result.get('disposable_updates')!=11 or result.get('formal_updates_committed')!=0):raise ValueError('Child proof differs')
-                report.update(measurement_completed=True,result=result)
-            else:report.update(child_exit_status=code)
+            index=0
+            while index<len(routes):
+                route=routes[index];index+=1;attempted.append(route)
+                print('MEGA candidate '+str(index)+': '+route,flush=True)
+                try:
+                    code=supervisor.run(child_spec(suite,route),suite/(route+'.log'),dict(os.environ,CUDA_VISIBLE_DEVICES=gpus[0],
+                        CUBLAS_WORKSPACE_CONFIG=':4096:8',QKAN_MEGA_SOURCE=str(ROOT/'.bootstrap/strong-upstream/mega')))
+                    if len(supervisor.records)!=index or not supervisor.records[-1]['termination']['group_verified']:
+                        unsafe=True;raise ValueError('Child group cleanup unverified')
+                    if code!=0:raise RuntimeError('Candidate failed')
+                    result=read(suite/route/'result.json')
+                    if (result.get('route')!=route or result.get('request_sha256')!=digest(suite/'request.json')
+                            or result.get('rollback_exact') is not True or result.get('disposable_updates')!=11
+                            or result.get('formal_updates_committed')!=0):raise ValueError('Child proof differs')
+                    results[route]=result
+                except Exception as error:
+                    worker_failure(suite/route,error)
+                    failures[route]=dict(error=read(suite/route/'worker-error.json'))
+                    native_error=suite/route/'native-error.json'
+                    if native_error.exists():failures[route]['native']=read(native_error)
+                    for name in ('last-measurement.json','numeric-observation.json'):
+                        if (suite/route/name).exists():failures[route][name]=read(suite/route/name)
+                    if len(supervisor.records)!=index or not supervisor.records[-1]['termination']['group_verified']:unsafe=True
+                    if unsafe:break
+                if index==len(METHODS+STACKS) and getattr(args,'all_methods',False):
+                    combo=combined(results)
+                    if combo and combo not in routes:routes.append(combo)
+            report.update(measurement_completed=bool(results),campaign_completed=not unsafe and index==len(routes),
+                result=results.get('fft'),formal_updates_committed=0)
         except BaseException as error:
             worker_failure(suite,error);report['error']=read(suite/'worker-error.json')
         finally:
@@ -168,13 +243,14 @@ def campaign(args):
                 source_unchanged=all(digest(p)==sha for p,sha in request['source_files'].items()))
             for path in (suite/'source/checkpoints').glob('*.pt'):path.unlink()
             report['copied_checkpoint_removed']=not any((suite/'source/checkpoints').glob('*.pt'))
-            child_error=suite/'child/worker-error.json'
-            if child_error.exists():report['child_error']=read(child_error)
             atomic_json(suite/'mega-fft.json',report);upload_declared(suite,'mega-fft',['mega-fft.json'])
-    success=(report['measurement_completed'] and report['source_unchanged'] and report['copied_checkpoint_removed']
-        and len(supervisor.records)==1 and supervisor.records[0]['termination']['group_verified'])
-    if success:print('FFT throughput gain: '+str(round(100*report['result']['timing']['throughput_gain'],2))+'%; formal policy unchanged.',flush=True)
-    else:print('MEGA FFT FAILED/incomplete; compact diagnostics returned; original state preserved.',flush=True)
+    success=(report.get('campaign_completed',False) and report['source_unchanged'] and report['copied_checkpoint_removed']
+        and len(supervisor.records)==len(attempted) and all(r['termination']['group_verified'] for r in supervisor.records)
+        and (getattr(args,'all_methods',False) or bool(results)))
+    for name,result in results.items():
+        print(name+': '+str(round(100*result['timing']['throughput_gain'],2))+'% throughput; formal policy unchanged.',flush=True)
+    print('MEGA campaign returned: '+str(len(results))+' measured, '+str(len(failures))+' failed; original strategy retained.',flush=True)
+
     return 0 if success else 76
 
 
@@ -182,12 +258,20 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);g=p.add_mutually_exclusive_group(required=True)
     g.add_argument('--source-suite',type=Path);g.add_argument('--request',type=Path)
     p.add_argument('--cache',type=Path);p.add_argument('--gpu',default='0');p.add_argument('--output',type=Path)
+    p.add_argument('--all-methods',action='store_true',help='All isolated candidates, then compatible promising combination; one return')
+    p.add_argument('--route',default='fft',help=argparse.SUPPRESS)
     p.add_argument('--job',choices=['mega-'+task+'-s42' for task in ('listops','text','image','pathfinder','retrieval')],default='mega-listops-s42')
     a=p.parse_args()
     if a.request:
-        if a.output!=a.request.parent/'child':p.error('Child output must match the owned diagnostic folder')
-        try:native(a.request,a.output);return 0
-        except BaseException as error:worker_failure(a.output,error);raise
+        settings(a.route)
+        if a.output!=a.request.parent/a.route and a.output!=a.request.parent/'child':p.error('Child output must match the owned diagnostic folder')
+        try:native(a.request,a.output,a.route);return 0
+        except BaseException as error:
+            worker_failure(a.output,error)
+            atomic_json(a.output/'native-error.json',dict(error=read(a.output/'worker-error.json'),
+                cuda_oom=isinstance(error,RuntimeError) and 'out of memory' in str(error).lower(),
+                graph_requested='graph' in settings(a.route),route=a.route))
+            raise
     if a.cache is None:p.error('cache required')
     return campaign(a)
 

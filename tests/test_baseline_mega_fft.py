@@ -117,7 +117,55 @@ class Tests(unittest.TestCase):
             self.assertEqual(returned[0][1: ],('mega-fft',['mega-fft.json']))
             self.assertFalse(report['measurement_completed']);self.assertFalse(report['formal_release_allowed'])
             self.assertTrue(report['source_unchanged']);self.assertTrue(report['copied_checkpoint_removed'])
-            self.assertEqual(report['child_exit_status'],77);self.assertEqual(digest(checkpoint),before)
+            self.assertIn('fft',report['failures']);self.assertEqual(digest(checkpoint),before)
+            args.all_methods=True
+            with patch.object(diagnostic,'ROOT',root),patch.object(diagnostic,'revision',return_value='pinned'),\
+                    patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
+                    patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})),\
+                    patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value=dict(idle=True)),\
+                    patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',FailedChild),\
+                    patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:returned.append(a)):
+                self.assertEqual(diagnostic.campaign(args),0)
+            report=read(returned[-1][0]/'mega-fft.json')
+            self.assertEqual(report['attempted'],list(diagnostic.METHODS+diagnostic.STACKS))
+            self.assertEqual(len(returned),2);self.assertEqual(len(report['failures']),11)
+            self.assertTrue(report['campaign_completed']);self.assertEqual(digest(checkpoint),before)
+            class MixedChild(FailedChild):
+                def run(self,spec,log,env):
+                    super().run(spec,log,env)
+                    route=spec['argv'][-1]
+                    if route=='tf32':return 77
+                    request=read(Path(spec['argv'][spec['argv'].index('--request')+1]))
+                    output=Path(spec['argv'][spec['argv'].index('--output')+1])
+                    atomic_json(output/'result.json',dict(route=route,
+                        request_sha256=digest(output.parent/'request.json'),rollback_exact=True,
+                        disposable_updates=11,formal_updates_committed=0,
+                        timing=dict(timing_promising=route in ('fft','micro-up','resident'),throughput_gain=.1)))
+                    return 0
+            with patch.object(diagnostic,'ROOT',root),patch.object(diagnostic,'revision',return_value='pinned'),\
+                    patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
+                    patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})),\
+                    patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value=dict(idle=True)),\
+                    patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',MixedChild),\
+                    patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:returned.append(a)):
+                self.assertEqual(diagnostic.campaign(args),0)
+            report=read(returned[-1][0]/'mega-fft.json')
+            self.assertEqual(report['attempted'][-1],'fft+micro-up+resident')
+            self.assertEqual(len(report['attempted']),12);self.assertEqual(len(returned),3)
+            self.assertEqual(list(report['failures']),['tf32']);self.assertTrue(report['source_unchanged'])
+
+
+    def test_combination_resolves_conflicting_tiers_and_precision(self):
+        results={n:dict(timing=dict(timing_promising=True,throughput_gain=.1)) for n in diagnostic.METHODS}
+        results['micro-up']['timing']['throughput_gain']=.2
+        self.assertEqual(diagnostic.combined(results),'fft+bf16+graph+micro-up+resident')
+        self.assertIsNone(diagnostic.combined({'fft':results['fft']}))
+        for route in ('fft+unknown','micro-up+micro-down','fft+fft','../graph'):
+            with self.assertRaises(ValueError):diagnostic.settings(route)
+        for route in diagnostic.METHODS+diagnostic.STACKS:
+            spec=diagnostic.child_spec(Path('/fixture'),route)
+            self.assertEqual(spec['argv'][-2:],['--route',route])
+            self.assertEqual(Path(spec['argv'][spec['argv'].index('--output')+1]),Path('/fixture')/route)
 
     def test_cli_help_routes_without_native_import(self):
         proc=subprocess.run([sys.executable,'-B','-c',"import sys,runpy;sys.modules['torch']=None;sys.modules['numpy']=None;sys.argv=['mega','--help'];runpy.run_module('experiments.baseline_delivery.mega_diagnostic',run_name='__main__')"],capture_output=True,text=True)

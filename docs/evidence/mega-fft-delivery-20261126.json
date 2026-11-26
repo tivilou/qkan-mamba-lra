@@ -17,9 +17,44 @@
     "scope": "7 new FFT, instance isolation, snapshot, failed-child cleanup/return and CLI checks; 34 existing unified-entry checks"
   },
   "bounded_specialist_review": "No concrete blocking bug found in FFT crop, instance isolation, native environment or restore controls; static only",
-  "collaborator_test_budget": {"native_children": 1, "disposable_updates": 11, "formal_updates": 0},
+  "collaborator_test_budget": {
+    "native_children": 1,
+    "disposable_updates": 11,
+    "formal_updates": 0
+  },
   "timing_claim": null,
   "numerical_admission": false,
   "command_guide": "docs/baselines/mega-fft.md",
-  "local_verification_package": ".runtime/mega-fft-20261126"
+  "local_verification_package": ".runtime/mega-fft-20261126",
+  "all_methods_update": {
+    "status": "collaborator_native_measurement_pending",
+    "methods": [
+      "fft",
+      "bf16",
+      "tf32",
+      "graph",
+      "micro-down",
+      "micro-up",
+      "resident"
+    ],
+    "fixed_stacks": [
+      "fft+bf16",
+      "fft+graph",
+      "bf16+graph",
+      "fft+bf16+graph"
+    ],
+    "max_children": 12,
+    "max_temporary_updates": 132,
+    "formal_updates": 0,
+    "aggregate_uploads": 1,
+    "focused_stdlib_checks": 42,
+    "test_exit_status": 0,
+    "graph_compatibility_source": "https://raw.githubusercontent.com/pytorch/pytorch/v1.13.1/torch/cuda/graphs.py",
+    "fixes": [
+      "Torch1.13 has no allow_unused_input argument",
+      "disable autocast cache for Graph capture"
+    ],
+    "native_result": null,
+    "package": ".runtime/mega-all-20261126"
+  }
 }
