@@ -12,6 +12,17 @@ from experiments.baseline_delivery.common import digest
 
 
 class Tests(unittest.TestCase):
+    def test_all_routes_use_real_supervisor_phase_contract(self):
+        from experiments.baseline_delivery.diagnostic_watch import Recorder
+        with tempfile.TemporaryDirectory() as tmp:
+            recorder=Recorder(tmp,'fixture')
+            for route in diag.METHODS+diag.STACKS+diag.REFINEMENTS:
+                for stage in ('reference_a','reference_b','candidate','graph_capture','graph_replay','timing_0'):
+                    name=diag.phase_name(route,stage)
+                    recorder.mark(name,flush=True)
+                    self.assertEqual(recorder.phase,name)
+            with self.assertRaises(ValueError):diag.phase_name('fft','invalid-stage')
+
     def test_precision_targets_and_restore(self):
         class Value:
             def float(self):return 'fp32-output'

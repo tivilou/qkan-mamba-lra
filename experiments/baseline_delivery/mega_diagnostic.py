@@ -17,6 +17,12 @@ REFINEMENTS=('fft+island-tail','fft+island-ffn','fft+island-projections','mask-f
 STACKS=('fft+bf16','fft+graph','bf16+graph','fft+bf16+graph')
 
 
+def phase_name(route,stage):
+    settings(route)
+    if not stage or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789_' for c in stage):raise ValueError('Invalid MEGA stage')
+    return 'mega_'+route.replace('+','_').replace('-','_')+'_'+stage
+
+
 def settings(route):
     parts=route.split('+')
     if not parts or len(parts)!=len(set(parts)) or any(p not in METHODS+('island-tail','island-ffn','island-projections','mask-fp32','graph-fixed') for p in parts):raise ValueError('Unknown MEGA candidate')
@@ -120,7 +126,7 @@ def native(request_path,output,route='fft'):
     graph_requested=bool(flags.intersection(('graph','graph-fixed')))
     def phase(name):
         nonlocal stage
-        stage=name;mark('mega_'+route+'_'+name,flush=True)
+        stage=name;mark(phase_name(route,name),flush=True)
     def load_batch():
         arrays=train.numpy_batch(ids,validate=True)
         return {k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}

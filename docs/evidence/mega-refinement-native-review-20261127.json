@@ -1,0 +1,27 @@
+{
+  "schema": "qkan-mega-refinement-native-review.v1",
+  "date": "2026-11-27",
+  "run": "mega-fft-20261126T142925Z-fb8eae72",
+  "verified_bytes": 57561,
+  "verified_sha256": "f3b8636b3efe33f16ca2a96e9559006b81cd16e0c35178a9ea7154b92f134988",
+  "revision": "bbad271eb02795c2770f19f2c7f7d0ab92d0781d",
+  "source_step": 48533,
+  "attempted": 9,
+  "measured": 0,
+  "failed": 9,
+  "source_unchanged": true,
+  "copied_checkpoint_removed": true,
+  "all_child_groups_clean": true,
+  "formal_updates": 0,
+  "cause": "New progress label interpolates route + and - characters; diagnostic Recorder accepts only [a-z0-9_]+. Every child failed at reference_a before update.",
+  "fix": "Normalize route separators only for phase label; preserve scientific route identity. Actual Recorder.mark/flush regression covers all current routes.",
+  "regression": {
+    "command": "python -B -m unittest tests.test_baseline_mega_refinement -q",
+    "tests": 4,
+    "exit_status": 0
+  },
+  "limits": [
+    "No new BF16 numeric or Graph result",
+    "No post-campaign formal heartbeat"
+  ]
+}
