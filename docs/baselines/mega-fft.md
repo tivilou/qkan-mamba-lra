@@ -15,6 +15,18 @@
 
 每组独立进程，使用相同最新检查点、样本行和逻辑 batch。失败、OOM、当前环境不支持的 Graph 操作或数值非有限，均记入最终报告后继续其他组；进程清理未确认时停止后续派发。稳定训练核心、共享上游文件、正式 Suite、注意力分块和训练预算保持原样。使用已有 `.venv-mega`，不升级或安装依赖。现有环境没有 Torch 2 compile／SDPA，不把升级环境伪装成一个已测试开关。
 
+## 当前推荐：选择性 BF16＋Graph 修复（2026-11-26）
+
+第一轮已统一回传：FFT＋BF16 约 +16.85%，但更新向量相对差异约24%；四组 Graph 捕获失败。本轮使用 `--refine`，不重跑 micro、resident 和 TF32。
+
+固定9组：FFT＋最后一层 FFN BF16、FFT＋全部 FFN BF16、FFT＋FFN/输出投影 BF16、纯 FP32 mask 修复对照、修复 Graph、FFT＋修复 Graph、BF16＋修复 Graph、FFT＋BF16＋修复 Graph、FFT＋FFN BF16＋修复 Graph。
+
+选择性策略只在指定 Linear 内 autocast，输出立即转回 FP32；归一化、残差、门控、EMA、注意力分数和分类头不启用整体 autocast。尾层档只影响最后一层 FFN，全部 FFN 档和增加 h_proj 档逐步扩大范围。FP32 主参数、Adam、逻辑/micro batch不变。
+
+Graph 插件校验官方编码器哈希，只在临时实例中移除 `padding_mask.any()` 的 GPU→Python 真值分支，保留布尔mask和原输出结构，不切换 traceable、不改共享文件。纯FP32 mask对照检查此变更本身的数值影响。它解决一个已识别捕获阻断点，不保证排除所有原生捕获问题；失败按白名单返回捕获阶段、同步、未用参数、FFT、autocast、OOM等分类，不回传任意错误文本或输入。
+
+共9个独立子进程、每组11次临时更新，最多99次临时更新、0次正式更新。统一回传后恢复原正式策略与美化看板；不会把“测完”当作数值合格。保留原要求，不新增或放宽误差门槛。单batch误差变小仍不等于多步或收敛通过。每组300秒超时上限沿用，失败清理确认后继续。
+
 ## 实验机执行
 
 先在原训练终端按一次 **Ctrl-C**，等检查点保存、入口退出，再粘贴整段。不要与正式训练同时占用 GPU 0。已暂停则直接执行。
@@ -28,7 +40,7 @@ cd "$MEGA_DIAG_ROOT" &&
 CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py diagnose mega-fft -- \
   --source-suite /root/projects/qkan-mamba-lra-adaptive-89353fc83f89/runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
-  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --all-methods &&
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --refine &&
 .venv-baselines/bin/python -B scripts/experiment.py \
   --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
   --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
@@ -41,7 +53,7 @@ CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 
 ## 结果与边界
 
-- 最多 12 个顺序原生子进程，每组最多 300 秒、单阶段无进展最多 180 秒；这些是超时上限，不是预计时长。
+- 历史 `--all-methods` 最多 12 个顺序原生子进程（当前 `--refine` 为9组/99次），每组最多 300 秒、单阶段无进展最多 180 秒；这些是超时上限，不是预计时长。
 - 取最新完整断点的一个待训练逻辑 batch。每次恢复独立克隆的模型、Adam、RNG 和样本调度状态；独立检查 Adam step 起点及增加量，避免可变引用污染对照。
 - 3 次数值观测兼预热，随后 ABBA×2 的 8 次计时，每组共 **11 次临时更新**，最多 **132 次临时更新、0 次正式更新**。数值比较包括参数、更新量、裁剪后梯度、Adam 状态及 RNG／调度一致性，并提供原策略重复误差作参照。
 - 常规计时涵盖 CPU 取数、H2D、前后向、裁剪、Adam、样本调度和同步；resident 候选不计取数／传输，单独标注为重复 batch 上界。恢复、数值副本和 Graph 首次建图不计入稳态计时，首次观测另报。改变 micro 可能改变 dropout 随机轨迹，误差记录不解释为纯浮点噪声。本次不承诺整轮加速或收敛等价。

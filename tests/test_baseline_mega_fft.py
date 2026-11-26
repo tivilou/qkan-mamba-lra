@@ -153,6 +153,18 @@ class Tests(unittest.TestCase):
             self.assertEqual(report['attempted'][-1],'fft+micro-up+resident')
             self.assertEqual(len(report['attempted']),12);self.assertEqual(len(returned),3)
             self.assertEqual(list(report['failures']),['tf32']);self.assertTrue(report['source_unchanged'])
+            args.refine=True;args.all_methods=False
+            with patch.object(diagnostic,'ROOT',root),patch.object(diagnostic,'revision',return_value='pinned'),\
+                    patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
+                    patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})),\
+                    patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value=dict(idle=True)),\
+                    patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',FailedChild),\
+                    patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:returned.append(a)):
+                self.assertEqual(diagnostic.campaign(args),0)
+            report=read(returned[-1][0]/'mega-fft.json')
+            self.assertEqual(report['attempted'],list(diagnostic.REFINEMENTS))
+            self.assertEqual(len(returned),4);self.assertTrue(report['source_unchanged'])
+
 
 
     def test_combination_resolves_conflicting_tiers_and_precision(self):

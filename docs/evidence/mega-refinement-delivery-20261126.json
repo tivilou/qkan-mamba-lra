@@ -1,0 +1,23 @@
+{
+  "schema": "qkan-mega-refinement-delivery.v1",
+  "status": "collaborator_native_pending",
+  "routes": 9,
+  "max_disposable_updates": 99,
+  "formal_updates": 0,
+  "precision": "selected Linear BF16 with FP32 outputs, master weights and Adam; disabled reference original FP32",
+  "graph_fix": "Pinned instance encoder forward retains padding tensor instead of mask.any GPU scalar branch; unchanged return structure",
+  "graph_source_sha256": "001e2c9ee20154c0b97be09630714093991638c9ab5c5d08a5e9f96883dfb26f",
+  "error_threshold_changed": false,
+  "formal_policy_changed": false,
+  "stable_worker_or_models_changed": false,
+  "owner_native_execution_or_install": false,
+  "focused_stdlib_tests": 45,
+  "review": "Bounded static review fixed new graph-request reporting flag; no other concrete blocker found",
+  "native_result": null,
+  "package": ".runtime/mega-refine-20261126",
+  "limits": [
+    "One pending logical batch; no convergence or multistep certification",
+    "Recognized scalar branch removed; native Graph success unverified",
+    "No guarantee that reduced BF16 scope meets error gate or retains full speed"
+  ]
+}

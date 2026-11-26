@@ -46,7 +46,7 @@ git show FETCH_HEAD:scripts/formal_progress.py > .bootstrap/formal_progress.py &
 
 ## 五种日常操作
 
-MEGA 一次性优化短测：统一入口为 `diagnose mega-fft --all-methods`，见[实验机整段指令](mega-fft.md)。正常完成和回传后自动恢复原策略训练与美化看板。
+MEGA 当前选择性 BF16／Graph 修复短测：统一入口为 `diagnose mega-fft --refine`（历史全候选为 `--all-methods`），见[实验机整段指令](mega-fft.md)。正常完成和回传后自动恢复原策略训练与美化看板。
 
 BF16 策略＋Graph 的显式隔离叠加测试：见[完整指令与门槛](bf16-graph.md)，统一入口为 `diagnose bf16-graph`。它不改变已有正式 resume 的 eager16 策略。
 
