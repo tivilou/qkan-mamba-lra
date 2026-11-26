@@ -46,6 +46,8 @@ git show FETCH_HEAD:scripts/formal_progress.py > .bootstrap/formal_progress.py &
 
 ## 五种日常操作
 
+MEGA FP32 FFT 补齐短测：统一入口为 `diagnose mega-fft`，见[实验机整段指令](mega-fft.md)。正常完成和回传后自动恢复原策略训练与美化看板。
+
 BF16 策略＋Graph 的显式隔离叠加测试：见[完整指令与门槛](bf16-graph.md)，统一入口为 `diagnose bf16-graph`。它不改变已有正式 resume 的 eager16 策略。
 
 以下在使用的固定执行目录中调用。新checkout可直接用`scripts/experiment.py`，旧checkout采用上述同目录的`.bootstrap`副本。
