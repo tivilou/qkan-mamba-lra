@@ -50,7 +50,7 @@ class Tests(unittest.TestCase):
         from experiments.baseline_delivery.diagnostic_watch import Recorder
         with tempfile.TemporaryDirectory() as tmp:
             recorder=Recorder(tmp,'fixture')
-            for route in diag.METHODS+diag.STACKS+diag.REFINEMENTS+diag.GRAPH_REPAIR:
+            for route in diag.METHODS+diag.STACKS+diag.REFINEMENTS+diag.GRAPH_REPAIR+diag.GRAPH_DIAGNOSE:
                 for stage in ('reference_a','reference_b','candidate','graph_capture','graph_replay','timing_0'):
                     name=diag.phase_name(route,stage)
                     recorder.mark(name,flush=True)
@@ -166,13 +166,35 @@ class Tests(unittest.TestCase):
         self.assertEqual(captures[0][0].params,['weight']);self.assertEqual(plugin.calls,2)
         self.assertEqual(phases,['ffn_graph_capture']);plugin.close();self.assertNotIn('forward',layer.__dict__)
 
+    def test_graph_helper_has_no_external_stream_and_keeps_adapter_inputs(self):
+        events=[];adapter=object();values=(object(),)
+        def capture(a,v):
+            self.assertIs(a,adapter);self.assertIs(v,values);events.append('capture');return 'graph'
+        def forbidden(*a):raise AssertionError('Unexpected external stream wrapper')
+        torch=SimpleNamespace(cuda=SimpleNamespace(synchronize=lambda:events.append('sync'),
+            make_graphed_callables=capture,Stream=forbidden,stream=forbidden))
+        self.assertEqual(mod.make_graph(torch,adapter,values),'graph')
+        self.assertEqual(events,['sync','capture'])
+
+    def test_context_chain_preserves_original_category_but_redacts_content(self):
+        try:
+            try:raise RuntimeError('operation not permitted when stream is capturing private_token_ABC /private/path https://private.invalid')
+            except RuntimeError:raise RuntimeError('CUDA error: operation failed due to a previous error during capture')
+        except RuntimeError as error:rows=mod.error_chain(error)
+        self.assertEqual(len(rows),2);self.assertEqual(rows[1]['category'],'capture_forbidden_operation')
+        self.assertIn('previous error',rows[0]['template'])
+        for row in rows:
+            self.assertNotIn('private',row['template']);self.assertNotIn('ABC',row['template'])
+        err=RuntimeError('unknown value');err.__context__=err
+        self.assertEqual(len(mod.error_chain(err)),1)
+
     def test_native_trace_excludes_messages_and_local_paths(self):
         try:exec(compile("raise RuntimeError('private content')",'/hidden/site-packages/torch/cuda/graphs.py','exec'))
         except RuntimeError as error:frames=mod.native_trace(error)
         self.assertEqual(frames,[dict(file='torch/cuda/graphs.py',line=1,function='<module>')])
 
     def test_refinement_routes_and_allowlisted_failure(self):
-        for route in diag.REFINEMENTS+diag.GRAPH_REPAIR:
+        for route in diag.REFINEMENTS+diag.GRAPH_REPAIR+diag.GRAPH_DIAGNOSE:
             diag.settings(route);spec=diag.child_spec(Path('/fixture'),route)
             self.assertEqual(spec['argv'][-1],route)
         for route in ('bf16+island-ffn','island-tail+island-ffn'):

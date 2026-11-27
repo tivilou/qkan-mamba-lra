@@ -175,6 +175,37 @@ class Tests(unittest.TestCase):
             report=read(returned[-1][0]/'mega-fft.json')
             self.assertEqual(report['attempted'],list(diagnostic.GRAPH_REPAIR))
             self.assertEqual(len(returned),5);self.assertTrue(report['source_unchanged'])
+            args.graph_diagnose=True;args.graph_repair=False
+            with patch.object(diagnostic,'ROOT',root),patch.object(diagnostic,'revision',return_value='pinned'),\
+                    patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
+                    patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})),\
+                    patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value=dict(idle=True)),\
+                    patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',FailedChild),\
+                    patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:returned.append(a)):
+                self.assertEqual(diagnostic.campaign(args),0)
+            report=read(returned[-1][0]/'mega-fft.json')
+            self.assertEqual(report['attempted'],['graph-probe'])
+            self.assertEqual(len(report['skipped']),2);self.assertFalse(report['measurement_completed'])
+            self.assertEqual(len(returned),6);self.assertTrue(report['source_unchanged'])
+            class PassingProbe(MixedChild):
+                def run(self,spec,log,env):
+                    if spec['argv'][-1]!='graph-probe':return super().run(spec,log,env)
+                    FailedChild.run(self,spec,log,env)
+                    output=Path(spec['argv'][spec['argv'].index('--output')+1])
+                    atomic_json(output/'result.json',dict(route='graph-probe',request_sha256=digest(output.parent/'request.json'),
+                        formal_updates_committed=0,disposable_updates=0,probe_passed=True))
+                    return 0
+            with patch.object(diagnostic,'ROOT',root),patch.object(diagnostic,'revision',return_value='pinned'),\
+                    patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
+                    patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})),\
+                    patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value=dict(idle=True)),\
+                    patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',PassingProbe),\
+                    patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:returned.append(a)):
+                self.assertEqual(diagnostic.campaign(args),0)
+            report=read(returned[-1][0]/'mega-fft.json')
+            self.assertEqual(report['attempted'],list(diagnostic.GRAPH_DIAGNOSE))
+            self.assertTrue(report['measurement_completed']);self.assertEqual(len(returned),7)
+
 
 
 

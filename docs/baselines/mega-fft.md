@@ -15,7 +15,21 @@
 
 每组独立进程，使用相同最新检查点、样本行和逻辑 batch。失败、OOM、当前环境不支持的 Graph 操作或数值非有限，均记入最终报告后继续其他组；进程清理未确认时停止后续派发。稳定训练核心、共享上游文件、正式 Suite、注意力分块和训练预算保持原样。使用已有 `.venv-mega`，不升级或安装依赖。现有环境没有 Torch 2 compile／SDPA，不把升级环境伪装成一个已测试开关。
 
-## 当前推荐：Graph 捕获修复（2026-11-27）
+## 当前推荐：共同捕获链修复与定位（2026-11-27）
+
+使用 `--graph-diagnose --job auto`，不重跑六组矩阵。PyTorch1.13 捕获上下文的退出会直接调用 `capture_end`；它抛出的错误可能遮住上下文中的更早异常。现在回传有界 `__cause__`／`__context__` 链、框架代码位置及固定词表过滤的错误模板，未知词一律替换，不回传任意原文、张量值或私人路径。
+
+同时移除两条路径在官方 `make_graphed_callables` 外额外创建的 current-stream 嵌套，让该API自行管理预热／捕获stream。此为调用层修正，不声称已证明它是原生失败根因。
+
+顺序最多3个独立子进程：
+
+1. 小型 Linear 的 CUDA Graph 前向／反向／replay 探针；不加载训练断点、数据或Adam，不记作速度测量。失败则跳过后两项。
+2. 原 FP32 最后一层FFN的局部Graph对照。
+3. 原FP32整模型Graph（保留mask及常量索引缓存）。
+
+最多22次临时MEGA更新和一次小型探针反向，0正式更新。基础探针通过仍不代表MEGA成功。三项共用原环境、确定性及TF32关闭设置；不升级依赖、不改科学核心和正式策略。完成或失败清理确认后统一回传，并接续原训练／看板。超时、清理未确认、源变化、用户中断或回传失败仍会阻止自动续跑。
+
+## 历史轮次：Graph 捕获修复（2026-11-27）
 
 使用 `--graph-repair --job auto`。上一轮 Text 的尾层 BF16 方案保留为候选，本轮不重跑全模型 BF16、TF32、micro 和驻留数据测试。固定6组：
 
@@ -55,7 +69,7 @@ cd "$MEGA_DIAG_ROOT" &&
 CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py diagnose mega-fft -- \
   --source-suite /root/projects/qkan-mamba-lra-adaptive-89353fc83f89/runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
-  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --graph-repair --job auto &&
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --graph-diagnose --job auto &&
 .venv-baselines/bin/python -B scripts/experiment.py \
   --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
   --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \

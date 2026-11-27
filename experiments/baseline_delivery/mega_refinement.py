@@ -140,8 +140,7 @@ class FFNGraph:
                     def __init__(self):
                         super().__init__();self.params=torch.nn.ParameterList(list(module.parameters()))
                     def forward(self,value):return original(value)
-                with torch.cuda.stream(torch.cuda.Stream()):
-                    graphed=torch.cuda.make_graphed_callables(Adapter(),(x,))
+                graphed=make_graph(torch,Adapter(),(x,))
                 torch.cuda.synchronize();torch.cuda.set_rng_state(before);self.captures+=1
             self.calls+=1;return graphed(x)
         self.installed.append((module,'forward' in module.__dict__,original));module.forward=forward
@@ -161,3 +160,51 @@ def native_trace(error):
                 function=tb.tb_frame.f_code.co_name))
         tb=tb.tb_next
     return rows[-16:]
+
+
+# Fixed vocabulary prevents private paths, tensor values and arbitrary messages
+# from entering compact returns. Unknown words are replaced, never echoed.
+ERROR_WORDS=set("cuda error operation failed due to a previous during capture stream is capturing not permitted when the default current legacy active invalidated status invalid argument unsupported dependency graph backward forward autograd engine called holding gil python lock generator philox seed current_seed cudageneratorimpl cannot call get_rng_state get_state rng state offset reset set_rng_state tensor tensors differentiated appears have been used in requires grad gradient output input function does require has no grad_fn memory allocation allocate cublas cufft initialization allocator event recording synchronize synchronization device host cpu asynchronous an assertion assert internal expected true false check please report bug at of on for with only all must once pending work global thread local end begin mode relaxed aborted capture_end cudaerrorstreamcaptureunsupported cudaerrorstreamcaptureinvalidated this was because prevent dependent outside captured null use attempting access are enabled disabled one computation gradients running unsafe empty caching cache detach already execution tensorcore fp32 bf16 int float double half replay exit notimplementederror runtimeerror valueerror".split())
+
+
+def error_template(error):
+    import re
+    text=str(error)[:4096]
+    tokens=re.findall(r'[A-Za-z_][A-Za-z_0-9]*|[.,:;()]',text)
+    out=[]
+    for token in tokens[:160]:
+        value=token.lower()
+        safe=token if value in ERROR_WORDS or token in '.,:;()' else '<redacted>'
+        if safe!='<redacted>' or not out or out[-1]!=safe:out.append(safe)
+    return ' '.join(out)[:1024]
+
+
+def error_chain(error):
+    rows=[];seen=set()
+    while error is not None and id(error) not in seen and len(rows)<8:
+        seen.add(id(error));rows.append(dict(error_type=type(error).__name__,category=error_category(error),
+            template=error_template(error),framework_frames=native_trace(error)))
+        error=error.__cause__ if error.__cause__ is not None else error.__context__
+    return rows
+
+
+def make_graph(torch,adapter,values):
+    # The official helper owns warmup/capture streams. Do not nest another
+    # externally-created current stream around its forward/backward captures.
+    torch.cuda.synchronize()
+    return torch.cuda.make_graphed_callables(adapter,values)
+
+
+def graph_probe(torch):
+    """Disposable Linear capture/replay; no dataset, checkpoint load or Adam."""
+    before=torch.cuda.get_rng_state().clone()
+    try:
+        model=torch.nn.Linear(8,8).cuda().train()
+        x=torch.ones((2,8),device='cuda',requires_grad=True)
+        saved=torch.cuda.get_rng_state().clone()
+        graphed=make_graph(torch,model,(x,));torch.cuda.set_rng_state(saved)
+        out=graphed(x);out.sum().backward();torch.cuda.synchronize()
+        if not bool(torch.isfinite(out).all()) or x.grad is None or not bool(torch.isfinite(x.grad).all()):
+            raise ValueError('Nonfinite graph probe')
+        return dict(probe_passed=True,graph_replays=1,scope='Linear forward/backward only; no MEGA speed or numerical admission')
+    finally:torch.cuda.set_rng_state(before)
