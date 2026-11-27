@@ -278,6 +278,17 @@ class Dashboard:
                         f"完整 micro {execution.get('full_graph_micros',0)} | 短尾 eager {execution.get('eager_tail_micros',0)} | "
                         f"前向/反向 replay {runtime.get('forward_replays',0)}/{runtime.get('backward_replays',0)}")
             fused=read(folder/'mamba-fused-execution.json',{})
+            mega=read(self.suite/'mega-policy.json',{})
+            if config.get('model')=='mega' and mega.get('job')==job:
+                execution=read(folder/'mega-execution.json',{})
+                current=(execution.get('pid')==state.get('pid') and started is not None
+                    and execution.get('updated_at',0)>=started and execution.get('amendment')==mega.get('amendment')
+                    and execution.get('mode')==mega.get('mode'))
+                if mega.get('mode')=='fft-tail-bf16':
+                    observed=current and all(execution.get(k,0)>0 for k in ('training_calls','fft_calls','island_calls'))
+                    lines.append('  MEGA策略：FFT补齐＋尾层 FFN BF16 / FP32主参数和Adam / Graph关闭 / '+
+                        ('实际调用已确认；验证/测试原FP32' if observed else '待当前进程实际调用确认'))
+                else:lines.append('  MEGA策略：已回退原FP32；从最新完整断点继续（保留加速阶段历史）')
             if config.get('model')=='mamba1' and (self.suite/'mamba-input.json').exists():
                 current=(fused.get('pid')==state.get('pid') and started is not None
                          and fused.get('updated_at',0)>=started and fused.get('observed_fused_calls',0)>0)

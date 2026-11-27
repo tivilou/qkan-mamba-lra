@@ -117,6 +117,12 @@ def private_function(function, **overrides):
     return result
 
 
+def mega_control():
+    # Load without importing the new experiments package into the pinned parent.
+    path=Path(__file__).resolve().parents[1]/'experiments/baseline_delivery/mega_formal.py'
+    return runpy.run_path(str(path))
+
+
 def dispatch_queue(root, suite):
     kind = validate_executor(root, suite)
     targets = {'mamba-fused': 'mamba_fused_formal', 'bf16-graph': 'bf16_graph_formal',
@@ -125,6 +131,9 @@ def dispatch_queue(root, suite):
     sys.path.insert(0, str(root))
     target = importlib.import_module('experiments.baseline_delivery.'+targets[kind])
     execute = private_function(target.execute, read=queue_read(suite, target.read))
+    if (suite/'mega-policy.json').exists():
+        if kind!='mamba-fused':raise ValueError('MEGA amendment requires the reviewed Mamba continuation Suite')
+        execute=mega_control()['attach'](target,root,suite,queue_read(suite,target.read))
     entry = private_function(target.main, execute=execute)
     previous = sys.argv
     try:
@@ -197,7 +206,7 @@ def require_linux():
     if os.name != 'posix': raise ValueError('Training supervision requires collaborator Linux runtime')
 
 
-def supervise(root, suite, command, ui, interval=5, display='auto', after_prepare=False, task_order=None):
+def supervise(root, suite, command, ui, interval=5, display='auto', after_prepare=False, task_order=None, mega_policy=None):
     """Own one parent, original UI, safe pause and logs; never own scientific state."""
     sys.path.insert(0, str(root))
     from experiments.baseline_delivery.common import lock, atomic_json
@@ -218,6 +227,10 @@ def supervise(root, suite, command, ui, interval=5, display='auto', after_prepar
                                     else root/'.bootstrap/experiment-start.lock'))
             if suite and suite.exists():
                 with lock(suite/'suite.lock'): pass
+            if mega_policy is not None:
+                validate_executor(root,suite)
+                with lock(suite/'suite.lock'),lock(suite/'jobs/mega-text-s42/worker.lock'):
+                    mega_control()['activate'](root,suite,mega_policy)
             with log.open('ab') as output:
                 offset = output.tell()
                 while True:
@@ -286,6 +299,8 @@ def main(argv=None):
         if name == 'watch': sub.add_argument('--once', action='store_true')
     subs.choices['resume'].add_argument('--task-order', choices=('manifest', 'retrieval-last'),
         help='Formal continuation default: other four datasets before Retrieval; preserve checkpoints')
+    subs.choices['resume'].add_argument('--mega-policy',choices=('fft-tail-bf16','original'),
+        help='Explicit prospective MEGA Text switch or rollback; latest checkpoint and same dashboard')
     dispatch = subs.add_parser('_dispatch-queue', help=argparse.SUPPRESS)
     dispatch.add_argument('--suite', type=Path, required=True)
     diagnostic = subs.add_parser('diagnose', help='Explicit diagnostic only; never automatic during resume')
@@ -323,7 +338,8 @@ def main(argv=None):
             task_order = 'retrieval-last'
         command = resume_command(root, suite, args.operation == 'upload', task_order=task_order)
         if args.operation == 'upload': return subprocess.call(command, cwd=root)
-        return supervise(root, suite, command, display_module(), args.interval, args.display, task_order=task_order)
+        return supervise(root, suite, command, display_module(), args.interval, args.display, task_order=task_order,
+            **(dict(mega_policy=args.mega_policy) if args.mega_policy is not None else {}))
     except (ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
         print('入口检查未通过：'+str(error), file=sys.stderr); return 2
 

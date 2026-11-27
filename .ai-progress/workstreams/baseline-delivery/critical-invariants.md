@@ -33,6 +33,7 @@ Put rationale and chronology in decisions/*.md instead.
 - [ACTIVE] Implementation roster and claim scope -> [detail](decisions/2026-11-04-implementation-roster.md)
 - [ACTIVE] Assume collaborator has no external internet -> [detail](decisions/2026-11-04-offline-collaborator.md)
 - [ACTIVE] Unified experiment entry with pinned executors -> [detail](decisions/2026-11-18-unified-experiment-entry.md)
+- [ACTIVE] User-selected MEGA Text prospective precision amendment; other dispatch remains pinned -> [detail](decisions/2026-11-27-mega-text-execution-amendment.md)
 
 ## Information Map
 

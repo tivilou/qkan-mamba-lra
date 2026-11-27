@@ -10,7 +10,41 @@
 
 注册表支持代码适配的数据集，不代表每个数据集已经验证。此次仅对自动选中的一个未完成 MEGA 任务取最新完整断点，进行一次有界联合验证。已有 Text 单batch测速不能替代其他任务验收。
 
-## 实验机执行
+## 已审阅结果与正式策略切换（2026-11-27）
+
+实际worker联合验证已通过：匹配8步、同一路线4＋新进程4步恢复状态哈希完全一致。FFT＋尾层BF16无Graph吞吐增加11.41%；加入局部Graph后增加11.20%，所以本次Graph关闭。固定验证集前256行从217行正确变为216行，尚未证明全量精度或收敛等价。用户已明确选择切换为这一精度变体，记录于 `mega-text-policy-switch-20261127.json`，不改写旧资格证或声称原FP32等价。
+
+仅切换 **MEGA Text**；其他模型及MEGA其他数据集继续原派发。原Suite、配置、完成结果及Retrieval最后的顺序保留。新控制器通过原派发函数的私有副本替换选定job的spec和结果检查，不替换模块全局。新worker复用已验证的稳定worker及Hooks；原代码单独验证旧certificate，新amendment记录新插件来源。激活前在Suite事件目录保存原始完整generation及指针；继续训练始终读取当时最新完整断点，不回到测速6016步。
+
+当前训练若仍在跑，先在原终端按一次Ctrl-C，等待保存并退出；然后执行整段，训练与美化看板在同一个终端：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MEGA_POLICY_REV=$(git rev-parse FETCH_HEAD) &&
+MEGA_POLICY_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MEGA_POLICY_REV:0:12}" &&
+cd "$MEGA_POLICY_ROOT" &&
+CUBLAS_WORKSPACE_CONFIG=:4096:8 \
+.venv-baselines/bin/python -B scripts/experiment.py \
+  --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
+  --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
+  --task-order retrieval-last --mega-policy fft-tail-bf16
+```
+
+不再重复联合测速。启动后看板应显示 `MEGA策略：FFT补齐＋尾层 FFN BF16 ... Graph关闭 ... 实际调用已确认`；只有当前PID、时间、amendment/mode及三种调用计数全部匹配才显示确认。未出现时查看该job的 `worker.log`、`mega-policy-error.json`。每次暂停／完成自动回传紧凑执行凭证至 `qkan-mamba/mega-policy/`，失败则保留本地重传文件。新的summary和environment携带策略来源；历史正式配置及旧结果不被重标注为已加速。
+
+后续在**首次切换使用的控制器目录**继续执行上述python命令即可；普通resume会自动沿用已记录策略。原目录保留旧代码，直接从旧目录启动旧脚本不会自动启用新插件。若换到其他新checkout，应回到Suite `mega-policy.json` 的 `code_root`，保持明确绑定。
+
+回退时先等待安全暂停，仍在同一控制器目录执行下列单条指令。它关闭插件、继续最新状态，保留已经执行过的BF16阶段及其来源，不抹去训练进度或声称消除既有数值影响：
+
+```bash
+.venv-baselines/bin/python -B scripts/experiment.py \
+  --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
+  --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
+  --task-order retrieval-last --mega-policy original
+```
+
+## 历史联合验证入口（不要为切换策略重复运行）
 
 原训练终端先按一次 Ctrl-C，等保存并退出，再执行整段。已暂停则直接执行。
 

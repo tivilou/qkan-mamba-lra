@@ -1,0 +1,27 @@
+{
+  "schema": "qkan-mega-text-prospective-policy.v1",
+  "date": "2026-11-27",
+  "job": "mega-text-s42",
+  "config_sha256": "3f39f3fa939e2e1e47ad27d4649f64a8540bb124357e76048c79a7af34663dd2",
+  "contract": "2fb8c40a1c8e2ec248f447ecccb9574190309dac09eb92313441b43d7b0eacec",
+  "qualified_source_step": 6016,
+  "qualified_binding": {
+    "mega_qualification.py": "a2ab2629b53f3e15e15df290144235c55bccf6aa98455cca8cbd25bb69c08473",
+    "mega_execution.py": "2991d2c1281628c9486c1168944dc53db7485fd169f7cd375178434a6c4ae48a",
+    "mega_refinement.py": "86e0daa0db36bdaa9a03e68a654db71dfb9c5a952852b81c4454988f9ee070a2",
+    "mega_fft.py": "0b3215ef1ca0c14edd3013f798d6a52f5eeda145e8a74e9a9be0815be0e1cbbc",
+    "execution_plugins.py": "374ac2df1fb050cc3d76ff284765652d585057250cf12d47a1ab2b7a3c7d0d78",
+    "worker.py": "5d798cb23fa20dba055c7894f696fe62acfc2837da9a4e3d62a099659b29104e",
+    "models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386"
+  },
+  "review": "docs/evidence/mega-qualification-success-review-20261127.json",
+  "qualification_sha256": "cfc2562d455ae519bc052a127e7a8a450c8c3a44c0c2f03aab82a2f1a8ae04bd",
+  "authorization": "User explicitly requested switching to the acceleration policy after review.",
+  "selection": {
+    "plugin": "mega.fft_tail_bf16",
+    "version": 1,
+    "graph": false
+  },
+  "quality_scope": "Prospective user-selected precision variant. Val-first256: reference217correct, candidate216correct; technical recovery passed; full convergence/equivalence not certified.",
+  "scope": "MEGA Text only; other jobs retain pinned original dispatch; latest full state, no historical step reset."
+}
