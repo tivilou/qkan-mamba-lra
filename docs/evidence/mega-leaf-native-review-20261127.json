@@ -1,0 +1,62 @@
+{
+  "schema": "qkan-mega-leaf-native-review.v1",
+  "date": "2026-11-27",
+  "run_id": "mega-fft-20261127T064030Z-f7cc80a3",
+  "verified_bytes": 172070,
+  "verified_sha256": "0f190a598e35a618ec48d859d42784e496679546983ee418523d832ed0a8f0b8",
+  "job": "mega-text-s42",
+  "revision": "90e727009d90f21ae0eff951ca1a74dfad91782d",
+  "step": 3055,
+  "results": {
+    "graph-probe": {
+      "probe_passed": true,
+      "nonleaf_input": true,
+      "upstream_and_parameter_gradients_match": true
+    },
+    "ffn-graph": {
+      "timing": {
+        "reference_median_seconds": 5.271038616076112,
+        "candidate_median_seconds": 5.26442857645452,
+        "throughput_gain": 0.0012556043881297718,
+        "positive_pairs": 4,
+        "timing_promising": false
+      },
+      "update_relative_l2": 0.028346194766307627,
+      "gradient_relative_l2": 0.003810268708125776,
+      "repeat_update_relative_l2": 0.0,
+      "rng_schedule_exact": true,
+      "ffn_graph_calls": 80,
+      "ffn_graph_captures": 1,
+      "rollback_exact": true
+    },
+    "fft+island-tail+ffn-graph": {
+      "timing": {
+        "reference_median_seconds": 5.293656475841999,
+        "candidate_median_seconds": 4.700947979465127,
+        "throughput_gain": 0.12608276010837938,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "update_relative_l2": 0.028561846719745234,
+      "gradient_relative_l2": 0.007104185510189001,
+      "repeat_update_relative_l2": 0.0,
+      "rng_schedule_exact": true,
+      "ffn_graph_calls": 80,
+      "ffn_graph_captures": 1,
+      "rollback_exact": true
+    }
+  },
+  "failures": {},
+  "all_groups_clean": true,
+  "source_unchanged": true,
+  "copied_checkpoint_removed": true,
+  "formal_updates": 0,
+  "formal_admission": false,
+  "limits": [
+    "Partial last FFN Graph succeeded; whole model Graph not tested in this round",
+    "FP32 Graph alone +0.126percent does not justify a speed adoption",
+    "Combined12.608percent gain is not Graph attribution; previous noGraph12.570percent came from a different checkpoint",
+    "Exact FP32 repeats vs nonzero2.83percent/2.86percent update differences; no error gate or convergence pass claimed",
+    "No post-resume formal heartbeat returned"
+  ]
+}
