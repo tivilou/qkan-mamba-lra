@@ -8,10 +8,44 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 from experiments.baseline_delivery import mega_refinement as mod,mega_diagnostic as diag
-from experiments.baseline_delivery.common import digest
+from experiments.baseline_delivery.common import digest,atomic_json
 
 
 class Tests(unittest.TestCase):
+    def test_auto_job_skips_finished_and_missing_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);states={job:dict(state='pending') for job in diag.JOBS}
+            states['mega-listops-s42']['state']='computed'
+            states['mega-retrieval-s42']['state']='paused'
+            for task in ('listops','image','retrieval'):
+                atomic_json(root/'jobs'/('mega-'+task+'-s42')/'checkpoints/latest.json',{})
+            atomic_json(root/'status.json',states)
+            self.assertEqual(diag.select_job(root),'mega-image-s42')
+            atomic_json(root/'jobs/mega-image-s42/summary.json',{})
+            self.assertEqual(diag.select_job(root),'mega-retrieval-s42')
+            self.assertEqual(diag.select_job(root,'mega-retrieval-s42'),'mega-retrieval-s42')
+            with self.assertRaisesRegex(ValueError,'auto'):diag.select_job(root,'mega-listops-s42')
+            states['mega-retrieval-s42']['state']='computed';atomic_json(root/'status.json',states)
+            self.assertIsNone(diag.select_job(root))
+            states['mega-text-s42']['state']='running';atomic_json(root/'status.json',states)
+            with self.assertRaisesRegex(ValueError,'Pause'):diag.select_job(root)
+
+    def test_no_eligible_job_skips_native_and_upload_and_releases_locks(self):
+        from contextlib import ExitStack
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);atomic_json(root/'status.json',{j:dict(state='computed') for j in diag.JOBS})
+            args=SimpleNamespace(source_suite=root,job='auto',cache=root,gpu='0')
+            with ExitStack() as stack:
+                stack.enter_context(patch.object(diag,'ROOT',root));stack.enter_context(patch.object(diag,'revision',return_value='pinned'))
+                stack.enter_context(patch('experiments.baseline_delivery.bootstrap.check_exchange'))
+                stack.enter_context(patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})))
+                stack.enter_context(patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value={'idle':True}))
+                run=stack.enter_context(patch('experiments.baseline_delivery.diagnostic_watch.Supervisor.run'))
+                upload=stack.enter_context(patch('experiments.baseline_delivery.return_artifacts.upload_declared'))
+                self.assertEqual(diag.campaign(args),0);run.assert_not_called();upload.assert_not_called()
+            from experiments.baseline_delivery.common import lock
+            with lock(root/'suite.lock'):pass
+
     def test_all_routes_use_real_supervisor_phase_contract(self):
         from experiments.baseline_delivery.diagnostic_watch import Recorder
         with tempfile.TemporaryDirectory() as tmp:

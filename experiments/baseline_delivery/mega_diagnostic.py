@@ -15,6 +15,7 @@ ORDER=(False,True,True,False)*2
 METHODS=('fft','bf16','tf32','graph','micro-down','micro-up','resident')
 REFINEMENTS=('fft+island-tail','fft+island-ffn','fft+island-projections','mask-fp32','graph-fixed','fft+graph-fixed','bf16+graph-fixed','fft+bf16+graph-fixed','fft+island-ffn+graph-fixed')
 STACKS=('fft+bf16','fft+graph','bf16+graph','fft+bf16+graph')
+JOBS=tuple('mega-'+task+'-s42' for task in ('listops','text','image','pathfinder','retrieval'))
 
 
 def phase_name(route,stage):
@@ -37,6 +38,23 @@ def combined(results):
         remove=min(('micro-up','micro-down'),key=lambda n:results[n]['timing']['throughput_gain']);winners.remove(remove)
     if 'bf16' in winners and 'tf32' in winners:winners.remove('tf32')
     return '+'.join(winners) if len(winners)>1 else None
+
+
+def select_job(source,requested='auto'):
+    """Caller holds Suite locks. Never restart a completed or unstarted job."""
+    states=read(source/'status.json')
+    if any(v['state']=='running' for v in states.values()):raise ValueError('Pause original runner and wait for saved exit first')
+    if requested!='auto' and requested not in JOBS:raise ValueError('Unknown MEGA job')
+    candidates=JOBS if requested=='auto' else (requested,)
+    # Non-Retrieval first; prefer the paused current task within that group.
+    candidates=sorted(candidates,key=lambda job:('-retrieval-' in job,states.get(job,{}).get('state')!='paused',JOBS.index(job)))
+    for job in candidates:
+        folder=source/'jobs'/job
+        if (states.get(job,{}).get('state') in ('pending','paused')
+                and not (folder/'summary.json').exists() and (folder/'checkpoints/latest.json').is_file()):
+            return job
+    if requested!='auto':raise ValueError('Selected MEGA job has no unfinished checkpoint; use --job auto')
+    return None
 
 
 def snapshot(source,suite,job,cache):
@@ -227,8 +245,14 @@ def campaign(args):
     source=args.source_suite.resolve();suite=ROOT/'runs'/('mega-fft-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
     supervisor=Supervisor(300,180);report=dict(schema='qkan-mega-fft.v1',measurement_completed=False,formal_release_allowed=False)
     with ExitStack() as held:
-        for path in (source/'progress-supervisor.lock',source/'suite.lock',source/'jobs'/args.job/'worker.lock'):held.enter_context(lock(path))
-        request=snapshot(source,suite,args.job,args.cache)
+        for path in (source/'progress-supervisor.lock',source/'suite.lock'):held.enter_context(lock(path))
+        job=select_job(source,args.job)
+        if job is None:
+            print('No unfinished MEGA checkpoint; diagnostic skipped. Continue original training queue.',flush=True)
+            return 0
+        held.enter_context(lock(source/'jobs'/job/'worker.lock'))
+        print('MEGA diagnostic selected job: '+job,flush=True)
+        request=snapshot(source,suite,job,args.cache)
         print('MEGA FFT diagnostic Suite: '+str(suite),flush=True)
         results={};failures={};attempted=[];unsafe=False
         refine=getattr(args,'refine',False)
@@ -289,7 +313,7 @@ def main():
     p.add_argument('--refine',action='store_true',help='Selective BF16 precision islands and repaired Graph candidates only')
     p.add_argument('--all-methods',action='store_true',help='All isolated candidates, then compatible promising combination; one return')
     p.add_argument('--route',default='fft',help=argparse.SUPPRESS)
-    p.add_argument('--job',choices=['mega-'+task+'-s42' for task in ('listops','text','image','pathfinder','retrieval')],default='mega-listops-s42')
+    p.add_argument('--job',choices=['auto',*JOBS],default='auto',help='Default: unfinished MEGA with checkpoint, non-Retrieval first')
     a=p.parse_args()
     if a.refine and a.all_methods:p.error('Select refine or all-methods, not both')
     if a.request:
