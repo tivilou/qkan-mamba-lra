@@ -1,0 +1,20 @@
+{
+  "schema": "qkan-mega-qualification-entry-fix.v1",
+  "date": "2026-11-27",
+  "native_status": "pending_collaborator",
+  "previous_exact_root_cause": "unknown: old parent overwrote original child traceback",
+  "fixes": [
+    "Main CLI retains all setup/import/worker exceptions in native detail",
+    "Parent errors stored separately and included without replacing original child error",
+    "Reference/setup failure stops further candidates",
+    "Matched epoch prefix2/4/6/8 with frozen reference budget, original cursor and configuration unchanged",
+    "Insufficient2batch prefix emits explicit skip0updates; no repeated candidate failure"
+  ],
+  "focused_stdlib_tests": 9,
+  "test_exit_status": 0,
+  "owner_native_execution_or_install": false,
+  "formal_policy_changed": false,
+  "recovery_tolerances_changed": false,
+  "review": "Bounded static recovery/budget review found no concrete regression",
+  "package": ".runtime/mega-qualify-fix-20261127"
+}

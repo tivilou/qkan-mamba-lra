@@ -12,6 +12,24 @@ from experiments.baseline_delivery import execution_plugins as plugins,mega_exec
 
 
 class Tests(unittest.TestCase):
+    def test_even_pending_window_does_not_cross_epoch(self):
+        for remaining,expected in ((2048,8),(1024,8),(896,6),(512,4),(384,2),(256,2),(255,0),(128,0),(0,0)):
+            state=dict(training_complete=False,cursor=10000-remaining)
+            self.assertEqual(q.window(state,10000,128),expected)
+            self.assertLessEqual(state['cursor']+expected*128,10000)
+        self.assertEqual(q.window(dict(training_complete=True,cursor=0),10000,128),0)
+
+    def test_pre_worker_exception_keeps_original_frame_and_error_chain(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=Path(tmp)
+            try:raise ValueError('private unknown content')
+            except ValueError as error:q.failure_detail(out,error)
+            detail=read(out/'failure-detail.json')
+            self.assertEqual(detail['native_error']['error_type'],'ValueError')
+            self.assertEqual(detail['chain'][0]['error_type'],'ValueError')
+            self.assertNotIn('private',detail['chain'][0]['template'])
+            self.assertTrue(detail['native_error']['project_frames'])
+
     def test_registry_graph_is_independent_boolean_default_off(self):
         cfg=dict(model='mega',task='text');value=dict(plugin='mega.fft_tail_bf16',version=1)
         self.assertEqual(plugins.resolve(value,cfg)['backend'],'eager')
@@ -20,6 +38,17 @@ class Tests(unittest.TestCase):
             with self.assertRaises(ValueError):plugins.resolve(bad,config)
         with patch.object(execution,'Policy') as policy:
             plugins.create(value,cfg,'torch','model');policy.assert_called_once_with('torch','model',graph=False)
+
+    def test_cli_captures_failure_before_native_worker_try(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);out=root/'reference'
+            argv=['qualify','--request',str(root/'request.json'),'--mode','reference','--output',str(out)]
+            with patch.object(sys,'argv',argv),patch.object(q,'native',side_effect=ValueError('private preparation error')):
+                with self.assertRaises(ValueError):q.main()
+            detail=read(out/'failure-detail.json')
+            self.assertEqual(detail['native_error']['error_type'],'ValueError')
+            self.assertTrue(detail['native_error']['project_frames'])
+            self.assertNotIn('private',detail['chain'][0]['template'])
 
     def test_training_only_context_evaluation_original_and_cleanup(self):
         active={};closed=[]
@@ -76,7 +105,7 @@ class Tests(unittest.TestCase):
                     self.records.append(dict(exit_code=0,termination=dict(group_verified=True)))
                     a=spec['argv'];out=Path(a[a.index('--output')+1]);mode=a[a.index('--mode')+1]
                     request=Path(a[a.index('--request')+1])
-                    atomic_json(out/'result.json',dict(passed=True,mode=mode,request_sha256=digest(request),
+                    atomic_json(out/'result.json',dict(passed=True,mode=mode,planned_steps=8,request_sha256=digest(request),
                         temporary_updates=4 if mode.endswith(('interrupt','resume')) else 8,formal_updates=0,
                         step=14 if mode.endswith('interrupt') else 18,recovery_passed=True,row_ids_sha256='same',updates=[dict(loss=.5)],training_seconds=1.,
                         validation=dict(loss=.5,accuracy=.5,samples=256)))
@@ -96,6 +125,52 @@ class Tests(unittest.TestCase):
             self.assertTrue(report['technical_passed']);self.assertFalse(report['quality_admitted'])
             self.assertTrue(report['owned_checkpoints_removed']);self.assertTrue(report['source_unchanged'])
             self.assertEqual(len(report['child_executions']),7);self.assertEqual(cp.read_bytes(),original)
+            def run_case(worker):
+                returned.clear()
+                with ExitStack() as stack:
+                    stack.enter_context(patch.object(q,'ROOT',root));stack.enter_context(patch.object(q,'revision',return_value='pinned'))
+                    stack.enter_context(patch.object(q,'binding',return_value={'worker':'same'}))
+                    stack.enter_context(patch('experiments.baseline_delivery.mega_diagnostic.revision',return_value='pinned'))
+                    stack.enter_context(patch('experiments.baseline_delivery.bootstrap.check_exchange'))
+                    stack.enter_context(patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})))
+                    stack.enter_context(patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value={'idle':True}))
+                    stack.enter_context(patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',worker))
+                    stack.enter_context(patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:returned.append(a)))
+                    self.assertEqual(q.campaign(args),0)
+                self.assertEqual(len(returned),1);self.assertEqual(cp.read_bytes(),original)
+                return returned[0][0],read(returned[0][0]/'qualification.json')
+            class ShortWorker(Worker):
+                def run(self,spec,log,env):
+                    super().run(spec,log,env);a=spec['argv'];mode=a[a.index('--mode')+1];out=Path(a[a.index('--output')+1])
+                    value=read(out/'result.json');value.update(planned_steps=2,
+                        temporary_updates=1 if mode.endswith(('interrupt','resume')) else 2,
+                        step=11 if mode.endswith('interrupt') else 12)
+                    atomic_json(out/'result.json',value);return 0
+            _,report=run_case(ShortWorker)
+            self.assertTrue(report['technical_passed']);self.assertEqual(report['planned_steps'],2)
+            self.assertEqual(len(report['child_executions']),7)
+            class EarlyFailure(Worker):
+                def run(self,spec,log,env):
+                    self.records.append(dict(exit_code=1,termination=dict(group_verified=True)))
+                    out=Path(spec['argv'][spec['argv'].index('--output')+1])
+                    try:raise ValueError('private_setup_error')
+                    except ValueError as error:q.failure_detail(out,error)
+                    return 1
+            suite,report=run_case(EarlyFailure)
+            self.assertEqual(len(report['child_executions']),1);self.assertFalse(report['technical_passed'])
+            self.assertEqual(report['failures']['reference']['error']['error_type'],'RuntimeError')
+            self.assertEqual(report['failures']['reference']['native_error']['error_type'],'ValueError')
+            self.assertEqual(read(suite/'reference/worker-error.json')['error_type'],'ValueError')
+            class NoWindow(Worker):
+                def run(self,spec,log,env):
+                    self.records.append(dict(exit_code=0,termination=dict(group_verified=True)))
+                    out=Path(spec['argv'][spec['argv'].index('--output')+1]);request=Path(spec['argv'][spec['argv'].index('--request')+1])
+                    atomic_json(out/'result.json',dict(mode='reference',skipped=True,request_sha256=digest(request),temporary_updates=0,formal_updates=0))
+                    return 0
+            _,report=run_case(NoWindow)
+            self.assertEqual(len(report['child_executions']),1);self.assertTrue(report['skipped']['skipped'])
+            self.assertFalse(report['technical_passed']);self.assertTrue(report['owned_checkpoints_removed'])
+
 
     def test_cli_no_native_import_and_unified_route(self):
         text="import sys,runpy;sys.modules['torch']=None;sys.modules['numpy']=None;sys.argv=['qualify','--help'];runpy.run_module('experiments.baseline_delivery.mega_qualification',run_name='__main__')"

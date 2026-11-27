@@ -14,6 +14,23 @@ MODES=('reference','eager','graph','interrupt','resume','graph-interrupt','graph
 STEPS=8
 
 
+def window(state,rows,logical):
+    """Use one matched even prefix; preserve the epoch and source cursor."""
+    if state['training_complete']:return 0
+    if not 0<=state['cursor']<=rows or type(logical) is not int or logical<1:raise ValueError('Invalid pending sample window')
+    available=(rows-state['cursor'])//logical
+    return min(STEPS,available)//2*2
+
+
+def failure_detail(output,error):
+    """Cover setup/import failures too; retain native evidence separately."""
+    from .mega_refinement import error_chain
+    worker_failure(output,error)
+    detail=read(output/'failure-detail.json') if (output/'failure-detail.json').exists() else {}
+    atomic_json(output/'failure-detail.json',dict(detail,chain=error_chain(error),
+        native_error=read(output/'worker-error.json')))
+
+
 def binding():
     files=('mega_qualification.py','mega_execution.py','mega_refinement.py','mega_fft.py','execution_plugins.py','worker.py','models.py')
     return {n:digest(ROOT/'experiments/baseline_delivery'/n) for n in files}
@@ -55,7 +72,14 @@ def native(path,mode,output):
     logical=planned_batch_size(controller,config,base['step']);micro=controller.micro_batch
     mark('mega_joint_data',flush=True)
     train=Split(request['data'],config['task'],'train',request['cache'],config['data_hashes']['train'])
-    if base['training_complete'] or base['cursor']+STEPS*logical>len(train):raise ValueError('Need eight pending full batches in current epoch')
+    steps=window(base,len(train),logical)
+    atomic_json(output/'setup.json',dict(phase='pending_window',source_step=base['step'],
+        cursor=base['cursor'],train_rows=len(train),logical_batch=logical,micro_batch=micro,planned_steps=steps))
+    if steps<2:
+        atomic_json(output/'result.json',dict(mode=mode,request_sha256=digest(path),skipped=True,
+            reason='Fewer than two pending full batches before epoch end',planned_steps=0,
+            temporary_updates=0,formal_updates=0))
+        return
     resuming=mode.endswith('resume');interrupting=mode.endswith('interrupt')
     prior=suite/('graph-interrupt' if mode.startswith('graph') else 'interrupt') if resuming else suite/'source'
     cp,generation=checked_pointer(prior)
@@ -93,7 +117,7 @@ def native(path,mode,output):
     for name in ('SIGINT','SIGTERM','SIGHUP'):
         if hasattr(signal,name):
             sig=getattr(signal,name);handlers[sig]=signal.signal(sig,w.request_pause)
-    limit=base['step']+(STEPS//2 if interrupting else STEPS)
+    limit=base['step']+(steps//2 if interrupting else steps)
     try:
         mark('mega_joint_worker',flush=True)
         with lock(output/'worker.lock'):
@@ -108,7 +132,7 @@ def native(path,mode,output):
                 or len(updates)!=count or any(not math.isfinite(u['loss']) for u in updates)):
             raise ValueError('Finite actual worker budget/row clock differs')
         clean=lambda state:{k:v for k,v in scientific(state).items() if k!='mega_execution'}
-        result=dict(passed=True,mode=mode,request_sha256=digest(path),source_step=base['step'],step=final['step'],
+        result=dict(passed=True,mode=mode,planned_steps=steps,request_sha256=digest(path),source_step=base['step'],step=final['step'],
             loaded_scientific_sha256=state_hash(clean(before)),scientific_sha256=state_hash(clean(final)),
             checkpoint_sha256=checked_pointer(output)[0]['sha256'],updates=updates,micro_batch=micro,logical_batch=logical,
             training_seconds=final['training_seconds']-before['training_seconds'],temporary_updates=count,formal_updates=0,
@@ -158,7 +182,7 @@ def campaign(args):
         print('MEGA actual-worker qualification: '+str(suite)+' | '+job,flush=True)
         supervisor=Supervisor(900,300);report=dict(schema='qkan-mega-qualification.v1',results={},failures={},
             formal_policy_changed=False,quality_admitted=False,formal_updates=0,child_executions=supervisor.records)
-        safe=True
+        safe=True;plan=None
         try:
             for mode in MODES:
                 if mode.endswith('resume') and ('graph-interrupt' if mode.startswith('graph') else 'interrupt') not in report['results']:
@@ -172,15 +196,33 @@ def campaign(args):
                         safe=False;raise ValueError('Worker cleanup unverified')
                     if code!=0:raise RuntimeError('Qualification child failed')
                     value=read(suite/mode/'result.json')
-                    expected=STEPS//2 if mode.endswith(('interrupt','resume')) else STEPS
+                    if mode=='reference' and value.get('skipped') is True:
+                        if (value.get('request_sha256')!=digest(suite/'request.json') or value.get('temporary_updates')!=0
+                                or value.get('formal_updates')!=0):raise ValueError('Skip identity differs')
+                        report['skipped']=value;break
+                    steps=value.get('planned_steps')
+                    if type(steps) is not int or steps not in range(2,STEPS+1,2):raise ValueError('Finite window budget differs')
+                    if plan is None:plan=steps
+                    elif steps!=plan:raise ValueError('Child windows differ')
+                    report['planned_steps']=plan
+                    expected=steps//2 if mode.endswith(('interrupt','resume')) else steps
                     if (value['request_sha256']!=digest(suite/'request.json') or value['mode']!=mode or value['temporary_updates']!=expected
-                            or value['formal_updates']!=0 or value['step']!=request['checkpoint']['step']+(STEPS//2 if mode.endswith('interrupt') else STEPS)):raise ValueError('Worker result identity differs')
+                            or value['formal_updates']!=0 or value['step']!=request['checkpoint']['step']+(steps//2 if mode.endswith('interrupt') else steps)):raise ValueError('Worker result identity differs')
                     report['results'][mode]=value
                 except Exception as error:
-                    worker_failure(suite/mode,error);report['failures'][mode]=dict(error=read(suite/mode/'worker-error.json'))
+                    # Child main already wrote native evidence here. Preserve it;
+                    # never replace its traceback with the parent's generic error.
+                    error_output=suite/'parent-errors'/mode
+                    worker_failure(error_output,error)
+                    report['failures'][mode]=dict(error=read(error_output/'worker-error.json'))
+                    if (suite/mode/'worker-error.json').exists():report['failures'][mode]['native_error']=read(suite/mode/'worker-error.json')
                     if (suite/mode/'failure-detail.json').exists():report['failures'][mode]['detail']=read(suite/mode/'failure-detail.json')
+                    if (suite/mode/'setup.json').exists():report['failures'][mode]['setup']=read(suite/mode/'setup.json')
                     if len(supervisor.records)!=prior_count+1 or not supervisor.records[-1]['termination']['group_verified']:safe=False
                     if not safe:break
+                    if mode=='reference':
+                        report['skipped_remaining']='Shared reference/setup failed; retain evidence before further candidates'
+                        break
             report['technical_passed']=technical(report['results'])
             if all(m in report['results'] for m in ('reference','eager','graph')):
                 rows=report['results'];ref=rows['reference']
@@ -210,7 +252,7 @@ def main():
         if a.mode is None or a.output is None:p.error('Child mode/output required')
         try:native(a.request,a.mode,a.output);return 0
         except BaseException as error:
-            worker_failure(a.request.parent/(a.mode or 'child'),error);raise
+            failure_detail(a.request.parent/a.mode,error);raise
     if a.cache is None:p.error('cache required')
     return campaign(a)
 
