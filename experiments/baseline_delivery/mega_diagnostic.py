@@ -15,7 +15,7 @@ ORDER=(False,True,True,False)*2
 METHODS=('fft','bf16','tf32','graph','micro-down','micro-up','resident')
 REFINEMENTS=('fft+island-tail','fft+island-ffn','fft+island-projections','mask-fp32','graph-fixed','fft+graph-fixed','bf16+graph-fixed','fft+bf16+graph-fixed','fft+island-ffn+graph-fixed')
 GRAPH_REPAIR=('mask-fp32+kernel-grid','graph-fixed+kernel-grid','fft+graph-fixed+kernel-grid','fft+island-tail+graph-fixed+kernel-grid','ffn-graph','fft+island-tail+ffn-graph')
-GRAPH_DIAGNOSE=('graph-probe','ffn-graph','graph-fixed+kernel-grid')
+GRAPH_DIAGNOSE=('graph-probe','ffn-graph','fft+island-tail+ffn-graph')
 STACKS=('fft+bf16','fft+graph','bf16+graph','fft+bf16+graph')
 JOBS=tuple('mega-'+task+'-s42' for task in ('listops','text','image','pathfinder','retrieval'))
 
@@ -294,7 +294,8 @@ def campaign(args):
                     if result.get('route')!=route or result.get('request_sha256')!=digest(suite/'request.json') or result.get('formal_updates_committed')!=0:
                         raise ValueError('Child identity differs')
                     if route=='graph-probe':
-                        if result.get('probe_passed') is not True or result.get('disposable_updates')!=0:raise ValueError('Probe proof differs')
+                        if (result.get('probe_passed') is not True or result.get('disposable_updates')!=0
+                                or result.get('nonleaf_input') is not True or result.get('upstream_and_parameter_gradients_match') is not True):raise ValueError('Probe proof differs')
                     elif result.get('rollback_exact') is not True or result.get('disposable_updates')!=11:raise ValueError('Child proof differs')
                     results[route]=result
                 except Exception as error:
@@ -307,7 +308,7 @@ def campaign(args):
                     if len(supervisor.records)!=index or not supervisor.records[-1]['termination']['group_verified']:unsafe=True
                     if unsafe:break
                     if route=='graph-probe':
-                        report['skipped']={r:'Linear capture prerequisite failed' for r in routes[index:]}
+                        report['skipped']={r:'Nonleaf Linear capture/gradient prerequisite failed' for r in routes[index:]}
                         routes=routes[:index]
                 if not graph_diagnose and not refine and not graph_repair and index==len(METHODS+STACKS) and getattr(args,'all_methods',False):
                     combo=combined(results)
@@ -338,7 +339,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);g=p.add_mutually_exclusive_group(required=True)
     g.add_argument('--source-suite',type=Path);g.add_argument('--request',type=Path)
     p.add_argument('--cache',type=Path);p.add_argument('--gpu',default='0');p.add_argument('--output',type=Path)
-    p.add_argument('--graph-diagnose',action='store_true',help='Linear capture prerequisite, then partial and whole MEGA graphs; one return')
+    p.add_argument('--graph-diagnose',action='store_true',help='Nonleaf gradient prerequisite, then FP32 and selective BF16 partial FFN graphs; one return')
     p.add_argument('--graph-repair',action='store_true',help='Kernel-grid and partial FFN graph repair candidates only')
     p.add_argument('--refine',action='store_true',help='Selective BF16 precision islands and repaired Graph candidates only')
     p.add_argument('--all-methods',action='store_true',help='All isolated candidates, then compatible promising combination; one return')

@@ -193,7 +193,7 @@ class Tests(unittest.TestCase):
                     FailedChild.run(self,spec,log,env)
                     output=Path(spec['argv'][spec['argv'].index('--output')+1])
                     atomic_json(output/'result.json',dict(route='graph-probe',request_sha256=digest(output.parent/'request.json'),
-                        formal_updates_committed=0,disposable_updates=0,probe_passed=True))
+                        formal_updates_committed=0,disposable_updates=0,probe_passed=True,nonleaf_input=True,upstream_and_parameter_gradients_match=True))
                     return 0
             with patch.object(diagnostic,'ROOT',root),patch.object(diagnostic,'revision',return_value='pinned'),\
                     patch('experiments.baseline_delivery.bootstrap.check_exchange'),\

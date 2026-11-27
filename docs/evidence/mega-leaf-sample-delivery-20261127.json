@@ -1,0 +1,25 @@
+{
+  "schema": "qkan-mega-leaf-sample-code.v1",
+  "date": "2026-11-27",
+  "status": "native_confirmation_pending",
+  "delta": "Detach and clone static sample inputs only, preserve requires_grad; actual replay uses original activations and parameters",
+  "evidence": "Previous FFN failure inner legacy/capturing stream dependency; original capture sample carried upstream eager grad_fn",
+  "probe": "Nonleaf Linear compares upstream source and parameter gradients to eager, no checkpoint/model training",
+  "routes": [
+    "graph-probe",
+    "ffn-graph",
+    "fft+island-tail+ffn-graph"
+  ],
+  "max_temporary_mega_updates": 22,
+  "formal_updates": 0,
+  "focused_stdlib_checks": 20,
+  "test_exit_status": 0,
+  "owner_native_run_or_install": false,
+  "review": "Bounded static review found no concrete gradient-continuity or parameter-identity flaw",
+  "limits": [
+    "Native success and speed unverified",
+    "WholeMEGA capture synchronization remains separate unresolved boundary",
+    "No formal numerical admission"
+  ],
+  "package": ".runtime/mega-leaf-input-20261127"
+}

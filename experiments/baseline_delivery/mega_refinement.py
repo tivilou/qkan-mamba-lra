@@ -79,6 +79,7 @@ class GraphPadding:
 def error_category(error):
     """Allowlisted native error classification; no raw messages or local values."""
     text=str(error).lower()
+    if 'legacy stream' in text and 'captur' in text:return 'legacy_capture_dependency'
     for needles,code in ((('out of memory',),'cuda_oom'),(('not have been used','not used in the graph'),'unused_autograd_input'),
             (('operation not permitted when stream','operation not permitted when capturing','cuda stream capture'),'capture_forbidden_operation'),
             (('autocast','cache'),'autocast_capture'),(('cufft',),'fft_capture'),(('generator','philox'),'cuda_rng_capture'),(('cublas',),'blas_capture'),(('does not require grad','does not have a grad_fn'),'missing_autograd_output'),(('synchronize','synchronization'),'capture_synchronization')):
@@ -164,7 +165,7 @@ def native_trace(error):
 
 # Fixed vocabulary prevents private paths, tensor values and arbitrary messages
 # from entering compact returns. Unknown words are replaced, never echoed.
-ERROR_WORDS=set("cuda error operation failed due to a previous during capture stream is capturing not permitted when the default current legacy active invalidated status invalid argument unsupported dependency graph backward forward autograd engine called holding gil python lock generator philox seed current_seed cudageneratorimpl cannot call get_rng_state get_state rng state offset reset set_rng_state tensor tensors differentiated appears have been used in requires grad gradient output input function does require has no grad_fn memory allocation allocate cublas cufft initialization allocator event recording synchronize synchronization device host cpu asynchronous an assertion assert internal expected true false check please report bug at of on for with only all must once pending work global thread local end begin mode relaxed aborted capture_end cudaerrorstreamcaptureunsupported cudaerrorstreamcaptureinvalidated this was because prevent dependent outside captured null use attempting access are enabled disabled one computation gradients running unsafe empty caching cache detach already execution tensorcore fp32 bf16 int float double half replay exit notimplementederror runtimeerror valueerror".split())
+ERROR_WORDS=set("would make depend blocking thrust cuda error operation failed due to a previous during capture stream is capturing not permitted when the default current legacy active invalidated status invalid argument unsupported dependency graph backward forward autograd engine called holding gil python lock generator philox seed current_seed cudageneratorimpl cannot call get_rng_state get_state rng state offset reset set_rng_state tensor tensors differentiated appears have been used in requires grad gradient output input function does require has no grad_fn memory allocation allocate cublas cufft initialization allocator event recording synchronize synchronization device host cpu asynchronous an assertion assert internal expected true false check please report bug at of on for with only all must once pending work global thread local end begin mode relaxed aborted capture_end cudaerrorstreamcaptureunsupported cudaerrorstreamcaptureinvalidated this was because prevent dependent outside captured null use attempting access are enabled disabled one computation gradients running unsafe empty caching cache detach already execution tensorcore fp32 bf16 int float double half replay exit notimplementederror runtimeerror valueerror".split())
 
 
 def error_template(error):
@@ -189,22 +190,31 @@ def error_chain(error):
 
 
 def make_graph(torch,adapter,values):
-    # The official helper owns warmup/capture streams. Do not nest another
-    # externally-created current stream around its forward/backward captures.
+    # Samples must own independent storage/autograd edges. Passing an eager
+    # intermediate retains its upstream grad_fn (and forward stream) in the
+    # captured autograd input surface. Runtime calls still receive the ORIGINAL
+    # values so the graphed custom backward propagates gradients upstream.
+    samples=tuple(v.detach().clone().requires_grad_(v.requires_grad) for v in values)
     torch.cuda.synchronize()
-    return torch.cuda.make_graphed_callables(adapter,values)
+    return torch.cuda.make_graphed_callables(adapter,samples)
 
 
 def graph_probe(torch):
-    """Disposable Linear capture/replay; no dataset, checkpoint load or Adam."""
+    """Nonleaf-input Linear Graph; check upstream and parameter gradients."""
     before=torch.cuda.get_rng_state().clone()
     try:
         model=torch.nn.Linear(8,8).cuda().train()
-        x=torch.ones((2,8),device='cuda',requires_grad=True)
+        source=torch.ones((2,8),device='cuda',requires_grad=True)
+        x=source*2.0
+        parameters=tuple(model.parameters())
+        reference=torch.autograd.grad(model(x).sum(),(*parameters,source),retain_graph=True)
         saved=torch.cuda.get_rng_state().clone()
         graphed=make_graph(torch,model,(x,));torch.cuda.set_rng_state(saved)
         out=graphed(x);out.sum().backward();torch.cuda.synchronize()
-        if not bool(torch.isfinite(out).all()) or x.grad is None or not bool(torch.isfinite(x.grad).all()):
-            raise ValueError('Nonfinite graph probe')
-        return dict(probe_passed=True,graph_replays=1,scope='Linear forward/backward only; no MEGA speed or numerical admission')
+        actual=tuple(p.grad for p in parameters)+(source.grad,)
+        if (not bool(torch.isfinite(out).all()) or any(g is None or not bool(torch.isfinite(g).all()) for g in actual)
+                or not all(bool(torch.allclose(a,b,rtol=1e-5,atol=1e-6)) for a,b in zip(reference,actual))):
+            raise ValueError('Nonleaf Graph gradient probe differs')
+        return dict(probe_passed=True,graph_replays=1,nonleaf_input=True,upstream_and_parameter_gradients_match=True,
+            scope='Nonleaf Linear forward/backward only; no MEGA speed or numerical admission')
     finally:torch.cuda.set_rng_state(before)

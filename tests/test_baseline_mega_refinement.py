@@ -149,6 +149,11 @@ class Tests(unittest.TestCase):
         class FFN:
             def forward(self,x):calls.append(('eager',x));return x+1
             def parameters(self):return ['weight']
+        class Input(int):
+            requires_grad=True
+            def detach(self):return Input(self)
+            def clone(self):return Input(self)
+            def requires_grad_(self,enabled):self.requires_grad=enabled;return self
         layer=FFN();other=FFN();captures=[]
         def make(adapter,args):
             captures.append((adapter,args));adapter.forward(*args)
@@ -160,21 +165,34 @@ class Tests(unittest.TestCase):
         plugin=mod.FFNGraph(model,torch,phases.append)
         self.assertEqual(layer.forward(1),2)
         with plugin.activate():
-            self.assertEqual(layer.forward(2),3);self.assertEqual(layer.forward(3),4)
+            self.assertEqual(layer.forward(Input(2)),3);self.assertEqual(layer.forward(Input(3)),4)
             self.assertEqual(other.forward(4),5)
         self.assertEqual(layer.forward(5),6);self.assertEqual(len(captures),1)
         self.assertEqual(captures[0][0].params,['weight']);self.assertEqual(plugin.calls,2)
         self.assertEqual(phases,['ffn_graph_capture']);plugin.close();self.assertNotIn('forward',layer.__dict__)
 
-    def test_graph_helper_has_no_external_stream_and_keeps_adapter_inputs(self):
-        events=[];adapter=object();values=(object(),)
-        def capture(a,v):
-            self.assertIs(a,adapter);self.assertIs(v,values);events.append('capture');return 'graph'
+    def test_graph_helper_detaches_samples_and_preserves_runtime_edges(self):
+        events=[];adapter=object()
+        class Value:
+            def __init__(self,grad):self.requires_grad=grad;self.grad_fn='upstream';self.storage=object()
+            def detach(self):
+                events.append('detach');v=Value(False);v.grad_fn=None;v.storage=self.storage;return v
+            def clone(self):
+                events.append('clone');v=Value(self.requires_grad);v.grad_fn=self.grad_fn;return v
+            def requires_grad_(self,grad):events.append(('grad',grad));self.requires_grad=grad;return self
+        floating=Value(True);integer=Value(False);values=(floating,integer);runtime=[]
+        def capture(a,samples):
+            self.assertIs(a,adapter);self.assertIsNot(samples,values)
+            for original,sample in zip(values,samples):
+                self.assertIsNot(sample,original);self.assertIsNot(sample.storage,original.storage)
+                self.assertIsNone(sample.grad_fn);self.assertEqual(sample.requires_grad,original.requires_grad)
+            return lambda *v:runtime.append(v)
         def forbidden(*a):raise AssertionError('Unexpected external stream wrapper')
         torch=SimpleNamespace(cuda=SimpleNamespace(synchronize=lambda:events.append('sync'),
             make_graphed_callables=capture,Stream=forbidden,stream=forbidden))
-        self.assertEqual(mod.make_graph(torch,adapter,values),'graph')
-        self.assertEqual(events,['sync','capture'])
+        graphed=mod.make_graph(torch,adapter,values);graphed(*values)
+        self.assertIs(runtime[0][0],floating);self.assertEqual(floating.grad_fn,'upstream')
+        self.assertEqual(events,['detach','clone',('grad',True),'detach','clone',('grad',False),'sync'])
 
     def test_context_chain_preserves_original_category_but_redacts_content(self):
         try:
@@ -200,6 +218,7 @@ class Tests(unittest.TestCase):
         for route in ('bf16+island-ffn','island-tail+island-ffn'):
             with self.assertRaises(ValueError):diag.settings(route)
         self.assertEqual(mod.error_category(RuntimeError('operation not permitted when stream is capturing')),'capture_forbidden_operation')
+        self.assertEqual(mod.error_category(RuntimeError('operation would make the legacy stream depend on a capturing blocking stream')),'legacy_capture_dependency')
         self.assertEqual(mod.error_category(RuntimeError('secret arbitrary content')),'unclassified_native_error')
         self.assertEqual(mod.error_category(RuntimeError('tensor appears to not have been used in graph')),'unused_autograd_input')
 
