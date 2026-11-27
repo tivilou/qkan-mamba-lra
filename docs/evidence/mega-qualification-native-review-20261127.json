@@ -1,0 +1,139 @@
+{
+  "schema": "qkan-mega-qualification-review.v1",
+  "date": "2026-11-27",
+  "run_id": "mega-qualify-20261127T081402Z-13f6ee0e",
+  "verified_bytes": 26992,
+  "verified_sha256": "469d21ea95c976edb1db5dc2195099ec790db84b0e67474e21378f38cf0f06a6",
+  "revision": "3dde1902aeb4501fe5c1c08d1d7a53b9c2b0478f",
+  "job": "mega-text-s42",
+  "step": 3995,
+  "technical_passed": false,
+  "quality_admitted": false,
+  "formal_policy_changed": false,
+  "measured_results": 0,
+  "failures": {
+    "reference": {
+      "error": {
+        "schema": "qkan-worker-error.v1",
+        "error_type": "RuntimeError",
+        "project_frames": [
+          {
+            "file": "experiments/baseline_delivery/mega_qualification.py",
+            "line": 173
+          }
+        ],
+        "privacy": "Exception text, source lines, locals, inputs and arrays excluded"
+      }
+    },
+    "eager": {
+      "error": {
+        "schema": "qkan-worker-error.v1",
+        "error_type": "RuntimeError",
+        "project_frames": [
+          {
+            "file": "experiments/baseline_delivery/mega_qualification.py",
+            "line": 173
+          }
+        ],
+        "privacy": "Exception text, source lines, locals, inputs and arrays excluded"
+      }
+    },
+    "graph": {
+      "error": {
+        "schema": "qkan-worker-error.v1",
+        "error_type": "RuntimeError",
+        "project_frames": [
+          {
+            "file": "experiments/baseline_delivery/mega_qualification.py",
+            "line": 173
+          }
+        ],
+        "privacy": "Exception text, source lines, locals, inputs and arrays excluded"
+      }
+    },
+    "interrupt": {
+      "error": {
+        "schema": "qkan-worker-error.v1",
+        "error_type": "RuntimeError",
+        "project_frames": [
+          {
+            "file": "experiments/baseline_delivery/mega_qualification.py",
+            "line": 173
+          }
+        ],
+        "privacy": "Exception text, source lines, locals, inputs and arrays excluded"
+      }
+    },
+    "resume": {
+      "reason": "Interrupted checkpoint unavailable"
+    },
+    "graph-interrupt": {
+      "error": {
+        "schema": "qkan-worker-error.v1",
+        "error_type": "RuntimeError",
+        "project_frames": [
+          {
+            "file": "experiments/baseline_delivery/mega_qualification.py",
+            "line": 173
+          }
+        ],
+        "privacy": "Exception text, source lines, locals, inputs and arrays excluded"
+      }
+    },
+    "graph-resume": {
+      "reason": "Interrupted checkpoint unavailable"
+    }
+  },
+  "child_exits": [
+    {
+      "exit_code": 1,
+      "seconds": 2.21225531026721,
+      "group_clean": true,
+      "last_phase": "mega_joint_data"
+    },
+    {
+      "exit_code": 1,
+      "seconds": 2.21223796159029,
+      "group_clean": true,
+      "last_phase": "mega_joint_data"
+    },
+    {
+      "exit_code": 1,
+      "seconds": 2.2125688530504704,
+      "group_clean": true,
+      "last_phase": "mega_joint_data"
+    },
+    {
+      "exit_code": 1,
+      "seconds": 2.212326053529978,
+      "group_clean": true,
+      "last_phase": "mega_joint_data"
+    },
+    {
+      "exit_code": 1,
+      "seconds": 2.21269154548645,
+      "group_clean": true,
+      "last_phase": "mega_joint_data"
+    }
+  ],
+  "source_unchanged": true,
+  "owned_checkpoints_removed": true,
+  "formal_updates": 0,
+  "owner_screenshot": {
+    "suite": "mamba-fused-formal-20261124T061405Z-b57105a1",
+    "job": "mega-text-s42",
+    "step": 4083,
+    "computed": 10,
+    "running": 1,
+    "pending": 13,
+    "paused": 1,
+    "loss": 0.432451,
+    "short_samples_per_second": 23.88,
+    "observation": "Original executor89353fc resumed, not proof of MEGA plugin activation"
+  },
+  "limits": [
+    "Five launched children failed before worker training marker; resume modes skipped",
+    "Current report retains only parent failure location, native cause unresolved",
+    "Original formal queue resumed; new strategy not activated"
+  ]
+}
