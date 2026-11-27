@@ -1,0 +1,117 @@
+{
+  "schema": "qkan-mega-refine-review.v1",
+  "date": "2026-11-27",
+  "run_id": "mega-fft-20261127T044434Z-3a73cf3b",
+  "verified_bytes": 366244,
+  "verified_sha256": "9006a6e61aba12084ce50d4d26fa9737ed4c130fca223ca5903e2ef514e6325f",
+  "source_revision": "3e1b949cd9cc2044157d2fca116644fcf315e8e4",
+  "job": "mega-text-s42",
+  "step": 1960,
+  "micro_batch": 8,
+  "logical_batch": 128,
+  "results": {
+    "fft+island-tail": {
+      "timing": {
+        "reference_median_seconds": 5.153746405616403,
+        "candidate_median_seconds": 4.578241426497698,
+        "throughput_gain": 0.1257043754372209,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "update_relative_l2": 0.012891787463856228,
+      "gradient_relative_l2": 0.042189174151487256,
+      "repeat_update_relative_l2": 0.0,
+      "rng_scheduler_exact": true,
+      "rollback_exact": true,
+      "island_calls": 160,
+      "padding_fix_calls": 0
+    },
+    "fft+island-ffn": {
+      "timing": {
+        "reference_median_seconds": 5.216571982949972,
+        "candidate_median_seconds": 4.592455608770251,
+        "throughput_gain": 0.135900360797792,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "update_relative_l2": 0.21126431958913766,
+      "gradient_relative_l2": 0.4696937735982411,
+      "repeat_update_relative_l2": 0.0,
+      "rng_scheduler_exact": true,
+      "rollback_exact": true,
+      "island_calls": 960,
+      "padding_fix_calls": 0
+    },
+    "fft+island-projections": {
+      "timing": {
+        "reference_median_seconds": 5.262643987312913,
+        "candidate_median_seconds": 4.599795734509826,
+        "throughput_gain": 0.14410384527079945,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "update_relative_l2": 0.3938254433039005,
+      "gradient_relative_l2": 0.9777880957077175,
+      "repeat_update_relative_l2": 0.0,
+      "rng_scheduler_exact": true,
+      "rollback_exact": true,
+      "island_calls": 1440,
+      "padding_fix_calls": 0
+    },
+    "mask-fp32": {
+      "timing": {
+        "reference_median_seconds": 5.272080050781369,
+        "candidate_median_seconds": 5.267384219914675,
+        "throughput_gain": 0.0008914919950098188,
+        "positive_pairs": 3,
+        "timing_promising": false
+      },
+      "update_relative_l2": 0.0,
+      "gradient_relative_l2": 0.0,
+      "repeat_update_relative_l2": 0.0,
+      "rng_scheduler_exact": true,
+      "rollback_exact": true,
+      "island_calls": 0,
+      "padding_fix_calls": 80
+    }
+  },
+  "failed": {
+    "graph-fixed": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError"
+    },
+    "fft+graph-fixed": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError"
+    },
+    "bf16+graph-fixed": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError"
+    },
+    "fft+bf16+graph-fixed": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError"
+    },
+    "fft+island-ffn+graph-fixed": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError"
+    }
+  },
+  "source_unchanged": true,
+  "copied_checkpoint_removed": true,
+  "all_child_groups_clean": true,
+  "formal_updates": 0,
+  "formal_admission": false,
+  "limits": [
+    "Text task; historical 24percent was ListOps, not a matched precision improvement comparison",
+    "One pending batch; tail BF16 still differs from exact FP32 repeat, no existing gate pass claimed",
+    "FFT included in all precision candidates; no matched FFT-only Text timing for attribution",
+    "Five Graph routes remain failed at capture; allowlisted error classification unresolved",
+    "No post-campaign formal heartbeat returned"
+  ]
+}
