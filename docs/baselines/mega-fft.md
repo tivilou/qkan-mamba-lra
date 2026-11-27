@@ -15,7 +15,22 @@
 
 每组独立进程，使用相同最新检查点、样本行和逻辑 batch。失败、OOM、当前环境不支持的 Graph 操作或数值非有限，均记入最终报告后继续其他组；进程清理未确认时停止后续派发。稳定训练核心、共享上游文件、正式 Suite、注意力分块和训练预算保持原样。使用已有 `.venv-mega`，不升级或安装依赖。现有环境没有 Torch 2 compile／SDPA，不把升级环境伪装成一个已测试开关。
 
-## 当前推荐：选择性 BF16＋Graph 修复（2026-11-26）
+## 当前推荐：Graph 捕获修复（2026-11-27）
+
+使用 `--graph-repair --job auto`。上一轮 Text 的尾层 BF16 方案保留为候选，本轮不重跑全模型 BF16、TF32、micro 和驻留数据测试。固定6组：
+
+1. 原 FP32＋保留mask＋EMA常量索引缓存对照。
+2. 同一修复后的整模型 Graph。
+3. FFT＋整模型 Graph。
+4. FFT＋尾层 FFN BF16＋整模型 Graph。
+5. 仅最后一层 FFN 的局部 Graph，EMA／FFT保持 eager。
+6. FFT＋尾层 FFN BF16＋同一层局部 Graph。
+
+固定官方 EMA 的 `_compute_kernel` 每次执行 `torch.arange(length).to(p)`，存在捕获时CPU取值／传输风险。新实例插件只缓存同长度、device、dtype的常量索引，首次在捕获外准备；可训练参数、卷积核和梯度每次重算。纯FP32对照用于检验此边界的数值影响。局部Graph封装原FFN前向和同一组Parameter对象，关闭时仍执行原前向，不改共享源码或正式worker。
+
+每组独立进程，11次临时更新，最多66次／0次正式更新；失败隔离、统一回传、原训练与美化看板自动续跑沿用。整模型和局部Graph均以原生成功、实际replay计数和数值结果为依据，不把静态修复当作已跑通；无新增误差门槛或正式策略变更。失败回传增加Torch／fairseq文件和行号，不包含错误消息、输入、局部变量或私人路径。
+
+## 历史轮次：选择性 BF16＋Graph 修复（2026-11-26）
 
 第一轮已统一回传：FFT＋BF16 约 +16.85%，但更新向量相对差异约24%；四组 Graph 捕获失败。本轮使用 `--refine`，不重跑 micro、resident 和 TF32。
 
@@ -40,7 +55,7 @@ cd "$MEGA_DIAG_ROOT" &&
 CUBLAS_WORKSPACE_CONFIG=:4096:8 \
 .venv-baselines/bin/python -B scripts/experiment.py diagnose mega-fft -- \
   --source-suite /root/projects/qkan-mamba-lra-adaptive-89353fc83f89/runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
-  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --refine &&
+  --cache "${QKAN_CACHE:-/root/qkan-cache}" --gpu 0 --graph-repair --job auto &&
 .venv-baselines/bin/python -B scripts/experiment.py \
   --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
   --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \

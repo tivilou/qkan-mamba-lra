@@ -14,6 +14,7 @@ from .common import ROOT,atomic_json,digest,fingerprint,lock,read,revision,worke
 ORDER=(False,True,True,False)*2
 METHODS=('fft','bf16','tf32','graph','micro-down','micro-up','resident')
 REFINEMENTS=('fft+island-tail','fft+island-ffn','fft+island-projections','mask-fp32','graph-fixed','fft+graph-fixed','bf16+graph-fixed','fft+bf16+graph-fixed','fft+island-ffn+graph-fixed')
+GRAPH_REPAIR=('mask-fp32+kernel-grid','graph-fixed+kernel-grid','fft+graph-fixed+kernel-grid','fft+island-tail+graph-fixed+kernel-grid','ffn-graph','fft+island-tail+ffn-graph')
 STACKS=('fft+bf16','fft+graph','bf16+graph','fft+bf16+graph')
 JOBS=tuple('mega-'+task+'-s42' for task in ('listops','text','image','pathfinder','retrieval'))
 
@@ -26,7 +27,7 @@ def phase_name(route,stage):
 
 def settings(route):
     parts=route.split('+')
-    if not parts or len(parts)!=len(set(parts)) or any(p not in METHODS+('island-tail','island-ffn','island-projections','mask-fp32','graph-fixed') for p in parts):raise ValueError('Unknown MEGA candidate')
+    if not parts or len(parts)!=len(set(parts)) or any(p not in METHODS+('island-tail','island-ffn','island-projections','mask-fp32','graph-fixed','kernel-grid','ffn-graph') for p in parts):raise ValueError('Unknown MEGA candidate')
     if 'micro-down' in parts and 'micro-up' in parts:raise ValueError('Conflicting micro tiers')
     if sum(p.startswith('island-') for p in parts)>1 or ('bf16' in parts and any(p.startswith('island-') for p in parts)):raise ValueError('Conflicting precision tiers')
     return set(parts)
@@ -135,7 +136,7 @@ def native(request_path,output,route='fft'):
     if logical%candidate_micro:raise ValueError('Candidate micro must divide fixed logical batch')
     if flags.intersection(('micro-up','micro-down')) and candidate_micro==micro:raise ValueError('Micro tier already at boundary')
     frozen=optimizer_steps(state['optimizer']);plugin=PowerTwoEMA(model);budget=0;step_proofs=[]
-    from .mega_refinement import PrecisionIslands,GraphPadding
+    from .mega_refinement import PrecisionIslands,GraphPadding,KernelGrid,FFNGraph
     from contextlib import nullcontext
     tier=next((f[len('island-'):] for f in flags if f.startswith('island-')),None)
     islands=PrecisionIslands(model,tier,torch) if tier else None
@@ -145,6 +146,8 @@ def native(request_path,output,route='fft'):
     def phase(name):
         nonlocal stage
         stage=name;mark(phase_name(route,name),flush=True)
+    grid=KernelGrid(model,torch) if 'kernel-grid' in flags else None
+    ffn_graph=FFNGraph(model,torch,phase) if 'ffn-graph' in flags else None
     def load_batch():
         arrays=train.numpy_batch(ids,validate=True)
         return {k:torch.as_tensor(v).pin_memory().to('cuda:0',non_blocking=True) for k,v in arrays.items()}
@@ -163,7 +166,7 @@ def native(request_path,output,route='fft'):
         size=candidate_micro if candidate else micro
         tf32=candidate and 'tf32' in flags
         torch.backends.cuda.matmul.allow_tf32=tf32;torch.backends.cudnn.allow_tf32=tf32
-        with plugin.activate(candidate and 'fft' in flags), (islands.activate(candidate) if islands else nullcontext()), (padding.activate(candidate) if padding else nullcontext()), torch.autocast('cuda',enabled=candidate and 'bf16' in flags,dtype=torch.bfloat16,cache_enabled=False):
+        with (grid.activate(candidate) if grid else nullcontext()), (ffn_graph.activate(candidate) if ffn_graph else nullcontext()), plugin.activate(candidate and 'fft' in flags), (islands.activate(candidate) if islands else nullcontext()), (padding.activate(candidate) if padding else nullcontext()), torch.autocast('cuda',enabled=candidate and 'bf16' in flags,dtype=torch.bfloat16,cache_enabled=False):
             for start in range(0,logical,size):
                 part={k:v[start:start+size] for k,v in batch.items()}
                 if candidate and graph_requested:
@@ -214,7 +217,7 @@ def native(request_path,output,route='fft'):
         if padding and padding.calls<=0:raise ValueError('Padding fix did not execute')
         report=dict(schema='qkan-mega-fft-child.v1',route=route,measurement_completed=True,request_sha256=digest(request_path),
             checkpoint_sha256=request['checkpoint']['sha256'],source_step=state['step'],micro_batch=micro,logical_batch=logical,
-            precision='bf16-autocast-fp32-master' if 'bf16' in flags else ('selective-bf16-fp32-master' if islands else 'fp32'),backend='graph' if graph_requested else 'eager',
+            precision='bf16-autocast-fp32-master' if 'bf16' in flags else ('selective-bf16-fp32-master' if islands else 'fp32'),backend='ffn-graph' if ffn_graph else ('graph' if graph_requested else 'eager'),
             tf32='tf32' in flags,candidate_micro_batch=candidate_micro,gpu_resident_batch='resident' in flags,graph_calls=graph_calls,fft_source_sha256=SOURCE_SHA,fft_calls=plugin.calls,fft_lengths=plugin.lengths,
             timing=summarize(times[False],times[True]),setup_observations=setup_observations,observations=observations,numerics=numerics,
             frozen_adam_steps=frozen,measured_adam_steps=step_proofs,rollback_exact=True,disposable_updates=budget,
@@ -222,13 +225,18 @@ def native(request_path,output,route='fft'):
             timing_scope='forward/backward/clip/Adam/sample schedule/synchronize; CPU gather/H2D included except resident candidate; restore and numerical copies excluded',
             resident_limit='One repeated batch cached on GPU; upper-bound transfer-elimination screen, not multi-batch prefetch throughput',
             limits='One pending logical batch; no convergence, recovery admission or sustained speed claim')
+        if grid and grid.calls<=0:raise ValueError('Kernel grid did not execute')
+        if ffn_graph and ffn_graph.calls<=0:raise ValueError('FFN graph did not replay')
+        report.update(kernel_grid_builds=grid.builds if grid else 0,ffn_graph_calls=ffn_graph.calls if ffn_graph else 0,ffn_graph_captures=ffn_graph.captures if ffn_graph else 0)
         report.update(precision_islands=islands.names if islands else [],island_calls=islands.calls if islands else 0,padding_fix_calls=padding.calls if padding else 0)
         atomic_json(output/'result.json',report)
     except BaseException as error:
-        from .mega_refinement import error_category
-        atomic_json(output/'failure-detail.json',dict(category=error_category(error),phase=stage,error_type=type(error).__name__))
+        from .mega_refinement import error_category,native_trace
+        atomic_json(output/'failure-detail.json',dict(category=error_category(error),phase=stage,error_type=type(error).__name__,framework_frames=native_trace(error)))
         raise
     finally:
+        if ffn_graph:ffn_graph.close()
+        if grid:grid.close()
         if islands:islands.close()
         if padding:padding.close()
         plugin.close();torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
@@ -256,8 +264,9 @@ def campaign(args):
         print('MEGA FFT diagnostic Suite: '+str(suite),flush=True)
         results={};failures={};attempted=[];unsafe=False
         refine=getattr(args,'refine',False)
-        routes=list(REFINEMENTS) if refine else (list(METHODS+STACKS) if getattr(args,'all_methods',False) else ['fft'])
-        report.update(results=results,failures=failures,attempted=attempted,all_methods=getattr(args,'all_methods',False),refine=refine)
+        graph_repair=getattr(args,'graph_repair',False)
+        routes=list(GRAPH_REPAIR) if graph_repair else (list(REFINEMENTS) if refine else (list(METHODS+STACKS) if getattr(args,'all_methods',False) else ['fft']))
+        report.update(results=results,failures=failures,attempted=attempted,all_methods=getattr(args,'all_methods',False),refine=refine,graph_repair=graph_repair)
         try:
             index=0
             while index<len(routes):
@@ -283,7 +292,7 @@ def campaign(args):
                         if (suite/route/name).exists():failures[route][name]=read(suite/route/name)
                     if len(supervisor.records)!=index or not supervisor.records[-1]['termination']['group_verified']:unsafe=True
                     if unsafe:break
-                if not refine and index==len(METHODS+STACKS) and getattr(args,'all_methods',False):
+                if not refine and not graph_repair and index==len(METHODS+STACKS) and getattr(args,'all_methods',False):
                     combo=combined(results)
                     if combo and combo not in routes:routes.append(combo)
             report.update(measurement_completed=bool(results),campaign_completed=not unsafe and index==len(routes),
@@ -298,7 +307,7 @@ def campaign(args):
             atomic_json(suite/'mega-fft.json',report);upload_declared(suite,'mega-fft',['mega-fft.json'])
     success=(report.get('campaign_completed',False) and report['source_unchanged'] and report['copied_checkpoint_removed']
         and len(supervisor.records)==len(attempted) and all(r['termination']['group_verified'] for r in supervisor.records)
-        and (refine or getattr(args,'all_methods',False) or bool(results)))
+        and (graph_repair or refine or getattr(args,'all_methods',False) or bool(results)))
     for name,result in results.items():
         print(name+': '+str(round(100*result['timing']['throughput_gain'],2))+'% throughput; formal policy unchanged.',flush=True)
     print('MEGA campaign returned: '+str(len(results))+' measured, '+str(len(failures))+' failed; original strategy retained.',flush=True)
@@ -310,12 +319,13 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);g=p.add_mutually_exclusive_group(required=True)
     g.add_argument('--source-suite',type=Path);g.add_argument('--request',type=Path)
     p.add_argument('--cache',type=Path);p.add_argument('--gpu',default='0');p.add_argument('--output',type=Path)
+    p.add_argument('--graph-repair',action='store_true',help='Kernel-grid and partial FFN graph repair candidates only')
     p.add_argument('--refine',action='store_true',help='Selective BF16 precision islands and repaired Graph candidates only')
     p.add_argument('--all-methods',action='store_true',help='All isolated candidates, then compatible promising combination; one return')
     p.add_argument('--route',default='fft',help=argparse.SUPPRESS)
     p.add_argument('--job',choices=['auto',*JOBS],default='auto',help='Default: unfinished MEGA with checkpoint, non-Retrieval first')
     a=p.parse_args()
-    if a.refine and a.all_methods:p.error('Select refine or all-methods, not both')
+    if sum((a.refine,a.all_methods,a.graph_repair))>1:p.error('Select refine or all-methods, not both')
     if a.request:
         settings(a.route)
         if a.output!=a.request.parent/a.route and a.output!=a.request.parent/'child':p.error('Child output must match the owned diagnostic folder')
@@ -324,7 +334,7 @@ def main():
             worker_failure(a.output,error)
             atomic_json(a.output/'native-error.json',dict(error=read(a.output/'worker-error.json'),
                 cuda_oom=isinstance(error,RuntimeError) and 'out of memory' in str(error).lower(),
-                graph_requested=bool(settings(a.route).intersection(('graph','graph-fixed'))),route=a.route))
+                graph_requested=bool(settings(a.route).intersection(('graph','graph-fixed','ffn-graph'))),route=a.route))
             raise
     if a.cache is None:p.error('cache required')
     return campaign(a)

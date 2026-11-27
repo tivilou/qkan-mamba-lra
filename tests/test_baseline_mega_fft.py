@@ -164,6 +164,18 @@ class Tests(unittest.TestCase):
             report=read(returned[-1][0]/'mega-fft.json')
             self.assertEqual(report['attempted'],list(diagnostic.REFINEMENTS))
             self.assertEqual(len(returned),4);self.assertTrue(report['source_unchanged'])
+            args.graph_repair=True;args.refine=False
+            with patch.object(diagnostic,'ROOT',root),patch.object(diagnostic,'revision',return_value='pinned'),\
+                    patch('experiments.baseline_delivery.bootstrap.check_exchange'),\
+                    patch('experiments.baseline_delivery.runner.discover_gpus',return_value=(['0'],{'0':{}})),\
+                    patch('experiments.baseline_delivery.attention_diagnostic.gpu_preflight',return_value=dict(idle=True)),\
+                    patch('experiments.baseline_delivery.diagnostic_watch.Supervisor',FailedChild),\
+                    patch('experiments.baseline_delivery.return_artifacts.upload_declared',side_effect=lambda *a:returned.append(a)):
+                self.assertEqual(diagnostic.campaign(args),0)
+            report=read(returned[-1][0]/'mega-fft.json')
+            self.assertEqual(report['attempted'],list(diagnostic.GRAPH_REPAIR))
+            self.assertEqual(len(returned),5);self.assertTrue(report['source_unchanged'])
+
 
 
 
