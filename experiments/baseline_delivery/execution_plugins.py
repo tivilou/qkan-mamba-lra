@@ -8,6 +8,8 @@ from dataclasses import dataclass
 
 
 REGISTRY = {
+    'mega.fft_tail_bf16': dict(version=1,models=('mega',),
+        tasks=('listops','text','image','pathfinder','retrieval'),precision='selective_bf16',backend='eager'),
     'mamba.fused_fp32': dict(version=2, models=('mamba1',),
         tasks=('retrieval','image','pathfinder'), precision='fp32', backend='eager'),
 }
@@ -15,19 +17,24 @@ REGISTRY = {
 
 def resolve(value, config):
     if value is None:return None
-    if not isinstance(value,dict) or set(value)!={'plugin','version'}:
+    if not isinstance(value,dict) or set(value) not in ({'plugin','version'},{'plugin','version','graph'}):
         raise ValueError('Execution plugin needs explicit plugin/version')
+    if 'graph' in value and (value.get('plugin')!='mega.fft_tail_bf16' or type(value['graph']) is not bool):
+        raise ValueError('Graph switch requires explicit MEGA boolean')
     spec=REGISTRY.get(value['plugin'])
     if (spec is None or type(value['version']) is not int or value['version']!=spec['version']
             or config.get('model') not in spec['models'] or config.get('task') not in spec['tasks']
             or config.get('training_strategy') or (config.get('torch_acceleration') or {}).get('required') is not None):
         raise ValueError('Unsupported execution plugin combination')
-    return dict(value,precision=spec['precision'],backend=spec['backend'])
+    return dict(value,precision=spec['precision'],backend='ffn_graph' if value.get('graph') else spec['backend'])
 
 
 def create(value, config, torch, model):
     resolved=resolve(value,config)
     if resolved is None:return None
+    if resolved['plugin']=='mega.fft_tail_bf16':
+        from .mega_execution import Policy
+        return Policy(torch,model,graph=value.get('graph',False))
     from .mamba_convolution import InstanceFusedFP32
     return InstanceFusedFP32(torch,model)
 

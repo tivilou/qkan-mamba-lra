@@ -131,10 +131,13 @@ class FFNGraph:
         self.active=False;self.installed=[];self.calls=0;self.captures=0;self.torch=torch
         modules=[(n,m) for n,m in model.named_modules() if n.endswith('.nffn')]
         if not modules:raise ValueError('Official FFN modules missing')
-        name,module=modules[-1];original=module.forward;self.name=name;graphed=None
+        name,module=modules[-1];original=module.forward;self.name=name;graphed=None;signature=None
         def forward(x):
-            nonlocal graphed
+            nonlocal graphed,signature
             if not self.active:return original(x)
+            current=(tuple(x.shape),str(x.dtype),str(x.device),x.requires_grad)
+            if signature!=current:
+                graphed=None;signature=current
             if graphed is None:
                 phase('ffn_graph_capture');before=torch.cuda.get_rng_state().clone();torch.cuda.synchronize()
                 class Adapter(torch.nn.Module):

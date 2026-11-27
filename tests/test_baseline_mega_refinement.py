@@ -150,6 +150,7 @@ class Tests(unittest.TestCase):
             def forward(self,x):calls.append(('eager',x));return x+1
             def parameters(self):return ['weight']
         class Input(int):
+            shape=(1,);dtype="fp32";device="cuda"
             requires_grad=True
             def detach(self):return Input(self)
             def clone(self):return Input(self)
@@ -169,7 +170,11 @@ class Tests(unittest.TestCase):
             self.assertEqual(other.forward(4),5)
         self.assertEqual(layer.forward(5),6);self.assertEqual(len(captures),1)
         self.assertEqual(captures[0][0].params,['weight']);self.assertEqual(plugin.calls,2)
-        self.assertEqual(phases,['ffn_graph_capture']);plugin.close();self.assertNotIn('forward',layer.__dict__)
+        self.assertEqual(phases,['ffn_graph_capture'])
+        changed=Input(6);changed.shape=(2,)
+        with plugin.activate():self.assertEqual(layer.forward(changed),7)
+        self.assertEqual(len(captures),2);self.assertEqual(plugin.captures,2)
+        plugin.close();self.assertNotIn('forward',layer.__dict__)
 
     def test_graph_helper_detaches_samples_and_preserves_runtime_edges(self):
         events=[];adapter=object()
