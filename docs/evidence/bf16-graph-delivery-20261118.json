@@ -1,0 +1,33 @@
+{
+  "schema": "qkan-bf16-graph-delivery.v1",
+  "baseline_revision": "0679f8a28d00c94489fde10f0f774ff1de5ca88e",
+  "owner_controls_only": true,
+  "native_gpu_results_pending": true,
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "focused_controls": 19,
+  "guarded_controls": 569,
+  "expected_skipped": 3,
+  "framework_imports": 0,
+  "routes": [
+    "bf16_analytic_eager16",
+    "bf16_analytic_per_document_graph16"
+  ],
+  "current_executor": "a3569140d43b56cae30bd42db8e604db252f5e50",
+  "source": "latest safely paused key-bias-formal-20261117T141411Z-047505d9, never old FP32 source",
+  "native_checks": [
+    "same-source complete-update float parity; exact RNG/control",
+    "fresh-process Graph continuous2 vs1+1 exact nine-component state and updates",
+    "ABBAx2 full-update median gain>0 and all4paired gains>0; resident generation/replay/sync proof"
+  ],
+  "artifacts": {
+    "modified": ".runtime/bf16-graph-20261118/candidate",
+    "patch": ".runtime/bf16-graph-20261118/change.patch",
+    "verification": ".runtime/bf16-graph-20261118/verification.json",
+    "rollback": ".runtime/bf16-graph-20261118/rollback.py"
+  },
+  "guide": "docs/baselines/bf16-graph.md",
+  "formal_worker_and_strategy_unchanged": true,
+  "scope": "Diagnostic delivery, not native measurement, actual-worker combination admission or convergence"
+}

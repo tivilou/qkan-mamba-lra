@@ -1,0 +1,132 @@
+{
+  "schema": "qkan-mega-native-review.v1",
+  "date": "2026-11-26",
+  "run_id": "mega-fft-20261126T082833Z-e1bf8e72",
+  "verified_bytes": 600611,
+  "verified_sha256": "1767747904da711916f6eb3d45dd62d2a4c805a5cdb0be0c7003c963f1ecdf0a",
+  "source_revision": "af52b2d3ed336453ca0e6e86d6166841b5b7c7f7",
+  "source_step": 34192,
+  "source_unchanged": true,
+  "copied_checkpoint_removed": true,
+  "campaign_completed": true,
+  "attempted": [
+    "fft",
+    "bf16",
+    "tf32",
+    "graph",
+    "micro-down",
+    "micro-up",
+    "resident",
+    "fft+bf16",
+    "fft+graph",
+    "bf16+graph",
+    "fft+bf16+graph"
+  ],
+  "results": {
+    "fft": {
+      "timing": {
+        "reference_median_seconds": 1.4444769769906998,
+        "candidate_median_seconds": 1.4169887769967318,
+        "throughput_gain": 0.019399024494907158,
+        "positive_pairs": 4,
+        "timing_promising": false
+      },
+      "candidate_update_relative_l2": 0.0009523923102135193,
+      "repeat_update_relative_l2": 0.0,
+      "rng_and_scheduler_exact": true,
+      "peak_candidate_allocated_gib": 15.648456573486328
+    },
+    "bf16": {
+      "timing": {
+        "reference_median_seconds": 1.4448458813130856,
+        "candidate_median_seconds": 1.2626794278621674,
+        "throughput_gain": 0.1442697563857065,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "candidate_update_relative_l2": 0.24109007415158407,
+      "repeat_update_relative_l2": 0.0,
+      "rng_and_scheduler_exact": true,
+      "peak_candidate_allocated_gib": 12.025447845458984
+    },
+    "tf32": {
+      "timing": {
+        "reference_median_seconds": 1.4439879581332207,
+        "candidate_median_seconds": 1.2923731356859207,
+        "throughput_gain": 0.11731505264292807,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "candidate_update_relative_l2": 0.042405371922850627,
+      "repeat_update_relative_l2": 0.0,
+      "rng_and_scheduler_exact": true,
+      "peak_candidate_allocated_gib": 15.648266792297363
+    },
+    "micro-down": {
+      "timing": {
+        "reference_median_seconds": 1.4532463923096657,
+        "candidate_median_seconds": 1.550993386656046,
+        "throughput_gain": -0.06302218641765034,
+        "positive_pairs": 0,
+        "timing_promising": false
+      },
+      "candidate_update_relative_l2": 0.4927743115056014,
+      "repeat_update_relative_l2": 0.0,
+      "rng_and_scheduler_exact": false,
+      "peak_candidate_allocated_gib": 8.04689359664917
+    },
+    "resident": {
+      "timing": {
+        "reference_median_seconds": 1.4483273457735777,
+        "candidate_median_seconds": 1.4449734557420015,
+        "throughput_gain": 0.002321073801216489,
+        "positive_pairs": 3,
+        "timing_promising": false
+      },
+      "candidate_update_relative_l2": 0.0,
+      "repeat_update_relative_l2": 0.0,
+      "rng_and_scheduler_exact": true,
+      "peak_candidate_allocated_gib": 15.648266792297363
+    },
+    "fft+bf16": {
+      "timing": {
+        "reference_median_seconds": 1.4436849169433117,
+        "candidate_median_seconds": 1.2354996856302023,
+        "throughput_gain": 0.16850286061134723,
+        "positive_pairs": 4,
+        "timing_promising": true
+      },
+      "candidate_update_relative_l2": 0.2403680043544858,
+      "repeat_update_relative_l2": 0.0,
+      "rng_and_scheduler_exact": true,
+      "peak_candidate_allocated_gib": 12.025615692138672
+    }
+  },
+  "failed_routes": {
+    "graph": {
+      "error_type": "RuntimeError",
+      "cuda_oom": false
+    },
+    "micro-up": {
+      "error_type": "OutOfMemoryError",
+      "cuda_oom": true
+    },
+    "fft+graph": {
+      "error_type": "RuntimeError",
+      "cuda_oom": false
+    },
+    "bf16+graph": {
+      "error_type": "RuntimeError",
+      "cuda_oom": false
+    },
+    "fft+bf16+graph": {
+      "error_type": "RuntimeError",
+      "cuda_oom": false
+    }
+  },
+  "all_child_groups_clean": true,
+  "formal_updates": 0,
+  "claim": "One pending batch screen only; no formal numerical/convergence admission; retain original policy",
+  "graph_limit": "Failure at capture; compact report has no native error text, so exact cause unresolved",
+  "resume_limit": "No post-campaign formal heartbeat returned"
+}

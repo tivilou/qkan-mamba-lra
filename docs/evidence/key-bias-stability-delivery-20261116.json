@@ -1,0 +1,111 @@
+{
+  "schema": "qkan-key-bias-stability-delivery.v1",
+  "date": "2026-11-16",
+  "baseline_revision": "190ff95c7c9bdea3ea7de068351de09b0200cbc8",
+  "status": "control_verified_native_pilot_pending_formal_closed",
+  "behavior": "NativeUpdate.update accepts explicit FP32 executor/micro16or32; defaults remain unchanged. New isolated7child pilot binds reviewed benchmark and original source.",
+  "modified_files": {
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/key_bias_stability.py": "0858cc272588a151af4349b9e3550a19de1f591695355380122a0ce82b1fc6af",
+    "experiments/baseline_delivery/key_bias_stability_native.py": "38821782a53629dbb7b04c8b819bb0575a7d54b87be6703478b7f1edb9573de4",
+    "tests/test_baseline_key_bias_stability.py": "0d36bc05a9d135354fa05ca084b316bc263aae73598a399c44cd8d13b16e217d",
+    "docs/baselines/attention-key-bias-stability-plan.json": "3286d03dd890c06956625633c54a22c9b05666632249ab44836ad1c77490320c",
+    "docs/baselines/attention-key-bias-stability.md": "3b54ed65a52ecfbfc0df4fb767d64b0c5ca01daf00a9025b8c83515313a25cbb"
+  },
+  "protected_core_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/worker.py": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+  },
+  "unchanged_reused_sha256": {
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "experiments/baseline_delivery/key_bias_benchmark.py": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/key_bias_trace.py": "5cb95c85d4b7ad992d6bfb5d92f40c6991ab06448aef14db4988ba0fb9ae646c",
+    "docs/baselines/attention-attribution-key-bias-recovery-plan.json": "4d025f102723adb51c7f76f5fc37a377f1f7c1755092d6a095867fdf46fb8758",
+    "docs/baselines/attention-key-bias-benchmark-plan.json": "dd531d3da7cd70dee75933d3426d117df5df9e6fdde8c746fac480380372e2f2"
+  },
+  "controls": {
+    "total": 466,
+    "passed": 463,
+    "skipped": 3,
+    "new": 12,
+    "framework_imports": 0
+  },
+  "validation": [
+    "64vs32+32 private state/receipt/progress/full component agreement and rollback",
+    "Insufficient8192rows before epoch stops before update;loss gate stops first rejected8step block",
+    "Malformed request/source/strategy receipt rejected;failed update retains partials and removes hooks",
+    "ABBAx2 summary rejects nonpositive pair/same-route state differences",
+    "Injected Graph controller rebuilds3generations outside timing;steady proof unchanged inside timing",
+    "Actual stdlib Supervisor starts worker in precreated diagnostics tree and reaches explicit injected native operation",
+    "Parent dispatches7distinct child outputs/modes and retains comparison failure after completed midpoint recovery",
+    "Child and upload failures retain compact report;no formal admission"
+  ],
+  "package": {
+    "directory": ".runtime/key-bias-stability-20261116",
+    "candidate": "candidate/",
+    "patch": "change.patch",
+    "verification": "verification.json",
+    "rollback": "rollback.py",
+    "literal_commands": 11,
+    "patch_rollback_reapply_verified": true,
+    "baseline_behavior": "Pilot CLI absent/exit1",
+    "modified_behavior": "Pilot CLI present/exit0;stdlib/fake gates and dispatch verified",
+    "full_controls_record": ".runtime/key-bias-stability-20261116/controls-final.log"
+  },
+  "frozen_protocol": {
+    "steps_per_route": 64,
+    "routes": [
+      "fp32",
+      "fp32_analytic",
+      "bf16_analytic"
+    ],
+    "logical_batch": 128,
+    "micro_batch": 16,
+    "dropout": "original0.1",
+    "remaining_epoch_rows_required": 8192,
+    "block": 8,
+    "maximum_mean_excess": "max(.10,.25*reference_mean)",
+    "midpoint32_fresh_resume32": true,
+    "comparison_routes": [
+      "eager_parallel Graph16",
+      "eager_partitioned Graph32"
+    ],
+    "candidate": "BF16 analytic eager16",
+    "timing_order": [
+      "incumbent",
+      "candidate",
+      "candidate",
+      "incumbent",
+      "incumbent",
+      "candidate",
+      "candidate",
+      "incumbent"
+    ],
+    "each_route_samples": 4,
+    "positive_median_and_all_paired_gains_required": true,
+    "child_timeout": 900,
+    "stall_timeout": 300
+  },
+  "prior_review": "docs/evidence/key-bias-benchmark-native-review-20261116.json",
+  "handoff": "docs/baselines/attention-key-bias-stability.md",
+  "architecture_plan": "docs/baselines/attention-key-bias-stability-plan.json",
+  "architecture_status": "approved_native_pilot_pending",
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "limitations": [
+    "Owner stdlib/fakes only;no native model/GPU/import/install or collaborator SSH.",
+    "Actual64step stability and Graph/BF16 interactions not executed;new native evidence pending.",
+    "Same initial RNG/sample budget does not imply elementwise dropout masks match across precision or microbatch.",
+    "Graph preparation uses same-micro eager full-update parity;cross-micro full state equivalence is not claimed.",
+    "New pilot reuses prior real sample-trace fixture capability;final admitted source still requires its own recovery/trace/migration binding.",
+    "No held-out utility,full convergence,statistical significance or25job ETA claim."
+  ]
+}

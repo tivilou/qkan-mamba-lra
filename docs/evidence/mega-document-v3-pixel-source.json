@@ -1,0 +1,95 @@
+{
+  "schema": "qkan-pixel-source-equivalence.v1",
+  "passed": true,
+  "archive_sha256": "b141aacd5537ad6108862117597c41d9d2a67d6420c54f74c76df615073fee13",
+  "code_sha256": "6a46e839ec1ea78dc7fad8b85a5c48b7007ff3fdbe3fb0dc1abc35d23f3ba1cb",
+  "numpy_version": "2.2.6",
+  "splits": [
+    {
+      "task": "image",
+      "split": "train",
+      "source_split": "train",
+      "rows": 45000,
+      "pixel_row_mismatches": 0,
+      "label_row_mismatches": 0,
+      "source_pixels_canonical_sha256": "f6bf8f524b4168bfa5620cbc7318c963f749b4b0368a48aa6828124c3b10691e",
+      "source_labels_canonical_sha256": "502e202dc73a5d9496039cca36ef3f1930cb04f97bb7c009ece4f0d2ddccd02d",
+      "npz_sha256": "94c933d6a6e4c1bc89c7655d3540fe832b8e0565bca7f2437ea9124ce2dbe886",
+      "passed": true
+    },
+    {
+      "task": "image",
+      "split": "val",
+      "source_split": "valid",
+      "rows": 5000,
+      "pixel_row_mismatches": 0,
+      "label_row_mismatches": 0,
+      "source_pixels_canonical_sha256": "ea2e632eabf5282837ea60f911c698790503f87f623a5eb46f1e621954603ce3",
+      "source_labels_canonical_sha256": "83d987216c37959f98534cf86c5302ae9f80ef94e06d74d10cd16ecb2a48bb31",
+      "npz_sha256": "e219d64014640eaf3068219ef7d5bbf6d8a712f12e1b6ada1fa1d3438279f3ce",
+      "passed": true
+    },
+    {
+      "task": "image",
+      "split": "test",
+      "source_split": "test",
+      "rows": 10000,
+      "pixel_row_mismatches": 0,
+      "label_row_mismatches": 0,
+      "source_pixels_canonical_sha256": "dc4628bf0b9a530086609ef02c201741291cf88867cc09618f94055b722b916f",
+      "source_labels_canonical_sha256": "b4616e4d20f82f6a609c447a58430b59166cbc365db2bcd32c43f8250c105d19",
+      "npz_sha256": "dc5d537b0c1e1a0a314dc5a80040be00c9e809820493d63629c165ecdd6be58d",
+      "passed": true
+    },
+    {
+      "task": "pathfinder",
+      "split": "train",
+      "source_split": "train",
+      "rows": 160000,
+      "pixel_row_mismatches": 0,
+      "label_row_mismatches": 0,
+      "source_pixels_canonical_sha256": "4176c66ab2b7bab7137d65beb53e51247553039ed82a6d6a40eeb4b60f0c61d1",
+      "source_labels_canonical_sha256": "d4d3cc356e45482bb2af54dbdadcf0f8d7bc5035a1576c797dcebf9f336e7e9d",
+      "npz_sha256": "142392969b85b94de420b13da2dcd6e1bc14b3d253e86df33996e030f76a8028",
+      "passed": true
+    },
+    {
+      "task": "pathfinder",
+      "split": "val",
+      "source_split": "valid",
+      "rows": 20000,
+      "pixel_row_mismatches": 0,
+      "label_row_mismatches": 0,
+      "source_pixels_canonical_sha256": "87ee344637b65a1ec006cd94a353c2501f4d7de06c3f0b04188fa7dab5942265",
+      "source_labels_canonical_sha256": "c1b28fa7b3b28a0231c00b8b6e4a2fae9427fc1a0c5025003158793192944209",
+      "npz_sha256": "b9a8ceaf79cf3e2747b10e2828ebfd8ee0941946b1fcac6c6a8c24aa31e6d66e",
+      "passed": true
+    },
+    {
+      "task": "pathfinder",
+      "split": "test",
+      "source_split": "test",
+      "rows": 20000,
+      "pixel_row_mismatches": 0,
+      "label_row_mismatches": 0,
+      "source_pixels_canonical_sha256": "d19f97d83569ff148d2aeb86d2b06ed703cda6b1c01def8ff8766e0263346ff6",
+      "source_labels_canonical_sha256": "4842e1719467c4d3618082220de1fd65d140cfaee4be2b00c827db055cc0572c",
+      "npz_sha256": "af14f0bbed13a7468ad8c2cc97a03780dc52892e6f1ed4f3870cbf2b9cc406d3",
+      "passed": true
+    }
+  ],
+  "transform": {
+    "values_checked": 256,
+    "dtype": "float32",
+    "common_transform": "x/255 - 0.5",
+    "mega_pathfinder_transform": "(x/255 - 0.5)/0.5",
+    "source_of_formula": "pinned PixelSequenceDataset.encode_line and README.lra.md",
+    "author_equals_two_times_common": true,
+    "all_uint8_values_recoverable": true,
+    "passed": true,
+    "boundary": "Information-preserving scaling only; no claim of equal optimization dynamics or reproduced scores."
+  },
+  "purpose": "Source/label fidelity and information-preservation evidence; not a trained baseline.",
+  "test_access": "Exhaustive equality against frozen source only; no prediction, selection or tuning.",
+  "formal_baseline_allowed": false
+}

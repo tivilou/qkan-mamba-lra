@@ -1,0 +1,899 @@
+{
+  "schema": "qkan-install-mirror.v1",
+  "python_tag": "cp311",
+  "platform": "linux-x86_64",
+  "objects": [
+    {
+      "filename": "certifi-2026.10.23-py3-none-any.whl",
+      "size_bytes": 135082,
+      "sha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/dbb574c435bd5a81838e16cb.chunk000",
+          "size_bytes": 135082,
+          "sha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "size_bytes": 269972,
+      "sha256": "211d5a3eb6af8f513b8d4ca19a8c1b7accab1b5f0d3175f9826b03c1a920dc1f",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/8a9f278f606939c2feea2a10.chunk000",
+          "size_bytes": 269972,
+          "sha256": "211d5a3eb6af8f513b8d4ca19a8c1b7accab1b5f0d3175f9826b03c1a920dc1f"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "einops-0.8.1-py3-none-any.whl",
+      "size_bytes": 64359,
+      "sha256": "919387eb55330f5757c6bea9165c5ff5cfe63a642682ea788a6d472576d81737",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/9841992c89ebca9296f3ba66.chunk000",
+          "size_bytes": 64359,
+          "sha256": "919387eb55330f5757c6bea9165c5ff5cfe63a642682ea788a6d472576d81737"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "filelock-4.2.7-py3-none-any.whl",
+      "size_bytes": 164345,
+      "sha256": "d08972bbca2b8767ee552aff877b091dd111ffb1d22de7de885766ea7d719d5e",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/45c8646571b95a74d98d9abc.chunk000",
+          "size_bytes": 164345,
+          "sha256": "d08972bbca2b8767ee552aff877b091dd111ffb1d22de7de885766ea7d719d5e"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "fsspec-2026.9.0-py3-none-any.whl",
+      "size_bytes": 221738,
+      "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/801564bd00db5daf7d11c53a.chunk000",
+          "size_bytes": 221738,
+          "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "hf_xet-1.8.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "size_bytes": 4292483,
+      "sha256": "29dab7c904cd1914a0439c6e1306c12c7497c8bd32290fbe563ebf51ca4b6d6d",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/689bf4a1baa359e013962e50.chunk000",
+          "size_bytes": 4292483,
+          "sha256": "29dab7c904cd1914a0439c6e1306c12c7497c8bd32290fbe563ebf51ca4b6d6d"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "huggingface_hub-0.36.2-py3-none-any.whl",
+      "size_bytes": 566395,
+      "sha256": "48f0c8eac16145dfce371e9d2d7772854a4f591bcb56c9cf548accf531d54270",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/24df22181ede291d322469ee.chunk000",
+          "size_bytes": 566395,
+          "sha256": "48f0c8eac16145dfce371e9d2d7772854a4f591bcb56c9cf548accf531d54270"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "idna-3.20-py3-none-any.whl",
+      "size_bytes": 69583,
+      "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/173a9cd278ed837fc77a18f1.chunk000",
+          "size_bytes": 69583,
+          "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "jinja2-3.1.6-py3-none-any.whl",
+      "size_bytes": 134899,
+      "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/f83cf36c99e6cbc5cb168679.chunk000",
+          "size_bytes": 134899,
+          "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "size_bytes": 22961,
+      "sha256": "6da83a088f8ef93b2d483a8232a4dbf4d69d3d8496b568a03c56becac43e1808",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/1f3402ba1d5647d6b446fc68.chunk000",
+          "size_bytes": 22961,
+          "sha256": "6da83a088f8ef93b2d483a8232a4dbf4d69d3d8496b568a03c56becac43e1808"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "mpmath-1.3.0-py3-none-any.whl",
+      "size_bytes": 536198,
+      "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/fe4f0d40baa455992bbfac8c.chunk000",
+          "size_bytes": 536198,
+          "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "networkx-3.6.1-py3-none-any.whl",
+      "size_bytes": 2068504,
+      "sha256": "d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6f99c45026be84ec3bc42cdc.chunk000",
+          "size_bytes": 2068504,
+          "sha256": "d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "ninja-1.13.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "size_bytes": 183365,
+      "sha256": "65a24341b5ac09fcadcc37082660be40a94174e51a937fabf6e2cae26225fa2c",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/273df0597bdaa58dd930a42e.chunk000",
+          "size_bytes": 183365,
+          "sha256": "65a24341b5ac09fcadcc37082660be40a94174e51a937fabf6e2cae26225fa2c"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "numpy-2.2.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "size_bytes": 16821570,
+      "sha256": "ba10f8411898fc418a521833e014a77d3ca01c15b0c6cdcce6a0d2897e6dbbdf",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/b21a2d9873e6358ecf39cac5.chunk000",
+          "size_bytes": 16821570,
+          "sha256": "ba10f8411898fc418a521833e014a77d3ca01c15b0c6cdcce6a0d2897e6dbbdf"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cublas_cu12-12.6.4.1-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "size_bytes": 393138322,
+      "sha256": "08ed2686e9875d01b58e3cb379c6896df8e76c75e0d4a7f7dace3d7b6d9ef8eb",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/23480b4ac342b831c1c03f76.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "576e9c744d6fdbd4c9016e139b8283beba2910b0e04c8d1efaf6d34ceed7d237"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/23480b4ac342b831c1c03f76.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "c0e4825ca49df597559575c08faceb18954ef7e71497b2ae76a50b35f25359d7"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/23480b4ac342b831c1c03f76.chunk002",
+          "size_bytes": 67108864,
+          "sha256": "5f788019ffae75782a35440ff3112e1ff996606a7f6e0457879a7115e3a91435"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/23480b4ac342b831c1c03f76.chunk003",
+          "size_bytes": 67108864,
+          "sha256": "5d6e38e3bfdc07c82ae0a7a4db7147aceaa79817fd1dea8d483b2123b23826eb"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/23480b4ac342b831c1c03f76.chunk004",
+          "size_bytes": 67108864,
+          "sha256": "c64f3904670763a1554fdc358238db06831a25caae033712d4489c3111124aed"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/23480b4ac342b831c1c03f76.chunk005",
+          "size_bytes": 57594002,
+          "sha256": "8ac50b8d412f72d6bf51f977f75b784356c49bfb79aadce6af66cf8db65853d9"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cuda_cupti_cu12-12.6.80-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 8917972,
+      "sha256": "a3eff6cdfcc6a4c35db968a06fcadb061cbc7d6dde548609a941ff8701b98b73",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/1713a81863ac06138a8a8a16.chunk000",
+          "size_bytes": 8917972,
+          "sha256": "a3eff6cdfcc6a4c35db968a06fcadb061cbc7d6dde548609a941ff8701b98b73"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cuda_nvrtc_cu12-12.6.77-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 23650380,
+      "sha256": "35b0cc6ee3a9636d5409133e79273ce1f3fd087abb0532d2d2e8fff1fe9efc53",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/a9c856e867a25d12b645283e.chunk000",
+          "size_bytes": 23650380,
+          "sha256": "35b0cc6ee3a9636d5409133e79273ce1f3fd087abb0532d2d2e8fff1fe9efc53"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cuda_runtime_cu12-12.6.77-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 897678,
+      "sha256": "a84d15d5e1da416dd4774cb42edf5e954a3e60cc945698dc1d5be02321c44dc8",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/e139b13d237de4fb6c4abadb.chunk000",
+          "size_bytes": 897678,
+          "sha256": "a84d15d5e1da416dd4774cb42edf5e954a3e60cc945698dc1d5be02321c44dc8"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cudnn_cu12-9.5.1.17-py3-none-manylinux_2_28_x86_64.whl",
+      "size_bytes": 570988386,
+      "sha256": "30ac3869f6db17d170e0e556dd6cc5eee02647abc31ca856634d5a40f82c15b2",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "dac4a75124435a9a77a6f8227b389d7c9937be382d8681b061fba8d8022c2950"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "bfb21c8425726b5c2bfac00116e72ed29994dd7437a25282b009a9e0e3e66899"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk002",
+          "size_bytes": 67108864,
+          "sha256": "9d2de4330637c414e0a0cec96d985af8f482511bd13f90893b6cfc76d79da109"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk003",
+          "size_bytes": 67108864,
+          "sha256": "5b8fc8a06e21f72dcc80d3d897cfc033214f474a0f7576a30a551ec54af7a004"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk004",
+          "size_bytes": 67108864,
+          "sha256": "10bdceebbca80499ba0e7582248bf87ec21f5b57e1fcaaf0ba8caa9ceba26091"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk005",
+          "size_bytes": 67108864,
+          "sha256": "8bf87780cb8d8d22a0de686c2659954049d79e53a18afd51dc327fb2ece0c2df"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk006",
+          "size_bytes": 67108864,
+          "sha256": "cad25eeb5553f653c044d9214aece38a0530e173ac10460b1136b4be17e599da"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk007",
+          "size_bytes": 67108864,
+          "sha256": "7447fa117d9b8e219ae20a97f8e41adea397a98788f71f84a900069fd1c57d75"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d737f34c6503577533305463.chunk008",
+          "size_bytes": 34117474,
+          "sha256": "63d366ce1563d97ff86de230c063536a8ce5aa3465e613e26f1153fec2f43a20"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cufft_cu12-11.3.0.4-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 200221622,
+      "sha256": "768160ac89f6f7b459bee747e8d175dbf53619cfe74b2a5636264163138013ca",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/b8b0e41a6a57ef607137638e.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "2142474f68cfbd8f6536bb7c4b852aa48ba82b00c51a1e6e16556c7130480a27"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/b8b0e41a6a57ef607137638e.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "d6404ea396ec3cc181daf9d11cf4a2381ed9e641a07392dd614df8410fea56d2"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/b8b0e41a6a57ef607137638e.chunk002",
+          "size_bytes": 66003894,
+          "sha256": "17bae1166d396fca0028e2269d970b4659e6148754bc4ddc3b779eb2606d157a"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cufile_cu12-1.11.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "size_bytes": 1142103,
+      "sha256": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/18918aa57efb500726cf62d3.chunk000",
+          "size_bytes": 1142103,
+          "sha256": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_curand_cu12-10.3.7.77-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 56279000,
+      "sha256": "99f1a32f1ac2bd134897fc7a203f779303261268a65762a623bf30cc9fe79117",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/e1b9bd262bd5427a0b3c1228.chunk000",
+          "size_bytes": 56279000,
+          "sha256": "99f1a32f1ac2bd134897fc7a203f779303261268a65762a623bf30cc9fe79117"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cusolver_cu12-11.7.1.2-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 158229780,
+      "sha256": "6cf28f17f64107a0c4d7802be5ff5537b2130bfc112f25d5a30df227058ca0e6",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/7322f9dc541704c815237b50.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "d694bcaf9a817106c22dd8d2dc475f0421656067c0ad7d85becfd46c00607c52"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/7322f9dc541704c815237b50.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "337a343a21349992460a84f19d83603e6093c029143b5ff6cf1ec84636693652"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/7322f9dc541704c815237b50.chunk002",
+          "size_bytes": 24012052,
+          "sha256": "cfd713dafdd0727f9a2bcffcb5869ce8520aaefcbb419a6682fe94277459cf39"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cusparse_cu12-12.5.4.2-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 216561357,
+      "sha256": "23749a6571191a215cb74d1cdbff4a86e7b19f1200c071b3fcf844a5bea23a2f",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/232546237a3123bd1ab80385.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "3d8138aa49e4f93b90b924e3641b2235151aa0b3ef00ecf90f9e7be30271bb1b"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/232546237a3123bd1ab80385.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "c562346516092a99e2e44349320b3b3f63448c6151ebe2ca227f905e968a841f"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/232546237a3123bd1ab80385.chunk002",
+          "size_bytes": 67108864,
+          "sha256": "24e582cb298774c8acc2611d04c50d3aec7e380ef8d6649472e65ef93180e079"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/232546237a3123bd1ab80385.chunk003",
+          "size_bytes": 15234765,
+          "sha256": "319e3ac0db25c7bb417c433c5e408fd7e88fd037b1ee68a770034d479a31a5e9"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_cusparselt_cu12-0.6.3-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 156785796,
+      "sha256": "e5c8a26c36445dd2e6812f1177978a24e2d37cacce7e090f297a688d1ec44f46",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/8961c4d8c6101b0ffe1935df.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "7ab732e6e2689390197ea4d667ae92df052655174b2bf6354fc7c627ca92431f"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/8961c4d8c6101b0ffe1935df.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "bea7ef214b3ef420bd40353b55ce036ad6413df15e628e5ee8ce1200f991adeb"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/8961c4d8c6101b0ffe1935df.chunk002",
+          "size_bytes": 22568068,
+          "sha256": "4f964262b1018aecce5b37355cf87e7f98255ba7112593b2694f314ef6c05eb2"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_nccl_cu12-2.26.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "size_bytes": 201319755,
+      "sha256": "694cf3879a206553cc9d7dbda76b13efaf610fdb70a50cba303de1b0d1530ac6",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/f90f53e6b28399542916deae.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "e0a92fffc3b8ba96824722e895541e2dcd2d47574415b6374d23339cb44481b6"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/f90f53e6b28399542916deae.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "8dacffb6bc7948930eefe789fcfcbd1cfba87fff1b6f8d8c9299059b0013c12a"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/f90f53e6b28399542916deae.chunk002",
+          "size_bytes": 67102027,
+          "sha256": "648b2f5d025ed19851ecb60b0a9a7201d20d17ba0d22a7b342fd4bbf541b8f2f"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_nvjitlink_cu12-12.6.85-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+      "size_bytes": 19744971,
+      "sha256": "eedc36df9e88b682efe4309aa16b5b4e78c2407eac59e8c10a6a47535164369a",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/be1be2728ede10c969132ada.chunk000",
+          "size_bytes": 19744971,
+          "sha256": "eedc36df9e88b682efe4309aa16b5b4e78c2407eac59e8c10a6a47535164369a"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "nvidia_nvtx_cu12-12.6.77-py3-none-manylinux2014_x86_64.whl",
+      "size_bytes": 89265,
+      "sha256": "6574241a3ec5fdc9334353ab8c479fe75841dbe8f4532a8fc97ce63503330ba1",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/5a816882755f1fd639bb729c.chunk000",
+          "size_bytes": 89265,
+          "sha256": "6574241a3ec5fdc9334353ab8c479fe75841dbe8f4532a8fc97ce63503330ba1"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "packaging-26.3-py3-none-any.whl",
+      "size_bytes": 129956,
+      "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/7f67864663f28519daa281ff.chunk000",
+          "size_bytes": 129956,
+          "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "pyyaml-6.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "size_bytes": 806638,
+      "sha256": "b8bb0864c5a28024fac8a632c443c87c5aa6f215c0b126c449ae1a150412f31d",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/aee06f34bbcef5799ee53dcb.chunk000",
+          "size_bytes": 806638,
+          "sha256": "b8bb0864c5a28024fac8a632c443c87c5aa6f215c0b126c449ae1a150412f31d"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "regex-2026.9.29-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "size_bytes": 804978,
+      "sha256": "612b709381c0355b70d89cdb51b7f670591ed5cbbc0e3b5337488019dc667b65",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/c06531ff65b2127d29a9b3c9.chunk000",
+          "size_bytes": 804978,
+          "sha256": "612b709381c0355b70d89cdb51b7f670591ed5cbbc0e3b5337488019dc667b65"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "requests-2.34.2-py3-none-any.whl",
+      "size_bytes": 73075,
+      "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/cd1a31eff18a72dd4801fdae.chunk000",
+          "size_bytes": 73075,
+          "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "safetensors-0.8.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "size_bytes": 516040,
+      "sha256": "fd6f3f93c9a0a7cc2788ee63fb763353d4bd2e89b0751bc78fcf7dda00bea774",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/8b46f2113ca4cf0c4588bdea.chunk000",
+          "size_bytes": 516040,
+          "sha256": "fd6f3f93c9a0a7cc2788ee63fb763353d4bd2e89b0751bc78fcf7dda00bea774"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "setuptools-80.9.0-py3-none-any.whl",
+      "size_bytes": 1201486,
+      "sha256": "062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/d369112ec118aba0f61afe30.chunk000",
+          "size_bytes": 1201486,
+          "sha256": "062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "sympy-1.14.0-py3-none-any.whl",
+      "size_bytes": 6299353,
+      "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/b6be2255da87b42641e38acd.chunk000",
+          "size_bytes": 6299353,
+          "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "size_bytes": 3115426,
+      "sha256": "51b7eabb104f46c1c50b486520555715457ae833d5aee9ff6ae853d1130506ff",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/3ae6310379c0cd3f64396102.chunk000",
+          "size_bytes": 3115426,
+          "sha256": "51b7eabb104f46c1c50b486520555715457ae833d5aee9ff6ae853d1130506ff"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "torch-2.7.1+cu126-cp311-cp311-manylinux_2_28_x86_64.whl",
+      "size_bytes": 822139676,
+      "sha256": "e1a8465165708c2e2e90786ade8a3e1b1d01eca1f022792cd397caad9d8c21bc",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "11cb1e951f39cec3d23fc3225dbbdcf65ab83b103ff078eb838c7f3c24ffebb9"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "af844737c256e4895f7bd97fbea3f4b973db120908ff18ca99a26467f2ae567c"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk002",
+          "size_bytes": 67108864,
+          "sha256": "ac1124677b2134a0c39329b48f302c682c6ee0d92f72a472cce8f25d4db12ddb"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk003",
+          "size_bytes": 67108864,
+          "sha256": "a5d3cd0332f76aebfccbef1e54ca224cc49eded89b5e748d11cab4828b8e586e"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk004",
+          "size_bytes": 67108864,
+          "sha256": "a2af6aacef4a7e4508964083f2d8b15f4ed3af88ca58a00c0e778fda945a6357"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk005",
+          "size_bytes": 67108864,
+          "sha256": "b1e4494c1233734c8f740371a0977f79fb8e63c3c254d4bad4745878881fb45a"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk006",
+          "size_bytes": 67108864,
+          "sha256": "a1fa7cf5ee8b3538771e028126654e3afbcb786cbb7b4a1e190a27c7dc93442f"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk007",
+          "size_bytes": 67108864,
+          "sha256": "2e0e20093caa3b811f09d56b99231f6dfabddc2e113d764f78bd720fd065d8b9"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk008",
+          "size_bytes": 67108864,
+          "sha256": "a77ccfa40e9b63236435a6999c2dee5fe5d38810a401456673319a107fbdb932"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk009",
+          "size_bytes": 67108864,
+          "sha256": "c379945ffa438ea32b50dc1f0eeb1df084e352f0d79e8c76c82b4b37371ecae4"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk010",
+          "size_bytes": 67108864,
+          "sha256": "a59307c8bfdeba96cdb60534acdc01cd940d822d48c8584cdff37e0de94f03d9"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk011",
+          "size_bytes": 67108864,
+          "sha256": "12508ccc9b8a346702e5e5f837c0054af99a2ff02b256e4194ee7f97ca032764"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6aa386157faa171876524697.chunk012",
+          "size_bytes": 16833308,
+          "sha256": "1eb672ff59f761d3102f8f3bd2fa68d3113ca082744f22a6708b21f09599f944"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "tqdm-4.70.1-py3-none-any.whl",
+      "size_bytes": 80199,
+      "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/6654e88516d9ef54f52425f2.chunk000",
+          "size_bytes": 80199,
+          "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "transformers-4.51.3-py3-none-any.whl",
+      "size_bytes": 10383940,
+      "sha256": "fd3279633ceb2b777013234bbf0b4f5c2d23c4626b05497691f00cfda55e8a83",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/2ac219ccdb35fe9f99f3f4be.chunk000",
+          "size_bytes": 10383940,
+          "sha256": "fd3279633ceb2b777013234bbf0b4f5c2d23c4626b05497691f00cfda55e8a83"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "triton-3.3.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "size_bytes": 155689937,
+      "sha256": "b31e3aa26f8cb3cc5bf4e187bf737cbacf17311e1112b781d4a059353dfd731b",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/5d8144f965b3f824945961de.chunk000",
+          "size_bytes": 67108864,
+          "sha256": "038d0c598da38203725ec8c72199a475519236c8532a1984d803c6450909838b"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/5d8144f965b3f824945961de.chunk001",
+          "size_bytes": 67108864,
+          "sha256": "644527e400bfa21db592959dae36ab53a527dcc1f8a392a23e48107b55d84255"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/5d8144f965b3f824945961de.chunk002",
+          "size_bytes": 21472209,
+          "sha256": "0e0e133e79d9c8040ca808d2e1d589d3ea23639c9426a40168f0ef6e4c473680"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+      "size_bytes": 45571,
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/f0ba1135c0bbf455c50d49ea.chunk000",
+          "size_bytes": 45571,
+          "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "urllib3-2.8.0-py3-none-any.whl",
+      "size_bytes": 135717,
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/17944d0eb455edb91a0edd00.chunk000",
+          "size_bytes": 135717,
+          "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "wheel-0.48.0-py3-none-any.whl",
+      "size_bytes": 33320,
+      "sha256": "3217dcc807155e45db462d7ef2431f5ddda0d7273b700d05a67b271ceb1287ab",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/01cd0a282c19ed0f862abd24.chunk000",
+          "size_bytes": 33320,
+          "sha256": "3217dcc807155e45db462d7ef2431f5ddda0d7273b700d05a67b271ceb1287ab"
+        }
+      ],
+      "source_indexes": [
+        "https://download.pytorch.org/whl/cu126",
+        "https://pypi.org/simple"
+      ]
+    },
+    {
+      "filename": "mamba-2.2.4.tar.gz",
+      "size_bytes": 1445197,
+      "sha256": "5268552f5056debcc01d0ad55c3980cc8ecf4bc1792863f75ef3b1c32108c6e8",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/torch271-cu126-cp311-v1/9a6e62fcb57e934dccef89da.chunk000",
+          "size_bytes": 1445197,
+          "sha256": "5268552f5056debcc01d0ad55c3980cc8ecf4bc1792863f75ef3b1c32108c6e8"
+        }
+      ],
+      "upstream_commit": "95d8aba8a8c75aedcaa6143713b11e745e7cd0d9",
+      "source_url": "https://codeload.github.com/state-spaces/mamba/tar.gz/95d8aba8a8c75aedcaa6143713b11e745e7cd0d9"
+    }
+  ]
+}

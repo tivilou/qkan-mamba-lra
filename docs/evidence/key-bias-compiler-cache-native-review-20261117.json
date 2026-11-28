@@ -1,0 +1,238 @@
+{
+  "schema": "qkan-partition-compiler-cache-native-review.v1",
+  "source_revision": "664b91271641368fc38888c2dea9e23e52160996",
+  "source_report": {
+    "suite": "key-bias-stability-20261117T020430Z-f2e28cdd",
+    "namespace": "qkan-mamba/key-bias-stability/key-bias-stability-20261117T020430Z-f2e28cdd",
+    "sha256": "2c060b8fccf1c099c99d92bb47a4b1a3b07656a55e3eb84bbc7cf48496702659",
+    "bytes": 275744
+  },
+  "published_code_sha256": {
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "experiments/baseline_delivery/key_bias_trace.py": "5cb95c85d4b7ad992d6bfb5d92f40c6991ab06448aef14db4988ba0fb9ae646c",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/key_bias_diagnostic.py": "a76e349f01e54b985adeaa66f45f21f41ab00e1f99685d1f8041589c0a5e3555",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/attention_update_trace.py": "e6648533c432f917a62ef813e388eef0cecb7390e0b1945e531cbaf5308b7ea9",
+    "experiments/baseline_delivery/attention_attribution.py": "2f6856c8f667d62bcd1e256c6c981e945f9f9d18b3fcfeb86e1b2cef814dc870",
+    "experiments/baseline_delivery/attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+    "experiments/baseline_delivery/attention_bias_postprocess.py": "cda7bb2cb1d08aeaf44553bce8840405f84c1aad459722e64e8aae9eb28d1d27",
+    "experiments/baseline_delivery/diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "tools/sample_trace_contract/validate.py": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "experiments/baseline_delivery/key_bias_stability.py": "f9192a1d1238f35830f9d5d4aa47d34dcb056627cfda4ca435f6f87b5a7c3718",
+    "experiments/baseline_delivery/key_bias_stability_native.py": "316fe42cb22f5e02d4348c262e0fedbda5b85664daf7dbf3b090684fd09b287f",
+    "experiments/baseline_delivery/key_bias_benchmark.py": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/partition_comparison.py": "6f66d38a93575fe31d89c55c1e9f92dca073e99a207bfc35cc313741516dd33b",
+    "docs/baselines/attention-key-bias-stability-plan.json": "3286d03dd890c06956625633c54a22c9b05666632249ab44836ad1c77490320c",
+    "docs/evidence/key-bias-benchmark-native-review-20261116.json": "ee41a23c4d8cb77eb7033b77f7bcf709cd651dd440f00b59a5821cc6954c1ca0",
+    "docs/evidence/key-bias-stability-partial-review-20261117.json": "8122d26a54c78b3b74abae22ea4dff7f68f866d8131e8034790fedfc91014635"
+  },
+  "reused_six_children_exact": true,
+  "child": {
+    "exit_code": 1,
+    "elapsed_seconds": 156.27187257632613,
+    "own_group_clean": true
+  },
+  "failure": {
+    "error": {
+      "schema": "qkan-backend-error.v1",
+      "stage": "comparison",
+      "backend": "eager_partitioned",
+      "exceptions": [
+        {
+          "type": "AccelerationRequired",
+          "category": "unclassified",
+          "frames": [
+            {
+              "file": "experiments/baseline_delivery/key_bias_stability_native.py",
+              "line": 186
+            },
+            {
+              "file": "experiments/baseline_delivery/partition_comparison.py",
+              "line": 29
+            },
+            {
+              "file": "experiments/baseline_delivery/key_bias_stability_native.py",
+              "line": 176
+            },
+            {
+              "file": "experiments/baseline_delivery/torch_acceleration.py",
+              "line": 258
+            }
+          ]
+        }
+      ]
+    },
+    "executor_state": {
+      "mode": "compile",
+      "benchmarked": false,
+      "eager_agreement": "pending"
+    },
+    "executor_diagnostics": [
+      {
+        "mode": "compile_graph",
+        "backend": "eager_partitioned",
+        "error": {
+          "schema": "qkan-backend-error.v1",
+          "stage": "parallel_graph_capture",
+          "backend": "eager_partitioned",
+          "exceptions": [
+            {
+              "type": "FailOnRecompileLimitHit",
+              "category": "recompile_budget",
+              "frames": [
+                {
+                  "file": "torch/nn/modules/module.py",
+                  "line": 1751
+                },
+                {
+                  "file": "torch/nn/modules/module.py",
+                  "line": 1762
+                },
+                {
+                  "file": "torch/_dynamo/eval_frame.py",
+                  "line": 655
+                },
+                {
+                  "file": "torch/nn/modules/module.py",
+                  "line": 1751
+                },
+                {
+                  "file": "torch/nn/modules/module.py",
+                  "line": 1762
+                },
+                {
+                  "file": "torch/_dynamo/convert_frame.py",
+                  "line": 1432
+                },
+                {
+                  "file": "torch/_dynamo/convert_frame.py",
+                  "line": 598
+                },
+                {
+                  "file": "torch/_dynamo/convert_frame.py",
+                  "line": 981
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "validation": {
+      "mode": "compile",
+      "generation": 3,
+      "validation_checks": 0,
+      "graph_resident": false,
+      "validated": false
+    },
+    "completed_timing_records": 7
+  },
+  "partial_timing_summary": [
+    {
+      "route": "incumbent",
+      "seconds": 7.398008212447166,
+      "full_state_sha256": "4d7765d9ee442e4226fda9400987be75da6dbb2facbb81496bbb104a7e8a75f2",
+      "steady_before": {
+        "mode": "compile_graph",
+        "generation": 1,
+        "validation_checks": 1,
+        "graph_resident": true,
+        "validated": true
+      },
+      "steady_after": {
+        "mode": "compile_graph",
+        "generation": 1,
+        "validation_checks": 1,
+        "graph_resident": true,
+        "validated": true
+      }
+    },
+    {
+      "route": "candidate",
+      "seconds": 3.8766232430934906,
+      "full_state_sha256": "b2c4279d559b1dc0c20e9be4b8b30d007e8db853546dbe49204b9305cda01f7f",
+      "steady_before": null,
+      "steady_after": null
+    },
+    {
+      "route": "candidate",
+      "seconds": 3.793053913861513,
+      "full_state_sha256": "b2c4279d559b1dc0c20e9be4b8b30d007e8db853546dbe49204b9305cda01f7f",
+      "steady_before": null,
+      "steady_after": null
+    },
+    {
+      "route": "incumbent",
+      "seconds": 7.622507426887751,
+      "full_state_sha256": "4d7765d9ee442e4226fda9400987be75da6dbb2facbb81496bbb104a7e8a75f2",
+      "steady_before": {
+        "mode": "compile_graph",
+        "generation": 2,
+        "validation_checks": 2,
+        "graph_resident": true,
+        "validated": true
+      },
+      "steady_after": {
+        "mode": "compile_graph",
+        "generation": 2,
+        "validation_checks": 2,
+        "graph_resident": true,
+        "validated": true
+      }
+    },
+    {
+      "route": "incumbent",
+      "seconds": 7.658324081450701,
+      "full_state_sha256": "4d7765d9ee442e4226fda9400987be75da6dbb2facbb81496bbb104a7e8a75f2",
+      "steady_before": {
+        "mode": "compile_graph",
+        "generation": 2,
+        "validation_checks": 2,
+        "graph_resident": true,
+        "validated": true
+      },
+      "steady_after": {
+        "mode": "compile_graph",
+        "generation": 2,
+        "validation_checks": 2,
+        "graph_resident": true,
+        "validated": true
+      }
+    },
+    {
+      "route": "candidate",
+      "seconds": 3.9188731722533703,
+      "full_state_sha256": "b2c4279d559b1dc0c20e9be4b8b30d007e8db853546dbe49204b9305cda01f7f",
+      "steady_before": null,
+      "steady_after": null
+    },
+    {
+      "route": "candidate",
+      "seconds": 4.156410843133926,
+      "full_state_sha256": "b2c4279d559b1dc0c20e9be4b8b30d007e8db853546dbe49204b9305cda01f7f",
+      "steady_before": null,
+      "steady_after": null
+    }
+  ],
+  "same_route_update_and_state_exact": true,
+  "rollback": {
+    "full_state_exact": true,
+    "committed_samples": 0,
+    "committed_updates": 0
+  },
+  "original_checkpoint_and_metadata_unchanged": true,
+  "measured_fact": "Third partition32 capture rejected by PyTorch FailOnRecompileLimitHit/recompile_budget;7of8timed records retained",
+  "mechanism_inference": "Graph release drops replicas/callables but Dynamo caches remain shared across rebuilt Half.forward code. Repeated replica-specific specializations exhaust the process cache. Actual guard text/count not exported;precise specialization predicate remains unobserved.",
+  "fix_scope": "Diagnostic only:release Graph and synchronize,then torch.compiler.reset before each partition32 capture generation, outside timing;check complete state/RNG unchanged. Do not raise compiler/capture limits or alter incumbent engines.",
+  "primary_reference": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/compiler/__init__.py",
+  "claim_ceiling": "Incomplete ABBAx2:three Graph32/four BF16 times are partial only;no complete Graph32 gain/admission",
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0
+}

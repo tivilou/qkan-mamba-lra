@@ -1,0 +1,62 @@
+{
+  "schema": "qkan-retrieval-relations.v1",
+  "profile": "mega-independent-pairclean-v2",
+  "build_manifest_sha256": "d7dbda4c80510609e84a8b0f763767635e601bc8eafc6ba480a9989e1068cff0",
+  "splits": {
+    "train": {
+      "rows": 146731,
+      "input_sha256": "b218253ca5b6bcdf74859140850bcf0883d3d19b9e4929adc39b0958fd554faa"
+    },
+    "val": {
+      "rows": 18068,
+      "input_sha256": "9156ade27567258a880597dc41119391157e87cba5e376db5a754651022da09c"
+    },
+    "test": {
+      "rows": 17419,
+      "input_sha256": "698f59c0041b0599bae377a1c8b9f2ddf4f9d00bf1a4a1929e7ecc8ba817c7e1"
+    }
+  },
+  "unit": "encoded document after 4000-token truncation; EOS retained; right padding removed",
+  "unique_documents": 16965,
+  "exact_shared_documents": {
+    "train:val": {
+      "shared_unique_documents": 9958,
+      "affected_rows": {
+        "train": 129429,
+        "val": 18068
+      }
+    },
+    "train:test": {
+      "shared_unique_documents": 9684,
+      "affected_rows": {
+        "train": 127916,
+        "test": 17419
+      }
+    },
+    "val:test": {
+      "shared_unique_documents": 6027,
+      "affected_rows": {
+        "val": 15715,
+        "test": 15280
+      }
+    }
+  },
+  "near_duplicate_search": {
+    "method": "32 deterministic affine uint64 minhashes; 8 bands of 4; exact 5-token shingle Jaccard verification",
+    "threshold": 0.9,
+    "candidate_limit": 200000,
+    "candidates_verified": 21763,
+    "truncated": false,
+    "verified_near_duplicate_pairs": 8,
+    "cross_split_near_duplicate_pairs": {
+      "train:val": 6,
+      "train:test": 8,
+      "val:test": 4
+    },
+    "exhaustive": false,
+    "limitations": "Approximate candidates can miss pairs; repeated encoded documents are counted separately above. Hash collisions and repetitive text can affect shingle identity."
+  },
+  "source_document_and_author_ids_available": false,
+  "formal_baseline_allowed": false,
+  "claim_boundary": "Pair disjointness does not establish unseen-document or unseen-author generalization. Do not certify document/author independence from encoded pairs."
+}

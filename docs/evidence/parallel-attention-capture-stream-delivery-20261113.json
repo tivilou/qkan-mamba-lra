@@ -1,0 +1,73 @@
+{
+  "schema": "qkan-explicit-capture-stream-delivery.v1",
+  "date": "2026-11-13",
+  "status": "code_and_stdlib_mock_verified_native_pending",
+  "native_review": "docs/evidence/parallel-attention-unfenced-review-20261113.json",
+  "change": {
+    "branch": "eager_parallel FP32 Transformer/Retrieval",
+    "old": "Independent graph pools but convenience API captures both documents on one default capture stream.",
+    "new": "Each document explicitly captures forward and backward on its own persistent stream using public CUDAGraph and graph(stream=...,pool=...). Private pool per document; replica parameter gradient surface and fixed merge retained.",
+    "workspace_reason": "Pinned cuBLAS handle pool caches workspace by(handle, stream); independent graph pools do not isolate that external library cache.",
+    "root_cause_proven": false,
+    "performance_proven": false,
+    "normal_replay_adds_host_wait": false,
+    "inductor_fusion": false,
+    "compiler_backend": "eager"
+  },
+  "validation": {
+    "checks": 297,
+    "passed": 294,
+    "skips": 3,
+    "failures": 0,
+    "errors": 0,
+    "framework_modules_loaded": false
+  },
+  "no_owner_framework_import_or_gpu_test_or_install": true,
+  "implementation_sha256": "cb8f36f9025682b853a15412ce18225ea460d3e74e1e1c2122365f5f042d7513",
+  "policy_sha256": "a1a81b69c59c6d83ed1ae1d5577ed7a696a8682e27be694618804264ed273835",
+  "artifacts": {
+    "experiments/baseline_delivery/parallel_attention.py": "2fa002f6c5b6bb40094778ffce80e8ba7ab139debe60ebf72a6a6984c4f72e43",
+    "tests/test_baseline_parallel_attention.py": "5f9f04e26a1ee7e7689c6cc9f5a368a367074267f0854bed544d2f1a638bcee2",
+    "docs/baselines/torch-acceleration.md": "c5f0ab3cbd21fcc175113038ebc41d96728a5ec3e9a65d70b0b5bc6bc5dcbab3"
+  },
+  "primary_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py",
+      "sha256": "6582d64b263e2e52e7cbbea482dcf545c21832aae5ee9bba6972ae9864180ef1"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CublasHandlePool.cpp",
+      "sha256": "6df9ac960b25f78baf308c7adbf20fa04265ff6bf24bd72edd07181f567d97a3"
+    }
+  ],
+  "replay_contract": {
+    "input": "one integer token tensor without gradient",
+    "trainable": "replica encoder parameter tuple",
+    "outputs": "single encoded document tensor",
+    "warmup": "compile and native backward warmup before capture",
+    "backward": "static grad-output copy, backward replay, detached replica gradients",
+    "order": "document1 forward precedes document2 for shared generator; separate backward streams",
+    "checkpoint_schema_changed": false,
+    "precision_changed": false
+  },
+  "local_delivery_roles": {
+    "original": ".runtime/parallel-capture-fix-20261113/original/experiments/baseline_delivery/parallel_attention.py",
+    "modified": ".runtime/parallel-capture-fix-20261113/candidate/experiments/baseline_delivery/parallel_attention.py",
+    "patch": ".runtime/parallel-capture-fix-20261113/change.patch",
+    "verification": ".runtime/parallel-capture-fix-20261113/verification.json",
+    "rollback": ".runtime/parallel-capture-fix-20261113/rollback.py",
+    "rollback_scope": "Tested exact restoration of module in isolated copy; executor rollback uses retained old worktree. No running experiment changed."
+  },
+  "gates": {
+    "five_equivalence_statuses": "not_verifiable",
+    "formal_release": "closed",
+    "exact_recovery_trace": true,
+    "numeric_rtol": 1e-05,
+    "numeric_atol": 1e-06,
+    "rng_exact": true,
+    "actual_graph_replay": true,
+    "actual_checkpoint_exact_rollback": true,
+    "positive_full_update_gain": true
+  },
+  "next": "Junior prepares new checkout from existing a39 then runs check_parallel_attention.sh without --stage-fences, using immutable original840 source;900/300second child/stall limits and automatic report return remain. No formal training starts."
+}

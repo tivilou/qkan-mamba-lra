@@ -1,0 +1,81 @@
+{
+  "schema": "qkan-parallel-attention-stream-fence-delivery.v1",
+  "date": "2026-11-12",
+  "status": "stdlib_mock_verified_native_pending",
+  "native_review": "docs/evidence/parallel-attention-phase-review-20261112.json",
+  "scope": {
+    "job": "transformer-retrieval-s42",
+    "explicit_only": true,
+    "formal_training_started": false,
+    "formal_release_allowed": false,
+    "native_stall_fixed_proven": false,
+    "speedup_established": false,
+    "compiler_backend": "eager",
+    "inductor_fusion": false
+  },
+  "changes": {
+    "forward_order": "Second stream waits for document1 graph completion before shared default-generator device seed/offset can be overwritten; host submission order alone was insufficient.",
+    "backward": "Independent two-stream replay retained; fixed document2+document1 merge unchanged.",
+    "tensor_lifetime": "record_stream for side-stream inputs/head gradients and caller-stream outputs/replica gradients.",
+    "phase_location": "Explicit gradient_merge and update_finite_check markers; last join marker is not proof of blocking at join."
+  },
+  "stage_fences": {
+    "flag": "--stage-fences",
+    "purpose": "Synthetic supervised completion-stage observation only",
+    "stream_waits": [
+      "document_forward_complete_wait",
+      "document_backward_complete_wait",
+      "gradient_merge_complete_wait",
+      "update_complete_wait"
+    ],
+    "publishes_before_wait": true,
+    "serialized_observation": true,
+    "ordinary_mode_adds_cuda_waits": false,
+    "real_training_or_probe_worker_rejects": true,
+    "calibration_skipped": true,
+    "acceleration_admitted": false,
+    "top_level_passed": false,
+    "success_field": "stage_observation_passed",
+    "automatic_failure_return": true,
+    "per_child_absolute_seconds": 900,
+    "phase_stall_seconds": 300
+  },
+  "validation": {
+    "checks": 294,
+    "passed": 291,
+    "skips": 3,
+    "failures": 0,
+    "errors": 0,
+    "framework_modules_loaded": false
+  },
+  "implementation_sha256": "d45cf1c990a04361c43fbbb92de6c29dd2d55da77e1cb1159bab2bafd91de905",
+  "policy_sha256": "bd2359125d6f7f5f7bd72be5f44c8b1d930d99a088f4611fbec91315a7db967d",
+  "artifacts": {
+    "experiments/baseline_delivery/parallel_attention.py": "36cc9dbb485e85205dff292cffdfc95ae7997de9571be632ef86c125917391a1",
+    "experiments/baseline_delivery/diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+    "experiments/baseline_delivery/attention_diagnostic.py": "e355a4df734a4e5679a0b277321d4cf21b55ecd17eafbb7f3f53f0ea9edfce61",
+    "experiments/baseline_delivery/worker.py": "2c145e20dc93ee6d37c60e0b5c3fa5f05903523e07fe54f733715b5c4e825dbf",
+    "tests/test_baseline_parallel_attention.py": "79e9e81935c4e8d43bd71550ab77953437aca947479949adf5436e8814d69a89",
+    "tests/test_baseline_diagnostic_watch.py": "2b78e547a4dd1eb2d604ec99971120c9480eaf000d29a6791b32b312b4fa0b59",
+    "docs/baselines/torch-acceleration.md": "e91048ea6c063f67b1f1fc42e0f7a3ec08620d71f911078df785dec41bc607e2"
+  },
+  "primary_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CUDAGraph.cpp",
+      "sha256": "a30b1e386fe19cb1d13b6c6716d345292fab442e6ca1de9aa57865fcceac350c"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/aten/src/ATen/cuda/CUDAGeneratorImpl.cpp",
+      "sha256": "0e36e37728b8b032d481d4b71287000089ad45e6c0c3201f9cbd89fd818ea7ae"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/docs/source/notes/cuda.rst",
+      "sha256": "99115567af601cb7562e258e313dc97850ea6c305b5d9937448d811020c26361"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py",
+      "sha256": "6582d64b263e2e52e7cbbea482dcf545c21832aae5ee9bba6972ae9864180ef1"
+    }
+  ],
+  "remaining": "Junior fenced stage observation followed by unfenced exact recovery/trace and immutable original840 full-update numeric/RNG agreement, actual graph replay, exact rollback and measured positive gain. Do not treat stage observation as concurrency correctness or speedup."
+}

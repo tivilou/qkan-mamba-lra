@@ -1,0 +1,31 @@
+{
+  "schema": "qkan-adaptive-memory-implementation.v1",
+  "status": "implemented_pending_gpu_validation",
+  "backends": [
+    "pytorch",
+    "jax_s5"
+  ],
+  "owner_validation": {
+    "stdlib_tests": 17,
+    "passed": true,
+    "framework_imports": false,
+    "model_execution": false,
+    "real_gpu_query": false,
+    "readiness_argument_help": true,
+    "ast": true
+  },
+  "pending": [
+    "actual CUDA OOM rollback on both backends",
+    "all-tier throughput and memory measurements",
+    "fresh-process model recovery and trace gates",
+    "Linux shell wrappers on collaborator"
+  ],
+  "current_suite_action": "continue fixed-policy suite on executor31639c0; no migration performed",
+  "scientific_scope": "distinct adaptive trajectory, not fixed-policy exact equivalence; speedup unmeasured",
+  "source_sha256": {
+    "experiments/baseline_delivery/adaptive_memory.py": "23258c4ce5e57e398b6b9ede10eecc10a98d789c3a7b21e0157473fc2d913d86",
+    "experiments/baseline_delivery/worker.py": "7870973acfb3505cb88be35ae228e97f3b319c51203b3bf7fba9ecf55b4144e6",
+    "experiments/baseline_delivery/s5_worker.py": "245749255cd6ee320c7a70de7f581f38911036986ee6e8ffc5065caa0c1214aa",
+    "tests/test_baseline_adaptive_memory.py": "fa02e6ec2046e1ba553725c58f0d56c91ea3bdef132714ed17f14b5673903a5b"
+  }
+}

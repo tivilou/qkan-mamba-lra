@@ -1,0 +1,346 @@
+{
+  "schema": "qkan-mamba-convolution-native-review.v1",
+  "date": "2026-11-24",
+  "status": "measured_speedup_small_observed_fp32_differences_formal_integration_pending",
+  "evidence": {
+    "exchange_path": "qkan-mamba/mamba-convolution/mamba-convolution-25d12e7bcca1/mamba-convolution.json",
+    "bytes": 234972,
+    "sha256": "7e03fd189e8211da607e324f7e8613a87322d51afa4bcb2a806cd8fd5db5929b",
+    "revision": "bcec44653a1002b41d90c5c413bce70c49c8b572",
+    "source_checkpoint_sha256": "fc3ccbb796b26c1ee58ac516e5aaa274846066cea9b49660e09aa8c795c4d01b"
+  },
+  "checks": {
+    "four_children_clean_finite": true,
+    "initial_scientific_and_execution_controls_exact": true,
+    "source_unchanged": true,
+    "owned_binaries_removed": true,
+    "disposable_updates": 18,
+    "formal_updates_committed": 0
+  },
+  "timing": {
+    "reference_seconds": [
+      0.41344648972153664,
+      0.4126220643520355,
+      0.41715850308537483,
+      0.41414080187678337
+    ],
+    "candidate_seconds": [
+      0.3565772660076618,
+      0.3501612991094589,
+      0.3521765135228634,
+      0.35338813066482544
+    ],
+    "summary": {
+      "reference_median_seconds": 0.41379364579916,
+      "candidate_median_seconds": 0.3527823220938444,
+      "throughput_gain": 0.172943256745971,
+      "positive_pairs": 4,
+      "timing_promising": true
+    },
+    "disposable_updates": 10,
+    "includes": "CPU gather, H2D, forward/backward, clip, Adam and sample schedule",
+    "excludes": "restore, hashes, CPU numerical copies and setup"
+  },
+  "mechanism": {
+    "policy": "mamba-causal-conv-fused-fp32-v1",
+    "blocks": 6,
+    "parameter_dtype": "float32",
+    "compute_dtype": "float32",
+    "graph": false,
+    "baseline_path": "original_unfused",
+    "candidate_path": "original_fused",
+    "convolution_version": "1.5.2",
+    "cuda_api_adapter": "official_cpp_functions_return_values",
+    "installed_into_original_environment": false,
+    "observed_fused_calls": 96
+  },
+  "comparisons": {
+    "fp32_noise_a": {},
+    "fp32_noise_b": {
+      "repeat": {
+        "starting_scientific_state_exact": true,
+        "invariants_exact": true,
+        "steps": [
+          {
+            "index": 0,
+            "loss_absolute_difference": 0.0,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 2.3333873529941854e-07,
+                "max_absolute": 1.0244548320770264e-08,
+                "cosine": 0.9999999999999681
+              },
+              "delta": {
+                "relative_l2": 2.539548220788144e-06,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 0.9999999999967769
+              },
+              "parameters": {
+                "relative_l2": 1.2885043804698745e-09,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 1.0000000000000007
+              },
+              "optimizer": {
+                "relative_l2": 8.729369719271097e-14,
+                "max_absolute": 1.862645149230957e-09,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 2.3333873529941854e-07,
+                "max_absolute": 1.0244548320770264e-08,
+                "cosine": 0.9999999999999681
+              }
+            }
+          },
+          {
+            "index": 1,
+            "loss_absolute_difference": 0.0,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 7.61206449938059e-07,
+                "max_absolute": 2.6775524020195007e-08,
+                "cosine": 0.9999999999997131
+              },
+              "delta": {
+                "relative_l2": 2.362351567490537e-06,
+                "max_absolute": 5.960464477539063e-08,
+                "cosine": 0.9999999999972111
+              },
+              "parameters": {
+                "relative_l2": 1.6840664661923468e-09,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 1.0000000000000007
+              },
+              "optimizer": {
+                "relative_l2": 1.1476940701753408e-13,
+                "max_absolute": 2.6775524020195007e-09,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 7.61206449938059e-07,
+                "max_absolute": 2.6775524020195007e-08,
+                "cosine": 0.9999999999997131
+              }
+            }
+          }
+        ]
+      }
+    },
+    "conv_noise_a": {
+      "vs_fp32_a": {
+        "starting_scientific_state_exact": true,
+        "invariants_exact": true,
+        "steps": [
+          {
+            "index": 0,
+            "loss_absolute_difference": 2.9802322387695312e-08,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 7.943811047163533e-07,
+                "max_absolute": 1.234002411365509e-07,
+                "cosine": 0.9999999999996814
+              },
+              "delta": {
+                "relative_l2": 4.712884257791093e-06,
+                "max_absolute": 4.76837158203125e-07,
+                "cosine": 0.9999999999888955
+              },
+              "parameters": {
+                "relative_l2": 2.391202015596068e-09,
+                "max_absolute": 4.76837158203125e-07,
+                "cosine": 1.0000000000000002
+              },
+              "optimizer": {
+                "relative_l2": 2.834189236209182e-13,
+                "max_absolute": 1.210719347000122e-08,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 7.943811047163533e-07,
+                "max_absolute": 1.234002411365509e-07,
+                "cosine": 0.9999999999996814
+              }
+            }
+          },
+          {
+            "index": 1,
+            "loss_absolute_difference": 1.4901161193847656e-08,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 1.1719242975499288e-06,
+                "max_absolute": 4.6333298087120056e-08,
+                "cosine": 0.9999999999993799
+              },
+              "delta": {
+                "relative_l2": 4.599557533001624e-06,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 0.9999999999894236
+              },
+              "parameters": {
+                "relative_l2": 3.197094406107791e-09,
+                "max_absolute": 4.76837158203125e-07,
+                "cosine": 1.0000000000000004
+              },
+              "optimizer": {
+                "relative_l2": 2.9170320463088527e-13,
+                "max_absolute": 1.0710209608078003e-08,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 1.1719242975499288e-06,
+                "max_absolute": 4.6333298087120056e-08,
+                "cosine": 0.9999999999993799
+              }
+            }
+          }
+        ]
+      }
+    },
+    "conv_noise_b": {
+      "repeat": {
+        "starting_scientific_state_exact": true,
+        "invariants_exact": true,
+        "steps": [
+          {
+            "index": 0,
+            "loss_absolute_difference": 0.0,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 2.3752035047403195e-07,
+                "max_absolute": 1.1175870895385742e-08,
+                "cosine": 0.9999999999999669
+              },
+              "delta": {
+                "relative_l2": 2.774831269545216e-06,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 0.9999999999961513
+              },
+              "parameters": {
+                "relative_l2": 1.4078812072773999e-09,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 1.0000000000000007
+              },
+              "optimizer": {
+                "relative_l2": 8.880903890454869e-14,
+                "max_absolute": 1.862645149230957e-09,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 2.3752035047403195e-07,
+                "max_absolute": 1.1175870895385742e-08,
+                "cosine": 0.9999999999999669
+              }
+            }
+          },
+          {
+            "index": 1,
+            "loss_absolute_difference": 7.450580596923828e-09,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 8.09235276552582e-07,
+                "max_absolute": 2.0954757928848267e-08,
+                "cosine": 0.9999999999996734
+              },
+              "delta": {
+                "relative_l2": 3.2177677706895273e-06,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 0.9999999999948246
+              },
+              "parameters": {
+                "relative_l2": 2.041175297440757e-09,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 0.9999999999999998
+              },
+              "optimizer": {
+                "relative_l2": 1.1989609534166343e-13,
+                "max_absolute": 1.862645149230957e-09,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 8.09235276552582e-07,
+                "max_absolute": 2.0954757928848267e-08,
+                "cosine": 0.9999999999996734
+              }
+            }
+          }
+        ]
+      },
+      "vs_fp32_a": {
+        "starting_scientific_state_exact": true,
+        "invariants_exact": true,
+        "steps": [
+          {
+            "index": 0,
+            "loss_absolute_difference": 2.9802322387695312e-08,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 7.939032673372908e-07,
+                "max_absolute": 1.234002411365509e-07,
+                "cosine": 0.9999999999996816
+              },
+              "delta": {
+                "relative_l2": 5.149613661866829e-06,
+                "max_absolute": 4.76837158203125e-07,
+                "cosine": 0.9999999999867422
+              },
+              "parameters": {
+                "relative_l2": 2.6127878471272987e-09,
+                "max_absolute": 4.76837158203125e-07,
+                "cosine": 1.0000000000000007
+              },
+              "optimizer": {
+                "relative_l2": 2.8284836348708695e-13,
+                "max_absolute": 1.210719347000122e-08,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 7.939032673372908e-07,
+                "max_absolute": 1.234002411365509e-07,
+                "cosine": 0.9999999999996816
+              }
+            }
+          },
+          {
+            "index": 1,
+            "loss_absolute_difference": 7.450580596923828e-09,
+            "metrics": {
+              "raw_gradients": {
+                "relative_l2": 9.966819666774745e-07,
+                "max_absolute": 4.284083843231201e-08,
+                "cosine": 0.9999999999995393
+              },
+              "delta": {
+                "relative_l2": 4.820518578179198e-06,
+                "max_absolute": 2.384185791015625e-07,
+                "cosine": 0.9999999999883828
+              },
+              "parameters": {
+                "relative_l2": 3.4291458252382406e-09,
+                "max_absolute": 4.76837158203125e-07,
+                "cosine": 1.0000000000000007
+              },
+              "optimizer": {
+                "relative_l2": 2.777705735872456e-13,
+                "max_absolute": 1.0710209608078003e-08,
+                "cosine": 0.9999999999999998
+              },
+              "clipped_gradients": {
+                "relative_l2": 9.966819666774745e-07,
+                "max_absolute": 4.284083843231201e-08,
+                "cosine": 0.9999999999995393
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "interpretation": [
+    "Full-update throughput +17.2943%; wall time -14.7444%; all four pairs positive on collaborator RTX3090, fixed retrieval batch and micro8/logical32.",
+    "Cross-route update relative L2 4.60e-6 to 5.15e-6 versus observed repeat 2.36e-6 to 3.22e-6; small absolute difference, slightly above repeat differences; two updates do not establish a statistical noise bound or long-run equivalence.",
+    "Full-state starting hashes differ across execution policies; scientific-state comparison is exact. Do not confuse execution metadata with model/RNG/optimizer/input controls.",
+    "Original fused FP32 path is a promising candidate; finite actual-worker save/resume and explicit integration remain pending. No BF16 or Graph change, no formal restart.",
+    "Original seven completed results/source preserved by diagnostic scope; no fresh independent remote Suite inventory performed."
+  ],
+  "next_action": "Integrate only verified FP32 fused mechanism into the original worker with offline process-local package binding; perform focused finite save/resume verification and retain one integrated progress/resume entry. Reuse these timing/numerical results; do not repeat unchanged comparisons or broaden to MEGA/S5/S4D."
+}

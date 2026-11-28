@@ -1,0 +1,102 @@
+{
+  "schema": "qkan-partitioned-timing-fix-delivery.v1",
+  "date": "2026-11-14",
+  "status": "measurement_bug_reproduced_and_fixed_native_remeasurement_pending",
+  "reviewed_native_report": "docs/evidence/partitioned-retrieval-native-review-20261114.json",
+  "issue": "One preparation callback after Runtime.clear could recapture a new generation while the old generation remained in Executor.validated; next timed callback performed full warmup/eager/numerical validation.",
+  "fix": [
+    "Prepare in a bounded loop until the resulting capture generation is resident and validated.",
+    "Require steady resident validated Graph before clock starts.",
+    "Reject any measured update that changes capture generation or validation-check count.",
+    "Persist before/after proof with every sample in comparison.v2; v1 cannot satisfy future calibration."
+  ],
+  "native_correctness_status": "829 micro16/32 exact recovery and matched-micro32 numerical/RNG/rollback passed",
+  "native_incumbent_relative_gain_status": "829 v1 reported2.70percent is not accepted; corrected comparison pending",
+  "unchanged_native_modules": {
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70"
+  },
+  "validation": {
+    "checks": 321,
+    "passed": 318,
+    "skips": 3,
+    "errors": 0,
+    "failures": 0,
+    "framework_modules_loaded": [],
+    "seconds": 26.721838199999183
+  },
+  "baseline_reproduction": {
+    "cleanup_verified": true,
+    "expected": "baseline",
+    "measured_updates_exclude_revalidation": false,
+    "rollback_exact": true,
+    "samples_seconds": {
+      "candidate": [
+        31.80000000000001,
+        7.800000000000011
+      ],
+      "incumbent": [
+        8.0,
+        32.0
+      ]
+    }
+  },
+  "modified_behavior": {
+    "cleanup_verified": true,
+    "expected": "candidate",
+    "measured_updates_exclude_revalidation": true,
+    "rollback_exact": true,
+    "samples_seconds": {
+      "candidate": [
+        7.800000000000011,
+        7.800000000000011
+      ],
+      "incumbent": [
+        8.0,
+        8.0
+      ]
+    }
+  },
+  "static_verification": {
+    "bash_syntax": "passed",
+    "five_equivalence_statuses": {
+      "mamba1": "not_verifiable",
+      "mega": "not_verifiable",
+      "s4d_minimal": "not_verifiable",
+      "s5": "not_verifiable",
+      "transformer": "not_verifiable"
+    },
+    "framework_modules_loaded": [],
+    "implementation_sha256": "e9b7a83a458bf3fbaba0fcca527ffde2fc2e731174665e6d3a725dd1b60e09e3",
+    "policy_sha256": "be6d511e639f3876ff4fb06ae8ed8804d9eb7bf0c1e54b03b5fb50e13fe78804",
+    "python_ast": "passed",
+    "shell_dispatch_and_exit": "passed"
+  },
+  "artifacts_sha256": {
+    "experiments/baseline_delivery/partition_comparison.py": "6f66d38a93575fe31d89c55c1e9f92dca073e99a207bfc35cc313741516dd33b",
+    "experiments/baseline_delivery/worker.py": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03",
+    "tests/test_baseline_partitioned_attention.py": "2da8239d77d0e2249d864339cc2b02253710407a8c88483f17d07fa8ba1f448f",
+    "experiments/baseline_delivery/fidelity-policy.json": "be6d511e639f3876ff4fb06ae8ed8804d9eb7bf0c1e54b03b5fb50e13fe78804",
+    "docs/baselines/partitioned-retrieval-graph-candidate.md": "5a55ca97dea8afefb1fd0ac496d98b8e75f8340b85a9c204db8afec35eecaf1b",
+    "experiments/baseline_delivery/manifests/transformer/baseline-manifest.json": "a9a2190126765521753b8839bb22530476349b61434eb33085fd997771dcfba5",
+    "experiments/baseline_delivery/manifests/s4d_minimal/baseline-manifest.json": "6ffa153490933bb86512881d85f203b5af4ed5d013821eef7453df9f5d5029fe",
+    "experiments/baseline_delivery/manifests/mamba1/baseline-manifest.json": "205df66fa6598bf113966933850e415e941bdc0fdd79c2b6189f2541e8820078",
+    "experiments/baseline_delivery/manifests/mega/baseline-manifest.json": "c9e0daa0cf5be59b9f82eff29921bb2675ef4d3d44da26999dda81859e4d035f",
+    "experiments/baseline_delivery/manifests/s5/baseline-manifest.json": "23c426cb25d8cda6194757733b0a0bfa737244200fa644f720acbb66a7c0602d",
+    "docs/evidence/partitioned-retrieval-native-review-20261114.json": "57118c89fc0ce8133e092eb9c882bffd86ca918218712cb19ea5f9848e0824c7"
+  },
+  "patch_sha256": "2913be6b62986be2fc767db117faf2184d88b113177e4bb313b764c2a1b8e915",
+  "local_delivery": {
+    "modified": ".runtime/partitioned-timing-fix-20261114/candidate",
+    "patch": ".runtime/partitioned-timing-fix-20261114/change.patch",
+    "verification": ".runtime/partitioned-timing-fix-20261114/verification.json",
+    "rollback": ".runtime/partitioned-timing-fix-20261114/rollback.py"
+  },
+  "rollback_and_patch_reapply": "ten original files plus one added review file restored/replayed exactly in isolated copy",
+  "active_training_interrupted": false,
+  "formal_training_started": false,
+  "owner_framework_imported": false,
+  "next": "Collaborator uses fresh independent checkout and latest b07 source snapshot when source paused/GPU available; rerun diagnostic, inspect comparison.v2, then consider formal integration."
+}

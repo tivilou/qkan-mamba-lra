@@ -1,0 +1,26 @@
+{
+  "schema": "qkan-install-mirror.v1",
+  "python_tag": "cp311",
+  "platform": "linux-x86_64",
+  "objects": [
+    {
+      "filename": "causal_conv1d-1.5.2+cu12torch2.7cxx11abiTRUE-cp311-cp311-linux_x86_64.whl",
+      "size_bytes": 133024393,
+      "sha256": "fa25189970ad71ece008551f11e4b7ce1a6d702ea0609617624d205d2c4408e5",
+      "chunks": [
+        {
+          "path": "qkan-mamba/install-dependencies/mamba-conv-1.5.2-torch27-cp311-v1/90f571dd61af9c71ee987688ac461baf62c4a53e9f34dcd50ecf1a6c6e916e89.chunk",
+          "size_bytes": 67108864,
+          "sha256": "90f571dd61af9c71ee987688ac461baf62c4a53e9f34dcd50ecf1a6c6e916e89"
+        },
+        {
+          "path": "qkan-mamba/install-dependencies/mamba-conv-1.5.2-torch27-cp311-v1/4651f51859e657cf291cbb6019f2f19437704c292e3172e1186c28a978ec6a1a.chunk",
+          "size_bytes": 65915529,
+          "sha256": "4651f51859e657cf291cbb6019f2f19437704c292e3172e1186c28a978ec6a1a"
+        }
+      ],
+      "source_url": "https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.2/causal_conv1d-1.5.2%2Bcu12torch2.7cxx11abiTRUE-cp311-cp311-linux_x86_64.whl",
+      "version": "1.5.2"
+    }
+  ]
+}

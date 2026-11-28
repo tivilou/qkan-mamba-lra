@@ -1,0 +1,23 @@
+{
+  "schema": "qkan-conda-channel-repair.v1",
+  "date": "2026-11-04",
+  "source_revision": "0c9d6c3a8cb9c2e8b86797b366f7c3de6ece7503",
+  "suite": "runs/formal-ready-20261104T114512Z-0a205127",
+  "receipt": "qkan-mamba/formal-readiness/failure-e88d0b4ffb64/failure.json",
+  "setup_sha256": "cdc6766fbc0b911d95ce71912daf798ca476a449d17f283f6307095ca3a885e7",
+  "setup_bytes": 1882,
+  "receipt_stage": "bootstrap_python",
+  "cause": "UnavailableInvalidChannel HTTP404: named conda-forge resolves through collaborator local Aliyun channel mapping",
+  "cause_evidence": "retrieved exchange receipt plus collaborator setup.log screenshot",
+  "source_reference": "https://github.com/conda/conda/blob/24.11.3/conda/models/channel.py",
+  "source_observation": "Channel.from_value dispatches scheme URLs to from_url, while names use channel name/custom-channel resolution. Inspected primary pinned source, no Conda execution.",
+  "repair": [
+    "Local Python3.10 stdlib venv --without-pip plus verified local pip bootstrap wheel",
+    "Complete owner-prepared dependency/source assets from authenticated exchange; no public Conda/pip/Git fallback",
+    "Classify invalid-channel failure and return bounded redacted setup log privately"
+  ],
+  "formal_training_started": false,
+  "runtime_repair_verified": false,
+  "owner_model_tests_or_installations": false,
+  "superseded_approach": "Explicit official Conda URL only addresses alias mapping; rejected as insufficient under user no-external-network requirement. Not delivered as the final repair."
+}

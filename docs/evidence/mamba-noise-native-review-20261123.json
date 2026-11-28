@@ -1,0 +1,747 @@
+{
+  "schema": "qkan-mamba-noise-native-review.v1",
+  "date": "2026-11-23",
+  "status": "full_model_bf16_autocast_not_admitted_after_measured_numerical_shift",
+  "evidence": {
+    "exchange_path": "qkan-mamba/mamba-noise/mamba-noise-97841c86eb0f/mamba-noise.json",
+    "size_bytes": 393375,
+    "sha256": "5c5cfd14bb0344808db52f033b91fee0b48595e00b1537203b6fb795847522d1",
+    "diagnostic_revision": "5efd8123ae998a6ddb0faea6e2c8de8fcb2d6640",
+    "source_step": 24981,
+    "source_checkpoint_sha256": "fc3ccbb796b26c1ee58ac516e5aaa274846066cea9b49660e09aa8c795c4d01b"
+  },
+  "checks": {
+    "six_children_exit_zero_clean_finite": true,
+    "source_unchanged": true,
+    "all_initial_and_execution_controls_exact": true,
+    "temporary_numeric_files_removed": true,
+    "disposable_updates": 12,
+    "formal_updates_committed": 0,
+    "formal_release_allowed": false
+  },
+  "same_route_update_relative_l2": {
+    "fp32": [
+      2.5462657115684403e-06,
+      3.0612917733606784e-06
+    ],
+    "bf16_eager": [
+      0.0007170311084454816,
+      0.0018152606584433695
+    ],
+    "bf16_graph": [
+      0.0007400882280764795,
+      0.0032551525697963836
+    ]
+  },
+  "bf16_vs_fp32_update_relative_l2": {
+    "bf16_eager": [
+      0.22864029534260014,
+      0.24476914766576255,
+      0.22864241255844026,
+      0.2448675716775987
+    ],
+    "bf16_graph": [
+      0.2286445202364989,
+      0.24474916661375076,
+      0.22864328624717883,
+      0.2448316071244894
+    ]
+  },
+  "comparisons": {
+    "fp32_noise_b/repeat": [
+      {
+        "update_1based": 1,
+        "loss_reference": 0.182586669921875,
+        "loss_candidate": 0.182586669921875,
+        "loss_absolute_difference": 0.0,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7414738893729199,
+            "difference_norm": 1.749421502451527e-07,
+            "relative_l2": 2.3593838288891395e-07,
+            "max_absolute": 1.1175870895385742e-08,
+            "cosine": 0.9999999999999671
+          },
+          "delta": {
+            "reference_norm": 0.19898669811302275,
+            "candidate_norm": 0.19898669848222603,
+            "difference_norm": 5.066730064634103e-07,
+            "relative_l2": 2.5462657115684403e-06,
+            "max_absolute": 2.384185791015625e-07,
+            "cosine": 0.9999999999967596
+          },
+          "parameters": {
+            "reference_norm": 392.1882101141447,
+            "candidate_norm": 392.1882101148834,
+            "difference_norm": 5.066729147919235e-07,
+            "relative_l2": 1.2919126626587233e-09,
+            "max_absolute": 2.384185791015625e-07,
+            "cosine": 1.0000000000000004
+          },
+          "optimizer": {
+            "reference_norm": 210502.07363363932,
+            "candidate_norm": 210502.07363363932,
+            "difference_norm": 1.8611464673653088e-08,
+            "relative_l2": 8.841463816667543e-14,
+            "max_absolute": 1.0477378964424133e-09,
+            "cosine": 0.9999999999999998
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7414738893729199,
+            "difference_norm": 1.749421502451527e-07,
+            "relative_l2": 2.3593838288891395e-07,
+            "max_absolute": 1.1175870895385742e-08,
+            "cosine": 0.9999999999999671
+          }
+        }
+      },
+      {
+        "update_1based": 2,
+        "loss_reference": 0.036315709352493286,
+        "loss_candidate": 0.03631569445133209,
+        "loss_absolute_difference": 1.4901161193847656e-08,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2067480360245959,
+            "difference_norm": 2.1699421060210838e-07,
+            "relative_l2": 1.0495583170594113e-06,
+            "max_absolute": 3.841705620288849e-08,
+            "cosine": 0.9999999999995312
+          },
+          "delta": {
+            "reference_norm": 0.17972085180339323,
+            "candidate_norm": 0.17972085148971012,
+            "difference_norm": 5.501779651271014e-07,
+            "relative_l2": 3.0612917733606784e-06,
+            "max_absolute": 2.384185791015625e-07,
+            "cosine": 0.9999999999953156
+          },
+          "parameters": {
+            "reference_norm": 392.1876569694608,
+            "candidate_norm": 392.1876569734416,
+            "difference_norm": 7.483417025860702e-07,
+            "relative_l2": 1.9081215058339856e-09,
+            "max_absolute": 2.384185791015625e-07,
+            "cosine": 1.0000000000000007
+          },
+          "optimizer": {
+            "reference_norm": 210510.49978338616,
+            "candidate_norm": 210510.49978338616,
+            "difference_norm": 2.903365592387027e-08,
+            "relative_l2": 1.3792022703734826e-13,
+            "max_absolute": 3.958120942115784e-09,
+            "cosine": 0.9999999999999998
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2067480360245959,
+            "difference_norm": 2.1699421060210838e-07,
+            "relative_l2": 1.0495583170594113e-06,
+            "max_absolute": 3.841705620288849e-08,
+            "cosine": 0.9999999999995312
+          }
+        }
+      }
+    ],
+    "bf16_eager_noise_a/vs_fp32_a": [
+      {
+        "update_1based": 1,
+        "loss_reference": 0.182586669921875,
+        "loss_candidate": 0.1756199598312378,
+        "loss_absolute_difference": 0.006966710090637207,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149292217972696,
+            "difference_norm": 0.3434573746542524,
+            "relative_l2": 0.46320899482279854,
+            "max_absolute": 0.015276624821126461,
+            "cosine": 0.8894000658361044
+          },
+          "delta": {
+            "reference_norm": 0.19898669811302275,
+            "candidate_norm": 0.1983640054054802,
+            "difference_norm": 0.045496377425810336,
+            "relative_l2": 0.22864029534260014,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9737846678717322
+          },
+          "parameters": {
+            "reference_norm": 392.1882101141447,
+            "candidate_norm": 392.1883433978225,
+            "difference_norm": 0.0454963774250327,
+            "relative_l2": 0.000116006489363337,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9999999932713077
+          },
+          "optimizer": {
+            "reference_norm": 210502.07363363932,
+            "candidate_norm": 210502.0736336388,
+            "difference_norm": 0.03434573825523439,
+            "relative_l2": 1.6316104474585927e-07,
+            "max_absolute": 0.0015276625053957105,
+            "cosine": 0.9999999999999866
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149292217972696,
+            "difference_norm": 0.3434573746542524,
+            "relative_l2": 0.46320899482279854,
+            "max_absolute": 0.015276624821126461,
+            "cosine": 0.8894000658361044
+          }
+        }
+      },
+      {
+        "update_1based": 2,
+        "loss_reference": 0.036315709352493286,
+        "loss_candidate": 0.042671896517276764,
+        "loss_absolute_difference": 0.006356187164783478,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2656628162154922,
+            "difference_norm": 0.14773553795812752,
+            "relative_l2": 0.7145677396597443,
+            "max_absolute": 0.01279965229332447,
+            "cosine": 0.8329107727401384
+          },
+          "delta": {
+            "reference_norm": 0.17972085180339323,
+            "candidate_norm": 0.17986153133115215,
+            "difference_norm": 0.043990119713681386,
+            "relative_l2": 0.24476914766576255,
+            "max_absolute": 0.0004710257053375244,
+            "cosine": 0.9700677684964912
+          },
+          "parameters": {
+            "reference_norm": 392.1876569694608,
+            "candidate_norm": 392.1879280402137,
+            "difference_norm": 0.08798451719321759,
+            "relative_l2": 0.00022434290225525593,
+            "max_absolute": 0.0009566247463226318,
+            "cosine": 0.9999999748353882
+          },
+          "optimizer": {
+            "reference_norm": 210510.49978338616,
+            "candidate_norm": 210510.49978338898,
+            "difference_norm": 0.034644907714399875,
+            "relative_l2": 1.6457567556036038e-07,
+            "max_absolute": 0.0023781980853527784,
+            "cosine": 0.9999999999999868
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2656628162154922,
+            "difference_norm": 0.14773553795812752,
+            "relative_l2": 0.7145677396597443,
+            "max_absolute": 0.01279965229332447,
+            "cosine": 0.8329107727401384
+          }
+        }
+      }
+    ],
+    "bf16_eager_noise_b/repeat": [
+      {
+        "update_1based": 1,
+        "loss_reference": 0.1756199598312378,
+        "loss_candidate": 0.1756199598312378,
+        "loss_absolute_difference": 0.0,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.7149292217972696,
+            "candidate_norm": 0.7149358930462637,
+            "difference_norm": 0.0010868920190677124,
+            "relative_l2": 0.001520279191183934,
+            "max_absolute": 8.0108642578125e-05,
+            "cosine": 0.9999988444299117
+          },
+          "delta": {
+            "reference_norm": 0.1983640054054802,
+            "candidate_norm": 0.1983639286871304,
+            "difference_norm": 0.00014223316267157697,
+            "relative_l2": 0.0007170311084454816,
+            "max_absolute": 3.0100345611572266e-06,
+            "cosine": 0.9999997429331713
+          },
+          "parameters": {
+            "reference_norm": 392.1883433978225,
+            "candidate_norm": 392.1883435666269,
+            "difference_norm": 0.0001422331621187689,
+            "relative_l2": 3.6266545019287434e-07,
+            "max_absolute": 3.0100345611572266e-06,
+            "cosine": 0.999999999999935
+          },
+          "optimizer": {
+            "reference_norm": 210502.0736336388,
+            "candidate_norm": 210502.0736336388,
+            "difference_norm": 0.00010868917983435446,
+            "relative_l2": 5.163330600890842e-10,
+            "max_absolute": 8.010829333215952e-06,
+            "cosine": 1.0
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.7149292217972696,
+            "candidate_norm": 0.7149358930462637,
+            "difference_norm": 0.0010868920190677124,
+            "relative_l2": 0.001520279191183934,
+            "max_absolute": 8.0108642578125e-05,
+            "cosine": 0.9999988444299117
+          }
+        }
+      },
+      {
+        "update_1based": 2,
+        "loss_reference": 0.042671896517276764,
+        "loss_candidate": 0.042881518602371216,
+        "loss_absolute_difference": 0.0002096220850944519,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.2656628162154922,
+            "candidate_norm": 0.2665788998521878,
+            "difference_norm": 0.002829682158943867,
+            "relative_l2": 0.010651404661194935,
+            "max_absolute": 0.000274658203125,
+            "cosine": 0.9999493936625218
+          },
+          "delta": {
+            "reference_norm": 0.17986153133115215,
+            "candidate_norm": 0.17988497578096194,
+            "difference_norm": 0.00032649556179282,
+            "relative_l2": 0.0018152606584433695,
+            "max_absolute": 3.814697265625e-06,
+            "cosine": 0.9999983611231936
+          },
+          "parameters": {
+            "reference_norm": 392.1879280402137,
+            "candidate_norm": 392.1879295076838,
+            "difference_norm": 0.00040360899114123274,
+            "relative_l2": 1.0291214040118235e-06,
+            "max_absolute": 5.595386028289795e-06,
+            "cosine": 0.9999999999994708
+          },
+          "optimizer": {
+            "reference_norm": 210510.49978338898,
+            "candidate_norm": 210510.49978338904,
+            "difference_norm": 0.0002992222373315973,
+            "relative_l2": 1.4214124123950627e-09,
+            "max_absolute": 2.7466565370559692e-05,
+            "cosine": 0.9999999999999998
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.2656628162154922,
+            "candidate_norm": 0.2665788998521878,
+            "difference_norm": 0.002829682158943867,
+            "relative_l2": 0.010651404661194935,
+            "max_absolute": 0.000274658203125,
+            "cosine": 0.9999493936625218
+          }
+        }
+      }
+    ],
+    "bf16_eager_noise_b/vs_fp32_a": [
+      {
+        "update_1based": 1,
+        "loss_reference": 0.182586669921875,
+        "loss_candidate": 0.1756199598312378,
+        "loss_absolute_difference": 0.006966710090637207,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149358930462637,
+            "difference_norm": 0.34346371918205204,
+            "relative_l2": 0.46321755146639265,
+            "max_absolute": 0.015272810123860836,
+            "cosine": 0.8893966531810251
+          },
+          "delta": {
+            "reference_norm": 0.19898669811302275,
+            "candidate_norm": 0.1983639286871304,
+            "difference_norm": 0.04549679872359955,
+            "relative_l2": 0.22864241255844026,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9737841733402731
+          },
+          "parameters": {
+            "reference_norm": 392.1882101141447,
+            "candidate_norm": 392.1883435666269,
+            "difference_norm": 0.04549679872326583,
+            "relative_l2": 0.00011600756358796247,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9999999932711833
+          },
+          "optimizer": {
+            "reference_norm": 210502.07363363932,
+            "candidate_norm": 210502.0736336388,
+            "difference_norm": 0.03434637267895265,
+            "relative_l2": 1.631640586055677e-07,
+            "max_absolute": 0.0015272810123860836,
+            "cosine": 0.9999999999999866
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149358930462637,
+            "difference_norm": 0.34346371918205204,
+            "relative_l2": 0.46321755146639265,
+            "max_absolute": 0.015272810123860836,
+            "cosine": 0.8893966531810251
+          }
+        }
+      },
+      {
+        "update_1based": 2,
+        "loss_reference": 0.036315709352493286,
+        "loss_candidate": 0.042881518602371216,
+        "loss_absolute_difference": 0.00656580924987793,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2665788998521878,
+            "difference_norm": 0.14843948084267053,
+            "relative_l2": 0.7179725729368941,
+            "max_absolute": 0.012771042063832283,
+            "cosine": 0.8325804017190956
+          },
+          "delta": {
+            "reference_norm": 0.17972085180339323,
+            "candidate_norm": 0.17988497578096194,
+            "difference_norm": 0.04400780856092649,
+            "relative_l2": 0.2448675716775987,
+            "max_absolute": 0.0004712343215942383,
+            "cosine": 0.9700477060696081
+          },
+          "parameters": {
+            "reference_norm": 392.1876569694608,
+            "candidate_norm": 392.1879295076838,
+            "difference_norm": 0.08799501792206696,
+            "relative_l2": 0.0002243696770113268,
+            "max_absolute": 0.0009568333625793457,
+            "cosine": 0.9999999748293836
+          },
+          "optimizer": {
+            "reference_norm": 210510.49978338616,
+            "candidate_norm": 210510.49978338904,
+            "difference_norm": 0.03467849114809747,
+            "relative_l2": 1.647352088555269e-07,
+            "max_absolute": 0.002385636791586876,
+            "cosine": 0.9999999999999871
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2665788998521878,
+            "difference_norm": 0.14843948084267053,
+            "relative_l2": 0.7179725729368941,
+            "max_absolute": 0.012771042063832283,
+            "cosine": 0.8325804017190956
+          }
+        }
+      }
+    ],
+    "bf16_graph_noise_a/vs_fp32_a": [
+      {
+        "update_1based": 1,
+        "loss_reference": 0.182586669921875,
+        "loss_candidate": 0.1756199598312378,
+        "loss_absolute_difference": 0.006966710090637207,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149261223078157,
+            "difference_norm": 0.3434732157004586,
+            "relative_l2": 0.46323035908990007,
+            "max_absolute": 0.015286161564290524,
+            "cosine": 0.8893894777213188
+          },
+          "delta": {
+            "reference_norm": 0.19898669811302275,
+            "candidate_norm": 0.1983638553863569,
+            "difference_norm": 0.04549721812349713,
+            "relative_l2": 0.2286445202364989,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9737836813894418
+          },
+          "parameters": {
+            "reference_norm": 392.1882101141447,
+            "candidate_norm": 392.18834358642266,
+            "difference_norm": 0.0454972181226541,
+            "relative_l2": 0.0001160086329709206,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9999999932710594
+          },
+          "optimizer": {
+            "reference_norm": 210502.07363363932,
+            "candidate_norm": 210502.0736336388,
+            "difference_norm": 0.03434732231764053,
+            "relative_l2": 1.6316856990881277e-07,
+            "max_absolute": 0.0015286161797121167,
+            "cosine": 0.9999999999999866
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149261223078157,
+            "difference_norm": 0.3434732157004586,
+            "relative_l2": 0.46323035908990007,
+            "max_absolute": 0.015286161564290524,
+            "cosine": 0.8893894777213188
+          }
+        }
+      },
+      {
+        "update_1based": 2,
+        "loss_reference": 0.036315709352493286,
+        "loss_candidate": 0.04283079504966736,
+        "loss_absolute_difference": 0.006515085697174072,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.26579563926129096,
+            "difference_norm": 0.14777480247414398,
+            "relative_l2": 0.7147576544009535,
+            "max_absolute": 0.012770088389515877,
+            "cosine": 0.8330312569400444
+          },
+          "delta": {
+            "reference_norm": 0.17972085180339323,
+            "candidate_norm": 0.17987810783890185,
+            "difference_norm": 0.0439865287019939,
+            "relative_l2": 0.24474916661375076,
+            "max_absolute": 0.00047059357166290283,
+            "cosine": 0.9700754895298294
+          },
+          "parameters": {
+            "reference_norm": 392.1876569694608,
+            "candidate_norm": 392.1879272224539,
+            "difference_norm": 0.08798523857393327,
+            "relative_l2": 0.00022434474163164338,
+            "max_absolute": 0.0009561926126480103,
+            "cosine": 0.9999999748349737
+          },
+          "optimizer": {
+            "reference_norm": 210510.49978338616,
+            "candidate_norm": 210510.49978338904,
+            "difference_norm": 0.034656463456017854,
+            "relative_l2": 1.6463056945700626e-07,
+            "max_absolute": 0.0023917402140796185,
+            "cosine": 0.9999999999999869
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.26579563926129096,
+            "difference_norm": 0.14777480247414398,
+            "relative_l2": 0.7147576544009535,
+            "max_absolute": 0.012770088389515877,
+            "cosine": 0.8330312569400444
+          }
+        }
+      }
+    ],
+    "bf16_graph_noise_b/repeat": [
+      {
+        "update_1based": 1,
+        "loss_reference": 0.1756199598312378,
+        "loss_candidate": 0.1756199598312378,
+        "loss_absolute_difference": 0.0,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.7149261223078157,
+            "candidate_norm": 0.7149483030986913,
+            "difference_norm": 0.001127661791579277,
+            "relative_l2": 0.001577312335348904,
+            "max_absolute": 0.0001373291015625,
+            "cosine": 0.9999987565627619
+          },
+          "delta": {
+            "reference_norm": 0.1983638553863569,
+            "candidate_norm": 0.19836410800123228,
+            "difference_norm": 0.0001468067542473079,
+            "relative_l2": 0.0007400882280764795,
+            "max_absolute": 2.518296241760254e-06,
+            "cosine": 0.9999997261358684
+          },
+          "parameters": {
+            "reference_norm": 392.18834358642266,
+            "candidate_norm": 392.18834350237796,
+            "difference_norm": 0.00014680675396932242,
+            "relative_l2": 3.743271730792072e-07,
+            "max_absolute": 2.518296241760254e-06,
+            "cosine": 0.9999999999999302
+          },
+          "optimizer": {
+            "reference_norm": 210502.0736336388,
+            "candidate_norm": 210502.0736336388,
+            "difference_norm": 0.00011276620155449961,
+            "relative_l2": 5.35701143499231e-10,
+            "max_absolute": 1.3732918887399137e-05,
+            "cosine": 1.0
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.7149261223078157,
+            "candidate_norm": 0.7149483030986913,
+            "difference_norm": 0.001127661791579277,
+            "relative_l2": 0.001577312335348904,
+            "max_absolute": 0.0001373291015625,
+            "cosine": 0.9999987565627619
+          }
+        }
+      },
+      {
+        "update_1based": 2,
+        "loss_reference": 0.04283079504966736,
+        "loss_candidate": 0.04279953986406326,
+        "loss_absolute_difference": 3.125518560409546e-05,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.26579563926129096,
+            "candidate_norm": 0.2663179536738152,
+            "difference_norm": 0.005139240554589731,
+            "relative_l2": 0.019335308016613432,
+            "max_absolute": 0.0010527372360229492,
+            "cosine": 0.9998153665592936
+          },
+          "delta": {
+            "reference_norm": 0.17987810783890185,
+            "candidate_norm": 0.1798755303342286,
+            "difference_norm": 0.0005855306849819124,
+            "relative_l2": 0.0032551525697963836,
+            "max_absolute": 6.521493196487427e-05,
+            "cosine": 0.9999947020176219
+          },
+          "parameters": {
+            "reference_norm": 392.1879272224539,
+            "candidate_norm": 392.1879280126933,
+            "difference_norm": 0.0006353780551593658,
+            "relative_l2": 1.6200857065112346e-06,
+            "max_absolute": 6.521493196487427e-05,
+            "cosine": 0.9999999999986884
+          },
+          "optimizer": {
+            "reference_norm": 210510.49978338904,
+            "candidate_norm": 210510.49978338898,
+            "difference_norm": 0.0005255216832090752,
+            "relative_l2": 2.496415541029194e-09,
+            "max_absolute": 0.00010527367703616619,
+            "cosine": 0.9999999999999998
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.26579563926129096,
+            "candidate_norm": 0.2663179536738152,
+            "difference_norm": 0.005139240554589731,
+            "relative_l2": 0.019335308016613432,
+            "max_absolute": 0.0010527372360229492,
+            "cosine": 0.9998153665592936
+          }
+        }
+      }
+    ],
+    "bf16_graph_noise_b/vs_fp32_a": [
+      {
+        "update_1based": 1,
+        "loss_reference": 0.182586669921875,
+        "loss_candidate": 0.1756199598312378,
+        "loss_absolute_difference": 0.006966710090637207,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149483030986913,
+            "difference_norm": 0.3434587634453337,
+            "relative_l2": 0.46321086783694315,
+            "max_absolute": 0.015301420353353024,
+            "cosine": 0.8894011627354438
+          },
+          "delta": {
+            "reference_norm": 0.19898669811302275,
+            "candidate_norm": 0.19836410800123228,
+            "difference_norm": 0.04549697257603682,
+            "relative_l2": 0.22864328624717883,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9737839938200527
+          },
+          "parameters": {
+            "reference_norm": 392.1882101141447,
+            "candidate_norm": 392.18834350237796,
+            "difference_norm": 0.04549697257517765,
+            "relative_l2": 0.00011600800687490313,
+            "max_absolute": 0.0004874765872955322,
+            "cosine": 0.9999999932711312
+          },
+          "optimizer": {
+            "reference_norm": 210502.07363363932,
+            "candidate_norm": 210502.0736336388,
+            "difference_norm": 0.03434587715929562,
+            "relative_l2": 1.6316170461613436e-07,
+            "max_absolute": 0.0015301420353353024,
+            "cosine": 0.9999999999999866
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.7414738886615159,
+            "candidate_norm": 0.7149483030986913,
+            "difference_norm": 0.3434587634453337,
+            "relative_l2": 0.46321086783694315,
+            "max_absolute": 0.015301420353353024,
+            "cosine": 0.8894011627354438
+          }
+        }
+      },
+      {
+        "update_1based": 2,
+        "loss_reference": 0.036315709352493286,
+        "loss_candidate": 0.04279953986406326,
+        "loss_absolute_difference": 0.006483830511569977,
+        "metrics": {
+          "raw_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2663179536738152,
+            "difference_norm": 0.14814818009084824,
+            "relative_l2": 0.7165636084949746,
+            "max_absolute": 0.012768657878041267,
+            "cosine": 0.8329179785386497
+          },
+          "delta": {
+            "reference_norm": 0.17972085180339323,
+            "candidate_norm": 0.1798755303342286,
+            "difference_norm": 0.044001344980806954,
+            "relative_l2": 0.2448316071244894,
+            "max_absolute": 0.00047115981578826904,
+            "cosine": 0.970054885003916
+          },
+          "parameters": {
+            "reference_norm": 392.1876569694608,
+            "candidate_norm": 392.1879280126933,
+            "difference_norm": 0.08799225231691725,
+            "relative_l2": 0.00022436262527193482,
+            "max_absolute": 0.0009567588567733765,
+            "cosine": 0.9999999748309635
+          },
+          "optimizer": {
+            "reference_norm": 210510.49978338616,
+            "candidate_norm": 210510.49978338898,
+            "difference_norm": 0.034670716435236684,
+            "relative_l2": 1.6469827619483405e-07,
+            "max_absolute": 0.002386018168181181,
+            "cosine": 0.9999999999999869
+          },
+          "clipped_gradients": {
+            "reference_norm": 0.2067481216385094,
+            "candidate_norm": 0.2663179536738152,
+            "difference_norm": 0.14814818009084824,
+            "relative_l2": 0.7165636084949746,
+            "max_absolute": 0.012768657878041267,
+            "cosine": 0.8329179785386497
+          }
+        }
+      }
+    ]
+  },
+  "interpretation": [
+    "Original FP32 repeated update relative L2 is 2.5463e-6 to 3.0613e-6; BF16 eager 7.1703e-4 to 1.8153e-3; BF16 Graph 7.4009e-4 to 3.2552e-3 in these two updates.",
+    "BF16-vs-FP32 update relative L2 is about .22864 to .24487, materially larger than the observed same-route repeats; raw gradient relative L2 is about .46321 to .71797.",
+    "Both eager and Graph exhibit similar cross-precision shifts; evidence does not support blaming Graph alone. No direct same-weight eager-vs-Graph numeric isolation is claimed.",
+    "Aggregate model relative L2 is diluted by unchanged weights; optimizer relative L2 includes large Adam step-counter tensors. Neither small aggregate ratio proves faithful updates.",
+    "Only two batches and two repeats were measured; these are descriptive values, not population noise bounds, accuracy degradation or convergence evidence.",
+    "No automatic formal release or error-threshold change. Current whole-model autocast candidate is not admitted; no unchanged timing/hash rerun is needed."
+  ],
+  "next_action": "Preserve original FP32 continuation capability and completed jobs. If pursuing BF16 further, design a narrower precision candidate (for example keep sensitive recurrence in FP32 and isolate projection precision) and test it as a new arithmetic policy; no speed/accuracy benefit is established for that proposal."
+}

@@ -1,0 +1,231 @@
+{
+  "schema": "qkan-bf16-graph-native-review.v1",
+  "native_passed": true,
+  "source_revision": "ad6654f72baac589406f9ec6ac205fd8906b0b6d",
+  "source_report": {
+    "file": "bf16-graph.json",
+    "namespace": "qkan-mamba/bf16-graph/bf16-graph-20261118T104322Z-8870aa95",
+    "bytes": 241049,
+    "sha256": "bfea48d1f5fe48413fe43d1650d5890d653b777bb98b0dc3b139dd4ac0eddc90",
+    "authenticated": true,
+    "sha256_verified": true
+  },
+  "source_executor_revision": "a3569140d43b56cae30bd42db8e604db252f5e50",
+  "source_checkpoint": {
+    "schema": "qkan-training-checkpoint.v1",
+    "sha256": "f41d1a72e90202f8ff59c1f4b056ce2887af9b995b7425f8f98b7a1d7625b08f",
+    "contract": "8abe0f39ccf52593da176a35d656cf06726b8b73e7fb8b2251619bfe45e0f434",
+    "step": 20325
+  },
+  "executed_bindings": {
+    "experiments/baseline_delivery/bf16_graph_diagnostic.py": "b401995c3dd55486e0ca13a2cedb91ac5d9390693376565cd14ad8f397dd364e",
+    "experiments/baseline_delivery/bf16_graph_native.py": "b12c459fa4b73a15228a1715cc8ffc45706acd7d2fa26734813f8c18f92ffebb",
+    "experiments/baseline_delivery/bf16_graph_runtime.py": "81232fc31548bd55b3286d3d7b901786b18259c5e7b808b72fc8597aafd7e0d7",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/key_bias_benchmark.py": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8",
+    "experiments/baseline_delivery/key_bias_stability_native.py": "36c2d82cbb73abd3f65a81048050b0120c39c76a57c36d7075b15b27aa0daa95",
+    "experiments/baseline_delivery/worker.py": "6a5d855312cea021dd016742c5686027393d688948edfcae375e233289e3da57",
+    "experiments/baseline_delivery/key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+    "experiments/baseline_delivery/execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+    "experiments/baseline_delivery/performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+    "experiments/baseline_delivery/common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+    "experiments/baseline_delivery/diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+    "experiments/baseline_delivery/attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "docs/baselines/bf16-graph-plan.json": "603720b5541c34f7c92f84df194d9c55abf566dbffe324b46f24ccecb03abb2e",
+    "tools/sample_trace_contract/validate.py": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "executed_binding_count": 29,
+  "implementation": {
+    "files": {
+      "bf16_graph_diagnostic.py": "b401995c3dd55486e0ca13a2cedb91ac5d9390693376565cd14ad8f397dd364e",
+      "bf16_graph_native.py": "b12c459fa4b73a15228a1715cc8ffc45706acd7d2fa26734813f8c18f92ffebb",
+      "bf16_graph_runtime.py": "81232fc31548bd55b3286d3d7b901786b18259c5e7b808b72fc8597aafd7e0d7",
+      "parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+      "torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+      "key_bias_benchmark.py": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8",
+      "key_bias_stability_native.py": "36c2d82cbb73abd3f65a81048050b0120c39c76a57c36d7075b15b27aa0daa95"
+    },
+    "strategy": {
+      "files": {
+        "worker.py": "6a5d855312cea021dd016742c5686027393d688948edfcae375e233289e3da57",
+        "key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+        "key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+        "attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+        "key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+        "models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+        "logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+        "execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+        "trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+        "data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+        "migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+        "adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+        "performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+        "common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+        "diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+        "attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+        "attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+        "key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79"
+      },
+      "trace_validator_sha256": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+      "plan_sha256": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+      "pilot_review_sha256": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+    },
+    "plan_sha256": "603720b5541c34f7c92f84df194d9c55abf566dbffe324b46f24ccecb03abb2e"
+  },
+  "parity": {
+    "passed": true,
+    "rtol": 1e-05,
+    "atol": 1e-06,
+    "rng_and_controls": "exact",
+    "covers": "logits/all gradients/all parameter deltas/Adam/scheduler/permutation/progress/RNG"
+  },
+  "recovery": {
+    "passed": true,
+    "fresh_process": true,
+    "updates": 2,
+    "component_sha256": {
+      "model": "ca5e9ea51d287b80a10ce623d274de0a9d26650ad7847ee82c45ca535890ec90",
+      "optimizer": "5600a1004abf77d5923717dc886377dfae5f782b03603cf2cad9a7166aa29d50",
+      "scheduler": "54871f9b122ca4af86e2436391c4d883f2cf3b6499e1ac96243815cbfdadddc0",
+      "progress": "c754f90b686ac623320d812138bbff88fcee32eb0a1878a4dedbc91c109958b2",
+      "permutation": "35d4db769915cec7a9513165ea81f0986b00e2825ae1544334a57cf460a69492",
+      "rng": "4f7468454dccc5089022e35ae419e0d28cc68aa89acce420a05e3cbd2bb95b22",
+      "gradients": "64dcd9758561cdb106a16dd1fde77bd04c1a0e603269cefba1cc60c509f62473",
+      "precision": "acfb3cf7ef5c8217d851e6cb7aa832ffc2653e82356999257d7e108b9ccafd15",
+      "policy": "0c2d95a8c455c43cd8fa4d064e8d156b7913dbed19caad4434b0c260ec9b0667"
+    }
+  },
+  "timing": {
+    "passed": true,
+    "samples_seconds": {
+      "incumbent": [
+        6.827276978641748,
+        6.416326247155666,
+        5.616331070661545,
+        6.157862771302462
+      ],
+      "candidate": [
+        5.957535032182932,
+        6.288635224103928,
+        5.444159638136625,
+        6.009117789566517
+      ]
+    },
+    "median_seconds": {
+      "incumbent": 6.287094509229064,
+      "candidate": 5.983326410874724
+    },
+    "throughput_gain": 0.05076910024534831,
+    "paired_throughput_gain": [
+      0.1459902361900387,
+      0.020305045292229318,
+      0.03162497868704106,
+      0.024753214522472256
+    ],
+    "update_time_reduction": 0.04831613361441078
+  },
+  "timing_scope": "Complete CPU gather/H2D/BF16 forward/head/CE/backward/analytic hook/clip/Adam/sample clock/finite checks; capture/warmup/restore/hash excluded",
+  "samples_per_update": 128,
+  "micro_batch": 16,
+  "logical_batch": 128,
+  "dropout": 0.1,
+  "throughput_samples_per_second": {
+    "incumbent": 20.359165877354627,
+    "candidate": 21.392782410693723
+  },
+  "actual_backend": {
+    "dtype": "BF16 SDPA, FP32 masters/Adam",
+    "compiler_backend": "none",
+    "graph": "per-document forward/backward",
+    "capture_generations": 1,
+    "analytic_hook": "outside_capture",
+    "same_route_full_state_exact": true,
+    "all8_cross_route_full_state_hashes_equal": true
+  },
+  "graph_preparation_seconds": {
+    "parity": 2.093915030360222,
+    "continuous": 2.0648868419229984,
+    "interrupt": 3.045586083084345,
+    "resume": 3.5703755915164948,
+    "timing": 3.2766907811164856
+  },
+  "child_executions": [
+    {
+      "mode": "parity",
+      "exit_code": 0,
+      "seconds": 20.874187789857388,
+      "group_clean": true
+    },
+    {
+      "mode": "continuous",
+      "exit_code": 0,
+      "seconds": 24.28779274970293,
+      "group_clean": true
+    },
+    {
+      "mode": "interrupt",
+      "exit_code": 0,
+      "seconds": 22.279251277446747,
+      "group_clean": true
+    },
+    {
+      "mode": "resume",
+      "exit_code": 0,
+      "seconds": 23.682111464440823,
+      "group_clean": true
+    },
+    {
+      "mode": "timing",
+      "exit_code": 0,
+      "seconds": 81.53657664358616,
+      "group_clean": true
+    }
+  ],
+  "cleanup": {
+    "removed": true,
+    "sha256": "c8659546682e92c79589e8ad38b4fe8c05a1e90f7341eceb87ad4db83d31a72a",
+    "bytes": 15999568,
+    "retained_generations": 0
+  },
+  "original_checkpoint_and_metadata_unchanged": true,
+  "source_snapshot_sha256": "37790f0490ba80166f63b7c5daacf2551443f82a92f2e963ea7b112bd418284e",
+  "disposable_optimizer_updates": 16,
+  "processed_samples": 2048,
+  "distinct_train_rows": 256,
+  "training_samples_committed": 0,
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "actual_worker_combination_validated": false,
+  "long_run_convergence_certified": false,
+  "total_queue_eta_claimed": false,
+  "limitations": [
+    "Four repetitions per route; paired gains range2.03to14.60percent, no confidence interval",
+    "One fixed checkpoint and batch shape; no full corpus/convergence or queue-time claim",
+    "Preparation excluded; reference also has resident Graph allocations; no isolated peak memory measurement",
+    "Nine-component numeric adapter recovery; actual formal-worker Graph integration still pending",
+    "Do not compare absolute seconds with separate historical pilots or multiply separate speedups"
+  ],
+  "next_action": "Integrate as a separate opt-in formal-worker route; validate changed worker path and restore before formal switch",
+  "owner_audit": {
+    "environment": "QT2",
+    "framework_imports": 0,
+    "model_execution": false,
+    "gpu_access": false,
+    "dependency_install": false,
+    "collaborator_process_action": false
+  }
+}

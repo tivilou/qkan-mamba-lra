@@ -1,0 +1,103 @@
+{
+  "schema": "qkan-strong-source-registry.v1",
+  "status": "native_workers_delivered_runtime_pending",
+  "formal_runner_available": false,
+  "models": {
+    "mega": {
+      "repository": "https://github.com/facebookresearch/mega",
+      "revision": "aeaa4b44592cd1d60a9a34554e359eda2a62b03b",
+      "package": "fairseq",
+      "modules": {
+        "encoder": "fairseq.models.lra.mega_lra_encoder"
+      },
+      "files": {
+        "fairseq/models/lra/mega_lra_encoder.py": {
+          "sha256": "001e2c9ee20154c0b97be09630714093991638c9ab5c5d08a5e9f96883dfb26f",
+          "size_bytes": 8948,
+          "source_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/models/lra/mega_lra_encoder.py"
+        },
+        "fairseq/modules/mega_sentence_encoder_layer.py": {
+          "sha256": "e7d2fc5494c0902de36287db76d1229dcb5d8f8db4021819b572afd7cdae859a",
+          "size_bytes": 4195,
+          "source_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/mega_sentence_encoder_layer.py"
+        },
+        "fairseq/modules/moving_average_gated_attention.py": {
+          "sha256": "90d331dbbac12817fe7b22371badedfc4d8ff24b6860336c0bc476cd9ab9ba90",
+          "size_bytes": 15645,
+          "source_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/moving_average_gated_attention.py"
+        },
+        "fairseq/modules/exponential_moving_average.py": {
+          "sha256": "223ee827cffa474c4b2f4759af1999c69b4c2de868174260c3f789a86df8c225",
+          "size_bytes": 8833,
+          "source_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/exponential_moving_average.py"
+        },
+        "fairseq/models/lra/model.py": {
+          "sha256": "25f0fe1a512f6ecde8c744cc60ea11387cce15ad3027eca561b569e9db1ff5c2",
+          "size_bytes": 33381,
+          "source_url": "https://api.github.com/repos/facebookresearch/mega/contents/fairseq/models/lra/model.py?ref=aeaa4b44592cd1d60a9a34554e359eda2a62b03b"
+        }
+      },
+      "runtime_import_verified": false,
+      "full_state_resume_verified": false,
+      "trace_verified": false,
+      "environment": "CPython 3.10; requirements-mega.txt; native official fairseq; build in copy, verified source import; not runtime-certified"
+    },
+    "s5": {
+      "repository": "https://github.com/lindermanlab/S5",
+      "revision": "3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+      "package": "s5",
+      "modules": {
+        "ssm": "s5.ssm",
+        "encoder": "s5.seq_model",
+        "initialization": "s5.ssm_init"
+      },
+      "files": {
+        "s5/ssm.py": {
+          "sha256": "d893684e5fe6fa3a231fb4ff3fa2811b44a2a8a31e70fb1ac77808d7328fe183",
+          "size_bytes": 11823,
+          "source_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/ssm.py"
+        },
+        "s5/layers.py": {
+          "sha256": "87a2c9ff50ff5ab19da5660f756f2c89324513a60f976020206ae54bc76f169e",
+          "size_bytes": 3323,
+          "source_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/layers.py"
+        },
+        "s5/seq_model.py": {
+          "sha256": "ac5decb2b1b1d89cbd23063e88f10925173cd53bc76f3dc75fe78c5863a5d025",
+          "size_bytes": 12849,
+          "source_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/seq_model.py"
+        },
+        "s5/ssm_init.py": {
+          "sha256": "5a4a0484c66ae7245ec561251ad562b8124aae600da0504625fc6f8a65df5daa",
+          "size_bytes": 5147,
+          "source_url": "https://api.github.com/repos/lindermanlab/S5/contents/s5/ssm_init.py?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17"
+        },
+        "s5/train_helpers.py": {
+          "sha256": "5283227ce0e930b3447ecd5864831c4ac3612fbb55075a3bd1d90d373da77c1f",
+          "size_bytes": 15634,
+          "source_url": "https://api.github.com/repos/lindermanlab/S5/contents/s5/train_helpers.py?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17"
+        },
+        "requirements_cpu.txt": {
+          "sha256": "618ea292f5760ab92ab9afb33cf9f93c2b9fef4c2cdbca604c1197368caede66",
+          "size_bytes": 139,
+          "source_url": "https://api.github.com/repos/lindermanlab/S5/contents/requirements_cpu.txt?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17"
+        },
+        "requirements_gpu.txt": {
+          "sha256": "ce5979d77bcbf8becad5b0c13dbeae2e5c1fe7999862432847b3f6a804c182fe",
+          "size_bytes": 170,
+          "source_url": "https://api.github.com/repos/lindermanlab/S5/contents/requirements_gpu.txt?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17"
+        },
+        "README.md": {
+          "sha256": "c4f285c33a2da9dd8b33c9bf979755e95c14ab0e099bb913470ff4287b304463",
+          "size_bytes": 6105,
+          "source_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/README.md"
+        }
+      },
+      "runtime_import_verified": false,
+      "full_state_resume_verified": false,
+      "trace_verified": false,
+      "environment": "CPython 3.10; requirements-s5.txt; JAX 0.4.23 CUDA12/Flax 0.8.2; DeviceArray type-annotation alias only; not runtime-certified"
+    }
+  },
+  "native_runner_implemented": true
+}

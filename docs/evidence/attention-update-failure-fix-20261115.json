@@ -1,0 +1,51 @@
+{
+  "schema": "qkan-attention-update-failure-fix.v1",
+  "date": "2026-11-15",
+  "baseline_revision": "b89eb6400abb087ff0bdc6c05ecc938db3f66ad6",
+  "returned_report": {
+    "bytes": 8843,
+    "sha256": "910ae156a57dd035cea1c816144512a883a08fd82257f23377fb607d22df38ee",
+    "source_revision": "b89eb6400abb087ff0bdc6c05ecc938db3f66ad6",
+    "child_exit": 1,
+    "child_error": "RuntimeError",
+    "parent_masking_error": "FileNotFoundError",
+    "phase": "attention_update_micro_0",
+    "owned_child_group_clean": true,
+    "training_samples_committed": 0
+  },
+  "cause": "Static kernel-contract violation: BF16 QKV and FP32 PAD bias in explicit CUDA efficient SDPA; native frames end at SDPA. Original exception text excluded by compact-report policy, so exact original message is not asserted.",
+  "source_evidence": {
+    "path": "aten/src/ATen/native/transformers/cuda/attention.cu",
+    "pinned_torch": "v2.7.1",
+    "requirement": "bias.scalar_type equals query.scalar_type",
+    "private_source_sha256": "f7e7146d32c6a48ba359ec684e2a6672882da744fae26b1232e62c19c6b7b821"
+  },
+  "fixes": [
+    "Cast only BF16-route additive PAD bias to query dtype; 0/-inf values and coordinates remain exact.",
+    "Handle child exit/missing result before reading result.json; retain native failure locations/exit status.",
+    "Record source unchanged verification in finally on both success and failure."
+  ],
+  "controls": {
+    "tests": 381,
+    "passed": 378,
+    "skipped": 3,
+    "native_framework_imports": 0,
+    "red_before_fix": true,
+    "patch_apply_rollback_replay": true,
+    "protected_core_hashes": 8
+  },
+  "package": {
+    "modified_artifacts": ".runtime/attention-update-fix-20261115/candidate",
+    "patch": ".runtime/attention-update-fix-20261115/change.patch",
+    "verification": ".runtime/attention-update-fix-20261115/verification.json",
+    "rollback": ".runtime/attention-update-fix-20261115/rollback.py"
+  },
+  "candidate_sha256": {
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/attention_update_diagnostic.py": "5bf84a3245ef218453912af8f3ec2c8ddf31c108027279a8e852101e1d9ba8a2",
+    "tests/test_baseline_attention_update.py": "72bd750bc77ef77984bc79dfc6489ebde35f540a7d4ad46d07b1db08e8cf8e94",
+    "docs/baselines/attention-update-diagnostic.md": "bc91b925bec645695864ae5151b09d9d105827a0c1fcaddcddde7e7948f6c06b"
+  },
+  "native_fix_execution": "pending collaborator rerun; no owner model/GPU execution",
+  "next_action": "Rerun full published handoff from original b07 directory in a fresh checkout; preserve old failure directory."
+}

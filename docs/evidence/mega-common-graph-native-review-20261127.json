@@ -1,0 +1,137 @@
+{
+  "schema": "qkan-mega-common-graph-native-review.v1",
+  "date": "2026-11-27",
+  "run_id": "mega-fft-20261127T060917Z-96b4277f",
+  "verified_bytes": 28822,
+  "verified_sha256": "e2c7a0938f8a2a27044a230cb37cd152d70ac6dc93e03f5f520fd7714776aa6d",
+  "revision": "31ea7392abd5d586eee7a46e87994c2c4706d3ad",
+  "job": "mega-text-s42",
+  "step": 2745,
+  "linear_probe_passed": true,
+  "measured_mega_routes": 0,
+  "failed": {
+    "ffn-graph": [
+      {
+        "error_type": "RuntimeError",
+        "category": "unclassified_native_error",
+        "template": "Invalid capture .",
+        "framework_frames": [
+          {
+            "file": "torch/nn/modules/module.py",
+            "line": 1194,
+            "function": "_call_impl"
+          },
+          {
+            "file": "torch/nn/modules/module.py",
+            "line": 1194,
+            "function": "_call_impl"
+          },
+          {
+            "file": "fairseq/models/lra/mega_lra_encoder.py",
+            "line": 228,
+            "function": "forward"
+          },
+          {
+            "file": "torch/nn/modules/module.py",
+            "line": 1194,
+            "function": "_call_impl"
+          },
+          {
+            "file": "fairseq/modules/mega_sentence_encoder_layer.py",
+            "line": 113,
+            "function": "forward"
+          },
+          {
+            "file": "torch/nn/modules/module.py",
+            "line": 1194,
+            "function": "_call_impl"
+          },
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 322,
+            "function": "make_graphed_callables"
+          },
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 159,
+            "function": "__exit__"
+          },
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 81,
+            "function": "capture_end"
+          }
+        ]
+      },
+      {
+        "error_type": "RuntimeError",
+        "category": "unclassified_native_error",
+        "template": "CUDA error : operation <redacted> the legacy stream <redacted> on a capturing <redacted> stream CUDA <redacted> at <redacted> call , <redacted> the <redacted> . For <redacted> .",
+        "framework_frames": [
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 323,
+            "function": "make_graphed_callables"
+          },
+          {
+            "file": "torch/autograd/__init__.py",
+            "line": 300,
+            "function": "grad"
+          }
+        ]
+      }
+    ],
+    "graph-fixed+kernel-grid": [
+      {
+        "error_type": "RuntimeError",
+        "category": "unclassified_native_error",
+        "template": "Invalid capture .",
+        "framework_frames": [
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 322,
+            "function": "make_graphed_callables"
+          },
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 159,
+            "function": "__exit__"
+          },
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 81,
+            "function": "capture_end"
+          }
+        ]
+      },
+      {
+        "error_type": "RuntimeError",
+        "category": "capture_forbidden_operation",
+        "template": "<redacted> : failed to synchronize : cudaErrorStreamCaptureUnsupported : operation not permitted when stream is capturing",
+        "framework_frames": [
+          {
+            "file": "torch/cuda/graphs.py",
+            "line": 323,
+            "function": "make_graphed_callables"
+          },
+          {
+            "file": "torch/autograd/__init__.py",
+            "line": 300,
+            "function": "grad"
+          }
+        ]
+      }
+    ]
+  },
+  "source_unchanged": true,
+  "copied_checkpoint_removed": true,
+  "all_groups_clean": true,
+  "formal_updates": 0,
+  "interpretation": "Simple Linear capture/replay works. MEGA partial FFN backward reports legacy stream dependency on capturing stream; whole backward reports forbidden synchronization during capture. Outer Invalid capture masks these earlier errors.",
+  "limits": [
+    "No MEGA Graph speed result or policy admission",
+    "Specific backward operator and corrective stream handling still unverified",
+    "Linear probe does not certify all library operations or environment aspects",
+    "Post-resume heartbeat absent"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "qkan-key-bias-worker-bootstrap-native-review.v1",
+  "source_revision": "09b0382bd904ef5f015bf1d73769829b1103d4cb",
+  "status": "bootstrap_directory_contract_failure",
+  "source_report": {
+    "suite": "key-bias-worker-20261117T075358Z-b2e43070",
+    "namespace": "qkan-mamba/key-bias-worker-admission/key-bias-worker-20261117T075358Z-b2e43070",
+    "bytes": 9803,
+    "sha256": "6f85bd71e7cac7873ebb24f7c43da556a3e82508e40283bbf9caadab4c37c80f"
+  },
+  "authenticated_receipt_verified": true,
+  "executed_binding_count": 20,
+  "executed_code_sha256": {
+    "experiments/baseline_delivery/worker.py": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b",
+    "experiments/baseline_delivery/key_bias_training.py": "6f1ef4a86a733fd14b33132b4f4777f6e6112452ed57f9edf4b2894d994a9cd1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "6015bcef0dd0ff866625f29e66ccac2c69323c35e57fcda00c6dff4011511d32",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+    "experiments/baseline_delivery/execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+    "experiments/baseline_delivery/performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+    "experiments/baseline_delivery/common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+    "experiments/baseline_delivery/diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+    "experiments/baseline_delivery/attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "tools/sample_trace_contract/validate.py": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "native_failure": {
+    "child": "migration",
+    "error_type": "ValueError",
+    "location": {
+      "file": "experiments/baseline_delivery/key_bias_worker_admission.py",
+      "line": 109
+    },
+    "exit_code": 1,
+    "elapsed_seconds": 3.01262503862381,
+    "termination": {
+      "parent_reaped": true,
+      "group_verified": true,
+      "remaining_pids": []
+    },
+    "before_checkpoint_preparation": true
+  },
+  "cause": "Supervisor precreates output/diagnostics/run-id;native entry incorrectly rejects any existing output directory.",
+  "change": "Reuse unchanged key_bias_recovery.prepare_worker_output;allow only supervisor diagnostics,retain stale-output and symlink rejection;bind helper code.",
+  "completed_result_count": 2,
+  "child_result_count": 0,
+  "training_samples_committed": 0,
+  "original_checkpoint_and_metadata_unchanged": true,
+  "disposable_checkpoint_generations_created": 0,
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "native_retry_passed": false,
+  "evidence_ceiling": "Authenticated initial bootstrap failure and code-level diagnosis only; no native migration,updates,recovery or final-worker trace yet."
+}

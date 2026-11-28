@@ -1,0 +1,118 @@
+{
+  "schema": "qkan-key-bias-worker-migration-receipt-delivery.v1",
+  "status": "receipt_fix_delivered_native_retry_pending",
+  "baseline_revision": "a502b60b3375210400852b952b28e4f8bc98c165",
+  "native_failure_review": {
+    "path": "docs\\evidence\\key-bias-worker-migration-receipt-native-review-20261117.json",
+    "sha256": "ae1edbdd3fb51e929cfb7c5a166b8505fce063018ae5e46a915e686051982bff"
+  },
+  "change": {
+    "entry": "worker._run zero-update migration receipt construction",
+    "field": "migration-validation.json: target_contract duplicated by lineage plus keyword argument",
+    "behavior": "Use lineage as positional mapping;verified receipt fields take precedence;keep comparisons and lineage intact",
+    "numerical_training_body_changed": false,
+    "protocol_changed": false
+  },
+  "execution_binding": {
+    "files": {
+      "worker.py": "6a5d855312cea021dd016742c5686027393d688948edfcae375e233289e3da57",
+      "key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+      "key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+      "attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+      "key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+      "models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+      "logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+      "execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+      "trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+      "data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+      "migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+      "adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+      "performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+      "common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+      "diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+      "attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+      "attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+      "key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79"
+    },
+    "trace_validator_sha256": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "plan_sha256": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "pilot_review_sha256": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "modified_files": {
+    "experiments/baseline_delivery/worker.py": "6a5d855312cea021dd016742c5686027393d688948edfcae375e233289e3da57",
+    "tests/test_baseline_worker_migration_receipt.py": "3d13fe82e56bea716cb184b6fe2a95ae4bd37844be7d0fb7e0dd25bd5bf6625d",
+    "docs/baselines/attention-key-bias-worker-admission.md": "74f9bb69ed18a99d0aaf242d353c90e1974cc2d1032d07623648262affee76c8",
+    "docs/evidence/key-bias-worker-migration-receipt-native-review-20261117.json": "ae1edbdd3fb51e929cfb7c5a166b8505fce063018ae5e46a915e686051982bff"
+  },
+  "unchanged_source_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d",
+    "experiments/baseline_delivery/key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/baselines/attention-key-bias-stability-plan.json": "3286d03dd890c06956625633c54a22c9b05666632249ab44836ad1c77490320c",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7"
+  },
+  "deliberate_core_delta": {
+    "experiments/baseline_delivery/worker.py": {
+      "before": "ae52050d78844a09f70621c1d5fcefe06aa668bf7dd3d498cbbf590f78d7493b",
+      "after": "6a5d855312cea021dd016742c5686027393d688948edfcae375e233289e3da57",
+      "field": "migration-validation.json mapping merge only; numerical body unchanged"
+    }
+  },
+  "controls": {
+    "tests": 494,
+    "passed": 491,
+    "skipped": 3,
+    "new_tests": 4,
+    "framework_imports": 0,
+    "production_branch": "Full actual zero-update migration branch AST with injected stdlib model/state/checkpoint fakes",
+    "checks": [
+      "candidate contract overlap",
+      "legacy migration receipt unchanged",
+      "corrupt roundtrip prevents success receipt",
+      "verified receipt fields override lineage metadata"
+    ],
+    "limitation": "Owner state/control fakes only;actual candidate native migration/recovery/trace retry pending"
+  },
+  "package": {
+    "directory": ".runtime/key-bias-worker-model-fix-20261117",
+    "roles": {
+      "modified": "candidate/",
+      "patch": "change.patch",
+      "verification": "verification.json",
+      "rollback": "rollback.py"
+    },
+    "files": 4,
+    "literal_command_records": 14,
+    "patch_sha256": "d58b904b42b9100c52328ac33cc5267198f755a86748f7b73c23b98207773d0e",
+    "verification_sha256": "6195a92e04a37da6f5fedd7369cc716f0c39617a87fdfa3803733851077adaae",
+    "rollback_sha256": "669683d428752b5cb96d85ec07feec827cb8197662abecd92d75f7144b860c14",
+    "rollback_reapply_verified": true,
+    "baseline_behavior": {
+      "framework_imports": 0,
+      "optimizer_updates": 0,
+      "outcome": "duplicate_target_contract",
+      "receipt_written": false
+    },
+    "modified_behavior": {
+      "framework_imports": 0,
+      "optimizer_updates": 0,
+      "outcome": "zero_update_migration_receipt_written",
+      "receipt_written": true
+    }
+  },
+  "native_retry_passed": false,
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "next_action": "Fresh checkout retry0+2+1+1 final-worker admission from latest original source;formal long-run entry remains a separate pending step"
+}

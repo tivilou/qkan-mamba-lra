@@ -1,0 +1,14 @@
+{
+  "schema":"qkan-github-publication.v1",
+  "repository":"https://github.com/tivilou/qkan-mamba-lra",
+  "branch":"research/collaboration-foundation",
+  "verified_remote_commit":"2600b4ab30009634d6696855ad5b305aad1fe360",
+  "pull_request":"https://github.com/tivilou/qkan-mamba-lra/pull/1",
+  "pull_request_state":"draft",
+  "publication":"non-force push through authorized project development server; remote ls-remote verified",
+  "worker_scientific_revision":"52257f298ed591983a2345dfeedc9f5f0b2f11a1",
+  "worker_head_preserved_during_document_publication":true,
+  "pull_request_description_updated":true,
+  "dataset_qualification_status":"insufficient",
+  "formal_training_launched":false
+}

@@ -1,0 +1,271 @@
+{
+  "schema_version": "research-plugin-architecture.plugin-plan.v2",
+  "project": "QKAN-Mamba",
+  "authorization": "approved",
+  "baseline": {
+    "entry_point": "Original Classifier/AdamW/sample schedule with attention option disabled",
+    "code_revision": "b1ad235b76f7d1462f8e1b92ff58851584c4bec4",
+    "equivalence_test": "Null context preserves model instance methods/state names; native FP32 adapter parity against original attention and real-loss replay required."
+  },
+  "core_invariants": [
+    "Original b07 weights/checkpoint and completed results immutable; FP32 training unchanged.",
+    "Explicit isolated BF16 efficient SDPA QKV cast/autocast; default off; no Flash or training admission.",
+    "Fixed first micro16 train rows, document1, original first-layer QKV projection, original PAD mask/positions; no labels or test.",
+    "Owner stdlib/fakes only; collaborator existing pinned offline environment; compact authenticated return.",
+    "Mechanism triage only. Future full-update recovery candidate requires dossier-bound v2 plan and native trace/convergence evidence."
+  ],
+  "interfaces": [
+    {
+      "id": "attention_update",
+      "type": "transformer",
+      "input_schema": "Original FP32 pre-norm hidden, PAD mask; original train cursor/logical128",
+      "output_schema": "FP32 residual attention output and real-loss FP32 master gradients",
+      "invariants": [
+        "Original sample order, full4000 positions, mask and loss normalization",
+        "Option disabled is identity; no global monkeypatch"
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "id": "baseline.fp32_attention",
+      "version": "1",
+      "insertion_point": "Scoped per-instance Transformer layer _sa_block",
+      "hypothesis": "Control for attention precision comparison",
+      "input_schema": "FP32 hidden/projection and original key PAD mask",
+      "output_schema": "FP32 out projection, actual logits/loss/master gradients",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "Fixed micro16/logical128; four-update screening; two AB/BA pairs; bounded fresh-process recovery and first2 train trace.",
+      "failure_signatures": [
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "tokens",
+          "mask",
+          "QKV",
+          "source_row"
+        ],
+        "output_fields": [
+          "attention",
+          "encoder",
+          "pooled",
+          "logits",
+          "loss",
+          "projection_gradient"
+        ],
+        "input_refs": [
+          "private native trace train source row and original checkpoint SHA"
+        ],
+        "output_refs": [
+          "private native trace complete values and hashes"
+        ],
+        "emitted_fields": [
+          "complete train values",
+          "original-coordinate reader",
+          "FP32/BF16 dtype and efficient kernel proof",
+          "same-route exact replay"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "structural schema",
+          "semantic hash/coordinate values",
+          "same-input model replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "baseline",
+      "interface": "attention_update"
+    },
+    {
+      "id": "precision.bf16_amp",
+      "version": "1",
+      "insertion_point": "Scoped per-instance Transformer layer _sa_block",
+      "hypothesis": "BF16 QKV efficient attention may reduce forward/backward time",
+      "input_schema": "FP32 hidden/projection and original key PAD mask",
+      "output_schema": "FP32 out projection, actual logits/loss/master gradients",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "Fixed micro16/logical128; four-update screening; two AB/BA pairs; bounded fresh-process recovery and first2 train trace.",
+      "failure_signatures": [
+        "numerical_screen_failed",
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "tokens",
+          "mask",
+          "QKV",
+          "source_row"
+        ],
+        "output_fields": [
+          "attention",
+          "encoder",
+          "pooled",
+          "logits",
+          "loss",
+          "projection_gradient"
+        ],
+        "input_refs": [
+          "private native trace train source row and original checkpoint SHA"
+        ],
+        "output_refs": [
+          "private native trace complete values and hashes"
+        ],
+        "emitted_fields": [
+          "complete train values",
+          "original-coordinate reader",
+          "FP32/BF16 dtype and efficient kernel proof",
+          "same-route exact replay"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "structural schema",
+          "semantic hash/coordinate values",
+          "same-input model replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "idea",
+      "interface": "attention_update"
+    }
+  ],
+  "discovery": {
+    "mode": "explicit_allowlist",
+    "allowlist": [
+      "baseline.fp32_attention",
+      "precision.bf16_amp"
+    ]
+  },
+  "composition": {
+    "mode": "single",
+    "order": [
+      "precision.bf16_amp"
+    ],
+    "merge_rule": "BF16 alone; PAD/Flash/Graph combinations rejected.",
+    "interaction_ablations": [
+      "Future complete-update BF16 alone versus Graph32 alone versus BF16+Graph32; not performed by this probe."
+    ]
+  },
+  "validation": {
+    "baseline_equivalence": "Null precision context does not touch runtime; original training/core hashes unchanged. Cross-precision equality is not claimed.",
+    "tests": [
+      "baseline_equivalence",
+      "plugin_isolation",
+      "deterministic_replay",
+      "interaction_ablation",
+      "configuration_schema",
+      "train_only_aggregate_coverage",
+      "trace_structural_validation",
+      "trace_semantic_validation",
+      "trace_replay"
+    ]
+  },
+  "reproducibility": {
+    "config_path": "experiments/baseline_delivery/optimization-presets/bf16-attention-update.json",
+    "dataset_identity": "Original hash-bound b07 train; checkpoint permutation/cursor for updates, first2 train rows for paired trace.",
+    "environment": "Existing Torch2.7.1/NumPy2.2.6/CUDA BF16 support; deterministic true, TF32 false; no installs.",
+    "seeds": [
+      42
+    ],
+    "output_manifest": "runs/attention-update-*/attention-update.json"
+  },
+  "case_study_execution": {
+    "mode": "training_capture",
+    "checkpoint_policy": "Original latest checkpoint for bounded diagnostic, never represented as final best-validation case study.",
+    "dependency_refs": [
+      "Hash-bound original train/cache/checkpoint; pinned existing runtime"
+    ],
+    "replay_command": [
+      "bash",
+      "scripts/check_attention_update.sh",
+      "--source-suite",
+      "ORIGINAL_B07_SUITE",
+      "--cache",
+      "/root/qkan-cache",
+      "--gpu",
+      "0",
+      "--optimizations",
+      "experiments/baseline_delivery/optimization-presets/bf16-attention-update.json"
+    ],
+    "intermediate_policy": "retain_selected",
+    "training_capture_reason": "Observe changed precision under actual real-loss training backward, with all probe state rolled back."
+  },
+  "trace_contract": {
+    "enabled": true,
+    "schema": "sample-trace.v2",
+    "artifact_path": "runs/attention-update-*/benchmark/trace-{fp32,bf16}/sample-trace.json",
+    "sample_selection_rule": "Fixed first2 train row IDs selected before model outputs; same rows for both routes.",
+    "target_boundary": "Train labels only consumed by loss after logits; no validation/test data; original latest checkpoint is not best-validation.",
+    "required_stages": [
+      "data",
+      "preprocess",
+      "scoring",
+      "training"
+    ],
+    "semantic_roles": [
+      "baseline",
+      "intervention"
+    ],
+    "required_representations": [
+      "tokens/mask/positions",
+      "first-layer QKV/attention for both documents",
+      "encoder/pooled/logits/real loss",
+      "first-layer projection gradient"
+    ],
+    "producer_owned_lineage": [
+      "Source train SHA/row -> tokens/mask/positions -> original FP32 projection -> SDPA -> encoder/pool/head -> CE loss -> projection gradient"
+    ],
+    "readiness_checks": [
+      "structural schema",
+      "complete detached values/hash/coverage",
+      "reader slices equal values",
+      "same-sample baseline/intervention replay"
+    ]
+  },
+  "trace_readiness": {
+    "status": "blocked",
+    "fixture_path": "runs/attention-update-*/benchmark/trace-{fp32,bf16}/sample-trace.json",
+    "structural_validation": "Native complete-value fixture pending collaborator.",
+    "semantic_validation": "Native hash/shape/coordinate and producer lineage pending collaborator.",
+    "replay_test": "Fresh-process recovery and same-input full-model trace replay pending collaborator."
+  },
+  "limitations": [
+    "Changed precision is approximate; no cross-precision bitwise trajectory/RNG equality.",
+    "Short four-update trajectory is a screening test, not convergence certification.",
+    "BF16+Graph and formal training remain disabled pending a separate native admission.",
+    "Owner controls use stdlib/fakes; architecture remains approved until native trace/recovery passes.",
+    "Full-update speed baseline is matched eager, not existing Graph16/Graph32."
+  ],
+  "recovery_contract": {
+    "dossier_path": "docs/baselines/attention-update-mechanism-recovery.json",
+    "dossier_sha256": "e9f4b2b8314f72c1dcafc24b44e68c40c047577442e8c0a2620d075c68e819e3",
+    "candidate_id": "bf16-attention-full-update-v1",
+    "discriminating_intermediate_measurement": "Real-loss gradients and Adam deltas plus complete-update time; private paired full-value train trace."
+  }
+}

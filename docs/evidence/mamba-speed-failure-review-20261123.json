@@ -1,0 +1,24 @@
+{
+  "schema": "qkan-mamba-speed-failure-review.v1",
+  "date": "2026-11-23",
+  "source_revision": "c955a8f2edbbc1b908b5b64d22f308d8b89ec448",
+  "report": {
+    "bytes": 8138,
+    "sha256": "53cb22464d264e37f44a6cd1b7b42aaefe66354ed58d520bb18935c17946ed35"
+  },
+  "baseline_exit_status": 1,
+  "elapsed_seconds": 12.83863153681159,
+  "last_phase": "mamba_restore",
+  "source_unchanged": true,
+  "child_group_clean": true,
+  "timing_results_produced": false,
+  "observed_code_defect": "new diagnostic omitted CUBLAS_WORKSPACE_CONFIG=:4096:8 required by original worker launch",
+  "cause_of_native_exit": "pending local traceback; not established by progress stack",
+  "repairs": [
+    "match original deterministic cuBLAS child environment",
+    "save and return sanitized worker exception type and project frames",
+    "print failed/incomplete explicitly and preserve exit 76",
+    "publish finer untimed setup phases"
+  ],
+  "validation": "6 stdlib tests pass; no GPU/framework execution"
+}

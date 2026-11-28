@@ -1,0 +1,34 @@
+{
+  "schema": "qkan-dynamic-canary-prefetch-repair.v1",
+  "status": "implemented_pending_native_validation",
+  "received_failure": {
+    "path": "qkan-mamba/formal-readiness/failure-705a610d831a/failure.json",
+    "sha256": "6dc7971f209e2f2a887142679ae69df813523d84263a9170ed8d7f35f01340ca",
+    "revision": "64568189e671d6eef109d83d0a1826584c9b0d85",
+    "suite": "runs/adaptive-migrated-20261106T100732Z-89187",
+    "stage": "first transformer/listops uninterrupted canary; one successful update",
+    "error_type": "ValueError",
+    "location": "execution.py BatchPrefetch.get sampler identity guard"
+  },
+  "cause": "Forced canary logical tier advanced32 to64 while next-batch CPU prefetch still used32.",
+  "repair": "Both native workers share planned_batch_size for consumption and post-commit prefetch, including forced tiers.",
+  "validation": {
+    "stdlib_mock_tests": 77,
+    "passed": true,
+    "new_prefetch_regressions": 3,
+    "framework_imports": false,
+    "gpu_query": false,
+    "model_execution": false,
+    "dependency_installation": false,
+    "native_gpu": "pending collaborator"
+  },
+  "recovery": "Preserve fixed316 and admitted adaptive96 source; new version/worktree and new suite; never resume failed645 suite under changed revision.",
+  "evidence_limit": "No change to fidelity tolerances, dataset, optimizer, batch policy or source checkpoint. Native pass not established.",
+  "source_sha256": {
+    "experiments/baseline_delivery/logical_batch.py": "d9906883fc920225c91a1e1621a3c401134d6ad98cf316d9f71b2a8bd28ff4aa",
+    "experiments/baseline_delivery/worker.py": "073eb46b9dc4ae98a8cc2f5d30e523d13acd29da4aed147850b892dec893c19d",
+    "experiments/baseline_delivery/s5_worker.py": "d89ad2b5383e87c19a120a62e38f9703a4c2fe179886faa4c046521757092935",
+    "tests/test_baseline_logical_batch.py": "b7a753fa8c52f196036b56d317e62c1f4667234bb80a4826802f5eb8c93f1ca8",
+    "docs/baselines/dynamic-logical-batch.md": "15bd1024faf5498bcc92a565d9f101bbffb51fe4d29d8574b64b31b8c20bfca5"
+  }
+}

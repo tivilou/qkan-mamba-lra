@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-21",
+  "status": "passed",
+  "tool": "installed Playwright CLI 0.1.22",
+  "viewport_widths": [1280, 390],
+  "viewport_height": 900,
+  "assertions_passed": 57,
+  "checked": [
+    "six registered entry points render at both widths",
+    "registry search matching and empty state",
+    "no page-level horizontal overflow on all workbenches",
+    "five historical baseline rows and original 51.62% display",
+    "dataset filter; nulls last in both metric sort directions",
+    "synchronized horizontal scroll; frozen first column; sticky header",
+    "keyboard and pointer tooltips visible and contained in viewport",
+    "document panes scroll independently and show source path",
+    "no JavaScript page errors"
+  ],
+  "routes_checked": 6,
+  "screenshots": "machine-local ignored runtime directory; not scientific evidence",
+  "scientific_claim": "UI acceptance only; no model training or new results"
+}

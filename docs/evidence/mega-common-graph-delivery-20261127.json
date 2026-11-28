@@ -1,0 +1,21 @@
+{
+  "schema": "qkan-mega-common-graph-delivery.v1",
+  "date": "2026-11-27",
+  "status": "collaborator_native_pending",
+  "delta": [
+    "Remove external current stream nesting; official helper owns stream management",
+    "Record bounded cause/context errors and framework frames; native text filtered by fixed vocabulary",
+    "Linear prerequisite probe; on failure skip partial/whole MEGA capture tests"
+  ],
+  "max_children": 3,
+  "max_disposable_mega_updates": 22,
+  "formal_updates": 0,
+  "focused_stdlib_tests": 20,
+  "test_exit_status": 0,
+  "native_owner_execution_or_install": false,
+  "root_cause_proven": false,
+  "formal_policy_changed": false,
+  "official_api_source": "https://github.com/pytorch/pytorch/blob/v1.13.1/torch/cuda/graphs.py",
+  "review": "No blocker found in bounded static review; probe excluded from measurement count",
+  "package": ".runtime/mega-graph-diagnose-20261127"
+}

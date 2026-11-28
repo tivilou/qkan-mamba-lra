@@ -1,0 +1,65 @@
+{
+  "schema": "qkan-parallel-retrieval-continuation-delivery.v1",
+  "date": "2026-11-14",
+  "status": "code_stdlib_mock_and_real_shell_chain_verified_native_admission_pending",
+  "entry": "scripts/migrate_parallel_retrieval.sh",
+  "flag": "--parallel-retrieval-graph",
+  "target_job": "transformer-retrieval-s42",
+  "target_policy": {
+    "mode": "compile_graph",
+    "backend": "eager_parallel",
+    "required": "graph"
+  },
+  "other_torch_jobs": "eager without compiler candidate sweep",
+  "s5": "native JAX",
+  "preservation": "Original840 source remains immutable; original two completed results copied with exact bytes/provenance; other23 jobs retain queue and training budgets",
+  "identity": "New source/config/device/checkpoint/implementation/policy-bound admission; no old report relabeling",
+  "validation": {
+    "checks": 304,
+    "passed": 301,
+    "skips": 3,
+    "errors": 0,
+    "failures": 0,
+    "framework_modules_loaded": [],
+    "seconds": 23.14069919999747
+  },
+  "implementation_sha256": "03b2ec8c07a63d17044019fec583cfb71c1ba37bf681a4237d7bf53ef473b1f9",
+  "policy_sha256": "79263fd2fac72454e61849e0589b6c66c4a36ec82537c896733ea9aca6adf440",
+  "tested_routes": [
+    "Actual readiness config/admission/certificate/scheduler dispatch",
+    "Exact completed artifact copy, original840 compatible scientific config",
+    "Selected Graph synthetic recovery then actual-probe child command with900/300 supervisor",
+    "Failed or nonpositive calibration prevents release and scheduler",
+    "Reentry retains sealed admission/evidence and does not repeat canary/calibration",
+    "Bash wrapper chain forwards arguments, gates-only skips scheduler, gate/supervisor exit status retained",
+    "CLI help, AST, Bash syntax and five manifests/review policy hashes",
+    "Exact original/candidate source probes and patch/rollback executed in isolated copies"
+  ],
+  "original_checkpoint_review": "docs/evidence/parallel-attention-native-gain-review-20261114.json",
+  "native_history": {
+    "source_revision": "abe8694cab9e072e53211b513aad21cb9a485b65",
+    "eager_seconds": 8.899130888283253,
+    "accelerated_seconds": 7.899207832291722,
+    "throughput_gain_percent": 12.6585231990463,
+    "sustained_gain_measured": false
+  },
+  "unchanged_native_modules": {
+    "experiments/baseline_delivery/parallel_attention.py": "2fa002f6c5b6bb40094778ffce80e8ba7ab139debe60ebf72a6a6984c4f72e43",
+    "experiments/baseline_delivery/torch_acceleration.py": "9bddeabb52ba5ed64dcb693e9537faf0319c992e8d131ab879cae82886d66c7a",
+    "experiments/baseline_delivery/worker.py": "2c145e20dc93ee6d37c60e0b5c3fa5f05903523e07fe54f733715b5c4e825dbf",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/migration.py": "e453ef2e006e23daed35fdcbd6d448eb28b4d2f1d3596df2602e9db2bbe62e04",
+    "experiments/baseline_delivery/acceleration_calibration.py": "e93295ff253691eae6194bea91027840381181e164d171e83b40272fe23661c1"
+  },
+  "local_delivery": {
+    "modified": ".runtime/parallel-continuation-20261114/candidate",
+    "patch": ".runtime/parallel-continuation-20261114/change.patch",
+    "verification": ".runtime/parallel-continuation-20261114/verification.json",
+    "rollback": ".runtime/parallel-continuation-20261114/rollback.py"
+  },
+  "owner_framework_or_gpu_or_model_execution": false,
+  "formal_training_started": false,
+  "formal_release_file_changed": false,
+  "five_equivalence_statuses": "not_verifiable",
+  "next": "Junior prepares new checkout from abe and runs dedicated migration wrapper against original840; entry checks all remaining jobs, returns evidence, then starts admitted continuation. No gates-only flag for training."
+}

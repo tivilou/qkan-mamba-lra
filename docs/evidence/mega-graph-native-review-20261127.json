@@ -1,0 +1,207 @@
+{
+  "schema": "qkan-mega-graph-native-review.v1",
+  "date": "2026-11-27",
+  "run_id": "mega-fft-20261127T054905Z-74f71c6d",
+  "verified_bytes": 127141,
+  "verified_sha256": "6c4969d81802f9fbe5dd79f7cddbe0303642c66fd15632d7488936c3797d3290",
+  "source_revision": "dbb8f53290b8c5c6388c637030873bf5c9e2d4a2",
+  "job": "mega-text-s42",
+  "step": 2566,
+  "measured": 1,
+  "failed": 5,
+  "control": {
+    "timing": {
+      "reference_median_seconds": 5.277956072241068,
+      "candidate_median_seconds": 5.268313905224204,
+      "throughput_gain": 0.0018302187740373288,
+      "positive_pairs": 4,
+      "timing_promising": false
+    },
+    "update_relative_l2": 0.0,
+    "gradient_relative_l2": 0.0,
+    "rng_scheduler_exact": true
+  },
+  "failures": {
+    "graph-fixed+kernel-grid": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError",
+      "framework_frames": [
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 322,
+          "function": "make_graphed_callables"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 159,
+          "function": "__exit__"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 81,
+          "function": "capture_end"
+        }
+      ]
+    },
+    "fft+graph-fixed+kernel-grid": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError",
+      "framework_frames": [
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 322,
+          "function": "make_graphed_callables"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 159,
+          "function": "__exit__"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 81,
+          "function": "capture_end"
+        }
+      ]
+    },
+    "fft+island-tail+graph-fixed+kernel-grid": {
+      "category": "unclassified_native_error",
+      "phase": "graph_capture",
+      "error_type": "RuntimeError",
+      "framework_frames": [
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 322,
+          "function": "make_graphed_callables"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 159,
+          "function": "__exit__"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 81,
+          "function": "capture_end"
+        }
+      ]
+    },
+    "ffn-graph": {
+      "category": "unclassified_native_error",
+      "phase": "ffn_graph_capture",
+      "error_type": "RuntimeError",
+      "framework_frames": [
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "fairseq/models/lra/mega_lra_encoder.py",
+          "line": 228,
+          "function": "forward"
+        },
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "fairseq/modules/mega_sentence_encoder_layer.py",
+          "line": 113,
+          "function": "forward"
+        },
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 322,
+          "function": "make_graphed_callables"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 159,
+          "function": "__exit__"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 81,
+          "function": "capture_end"
+        }
+      ]
+    },
+    "fft+island-tail+ffn-graph": {
+      "category": "unclassified_native_error",
+      "phase": "ffn_graph_capture",
+      "error_type": "RuntimeError",
+      "framework_frames": [
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "fairseq/models/lra/mega_lra_encoder.py",
+          "line": 228,
+          "function": "forward"
+        },
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "fairseq/modules/mega_sentence_encoder_layer.py",
+          "line": 113,
+          "function": "forward"
+        },
+        {
+          "file": "torch/nn/modules/module.py",
+          "line": 1194,
+          "function": "_call_impl"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 322,
+          "function": "make_graphed_callables"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 159,
+          "function": "__exit__"
+        },
+        {
+          "file": "torch/cuda/graphs.py",
+          "line": 81,
+          "function": "capture_end"
+        }
+      ]
+    }
+  },
+  "all_graph_failures_non_oom": true,
+  "all_groups_clean": true,
+  "source_unchanged": true,
+  "copied_checkpoint_removed": true,
+  "formal_updates": 0,
+  "interpretation": "Whole and partial FFN graph routes all fail in Torch1.13 backward graph capture_end; mask/grid correction alone insufficient, exact native error unresolved",
+  "limits": [
+    "No Graph speed or numerical result",
+    "No post-resume formal heartbeat",
+    "Do not rerun unchanged matrix or claim source-level hypothesis is root cause"
+  ]
+}

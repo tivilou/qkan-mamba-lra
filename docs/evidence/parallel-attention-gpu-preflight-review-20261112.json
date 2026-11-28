@@ -1,0 +1,37 @@
+{
+  "schema": "qkan-parallel-attention-gpu-preflight-review.v1",
+  "date": "2026-11-12",
+  "source_revision_from_screenshot": "a36a271fa95bb5a7c8deba70f0a68757202adaf5",
+  "receipt": {
+    "path": "qkan-mamba/parallel-attention/parallel-attention-20261112T034244Z-6a7bc508/parallel-attention.json",
+    "size_bytes": 632,
+    "sha256": "066869198818436ba896ced6c92bf6e281d44f5c79cd718a5630312257c207bb",
+    "authenticated_read_and_upload_receipt_verified": true
+  },
+  "observation": {
+    "status": "failed",
+    "stage": "prepare",
+    "error_type": "ValueError",
+    "new_diagnostic_children": 0,
+    "gpu_compute_pids": [
+      3974269
+    ],
+    "formal_training_started": false,
+    "source_immutable_declared": true
+  },
+  "interpretation": "Startup correctly refused an occupied GPU before starting a new worker. Successful upload establishes report return only; no new recovery, stack, cleanup, numerical or speedup result.",
+  "unknowns": [
+    "Current command/worktree/job identity and liveness of PID3974269",
+    "Whether it is an old diagnostic, formal training or an unrelated process",
+    "Whether any old process has actually exited; a historical KeyboardInterrupt is not descendant cleanup evidence"
+  ],
+  "next_action": "Junior collects only selected PID process metadata and -m/--worker-module/--output flags, without environment, full command line or secrets. Stop only a positively identified obsolete diagnostic; preserve original840 formal source and both completed results. Then rerun the already-published a36 diagnostic on idle GPU0.",
+  "owner_actions": {
+    "junior_server_access": false,
+    "gpu_queries": false,
+    "processes_signaled": false,
+    "framework_loaded": false,
+    "model_tests_or_dependency_install": false,
+    "runtime_code_changed": false
+  }
+}

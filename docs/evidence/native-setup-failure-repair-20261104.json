@@ -1,0 +1,20 @@
+{
+  "schema": "qkan-setup-failure-repair.v1",
+  "date": "2026-11-04",
+  "source_revision": "dd4c1d2d02e68741eac99853d79ff5509bf9b236",
+  "suite": "runs/formal-ready-20261104T112338Z-ddafd722",
+  "exchange_receipt": "qkan-mamba/formal-readiness/failure-5f53160eebb4/failure.json",
+  "setup_log_sha256": "d267c66bbc6c6b875da5a1f118c5d781993a7e70665179f44660b959ec587aa4",
+  "setup_log_bytes": 1652,
+  "cause": "System /usr/bin/python3.10 lacks ensurepip; venv creation failed and can leave an interpreter without pip",
+  "cause_evidence": "collaborator supplied setup.log screenshot; compact failure receipt read from authorized exchange storage",
+  "training_started": false,
+  "repair": [
+    "probe complete Python3.10/pip/ensurepip instead of executable existence",
+    "isolated conda-forge Python3.10 bootstrap; no apt or active environment mutation",
+    "preserve and recreate incomplete generated environments",
+    "automatically return allowlisted setup diagnosis"
+  ],
+  "validation": "AST, source inspection and reviewed policy/Git hashes only; no installation/model import/test/training",
+  "runtime_repair_verified": false
+}

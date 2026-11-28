@@ -1,0 +1,21 @@
+{
+  "schema": "qkan-cudnn-runtime-repair.v1",
+  "source_revision": "04d0f61",
+  "collaborator_observation": {
+    "package_metadata": "nvidia-cudnn-cu12==9.5.1.17",
+    "actual_runtime_tuple": [9, 26, 0],
+    "loaded_location": "project .venv-baselines site-packages/nvidia/cudnn/lib",
+    "isolated_environment_test": "LD_LIBRARY_PATH and LD_PRELOAD removed; mismatch and independent Conv1d initialization failure persist",
+    "gpu": "RTX 3090; about 24 GiB free",
+    "cause_boundary": "Library files and package metadata disagree. Which previous installation overwrote them is not independently established."
+  },
+  "repair": "Detect actual cuDNN runtime tuple; force-reinstall all pinned NVIDIA runtime wheels from hash-verified cache on core repair; perform per-selected-GPU small Conv1d forward/backward before model canaries",
+  "scheduler_task": "999c5b66a07b41f4aa88bf30900c3b0e",
+  "scheduler_attempt": "f5183a074fd74effaa4b53f369e0c359",
+  "scheduler_state": "complete",
+  "regression_tests_passed": 14,
+  "tests_scope": "Mocked metadata/runtime mismatch and offline force-reinstall command contract; existing bootstrap, data identity and trace replay regressions",
+  "actual_collaborator_repair_verified": false,
+  "gpu_preflight_passed": false,
+  "formal": false
+}

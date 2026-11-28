@@ -1,0 +1,433 @@
+{
+  "schema_version": "research-plugin-architecture.plugin-plan.v2",
+  "project": "QKAN-Mamba",
+  "authorization": "approved",
+  "baseline": {
+    "entry_point": "Original Classifier/AdamW/sample schedule with attention option disabled",
+    "code_revision": "190ff95c7c9bdea3ea7de068351de09b0200cbc8",
+    "equivalence_test": "All-off identity retained; selected2 FP32 adapter trace checked against actual original MHA/CE/Adam update at relative1e-5; same-route complete-value exact replay."
+  },
+  "core_invariants": [
+    "Original b07 checkpoint/data/cache and completed results immutable;source locks and single idle GPU required.",
+    "All-off original route untouched. Candidate forward equals existing BF16;only K-bias derivative is newly defined as zero.",
+    "All53parameter tensors/807170elements retained in actual global gates;Q/V and non-K values must match saved routes.",
+    "Keep original Adam group membership,lr,eps,betas,weight decay,moments and step;no state reset/freezing/gradient exclusion.",
+    "Owner stdlib/fakes only;offline collaborator;compact authenticated auto-return;private full paired values capped128MiB.",
+    "Explicit new-gradient manifest/request/source/baseline state hash bound into private checkpoint envelope;old BF16 recovery is not inherited.",
+    "Recovery uses actual original dropout/sample RNG/micro16/logical128;trace uses fixed first2 original-cursor rows/dropout0/two-row mean CE.",
+    "Baseline trace adapter must match original;baseline/intervention trace samples,inputs and targets identical;shared parameter values are labeled as joint2row batch quantities.",
+    "Post-preflight extension only:3routes x4 dropout0 updates,CEabs<=.10;2original-dropout full-update profiles,2warmups per route,2AB/BA cycles4timings per route;median and each paired gain>0. No formal or convergence claim.",
+    "Prior real paired fixture passed at33ee6dd; hash-bound review reused, new benchmark stage approved/native pending/formal off. Single supervised child uses existing source/recovery setup and injected operation; no recovery rerun.",
+    "This extension executes3x64step prefixes plus BF16 32+32 fresh recovery and2independent matched incumbent comparisons;benchmark_contract is historical reference only. Original dropout/epoch/Adam preserved;reject insufficient8192rows before work."
+  ],
+  "interfaces": [
+    {
+      "id": "attention_update",
+      "type": "transformer",
+      "input_schema": "Original FP32 pre-norm hidden, PAD mask; original train cursor/logical128",
+      "output_schema": "FP32 residual attention output and real-loss FP32 master gradients",
+      "invariants": [
+        "Original sample order, full4000 positions, mask and loss normalization",
+        "Option disabled is identity; no global monkeypatch"
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "id": "baseline.fp32_attention",
+      "version": "1",
+      "insertion_point": "Original unchanged Classifier/MHA/CE/AdamW complete update",
+      "hypothesis": "Control for attention precision comparison",
+      "input_schema": "FP32 hidden/projection and original key PAD mask",
+      "output_schema": "FP32 out projection, actual logits/loss/master gradients",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "Recovery4complete updates in3fresh children;trace original+baseline replay+candidate replay on2fixed rows in fourth child;900s/300s child bounds.",
+      "failure_signatures": [
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "tokens",
+          "mask",
+          "QKV",
+          "source_row"
+        ],
+        "output_fields": [
+          "attention",
+          "encoder",
+          "pooled",
+          "logits",
+          "loss",
+          "projection_gradient"
+        ],
+        "input_refs": [
+          "private native trace train source row and original checkpoint SHA"
+        ],
+        "output_refs": [
+          "private native trace complete values and hashes"
+        ],
+        "emitted_fields": [
+          "complete train values",
+          "original-coordinate reader",
+          "FP32/BF16 dtype/call coverage;forced efficient backend;profiler operator proof deferred",
+          "same-route exact replay",
+          "Complete four-layer packed raw/corrected/clipped bias gradients,parameters,deltas and Adam moments/step before/after;shared meanCE scope",
+          "Versioned gradient-policy recovery envelope and exact continuous/resumed full-state hashes"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "structural schema",
+          "semantic hash/coordinate values",
+          "same-input model replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "baseline",
+      "interface": "attention_update"
+    },
+    {
+      "id": "precision.bf16_amp",
+      "version": "1",
+      "insertion_point": "Scoped per-instance Transformer layer _sa_block",
+      "hypothesis": "BF16 QKV efficient attention may reduce forward/backward time",
+      "input_schema": "FP32 hidden/projection and original key PAD mask",
+      "output_schema": "FP32 out projection, actual logits/loss/master gradients",
+      "requires": [],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "Recovery4complete updates in3fresh children;trace original+baseline replay+candidate replay on2fixed rows in fourth child;900s/300s child bounds.",
+      "failure_signatures": [
+        "numerical_screen_failed",
+        "requested_kernel_not_used",
+        "same_route_replay_differs"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "tokens",
+          "mask",
+          "QKV",
+          "source_row"
+        ],
+        "output_fields": [
+          "attention",
+          "encoder",
+          "pooled",
+          "logits",
+          "loss",
+          "projection_gradient"
+        ],
+        "input_refs": [
+          "private native trace train source row and original checkpoint SHA"
+        ],
+        "output_refs": [
+          "private native trace complete values and hashes"
+        ],
+        "emitted_fields": [
+          "complete train values",
+          "original-coordinate reader",
+          "FP32/BF16 dtype/call coverage;forced efficient backend;profiler operator proof deferred",
+          "same-route exact replay",
+          "Complete four-layer packed raw/corrected/clipped bias gradients,parameters,deltas and Adam moments/step before/after;shared meanCE scope",
+          "Versioned gradient-policy recovery envelope and exact continuous/resumed full-state hashes"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "structural schema",
+          "semantic hash/coordinate values",
+          "same-input model replay"
+        ],
+        "deterministic_replay": true
+      },
+      "role": "idea",
+      "interface": "attention_update"
+    },
+    {
+      "id": "gradient.key_bias_analytic_zero",
+      "version": "1",
+      "type": "transformer",
+      "insertion_point": "Instance-local leaf packed-bias backward hook before accumulation and clipping",
+      "hypothesis": "Suppress spurious gradient in the exact row-shift-invariant K-bias direction before Adam.",
+      "input_schema": "Four FP32 packed QKV bias gradients [384],Q[0:128],K[128:256],V[256:384]",
+      "output_schema": "FP32 [384]; Q/V exact, K zero; parameter and Adam slots retained",
+      "requires": [
+        "precision.bf16_amp"
+      ],
+      "conflicts": [],
+      "deterministic": true,
+      "resource_estimate": "Recovery4complete updates in3fresh children;trace original+baseline replay+candidate replay on2fixed rows in fourth child;900s/300s child bounds.",
+      "failure_signatures": [
+        "gradient_scope_mismatch",
+        "nonfinite_raw_gradient",
+        "qv_changed",
+        "hook_count_mismatch",
+        "global_gate_failed"
+      ],
+      "observability_contract": {
+        "trace_schema": "sample-trace.v2",
+        "stages": [
+          "data",
+          "preprocess",
+          "scoring",
+          "training"
+        ],
+        "input_fields": [
+          "same packed-bias raw gradients",
+          "original Adam slots/counters",
+          "same train row IDs"
+        ],
+        "output_fields": [
+          "corrected packed gradients",
+          "actual full parameter deltas",
+          "callback removal proof"
+        ],
+        "input_refs": [
+          "Private original paired-parameters.pt;hash-bound original checkpoint and train request"
+        ],
+        "output_refs": [
+          "runs/key-bias-recovery-*/trace/trace-bf16_analytic/sample-trace.json",
+          "runs/key-bias-recovery-*/key-bias-recovery.json"
+        ],
+        "emitted_fields": [
+          "K zeros/QV equality/callback counts",
+          "all53 parameter global numerical metrics",
+          "retained starting moments/counters",
+          "private complete paired values receipt",
+          "exact full-state rollback",
+          "Complete four-layer packed raw/corrected/clipped bias gradients,parameters,deltas and Adam moments/step before/after;shared meanCE scope",
+          "Versioned gradient-policy recovery envelope and exact continuous/resumed full-state hashes"
+        ],
+        "shape_dtype_normalization": [
+          "FP32 master parameters/Adam; only SDPA QKV BF16",
+          "Full native coordinate coverage, no attention matrix materialization"
+        ],
+        "checks": [
+          "same-source original numerical screen binding",
+          "one leaf callback per layer for two-row trace,8perlayer per full recoveryupdate",
+          "original histories/groups retained;before/after full detached moments and real increments",
+          "continuous2 vs interrupt1+newprocess1 exact state and outputs",
+          "complete producer arrays/schema/coordinate reader/target boundary/replay"
+        ],
+        "deterministic_replay": true
+      },
+      "interface": "attention_update",
+      "role": "idea"
+    }
+  ],
+  "discovery": {
+    "mode": "explicit_allowlist",
+    "allowlist": [
+      "baseline.fp32_attention",
+      "precision.bf16_amp",
+      "gradient.key_bias_analytic_zero"
+    ]
+  },
+  "composition": {
+    "mode": "sequential",
+    "order": [
+      "precision.bf16_amp",
+      "gradient.key_bias_analytic_zero"
+    ],
+    "merge_rule": "BF16 forward then analytic leaf K-bias derivative in backward;all other combinations rejected.",
+    "interaction_ablations": [
+      "Original FP32 vs FP32 analytic control;existing saved BF16 vs BF16 analytic candidate;original FP32 remains acceptance reference."
+    ]
+  },
+  "validation": {
+    "baseline_equivalence": "All-off identity retained; selected2 FP32 adapter trace checked against actual original MHA/CE/Adam update at relative1e-5; same-route complete-value exact replay.",
+    "tests": [
+      "baseline_equivalence",
+      "plugin_isolation",
+      "deterministic_replay",
+      "interaction_ablation",
+      "configuration_schema",
+      "train_only_aggregate_coverage",
+      "trace_structural_validation",
+      "trace_semantic_validation",
+      "trace_replay",
+      "zero_k_qv_exact",
+      "retained_adam_history",
+      "callback_cleanup",
+      "all_parameter_gate",
+      "private_reopen_and_return",
+      "strategy_bound_private_checkpoint",
+      "fresh_process_recovery",
+      "failed_child_return",
+      "fixed_cursor_trace_selection",
+      "adam_trace_lineage"
+    ]
+  },
+  "reproducibility": {
+    "config_path": "experiments/baseline_delivery/optimization-presets/key-bias-consistency.json",
+    "dataset_identity": "Same original14268 full train checkpoint;recovery next2cursor batches;trace first2row IDs of original reviewed128batch,chosen before outputs.",
+    "environment": "Existing Torch2.7.1/NumPy2.2.6/CUDA BF16 support; deterministic true, TF32 false; no installs.",
+    "seeds": [
+      42
+    ],
+    "output_manifest": "runs/key-bias-recovery-*/key-bias-recovery.json"
+  },
+  "case_study_execution": {
+    "mode": "training_capture",
+    "checkpoint_policy": "Original latest reviewed14268;private disposable interrupt checkpoint used only for same diagnostic request,never formal training.",
+    "dependency_refs": [
+      "Hash-bound original train/cache/checkpoint; pinned existing runtime"
+    ],
+    "replay_command": [
+      ".venv-baselines/bin/python",
+      "-B",
+      "-m",
+      "experiments.baseline_delivery.key_bias_recovery",
+      "--source-suite",
+      "ORIGINAL_B07_SUITE",
+      "--cache",
+      "/root/qkan-cache",
+      "--screen-from",
+      "COMPLETED_KEY_BIAS_SUITE",
+      "--optimizations",
+      "experiments/baseline_delivery/optimization-presets/key-bias-consistency.json"
+    ],
+    "intermediate_policy": "retain_selected",
+    "training_capture_reason": "Authorized training preflight for changed gradient policy;producer captures actual selected-row forward/real CE/backward/Adam values and restores full original state."
+  },
+  "trace_contract": {
+    "enabled": true,
+    "schema": "sample-trace.v2",
+    "artifact_path": "runs/key-bias-recovery-*/trace/trace-{fp32,bf16_analytic}/sample-trace.json",
+    "sample_selection_rule": "First2 row IDs of reviewed original128 train batch at permutation[cursor:cursor+2],fixed before outputs;paired FP32 baseline/BF16 analytic intervention.",
+    "target_boundary": "Train labels only consumed by loss after logits; no validation/test data; original latest checkpoint is not best-validation.",
+    "required_stages": [
+      "data",
+      "preprocess",
+      "scoring",
+      "training"
+    ],
+    "semantic_roles": [
+      "baseline",
+      "intervention"
+    ],
+    "required_representations": [
+      "tokens/mask/positions",
+      "first-layer QKV/attention for both documents",
+      "encoder/pooled/logits/real loss",
+      "first-layer projection gradient",
+      "raw and corrected K-bias backward values",
+      "original and updated Adam moments/step"
+    ],
+    "producer_owned_lineage": [
+      "Source train SHA/row -> tokens/mask/positions -> original FP32 projection -> SDPA -> encoder/pool/head -> CE loss -> projection gradient",
+      "Same selected2 train rows mean CE -> complete packed raw/corrected gradient -> clipping -> original AdamW with retained moments/step -> actual updated bias/delta;all detached values repeated per sample explicitly as shared batch quantities."
+    ],
+    "readiness_checks": [
+      "structural schema",
+      "complete detached values/hash/coverage",
+      "reader slices equal values",
+      "same-sample baseline/intervention replay"
+    ]
+  },
+  "trace_readiness": {
+    "status": "blocked",
+    "fixture_path": "runs/key-bias-recovery-*/trace/trace-{fp32,bf16_analytic}/sample-trace.json",
+    "structural_validation": "Pending real collaborator fixture;owner stdlib controls only.",
+    "semantic_validation": "Pending actual complete detached values/hash/full coordinates/source labels/PAD/positions and Adam equations.",
+    "replay_test": "Pending exact same-route full values/full-state replay and new-policy fresh-process recovery."
+  },
+  "limitations": [
+    "Analytic zero explicitly changes gradient definition;no literal finite-BF16 derivative/unchanged trajectory claim.",
+    "Native numeric screen passed at one batch;this delivery does not repeat it or establish convergence/complete-update timing.",
+    "Owner uses stdlib/fakes,does not run a model or create a claimed real native fixture.",
+    "Architecture approved;real fixture and recovery evidence pending;formal admission always false.",
+    "Trace uses selected2rows dropout0 and meanCE update;recovery uses logical128 with original dropout. These units stay separate.",
+    "Original dossier and numerical-screen plan remain immutable;this separate plan extends runtime evidence coverage without changing candidate identity."
+  ],
+  "recovery_contract": {
+    "dossier_path": "docs/baselines/attention-attribution-key-bias-recovery.json",
+    "dossier_sha256": "c71444836d0a843abb79db468bfd1c344cde3f1676a8cc811b2cde1a64303c67",
+    "candidate_id": "bf16-key-bias-analytic-zero-v1",
+    "discriminating_intermediate_measurement": "Three same-state single updates:original FP32,FP32 analytic control,BF16 analytic candidate. Verify original against stored FP32,each analytic forward/non-K values against its stored unmodified route,32hook callbacks,zero K gradients,all53parameter metrics and exact rollback."
+  },
+  "benchmark_contract": {
+    "schema": "qkan-key-bias-benchmark-plan.v1",
+    "trajectory_routes": [
+      "fp32",
+      "fp32_analytic",
+      "bf16_analytic"
+    ],
+    "trajectory_updates": 4,
+    "trajectory_dropout": 0,
+    "loss_absolute_limit": 0.1,
+    "profile_routes": [
+      "fp32",
+      "bf16_analytic"
+    ],
+    "warmup_updates": 2,
+    "timing_pairs": 2,
+    "timing_order": [
+      "fp32",
+      "bf16_analytic",
+      "bf16_analytic",
+      "fp32",
+      "fp32",
+      "bf16_analytic",
+      "bf16_analytic",
+      "fp32"
+    ],
+    "minimum_gain": 0,
+    "require_all_paired_gains_positive": true,
+    "checkpoint_policy": "original reviewed step14268; no diagnostic states",
+    "preflight_review": "docs/evidence/key-bias-recovery-native-review-20261116.json",
+    "formal_admission": false
+  },
+  "stability_contract": {
+    "steps_per_route": 64,
+    "logical_batch": 128,
+    "micro_batch": 16,
+    "dropout": "original0.1",
+    "routes": [
+      "fp32",
+      "fp32_analytic",
+      "bf16_analytic"
+    ],
+    "midpoint": 32,
+    "loss_gate": "Each8step candidate mean excess<=max(.10,.25*FP32mean)",
+    "remaining_epoch_rows": 8192,
+    "comparisons": [
+      "eager_parallel Graph16 vs BF16eager16",
+      "eager_partitioned Graph32 vs BF16eager16"
+    ],
+    "timing_order": [
+      "incumbent",
+      "candidate",
+      "candidate",
+      "incumbent",
+      "incumbent",
+      "candidate",
+      "candidate",
+      "incumbent"
+    ],
+    "minimum_gain": 0,
+    "all_pairs_positive": true,
+    "formal_admission": false
+  }
+}

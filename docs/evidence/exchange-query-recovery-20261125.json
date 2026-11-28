@@ -1,0 +1,30 @@
+{
+  "schema": "qkan-exchange-query-recovery.v1",
+  "date": "2026-11-25",
+  "status": "recovered_direct_https_with_private_owner_profile",
+  "cause": "Result lookup repeatedly fetched the exchange credential through intermittently timing-out SSH; owner profile was not configured although HTTPS was reachable.",
+  "repair": {
+    "bootstrap": "Existing lambeq Paramiko client authenticated the project-bound development host with exact registered SHA256 host-key verification and existing key; no dependency install.",
+    "configuration": "Existing exchange_config.save stored owner profile and CA outside Git; Windows directory inheritance removed and access granted only to current user.",
+    "routine_query": "Fresh process calls exchange_config.load, then authenticated HTTPS directly; no SSH required per lookup.",
+    "server_restart": false,
+    "server_authentication_changed": false,
+    "training_process_changed": false
+  },
+  "verification": {
+    "fresh_qt2_process_profile_load": true,
+    "ssh_used_for_fresh_query": false,
+    "verified_tls_health_http": 200,
+    "authenticated_tf32_directory_http": 200,
+    "private_acl_current_user_only": true,
+    "download_bytes": 81925,
+    "download_sha256": "a4e0e493d48313528181b3f41aadf4fc380d46efe6b04b34484e87332971d70c",
+    "receipt_size_and_hash_match": true
+  },
+  "scientific_review": "docs/evidence/mamba-tf32-native-review-20261125.json",
+  "limits": [
+    "SSH intermittency itself is not claimed repaired; direct HTTPS removes it from routine artifact lookup.",
+    "Secrets, endpoint inventory and raw reports remain outside public Git.",
+    "No live training heartbeat was inspected."
+  ]
+}

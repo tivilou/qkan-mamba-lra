@@ -1,0 +1,91 @@
+{
+  "schema": "qkan-mega-qualification-success-review.v1",
+  "date": "2026-11-27",
+  "run_id": "mega-qualify-20261127T112944Z-5c066ffd",
+  "verified_bytes": 65832,
+  "verified_sha256": "cfc2562d455ae519bc052a127e7a8a450c8c3a44c0c2f03aab82a2f1a8ae04bd",
+  "revision": "0927746945de1c5f2e9f86d5c65395b66ed3d4d2",
+  "job": "mega-text-s42",
+  "step": 6016,
+  "technical_passed": true,
+  "quality_admitted": false,
+  "formal_policy_changed": false,
+  "matched_rows": true,
+  "planned_steps": 8,
+  "all7children_clean": true,
+  "reference_validation": {
+    "loss": 0.428875942598097,
+    "accuracy": 0.84765625,
+    "samples": 256
+  },
+  "comparison": {
+    "eager": {
+      "training_losses": [
+        0.3744949400424957,
+        0.32934510707855225,
+        0.3288518190383911,
+        0.3615677058696747,
+        0.3741963803768158,
+        0.35944628715515137,
+        0.3886558711528778,
+        0.26362764835357666
+      ],
+      "validation": {
+        "loss": 0.4291926377918571,
+        "accuracy": 0.84375,
+        "samples": 256
+      },
+      "throughput_gain": 0.11408797824312744
+    },
+    "graph": {
+      "training_losses": [
+        0.3744949400424957,
+        0.3293370008468628,
+        0.3288508653640747,
+        0.3615715801715851,
+        0.3742069602012634,
+        0.3594966232776642,
+        0.3887125551700592,
+        0.26347360014915466
+      ],
+      "validation": {
+        "loss": 0.42918164911679924,
+        "accuracy": 0.84375,
+        "samples": 256
+      },
+      "throughput_gain": 0.11197362211592066
+    }
+  },
+  "graph_incremental_throughput_gain": -0.0018978358697855358,
+  "recovery": {
+    "eager": {
+      "passed": true,
+      "continuous_vs_resumed_scientific_hash_exact": true
+    },
+    "graph": {
+      "passed": true,
+      "continuous_vs_resumed_scientific_hash_exact": true
+    }
+  },
+  "source_unchanged": true,
+  "owned_checkpoints_removed": true,
+  "temporary_updates": 40,
+  "formal_updates": 0,
+  "owner_screenshot": {
+    "job": "mega-text-s42",
+    "step": 6151,
+    "epoch": 39,
+    "completed": 10,
+    "running": 1,
+    "pending": 13,
+    "paused": 1,
+    "original_executor": "89353fc83f89",
+    "short_speed": 24.02
+  },
+  "limits": [
+    "Technical actual-worker admission passed for this Text checkpoint and8updates",
+    "Val-first256 original217correct, candidates216correct; one-row difference not full quality or convergence certification",
+    "Graph provides no measured extra speed; keep default off",
+    "Formal source Suite unchanged, screenshot confirms original training resumed, no new policy activation"
+  ]
+}

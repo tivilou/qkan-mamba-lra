@@ -1,0 +1,229 @@
+{
+  "schema": "qkan-key-bias-worker-native-review.v1",
+  "status": "native_final_worker_preflight_validated",
+  "source_revision": "b23e1da57f994bb67b9bc1b8f64eaea56dc741a6",
+  "source_report": {
+    "suite": "key-bias-worker-20261117T113204Z-d9dd1cca",
+    "namespace": "qkan-mamba/key-bias-worker-admission/key-bias-worker-20261117T113204Z-d9dd1cca",
+    "bytes": 69785,
+    "sha256": "cd53b6ee037ecb8cf35bae52e627d19e6e7e00638251904c579009072292f8d8"
+  },
+  "authenticated_receipt_verified": true,
+  "executed_binding_count": 21,
+  "executed_code_sha256": {
+    "experiments/baseline_delivery/worker.py": "6a5d855312cea021dd016742c5686027393d688948edfcae375e233289e3da57",
+    "experiments/baseline_delivery/key_bias_training.py": "5464662705e0936c797b4573f0783b159618b00bc4ccf22b79418eb0988966f1",
+    "experiments/baseline_delivery/key_bias_worker_admission.py": "4e9fe18591d61c09c99229fa49b50603023e4f56c42bb43bece0b9c030ee53b4",
+    "experiments/baseline_delivery/attention_update.py": "1ad8b91310717f74cea0c93367ebe320b8d4cf28c6df7bad99dce67d498d381b",
+    "experiments/baseline_delivery/key_bias_consistency.py": "9b2e63e27cd518813c6d4545f34cd35a7c7ca02e2fde7662567f48f5b629c34f",
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/logical_batch.py": "d648bb3ccc0bd5f699c5e74f470d8f1549dca71a553dab5cf9b5364374b44611",
+    "experiments/baseline_delivery/execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/data.py": "a8b121d98b96219c265fa6f994d36065d8cbcad7501d18e144927eb65459fb8f",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/adaptive_memory.py": "76bdd04ac9c2f645f0a128f9694d1c9161f4bb358a04a25c7e559e985cd11584",
+    "experiments/baseline_delivery/performance.py": "11874d892516cda1cf32b0fe4b60ad447dd2cf574e9d3951953e6d81e9b3af53",
+    "experiments/baseline_delivery/common.py": "d2c0e0e9176c42c090aaea4d411ba099be4e06d930b9c54da8ee4b64e300c48c",
+    "experiments/baseline_delivery/diagnostic_watch.py": "02ca48aef87aedf07af7f3225fda458da0fc5920a1b1c9970c84e65f9bdc6004",
+    "experiments/baseline_delivery/attention_precision_diagnostic.py": "c8c8109637d46b17cc6f52a480f5b726fc7ae3667f2844d18656bff02c76d322",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "tools/sample_trace_contract/validate.py": "55e7bcb34a048b3b8c6cd3837364d75ab8f3a24a23b276999dc009495b7df2c9",
+    "docs/baselines/attention-key-bias-worker-plan.json": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "docs/evidence/key-bias-stability-native-review-20261117.json": "8e14764ac6049441a8d7e48b0fe80e6d1f2596e419c4aa8112275627ef79eacf"
+  },
+  "native_passed": true,
+  "source_checkpoint": {
+    "step": 14268,
+    "sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9"
+  },
+  "zero_update_migration": {
+    "passed": true,
+    "source_cursor": 32384,
+    "samples_seen": 1799234,
+    "optimizer_updates": 0,
+    "state_roundtrip": "exact before first adaptive optimizer update",
+    "transition": "original_fp32_to_bf16_analytic_v1"
+  },
+  "child_executions": [
+    {
+      "mode": "migration",
+      "exit_status": 0,
+      "elapsed_seconds": 17.646621353924274,
+      "group_clean": true
+    },
+    {
+      "mode": "continuous",
+      "exit_status": 0,
+      "elapsed_seconds": 25.865355156362057,
+      "group_clean": true
+    },
+    {
+      "mode": "interrupt",
+      "exit_status": 0,
+      "elapsed_seconds": 22.056387275457382,
+      "group_clean": true
+    },
+    {
+      "mode": "resume",
+      "exit_status": 0,
+      "elapsed_seconds": 22.66544871777296,
+      "group_clean": true
+    }
+  ],
+  "recovery": {
+    "passed": true,
+    "continuous_updates": 2,
+    "fresh_process_updates": [
+      1,
+      1
+    ],
+    "final_step": 14270,
+    "final_cursor": 32640,
+    "scientific_state_sha256": "c6f59b8a41cb944cabac7827ec3c0f099dfe5202f9855de6c3f023cf755ca6ca",
+    "persisted_component_count": 26,
+    "component_sha256": {
+      "schema": "14691c1c6262528c92e00040ae122951104ffd5f765535c3a3eba32fd8f977bc",
+      "contract": "579f7371590657894e949f324c1406b319339241c00d48a785a84ecf711f0093",
+      "step": "1b14c6d7b35d1e8c8182e955f191f485247b844814ee654a3221d853df5e52d2",
+      "epoch": "33a22ffbf597c72f34767d2e402413b5152fce4a2495afd86c579a06032ab592",
+      "cursor": "43dbf7b46c751f11381f85931bc7aff367a2eda4496d3896961ee1c697172fb9",
+      "permutation": "efe7b6db2d5841649b1bc51269c7f69241e56d10f46bc08034a9f17d184d11f6",
+      "best_accuracy": "f6384eefe7d21698c58ebb25e75397935c38f5942491e923b1c1dc6888838344",
+      "best_epoch": "84bcab2ccf6fd6ebbee8312c057933bd6daf34b598856796b7b3988d09c2f933",
+      "best_weights": "06fc14bb72080d05e04950a007b747a146275d00666d0392664df26265b4cba3",
+      "history": "98f505e13834c0c3ad808c05d66640ed0e1055dc997d4cc03532a0ab5b870085",
+      "epoch_loss": "a8eed7d2a5612f2143466adbc0336bdf6be79079796d9fcc14f7c937788b5ea8",
+      "epoch_correct": "fcdcb8f1622ff06a10ca4cc1bccfc89fb7efcbcada4588d85ae5cc270f08785c",
+      "epoch_samples": "43dbf7b46c751f11381f85931bc7aff367a2eda4496d3896961ee1c697172fb9",
+      "update_trace": "4d2e755c1e721cc46ef5ac07afa42edc9880995fe1aae95679700434f801aa77",
+      "training_complete": "7f71a2e5b291347557572ed7fff0b5c865e35a9713ffcbc703066be50241ed99",
+      "amp": "ebeeee86b9d4a4c11124134e6da7ba994aeb35ed9ba58dd4171f67f63f26a19c",
+      "runtime": "e491cb44f52b609205ec0578c28ce21ce6f27b412816adbade1e5e120c85991c",
+      "model": "6b51bb025272519941f502497cfe3e57a04b56aeece0fdb5ac4ea29892d1abae",
+      "scheduler": "69d13707daeada5d3fb6c74c4811a2b5a619c624ca712c5049602458e65c6373",
+      "rng": "48bb20be29d08e14926cfc3f684cf1f530b650b2ad5fc47b0bb9e0eae9762892",
+      "sample_clock": "69d13707daeada5d3fb6c74c4811a2b5a619c624ca712c5049602458e65c6373",
+      "migration": "92ac5a8e35874198a1aef6d3bf3d8723fc496b7499e0da09d156f07d3cbf5dc7",
+      "optimizer": "ad38fd1495cc0d330863289369482a114455a0383e9b4e42388290b957ffae98",
+      "training_strategy": "e099cca75fff1e7e3dcb22dee8bb839de2681f4a91a78a96436ad043f29b5c42",
+      "strategy_gradients": "ab3c27e29edc82389911e1a475699bf68385b288d35720aead68dfa0879a9726",
+      "strategy_updates": "b150ae53fd432b8e938be9cd5d9bcfa35e3539dc81c941beb63b1629e17c8a92"
+    },
+    "excluded_execution_telemetry": [
+      "training_seconds",
+      "adaptive_memory",
+      "adaptive_peak_bytes",
+      "torch_acceleration",
+      "rollback_device"
+    ],
+    "update_records_exact": true,
+    "gradients_saved_and_restored": true,
+    "total_disposable_optimizer_updates": 4,
+    "processed_training_rows": 512,
+    "distinct_training_rows": 256
+  },
+  "actual_worker_trace": {
+    "validation": {
+      "passed": true
+    },
+    "routes": {
+      "fp32": {
+        "trace_sha256": "f9b362d581bf990e9dca02f2325bca33e7cb0ddbe71e6e782f4cf677ac2a2368",
+        "validation": {
+          "schema": "qkan-trace-readiness.v1",
+          "passed": true,
+          "semantic": "decoded full arrays and coordinate reader",
+          "replay": "pooled encoder -> pair head -> logits",
+          "structural": "shared sample-trace.v2 validator require_complete; zero warnings",
+          "replay_backend": "torch",
+          "replay_rtol": 1e-05,
+          "replay_atol": 1e-06,
+          "checkpoint_sha256": "855cd4fe0c7ea5f000e9e01cff248290221e543e02c784fcbc53b616ba4d43c6",
+          "samples": 2,
+          "privacy": "private; not automatically uploaded"
+        },
+        "sample_ids": [
+          "val:0",
+          "val:1"
+        ],
+        "checkpoint": "latest_preflight",
+        "private": true,
+        "complete_values_reopened": true
+      },
+      "bf16_analytic": {
+        "trace_sha256": "298aa075211e2c0b2cd75eacb56c6a37bf6936dfbb7587f0514b0eec3329b07e",
+        "validation": {
+          "schema": "qkan-trace-readiness.v1",
+          "passed": true,
+          "semantic": "decoded full arrays and coordinate reader",
+          "replay": "pooled encoder -> pair head -> logits",
+          "structural": "shared sample-trace.v2 validator require_complete; zero warnings",
+          "replay_backend": "torch",
+          "replay_rtol": 1e-05,
+          "replay_atol": 1e-06,
+          "checkpoint_sha256": "855cd4fe0c7ea5f000e9e01cff248290221e543e02c784fcbc53b616ba4d43c6",
+          "samples": 2,
+          "privacy": "private; not automatically uploaded"
+        },
+        "sample_ids": [
+          "val:0",
+          "val:1"
+        ],
+        "checkpoint": "latest_preflight",
+        "private": true,
+        "complete_values_reopened": true
+      }
+    },
+    "bytes": 16680224,
+    "source": "Same actual paused worker weights; original FP32 vs candidate BF16 evaluation",
+    "model_gradients_rng_unchanged": true,
+    "formal_model_case": false
+  },
+  "completed_result_count": 2,
+  "completed_result_provenance": {
+    "transformer-listops-s42": {
+      "source_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+      "config_sha256": "b5ba9438baa347309505048f53d33fedd2c8dc3df9e3dc96037df1bdc49e1970",
+      "summary_sha256": "9f7d3a09791e8104dd4c3106fee595334594953cb3c2e4ff996f5f0331c6ff7b",
+      "trace_validation_sha256": "fc9f76be50f29b107026e56dd7192e1306910407efd2deb808428ff952dc4da1"
+    },
+    "transformer-text-s42": {
+      "source_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+      "config_sha256": "516820780b86d5f4183aeac278e89c00da2cf735922d98207c0c026b564e7310",
+      "summary_sha256": "4100bc2f706cbdafa4ec7a3ac7b40d70ea5796af273401d3b05ee062bcf31877",
+      "trace_validation_sha256": "07014c99d9ef103d07c58a1f128e69348ef43c6f0212a55c12649ff66ec11cb1"
+    }
+  },
+  "completed_records_match_previous_authenticated_return": true,
+  "original_checkpoint_and_metadata_unchanged": true,
+  "disposable_cleanup": {
+    "removed_generations": 8,
+    "removed_bytes": 157440304,
+    "retained_generations": 0
+  },
+  "trace_readiness": {
+    "status": "validated",
+    "plan_sha256": "452fc6d60e46a5531fec0cdd32bede905429b9a489a9b226e00b66e3d40ee32b",
+    "fixture": "runs/key-bias-worker-20261117T113204Z-d9dd1cca/resume/trace-bf16_analytic/sample-trace.json",
+    "structural": true,
+    "semantic": true,
+    "fresh_process_recovery": true,
+    "head_replay": true,
+    "frozen_plan_preserved": true,
+    "historical_pending_status_superseded_by_this_evidence": true
+  },
+  "owner_audit": {
+    "runtime": "QT2 stdlib only",
+    "native_framework_imports": 0,
+    "scope": "Authenticated compact report and exact executed Git bindings; private arrays checked by collaborator, not downloaded or recomputed by owner"
+  },
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "full_convergence_validated": false,
+  "heldout_utility_validated": false,
+  "next_action": "Prepare separate versioned formal migration/start entry using latest compatible original full source; preserve completed results and bind reviewed worker implementation. No repeated diagnostic or benchmark needed.",
+  "claim_ceiling": "Actual final-worker zero-update migration, bounded exact fresh-process recovery and two fixed-case paired evaluation traces passed. No full convergence, independent FP32 training comparison, new speed benchmark or formal queue launch."
+}

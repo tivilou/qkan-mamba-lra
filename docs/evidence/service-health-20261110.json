@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-11-10T05:39:44Z",
+  "purpose": "Read-only service inspection after the owner restarted the currently bound development server",
+  "connection": {
+    "project_role": "development",
+    "resolution": "existing serverctl project binding",
+    "ssh": "passed with existing key and strict host-key verification"
+  },
+  "qkan_exchange": {
+    "supervisor": "RUNNING",
+    "observed_uptime": "approximately one hour",
+    "autostart": true,
+    "autorestart": true,
+    "external_https_health_http": 200,
+    "external_health_status": "ok",
+    "tls": "private CA chain and hostname verified",
+    "authenticated_namespace_read_http": 200,
+    "unauthenticated_namespace_read_http": 401,
+    "namespace_read_location": "server loopback over verified HTTPS",
+    "retained_artifact": {
+      "path": "qkan-mamba/formal-readiness/failure-37b2622a59ef/failure.json",
+      "size_bytes": 88695,
+      "sha256": "bf23d85bef0362f6777e75c12be6069b5e3de0ef7128b15b93089f5e662a1f72",
+      "matches_pre_restart_evidence": true
+    }
+  },
+  "shared_service_observations": {
+    "qattn-artifact-exchange-443": {
+      "supervisor": "RUNNING",
+      "external_https_health_http": 200,
+      "tls": "private CA chain and hostname verified"
+    },
+    "qore-upload-18083": {
+      "supervisor": "RUNNING",
+      "external_http_health_http": 200
+    },
+    "qdiff-controller": "RUNNING",
+    "qdiff-monitor": "RUNNING",
+    "filebrowser": "RUNNING",
+    "jupyterlab": "RUNNING",
+    "qdiff-fp16-analysis": "FATAL; dependency SSH connection refused; reported without modifying another project"
+  },
+  "boundaries": {
+    "service_restarts_or_configuration_changes": false,
+    "uploads_or_remote_file_changes": false,
+    "model_imports_or_gpu_queries": false,
+    "experiments_started": false,
+    "github_publication_checked_or_performed": false,
+    "new_native_profiling_evidence_claimed": false
+  }
+}

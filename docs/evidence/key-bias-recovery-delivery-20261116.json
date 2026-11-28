@@ -1,0 +1,80 @@
+{
+  "schema": "qkan-key-bias-recovery-delivery.v1",
+  "date": "2026-11-16",
+  "baseline_revision": "953d181bed3b9afd89bb716949e0b33272d1ba0d",
+  "status": "control_plane_verified_native_recovery_trace_pending",
+  "candidate_id": "bf16-key-bias-analytic-zero-v1",
+  "gradient_policy": "analytic_zero_k_bias_keep_adam_history_v1",
+  "prior_numerical_review": "docs/evidence/key-bias-native-review-20261116.json",
+  "dossier": "docs/baselines/attention-attribution-key-bias-recovery.json",
+  "plugin_plan": "docs/baselines/attention-attribution-key-bias-recovery-plan.json",
+  "handoff": "docs/baselines/attention-key-bias-recovery.md",
+  "architecture_status": "approved_pending_real_native_fixture",
+  "trace_readiness": "blocked",
+  "formal_admission": false,
+  "modified_sha256": {
+    "experiments/baseline_delivery/key_bias_recovery.py": "ca970b8b4e033646751121f41c1f0048c9e63be8720b44ce1d881ef262edbd14",
+    "experiments/baseline_delivery/key_bias_trace.py": "5cb95c85d4b7ad992d6bfb5d92f40c6991ab06448aef14db4988ba0fb9ae646c",
+    "tests/test_baseline_key_bias_recovery.py": "6858a2ee503f422b5a22f30060f1f2930d904fc8bd9b5233f230b6783669249d",
+    "docs/baselines/attention-attribution-key-bias-recovery-plan.json": "4d025f102723adb51c7f76f5fc37a377f1f7c1755092d6a095867fdf46fb8758",
+    "docs/baselines/attention-key-bias-recovery.md": "3e6d70f7800c420f747d67371f4480045bc6d5fbb4bc2d99a588b659e10ac8a9"
+  },
+  "controls": {
+    "total": 442,
+    "passed": 439,
+    "skipped": 3,
+    "new_tests": 18,
+    "native_framework_imports": 0,
+    "protected_core_files": 8,
+    "frozen_files": 19,
+    "new_policy_identity_bound": true,
+    "continuous_interrupted_state_controls": true,
+    "original_history_retained": true,
+    "tampered_receipt_payload_rejected": true,
+    "failed_child_evidence_retained": true,
+    "return_failure_retained": true,
+    "real_coordinate_reader_with_fake_arrays_verified": true,
+    "complete_fake_value_reopen_structural_semantic_checks": true,
+    "independent_scalar_adam_equations": true,
+    "native_fixture_produced": false,
+    "patch_apply_rollback_replay": true
+  },
+  "scope": {
+    "children": 4,
+    "recovery_updates": {
+      "uninterrupted": 2,
+      "interrupt": 1,
+      "resume": 1
+    },
+    "recovery_dropout": "original training setting",
+    "micro": 16,
+    "logical": 128,
+    "trace_samples": 2,
+    "trace_selection": "First2 original reviewed128 cursor rows",
+    "trace_dropout": 0,
+    "trace_loss": "Joint two-row mean CE;shared parameter values explicitly labeled",
+    "trace_routes": [
+      "fp32",
+      "bf16_analytic"
+    ],
+    "trace_original_fp32_adapter_parity": true,
+    "trace_exact_replays": true,
+    "private_recovery_state_cap_bytes": 134217728,
+    "private_trace_cap_bytes_per_route": 134217728,
+    "auto_return": "key-bias-recovery.json only",
+    "source_checkpoint_and_old_screen_immutable": true
+  },
+  "package": {
+    "modified_artifacts": ".runtime/key-bias-recovery-20261116/candidate",
+    "original": ".runtime/key-bias-recovery-20261116/original",
+    "patch": ".runtime/key-bias-recovery-20261116/change.patch",
+    "verification": ".runtime/key-bias-recovery-20261116/verification.json",
+    "rollback": ".runtime/key-bias-recovery-20261116/rollback.py"
+  },
+  "limitations": [
+    "No owner model/framework/device test or dependency installation.",
+    "Injected scalar/array controls do not establish a real native sample-trace fixture or recovery pass.",
+    "Fresh-process recovery and real producer values must be executed on collaborator and reviewed before trace readiness changes.",
+    "Short trajectory,profiled full-update kernel proof,matched timing,convergence and formal integration remain later gates."
+  ]
+}

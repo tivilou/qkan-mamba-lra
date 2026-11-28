@@ -1,0 +1,297 @@
+{
+  "schema": "qkan-bounded-source-collection.v1",
+  "collections": [
+    {
+      "schema": "qkan-primary-source-receipt.v1",
+      "policy": {
+        "requests_max": 9,
+        "retries": 0,
+        "per_origin_concurrency": 1,
+        "minimum_delay_seconds": 1.5,
+        "browser_escalations": 0,
+        "purpose": "Pinned official strong-baseline integration boundaries"
+      },
+      "sources": [
+        {
+          "id": "mega-encoder",
+          "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/models/lra/mega_lra_encoder.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:40:49.562272+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/models/lra/mega_lra_encoder.py",
+          "size_bytes": 8948,
+          "sha256": "001e2c9ee20154c0b97be09630714093991638c9ab5c5d08a5e9f96883dfb26f",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "mega-layer",
+          "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/mega_sentence_encoder_layer.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:40:53.036019+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/mega_sentence_encoder_layer.py",
+          "size_bytes": 4195,
+          "sha256": "e7d2fc5494c0902de36287db76d1229dcb5d8f8db4021819b572afd7cdae859a",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "mega-attention",
+          "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/moving_average_gated_attention.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:40:57.069669+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/moving_average_gated_attention.py",
+          "size_bytes": 15645,
+          "sha256": "90d331dbbac12817fe7b22371badedfc4d8ff24b6860336c0bc476cd9ab9ba90",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "mega-ema",
+          "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/exponential_moving_average.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:41:00.243326+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/exponential_moving_average.py",
+          "size_bytes": 8833,
+          "sha256": "223ee827cffa474c4b2f4759af1999c69b4c2de868174260c3f789a86df8c225",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "s5-readme",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/README.md",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:41:02.703962+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/README.md",
+          "size_bytes": 6105,
+          "sha256": "c4f285c33a2da9dd8b33c9bf979755e95c14ab0e099bb913470ff4287b304463",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "s5-ssm",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/ssm.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:41:07.011242+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/ssm.py",
+          "size_bytes": 11823,
+          "sha256": "d893684e5fe6fa3a231fb4ff3fa2811b44a2a8a31e70fb1ac77808d7328fe183",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "s5-layers",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/layers.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:41:26.527674+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/layers.py",
+          "size_bytes": 3323,
+          "sha256": "87a2c9ff50ff5ab19da5660f756f2c89324513a60f976020206ae54bc76f169e",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "s5-seq",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/seq_model.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:41:30.754434+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/seq_model.py",
+          "size_bytes": 12849,
+          "sha256": "ac5decb2b1b1d89cbd23063e88f10925173cd53bc76f3dc75fe78c5863a5d025",
+          "response_classification": "public_primary_source"
+        },
+        {
+          "id": "s5-requirements",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/requirements.txt",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:41:33.263945+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "failed",
+          "http_status": 404,
+          "failure_reason": "HTTP Error 404: Not Found"
+        }
+      ]
+    },
+    {
+      "schema": "qkan-primary-source-receipt.v1",
+      "policy": {
+        "requests_max": 5,
+        "retries": 0,
+        "per_origin_concurrency": 1,
+        "minimum_delay_seconds": 1.5,
+        "browser_escalations": 0,
+        "purpose": "Pinned official integration dependencies and optimizer semantics"
+      },
+      "sources": [
+        {
+          "id": "s5-requirements-cpu",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/requirements_cpu.txt",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:49:44.649729+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "failed",
+          "http_status": null,
+          "failure_reason": "The read operation timed out"
+        },
+        {
+          "id": "s5-requirements-gpu",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/requirements_gpu.txt",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:50:06.726788+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "failed",
+          "http_status": null,
+          "failure_reason": "The read operation timed out"
+        },
+        {
+          "id": "s5-init",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/ssm_init.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:50:48.822970+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "failed",
+          "http_status": null,
+          "failure_reason": "The read operation timed out"
+        },
+        {
+          "id": "s5-train-helpers",
+          "url": "https://raw.githubusercontent.com/lindermanlab/S5/3c18fdb6b06414da35e77b94b9cd855f6a95ef17/s5/train_helpers.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:51:51.919887+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "failed",
+          "http_status": null,
+          "failure_reason": "The read operation timed out"
+        },
+        {
+          "id": "mega-model",
+          "url": "https://raw.githubusercontent.com/facebookresearch/mega/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/models/lra/model.py",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:53:14.463656+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "failed",
+          "http_status": null,
+          "failure_reason": "Remote end closed connection without response"
+        }
+      ]
+    },
+    {
+      "schema": "qkan-primary-source-receipt.v1",
+      "policy": {
+        "requests_max": 5,
+        "retries": 0,
+        "per_origin_concurrency": 1,
+        "minimum_delay_seconds": 1.5,
+        "browser_escalations": 0,
+        "purpose": "One official API fallback for raw-source connection timeouts; no access restriction bypass"
+      },
+      "sources": [
+        {
+          "id": "s5-requirements-cpu",
+          "url": "https://api.github.com/repos/lindermanlab/S5/contents/requirements_cpu.txt?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:57:00.650698+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://api.github.com/repos/lindermanlab/S5/contents/requirements_cpu.txt?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "size_bytes": 139,
+          "sha256": "618ea292f5760ab92ab9afb33cf9f93c2b9fef4c2cdbca604c1197368caede66",
+          "git_blob_sha1": "acf288e15f74c1889385a57c72fb9aae3b84c7a3",
+          "response_classification": "public_primary_source_decoded_blob"
+        },
+        {
+          "id": "s5-requirements-gpu",
+          "url": "https://api.github.com/repos/lindermanlab/S5/contents/requirements_gpu.txt?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:57:03.112438+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://api.github.com/repos/lindermanlab/S5/contents/requirements_gpu.txt?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "size_bytes": 170,
+          "sha256": "ce5979d77bcbf8becad5b0c13dbeae2e5c1fe7999862432847b3f6a804c182fe",
+          "git_blob_sha1": "51a5e98e7691fc45da6459a65b30d563b6a9b23b",
+          "response_classification": "public_primary_source_decoded_blob"
+        },
+        {
+          "id": "s5-init",
+          "url": "https://api.github.com/repos/lindermanlab/S5/contents/s5/ssm_init.py?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:57:05.488137+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://api.github.com/repos/lindermanlab/S5/contents/s5/ssm_init.py?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "size_bytes": 5147,
+          "sha256": "5a4a0484c66ae7245ec561251ad562b8124aae600da0504625fc6f8a65df5daa",
+          "git_blob_sha1": "237158282845e7ae2a042105b7c620fef07f6cb9",
+          "response_classification": "public_primary_source_decoded_blob"
+        },
+        {
+          "id": "s5-train-helpers",
+          "url": "https://api.github.com/repos/lindermanlab/S5/contents/s5/train_helpers.py?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:57:08.383714+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://api.github.com/repos/lindermanlab/S5/contents/s5/train_helpers.py?ref=3c18fdb6b06414da35e77b94b9cd855f6a95ef17",
+          "size_bytes": 15634,
+          "sha256": "5283227ce0e930b3447ecd5864831c4ac3612fbb55075a3bd1d90d373da77c1f",
+          "git_blob_sha1": "4fd626912c6f1800302bcac00ff64ec294c87954",
+          "response_classification": "public_primary_source_decoded_blob"
+        },
+        {
+          "id": "mega-model",
+          "url": "https://api.github.com/repos/facebookresearch/mega/contents/fairseq/models/lra/model.py?ref=aeaa4b44592cd1d60a9a34554e359eda2a62b03b",
+          "method": "GET",
+          "retrieved_at": "2026-11-04T07:57:12.014709+00:00",
+          "access_mode": "public_http",
+          "cache_state": "miss",
+          "status": "fresh",
+          "http_status": 200,
+          "final_url": "https://api.github.com/repos/facebookresearch/mega/contents/fairseq/models/lra/model.py?ref=aeaa4b44592cd1d60a9a34554e359eda2a62b03b",
+          "size_bytes": 33381,
+          "sha256": "25f0fe1a512f6ecde8c744cc60ea11387cce15ad3027eca561b569e9db1ff5c2",
+          "git_blob_sha1": "9fbca7f01b9004431314c57df6cf83d59e60a63d",
+          "response_classification": "public_primary_source_decoded_blob"
+        }
+      ]
+    }
+  ]
+}

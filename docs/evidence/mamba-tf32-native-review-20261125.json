@@ -1,0 +1,112 @@
+{
+  "schema": "qkan-mamba-tf32-native-review.v1",
+  "date": "2026-11-25",
+  "status": "measured_small_gain_below_target_keep_original_fused_fp32",
+  "evidence": {
+    "namespace": "qkan-mamba/mamba-tf32-benchmark/mamba-tf32-benchmark-20261125T061440Z-fdbf83d7/mamba-tf32-benchmark.json",
+    "size_bytes": 81925,
+    "sha256": "a4e0e493d48313528181b3f41aadf4fc380d46efe6b04b34484e87332971d70c",
+    "uploaded_at": "2026-11-25T06:15:13.455707+00:00"
+  },
+  "executed_revision": "fe7d9b94268feba25386920df09c723a452f1dc0",
+  "checkpoint_step": 76884,
+  "checkpoint_sha256": "6ae2cd54a6c28a3a6da4b6e9a4c32c5e9452b6d07eb115f473e78fc5e4591d0c",
+  "gpu": "NVIDIA GeForce RTX3090",
+  "micro_batch": 8,
+  "logical_batch": 32,
+  "checks": {
+    "clean_child_count": 1,
+    "child_elapsed_seconds": 30.307084996253252,
+    "disposable_updates": 44,
+    "formal_updates": 0,
+    "source_unchanged": true,
+    "copied_checkpoint_removed": true,
+    "source_restored_exact": true,
+    "adam_counter_parameters": 71,
+    "blocks": 11,
+    "checkpoint_adam_step": 76884,
+    "each_block_end_adam_step": 76888,
+    "precision_flags_match": true,
+    "actual_fused_calls": 2112,
+    "rng_and_sample_clock_exact": true
+  },
+  "timing": {
+    "reference_median_seconds": 1.4290835689753294,
+    "candidate_median_seconds": 1.3991938792169094,
+    "throughput_gain": 0.021362078695733366,
+    "positive_pairs": 4,
+    "timing_promising": false
+  },
+  "reference_samples_per_second": 89.56789006522382,
+  "candidate_samples_per_second": 91.48124638140791,
+  "numerics": {
+    "cross_tf32": {
+      "parameters": {
+        "relative_l2": 9.968494576574376e-07,
+        "difference_norm": 0.00038630510662394647,
+        "reference_norm": 387.52602377068087,
+        "max_absolute": 3.2782554626464844e-06
+      },
+      "update_delta": {
+        "relative_l2": 0.0005702431426577855,
+        "difference_norm": 0.00038630510833469005,
+        "reference_norm": 0.6774392876242259,
+        "max_absolute": 3.2782554626464844e-06
+      },
+      "clipped_gradients": {
+        "relative_l2": 0.0005604998702538887,
+        "difference_norm": 0.0005604996598687576,
+        "reference_norm": 0.9999996246473153,
+        "max_absolute": 4.1357241570949554e-05
+      },
+      "optimizer": {
+        "relative_l2": 1.9339282434129373e-10,
+        "difference_norm": 0.00012529337115458993,
+        "reference_norm": 647869.8037600197,
+        "max_absolute": 1.1692522093653679e-05
+      }
+    },
+    "fp32_repeat": {
+      "parameters": {
+        "relative_l2": 4.9851043837120484e-09,
+        "difference_norm": 1.9318576799017208e-06,
+        "reference_norm": 387.52602377068087,
+        "max_absolute": 2.384185791015625e-07
+      },
+      "update_delta": {
+        "relative_l2": 2.851707456023261e-06,
+        "difference_norm": 1.9318586675210915e-06,
+        "reference_norm": 0.6774392876242259,
+        "max_absolute": 2.384185791015625e-07
+      },
+      "clipped_gradients": {
+        "relative_l2": 5.689910148000677e-07,
+        "difference_norm": 5.689908012277628e-07,
+        "reference_norm": 0.9999996246473153,
+        "max_absolute": 9.872019290924072e-08
+      },
+      "optimizer": {
+        "relative_l2": 1.7629361177917211e-13,
+        "difference_norm": 1.1421530766751733e-07,
+        "reference_norm": 647869.8037600197,
+        "max_absolute": 1.955777406692505e-08
+      }
+    }
+  },
+  "precision": {
+    "parameters": "fp32",
+    "optimizer": "fp32",
+    "autocast": false,
+    "reference_matmul_tf32": false,
+    "candidate_matmul_tf32": true,
+    "cudnn_tf32": false
+  },
+  "limits": [
+    "One fixed four-batch prefix; no whole-corpus or convergence claim.",
+    "TF32 API flags verified, no kernel profile proving individual Tensor Core dispatch.",
+    "Matched Adam counters validate this restored control; old memory reports remain provisional.",
+    "TF32 update relativeL2~0.000570 vs FP32repeat~0.00000285; no numerical/formal admission.",
+    "Return records no live heartbeat after automatic resume."
+  ],
+  "next_action": "Keep original FP32 fused eager micro8/logical32. TF32 does not meet50percent target; no automatic enablement or unchanged rerun."
+}

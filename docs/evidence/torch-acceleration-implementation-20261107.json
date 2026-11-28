@@ -1,0 +1,48 @@
+{
+  "schema": "qkan-torch-acceleration-implementation.v1",
+  "date": "2026-11-07",
+  "status": "implemented_mock_verified_native_pending",
+  "collaborator_source_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+  "collaborator_update_status": "User explicitly confirms no update from original9a executor",
+  "completed_results": "Original bytes and source identities preserved; only unfinished tasks migrated",
+  "backend": "Optional FP32 Inductor forward plus one live forward/backward CUDA Graph; optimizer remains outside",
+  "fallback": [
+    "compile_graph",
+    "compile",
+    "eager"
+  ],
+  "validation": {
+    "standard_library_mock_checks": 113,
+    "new_acceleration_checks": 17,
+    "framework_imported": false,
+    "gpu_queried": false,
+    "dependencies_installed": false,
+    "training_executed": false,
+    "native_canary": "Required on collaborator device; existing fresh-process recovery standard unchanged",
+    "eager_agreement": "Every process, same complete-update snapshot; floating rtol1e-5/atol1e-6, control and RNG exact",
+    "timing": "Formal only: one warmup plus two alternating measured pairs; rollback between all trials; no samples committed",
+    "graph_certified": false,
+    "sustained_speedup_measured": false
+  },
+  "limitations": [
+    "Fallback canary passage certifies actual selected mode, not CUDA Graph",
+    "Short initial median trial does not establish sustained throughput or optimal future shapes",
+    "Initial profile wall time includes compilation, numerical validation and bounded benchmark",
+    "Old MEGA Torch can fall back without new dependencies; S5 remains native JAX"
+  ],
+  "primary_api_sources": [
+    "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/cuda/graphs.py",
+    "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/_inductor/config.py"
+  ],
+  "api_check_method": "Pinned primary source read inline through stdlib HTTP; no framework imported",
+  "artifacts": {
+    "experiments/baseline_delivery/torch_acceleration.py": "899b38c3084e9e27c96855236c67f5a3f82e16a3ef571f01bd54a9473589683d",
+    "experiments/baseline_delivery/worker.py": "90f64332c2f423b74694c2e61677984cbef01e391528aa1b35102966dab457e2",
+    "experiments/baseline_delivery/runner.py": "c494a5c99e3e5fd7adca22702d5b7ed3cfd7596c1556ee5feb46fea5b5c45b6e",
+    "experiments/baseline_delivery/readiness.py": "c9188f8d7cfbf2c324e0c7e2239129a9cf6b13a961f7402377b66af3dd4af25a",
+    "experiments/baseline_delivery/migration.py": "7cdd491331b5f4afaaf01137c5bd3479055d8cdbdbd8957593fdd2c0b519e4c4",
+    "scripts/formal_progress.py": "19eb5934361ff17b6b2fff165096cf0a5d88734a50875a783145aa5dbd12c220",
+    "scripts/migrate_torch_acceleration.sh": "e2d0589d8592268ea7c0c58c009244c143b3297a083cf4704b06f94694230b0c",
+    "tests/test_baseline_torch_acceleration.py": "7243f66b8d04e3a00ae5a0d527e90283ae764fe836bc19eaa955e22a41bef16e"
+  }
+}

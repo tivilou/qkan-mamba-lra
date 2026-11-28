@@ -1,0 +1,104 @@
+{
+  "schema_version": "research-plugin-architecture.plugin-plan.v2",
+  "project": "QKAN-Mamba",
+  "authorization": "approved",
+  "baseline": {
+    "entry_point": "experiments.baseline_delivery.worker.run; training_strategy absent",
+    "code_revision": "7e17f8fa6fd530580d559c424385fad1f98d11f7",
+    "equivalence_test": "Original numerical update AST exact; all-off controls; final-worker FP32 counterfactual trace at same paused weights. Native fixture pending."
+  },
+  "core_invariants": [
+    "Only unfinished Transformer/Retrieval; explicit candidate, default off; formal queue remains closed.",
+    "BF16 efficient SDPA; FP32 master/projection/residual/head/loss/Adam. Evaluation also uses BF16 attention, original zero evaluation dropout.",
+    "Analytic zero only four packed K-bias gradient segments; Q/V unchanged; all parameter groups, historical moments, step and decay retained.",
+    "Actual worker runs original update body; micro16/logical128 pinned each update; no Graph, AMP scaler, trimming or PAD candidate.",
+    "Preserve latest compatible b07 original source; reject fewer than256 remaining epoch rows, never roll back to old14268.",
+    "Migration copy preserves every old state field except contract/migration metadata and process-local acceleration record. Original source stores no gradients; candidate begins with explicit None gradients, then persists/restores every leaf gradient.",
+    "Versioned precision/gradient/config/source/implementation envelope required for candidate resume; legacy or changed-policy checkpoint rejected.",
+    "Four owned fresh children: migration0,continuous2,interrupt1,resume1; total4 disposable optimizer updates; exact scientific checkpoint/updates; no formal progress.",
+    "All scientific persisted fields compared; only training_seconds,adaptive_memory,adaptive_peak_bytes,torch_acceleration,rollback_device excluded as process/time/memory execution telemetry. Physical/logical policy repinned every update; not a byte-identical whole-file claim.",
+    "Preserve and hash-copy two completed Transformer ListOps/Text results; source locks, idle GPU,900s child/300s stall; no stop/kill of unrelated work.",
+    "Final actual paused model produces two paired real fixed-case traces; complete private arrays reopened, coordinates/hash/shape/schema and pool/head replay. No training derivative trace claimed from evaluation fixture.",
+    "Existing numerical,paired training trace,64step stability and incumbent timing evidence reused. No repeat benchmark or convergence claim.",
+    "Owner stdlib/fakes only. Compact authenticated automatic return on pass/failure; no raw arrays/logs/weights uploaded. Diagnostic generations deleted after comparison; rollback uses original source."
+  ],
+  "interfaces": [
+    {"id":"worker_training_strategy","type":"transformer","input_schema":"Original full checkpoint and fixed Retrieval batches","output_schema":"Versioned full candidate checkpoint and producer-value trace","invariants":["Default-off legacy update unchanged","Finite admission only"]}
+  ],
+  "plugins": [
+    {
+      "id":"baseline.worker_fp32","version":"1","role":"baseline","interface":"worker_training_strategy",
+      "insertion_point":"Original worker numerical body; original MHA evaluation at same paused weights",
+      "hypothesis":"Control source and all-off behavior",
+      "input_schema":"Original full4000 token pairs and PAD masks","output_schema":"Encoder/pool/logits",
+      "requires":[],"conflicts":[],"deterministic":true,"resource_estimate":"Two selected validation rows; no optimizer update",
+      "failure_signatures":["source_changed","all_off_body_changed","trace_replay_differs"],
+      "observability_contract": {
+        "trace_schema":"sample-trace.v2","stages":["data","preprocess","scoring","evaluation"],
+        "input_fields":["input0","input1","mask0","mask1"],"output_fields":["encoder0","pooled","logits"],
+        "input_refs":["Frozen val split/rows0,1"],"output_refs":["Private trace-fp32/sample-trace.json"],
+        "emitted_fields":["Complete detached numeric values","Source/checkpoint/config/implementation hashes"],
+        "shape_dtype_normalization":["Full4000 coordinates,original masks,FP32 representations"],
+        "checks":["Structural+semantic","Complete value hashes and arbitrary coordinates","Independent pooling/head replay"],"deterministic_replay":true
+      }
+    },
+    {
+      "id":"training.bf16_key_bias_analytic_zero","version":"1","role":"idea","interface":"worker_training_strategy",
+      "insertion_point":"Actual worker update context, checkpoint envelope, evaluation context",
+      "hypothesis":"Final worker preserves measured candidate semantics and full-state fresh-process recovery",
+      "input_schema":"Original FP32 full checkpoint, original Adam history; explicit strategy",
+      "output_schema":"BF16 attention forward,FP32 master gradients with analytic K-zero,versioned checkpoint",
+      "requires":[],"conflicts":["Graph","other_gradient_hooks","unbounded_training"],
+      "deterministic":true,"resource_estimate":"4 disposable updates across4 supervised children and two paired trace forwards;128MiB private trace cap",
+      "failure_signatures":["checkpoint_strategy_mismatch","hook_coverage_mismatch","fresh_process_state_differs","completed_result_changed","trace_replay_differs"],
+      "observability_contract": {
+        "trace_schema":"sample-trace.v2","stages":["data","preprocess","scoring","evaluation"],
+        "input_fields":["input0","input1","mask0","mask1"],"output_fields":["encoder0","pooled","logits"],
+        "input_refs":["Same frozen val split/rows0,1"],"output_refs":["Private trace-bf16_analytic/sample-trace.json"],
+        "emitted_fields":["Complete detached actual worker representations","Versioned strategy/checkpoint and recovery hashes"],
+        "shape_dtype_normalization":["BF16 SDPA internal,FP32 saved representations,full4000 coordinates"],
+        "checks":["Structural+semantic","Complete value hashes and arbitrary coordinates","Independent pooling/head replay","Model/gradients/RNG unchanged"],"deterministic_replay":true
+      }
+    }
+  ],
+  "discovery":{"mode":"explicit_allowlist","allowlist":["baseline.worker_fp32","training.bf16_key_bias_analytic_zero"]},
+  "composition":{"mode":"single","order":["training.bf16_key_bias_analytic_zero"],"merge_rule":"Explicit mutually exclusive strategy; no Graph combination","interaction_ablations":["Graph/other task policy rejection; historical numeric interaction controls reused"]},
+  "validation": {
+    "baseline_equivalence":"Legacy numerical update body AST exact and stdlib controls; native final-worker fixture pending",
+    "tests":["baseline_equivalence","plugin_isolation","deterministic_replay","interaction_ablation","trace_structural_validation","trace_semantic_validation","trace_replay"]
+  },
+  "reproducibility": {
+    "config_path":"Versioned key_bias_training.POLICY and private worker-input.json",
+    "dataset_identity":"Original source train/val/dictionary hashes; fixed val0,val1",
+    "environment":"Offline collaborator torch2.7.1+cu126/numpy2.2.6/RTX3090; owner QT2 stdlib only",
+    "seeds":[42],"output_manifest":"runs/key-bias-worker-*/key-bias-worker-admission.json"
+  },
+  "trace_contract": {
+    "enabled":true,"schema":"sample-trace.v2","artifact_path":"runs/key-bias-worker-*/resume/trace-{fp32,bf16_analytic}/sample-trace.json",
+    "sample_selection_rule":"First two frozen validation rows0,1 selected before execution; same paused weights and pair inputs",
+    "target_boundary":"Targets evaluation-only, never supplied to scoring or case selection",
+    "required_stages":["data","preprocess","scoring","evaluation"],"semantic_roles":["target","prediction"],
+    "required_representations":["input0","input1","mask0","mask1","encoder0","encoder1","pooled","logits"],
+    "producer_owned_lineage":["Actual worker model/config -> frozen split/rows -> original/candidate attention -> complete encoder/pool/head values"],
+    "readiness_checks":["Shared schema require_complete/zero warnings","Full arrays reopened and coordinate/hash checked","Independent encoder pooling/head replay","No model/gradient/RNG mutation"]
+  },
+  "case_study_execution": {
+    "mode":"post_training_replay","checkpoint_policy":"Latest bounded2step preflight,never best validation or final trained model",
+    "dependency_refs":["Original b07 full checkpoint and current frozen code","Private local two-case outputs"],
+    "replay_command":["python -B -m experiments.baseline_delivery.key_bias_worker_admission --source-suite SOURCE --cache CACHE --pilot-from PILOT --gpu 0"],
+    "intermediate_policy":"retain_selected"
+  },
+  "trace_readiness": {
+    "status":"blocked","fixture_path":"runs/key-bias-worker-*/resume/trace-bf16_analytic/sample-trace.json",
+    "structural_validation":"Pending actual final-worker collaborator fixture",
+    "semantic_validation":"Pending real complete values and source coordinate checks",
+    "replay_test":"Pending actual worker fresh-process2vs1+1 and fixed-case replay"
+  },
+  "recovery_contract": {
+    "dossier_path":"docs/baselines/attention-attribution-key-bias-recovery.json",
+    "dossier_sha256":"c71444836d0a843abb79db468bfd1c344cde3f1676a8cc811b2cde1a64303c67",
+    "candidate_id":"bf16-key-bias-analytic-zero-v1",
+    "discriminating_intermediate_measurement":"Actual worker32callbacks/update and64BF16attention calls; full parameter/Adam/gradient/RNG/sampler/sample-clock/cumulative-progress exact fresh-process comparison. Retain existing numeric/training trace evidence."
+  },
+  "limitations":["Code delivered; architecture remains approved until native final-path fixture passes.","No queue launch,formal admission,full convergence,held-out utility or runtime speed claim.","Trace FP32 control shares candidate-trained paused weights;not an independent FP32 training result.","Physical/logical batch pinned;controller timing telemetry is excluded explicitly from scientific equality."]
+}

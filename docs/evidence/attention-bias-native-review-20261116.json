@@ -1,0 +1,251 @@
+{
+  "schema": "qkan-attention-bias-native-review.v1",
+  "date": "2026-11-16",
+  "status": "cpu_qkv_localization_verified_candidate_still_rejected",
+  "source_revision": "5a46374e7c4b01de8d1e40ea85e7c2c711ba4124",
+  "source_report": {
+    "suite": "attention-bias-20261116T080816Z-f9d55e58",
+    "bytes": 459887,
+    "sha256": "703c52f3a6e2b5ff0ba1231cd11aef1d6765118a18c7859881490d682565890c",
+    "authenticated": true,
+    "implementation_git_sha256_verified": true
+  },
+  "input_binding": {
+    "report_sha256": "ce784d88f6b9269c5f321f2a890b15c3a9bd2060b0d8d630bc6216a646f7ef44",
+    "values_sha256": "b0d0c8797a79865314ab37761ff52b3da0ef2f160c56994b8ad5aefd9bc6154f",
+    "values_bytes": 45431227,
+    "checkpoint_sha256": "158b3dea399f2f3c44a0f9b8599f62e16094d62caf1c0f9bd4d12f79b4b5e8c9",
+    "checkpoint_step": 14268,
+    "row_ids_sha256": "823ce471b360100fa3d8a7088b7c6bed611e20a47bb2aa16b91a6f9cf4433e0d"
+  },
+  "validation": {
+    "paired_stat_groups": 270,
+    "packed_fields_reconstruct_prior": true,
+    "pooled_fields_reconstruct_layers": true,
+    "fixed_denominator_bins_reconstruct": true,
+    "denominator_extrema_match_saved_variance_equation": true,
+    "adaptive_norm_bounds_verified": true,
+    "initial_moment_routes_equal": true,
+    "clipping_unchanged": true,
+    "owner_framework_imports": 0,
+    "source_files_unchanged": true,
+    "cpu_threads": 1,
+    "forward_calls": 0,
+    "backward_calls": 0,
+    "optimizer_steps": 0,
+    "owned_children_clean": 1,
+    "elapsed_seconds": 3.2161997333168983
+  },
+  "original_numerical": {
+    "logits_relative_l2": 0.002006039511795308,
+    "loss_absolute": 0.0003707408905029297,
+    "gradient_relative_l2": 0.040851755119082934,
+    "adam_delta_relative_l2": 0.2105257684201854
+  },
+  "packed_bias_update_error_energy_share": 0.9834951945798726,
+  "pooled_qkv": {
+    "Q": {
+      "elements": 512,
+      "global_update_error_energy_share": 6.324365611387724e-06,
+      "packed_bias_update_error_energy_share": 6.4304997586585595e-06,
+      "gradient_reference_l2": 0.047207817663451314,
+      "gradient_bf16_l2": 0.04697745171904223,
+      "gradient_bf16_over_reference_l2": 0.9951201738226626,
+      "gradient_relative_l2": 0.03170900470304204,
+      "update_reference_l2": 0.005652042338373776,
+      "update_bf16_l2": 0.005661657692070752,
+      "update_difference_l2": 0.00011459349411331905,
+      "update_relative_l2": 0.02027470554056222,
+      "denominator_reference_quantiles": {
+        "min": 7.087132836230425e-05,
+        "p10": 0.0001758696133748499,
+        "p50": 0.0008347236422748198,
+        "p90": 0.003046552795645081,
+        "max": 0.00556064029580978
+      },
+      "denominator_bf16_quantiles": {
+        "min": 7.087219633950842e-05,
+        "p10": 0.0001758789212764266,
+        "p50": 0.0008347048277255602,
+        "p90": 0.0030462778916513795,
+        "max": 0.005560416541576221
+      },
+      "denominator_bf16_over_reference_quantiles": {
+        "min": 0.9997229545195054,
+        "p10": 0.9999303854100291,
+        "p50": 0.9999980018426942,
+        "p90": 1.000047232912923,
+        "max": 1.0004012421479265
+      },
+      "adaptive_route_difference_residual_l2": 7.210436373545588e-08,
+      "adaptive_route_difference_residual_relative_l2": 0.000629218650616879,
+      "denominator_bands": [
+        {
+          "band": "eps_to_2eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "2eps_to_10eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "10eps_to_100eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "above_100eps",
+          "count": 512,
+          "global_update_error_energy_share": 6.324365611387724e-06
+        }
+      ]
+    },
+    "K": {
+      "elements": 512,
+      "global_update_error_energy_share": 0.9834868763533452,
+      "packed_bias_update_error_energy_share": 0.9999915421787791,
+      "gradient_reference_l2": 4.5520633432500595e-08,
+      "gradient_bf16_l2": 6.457019167332063e-05,
+      "gradient_bf16_over_reference_l2": 1418.4818356947364,
+      "gradient_relative_l2": 1418.4175506306642,
+      "update_reference_l2": 0.00043724286487826743,
+      "update_bf16_l2": 0.04521817846092743,
+      "update_difference_l2": 0.04518931541423566,
+      "update_relative_l2": 103.35060682309086,
+      "denominator_reference_quantiles": {
+        "min": 1.0033057502447336e-08,
+        "p10": 1.0078164453312557e-08,
+        "p50": 1.0594581400692187e-08,
+        "p90": 1.2119420019257146e-08,
+        "max": 1.5130449219468074e-08
+      },
+      "denominator_bf16_quantiles": {
+        "min": 1.0039733281504543e-08,
+        "p10": 1.149971984392095e-08,
+        "p50": 3.198053817510121e-08,
+        "p90": 1.6354809759843983e-07,
+        "max": 4.844383929637663e-07
+      },
+      "denominator_bf16_over_reference_quantiles": {
+        "min": 1.0001801822762546,
+        "p10": 1.1127011706067622,
+        "p50": 2.9351501549531216,
+        "p90": 13.494013993600015,
+        "max": 39.5309409454957
+      },
+      "adaptive_route_difference_residual_l2": 1.981107519912524e-08,
+      "adaptive_route_difference_residual_relative_l2": 4.384017553159104e-07,
+      "denominator_bands": [
+        {
+          "band": "eps_to_2eps",
+          "count": 512,
+          "global_update_error_energy_share": 0.9834868763533452
+        },
+        {
+          "band": "2eps_to_10eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "10eps_to_100eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "above_100eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        }
+      ]
+    },
+    "V": {
+      "elements": 512,
+      "global_update_error_energy_share": 1.993860916129552e-06,
+      "packed_bias_update_error_energy_share": 2.027321462390353e-06,
+      "gradient_reference_l2": 0.1508720322343147,
+      "gradient_bf16_l2": 0.15214691310824988,
+      "gradient_bf16_over_reference_l2": 1.0084500808735393,
+      "gradient_relative_l2": 0.028454451042485236,
+      "update_reference_l2": 0.004069564839889879,
+      "update_bf16_l2": 0.004074784101147341,
+      "update_difference_l2": 6.434264468141378e-05,
+      "update_relative_l2": 0.015810694069972077,
+      "denominator_reference_quantiles": {
+        "min": 0.0004318375893274905,
+        "p10": 0.0006057439509047387,
+        "p50": 0.0016813142516090946,
+        "p90": 0.010364243780347008,
+        "max": 0.019107147302687547
+      },
+      "denominator_bf16_quantiles": {
+        "min": 0.0004318425585052884,
+        "p10": 0.0006057454149985428,
+        "p50": 0.0016813429396815211,
+        "p90": 0.010364264860274745,
+        "max": 0.019106913491203564
+      },
+      "denominator_bf16_over_reference_quantiles": {
+        "min": 0.9998551624508726,
+        "p10": 0.9999708905719448,
+        "p50": 1.0000013450097671,
+        "p90": 1.0000399302138097,
+        "max": 1.0002044340243557
+      },
+      "adaptive_route_difference_residual_l2": 2.686295709218365e-08,
+      "adaptive_route_difference_residual_relative_l2": 0.00041749849147782033,
+      "denominator_bands": [
+        {
+          "band": "eps_to_2eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "2eps_to_10eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "10eps_to_100eps",
+          "count": 0,
+          "global_update_error_energy_share": 0.0
+        },
+        {
+          "band": "above_100eps",
+          "count": 512,
+          "global_update_error_energy_share": 1.993860916129552e-06
+        }
+      ]
+    }
+  },
+  "key_bias_by_layer": [
+    {
+      "parameter": "encoder.layers.0.self_attn.in_proj_bias",
+      "global_update_error_energy_share": 0.38337738227085993
+    },
+    {
+      "parameter": "encoder.layers.1.self_attn.in_proj_bias",
+      "global_update_error_energy_share": 0.3708845481213183
+    },
+    {
+      "parameter": "encoder.layers.2.self_attn.in_proj_bias",
+      "global_update_error_energy_share": 0.17441771475834333
+    },
+    {
+      "parameter": "encoder.layers.3.self_attn.in_proj_bias",
+      "global_update_error_energy_share": 0.05480723120282352
+    }
+  ],
+  "observed_mechanism": "K-bias residual gradients increase about1418.48x in norm versus nearly-zero FP32 gradients. All512 reference K denominators lie between eps and2eps. Stored Adam moments predict the observed K route-update difference with relative residual4.384e-7.",
+  "interpretation": "Strong diagnostic support for cancellation residue amplified by Adam near the epsilon scale, localized to this one train batch/checkpoint. The location where rounding first arises and a successful intervention remain unmeasured.",
+  "claim_ceiling": "Numerical error localization and equation consistency. No held-out utility advantage, causal intervention, convergence, full-update speed or formal admission.",
+  "next_action": "Design one separate default-off candidate targeting K-bias gradient numerical consistency, with an FP32 parity control, same original full update and unchanged global gates. Review the numerical-policy and checkpoint boundaries before a new supervised collaborator experiment.",
+  "limitations": [
+    "Owner verifies authenticated scalar reductions, published code and aggregate identities; private tensors remain on collaborator CPU.",
+    "No original weights in the saved pair; adaptive difference agreement is not exact full-step reconstruction.",
+    "Absolute gradient norms accompany ratios because reference K gradients are nearly zero.",
+    "Q/K/V localization does not identify projection-cast versus SDPA-backward versus gradient-reduction rounding separately.",
+    "No parameter exclusion or revised threshold: original global Adam21.0526percent still exceeds20percent."
+  ]
+}

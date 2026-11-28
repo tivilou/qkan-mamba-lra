@@ -1,0 +1,60 @@
+{
+  "schema": "qkan-mega-fft-code-delivery.v1",
+  "date": "2026-11-26",
+  "status": "collaborator_native_measurement_pending",
+  "candidate": "FP32 EMA FFT zero-padding to next power of two; unchanged convolution crop",
+  "official_source_revision": "aeaa4b44592cd1d60a9a34554e359eda2a62b03b",
+  "ema_source_sha256": "223ee827cffa474c4b2f4759af1999c69b4c2de868174260c3f789a86df8c225",
+  "stable_worker_and_models_modified": false,
+  "formal_policy_changed": false,
+  "native_executed_on_owner": false,
+  "owner_framework_import_or_install": false,
+  "standard_library_tests": {
+    "command": "D:/Software/Dev/Language/Anaconda3/envs/QT2/python.exe -B -m unittest tests.test_baseline_mega_fft tests.test_baseline_experiment_entry -q",
+    "tests": 41,
+    "exit_status": 0,
+    "result": "OK",
+    "scope": "7 new FFT, instance isolation, snapshot, failed-child cleanup/return and CLI checks; 34 existing unified-entry checks"
+  },
+  "bounded_specialist_review": "No concrete blocking bug found in FFT crop, instance isolation, native environment or restore controls; static only",
+  "collaborator_test_budget": {
+    "native_children": 1,
+    "disposable_updates": 11,
+    "formal_updates": 0
+  },
+  "timing_claim": null,
+  "numerical_admission": false,
+  "command_guide": "docs/baselines/mega-fft.md",
+  "local_verification_package": ".runtime/mega-fft-20261126",
+  "all_methods_update": {
+    "status": "collaborator_native_measurement_pending",
+    "methods": [
+      "fft",
+      "bf16",
+      "tf32",
+      "graph",
+      "micro-down",
+      "micro-up",
+      "resident"
+    ],
+    "fixed_stacks": [
+      "fft+bf16",
+      "fft+graph",
+      "bf16+graph",
+      "fft+bf16+graph"
+    ],
+    "max_children": 12,
+    "max_temporary_updates": 132,
+    "formal_updates": 0,
+    "aggregate_uploads": 1,
+    "focused_stdlib_checks": 42,
+    "test_exit_status": 0,
+    "graph_compatibility_source": "https://raw.githubusercontent.com/pytorch/pytorch/v1.13.1/torch/cuda/graphs.py",
+    "fixes": [
+      "Torch1.13 has no allow_unused_input argument",
+      "disable autocast cache for Graph capture"
+    ],
+    "native_result": null,
+    "package": ".runtime/mega-all-20261126"
+  }
+}

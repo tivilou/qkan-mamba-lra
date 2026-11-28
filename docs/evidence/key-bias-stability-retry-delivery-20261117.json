@@ -1,0 +1,98 @@
+{
+  "schema": "qkan-key-bias-stability-retry-delivery.v1",
+  "baseline_revision": "5d7ec8f0cb9fad19c4b72c5b626323535833125e",
+  "changes": [
+    "--reuse-from authenticates reviewed original report/request/source and unchanged engine bindings;recomputes six successful gates;dispatches partition32 only",
+    "Comparison saves each completed timing outside measured intervals and exports bounded Executor diagnostics before clear",
+    "Parent retains comparison.json and worker-error.json under separate filenames",
+    "Typed parity failure preserves failed field/tolerances without tensor values;required Graph rejection remains enforced"
+  ],
+  "files_sha256": {
+    "experiments/baseline_delivery/key_bias_stability.py": "f9192a1d1238f35830f9d5d4aa47d34dcb056627cfda4ca435f6f87b5a7c3718",
+    "experiments/baseline_delivery/key_bias_stability_native.py": "316fe42cb22f5e02d4348c262e0fedbda5b85664daf7dbf3b090684fd09b287f",
+    "tests/test_baseline_key_bias_stability_retry.py": "16b538be58c487805153a90118060ea8d0898a4d276af63055d7cb73a96b4c85",
+    "docs/evidence/key-bias-stability-partial-review-20261117.json": "8122d26a54c78b3b74abae22ea4dff7f68f866d8131e8034790fedfc91014635",
+    "docs/baselines/attention-key-bias-stability-retry.md": "e92b60fbf072494754dbd8eb014bdad07376b76263fdd91ba2823e975c2546e8"
+  },
+  "protected_core_sha256": {
+    "experiments/baseline_delivery/models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386",
+    "experiments/baseline_delivery/worker.py": "650e8e52093fdef1a2e55931aad08f5e4e45e43668c75330127d3f41f3938d03",
+    "experiments/baseline_delivery/migration.py": "6e0091700f1a2ac4daca3554cc4ab4b91ab0ff8b019a48d33244df6a475d4c98",
+    "experiments/baseline_delivery/torch_acceleration.py": "57c1c481648856e4c0d4c4878e45a51dccec7436bc09540d08467091519beb70",
+    "experiments/baseline_delivery/parallel_attention.py": "c8b58891b598575ff04ddec13fc35f63de8d40f2e7f761ae494283512c278fb3",
+    "experiments/baseline_delivery/partitioned_attention.py": "a4d3a5bd57ccca88cc28d9e0bdf96e12d345dc3d3ffa7379169c658dad0a4141",
+    "experiments/baseline_delivery/trace.py": "56873af73e6b18551784054040f91737f865754b5e60136c06c4a78d4ec180e9",
+    "experiments/baseline_delivery/protocol.json": "dafbbdae57b2793d42c6b86f76ba102f7743c023867be8dff386592235f3ac6d"
+  },
+  "unchanged_reused_sha256": {
+    "docs/baselines/attention-key-bias-stability-plan.json": "3286d03dd890c06956625633c54a22c9b05666632249ab44836ad1c77490320c",
+    "docs/baselines/attention-attribution-key-bias-recovery-plan.json": "4d025f102723adb51c7f76f5fc37a377f1f7c1755092d6a095867fdf46fb8758",
+    "docs/baselines/attention-key-bias-benchmark-plan.json": "dd531d3da7cd70dee75933d3426d117df5df9e6fdde8c746fac480380372e2f2",
+    "experiments/baseline_delivery/attention_update_native.py": "22cd22febdb0e93eb869d8b61f796ac3bf9ac72b7cfbc658dc2e52a62c4ea9a7",
+    "experiments/baseline_delivery/key_bias_recovery.py": "588bc140440f84d37083a865bc4b4a58683a980f6ae54b39390af281e8436d79",
+    "experiments/baseline_delivery/key_bias_benchmark.py": "112e16a7f16aa6e8a2e46b00618b019fc8be342ff1cec7959dab0a3609cdcea8"
+  },
+  "native_partial_review": "docs/evidence/key-bias-stability-partial-review-20261117.json",
+  "native_audit": {
+    "passed": true,
+    "source_sha256": "5b7953f892aad062e80134d94733ecd2d0c484327087b1e173bdc5c8391517d1",
+    "published_bindings_verified": 22,
+    "recomputed": [
+      "24 blocks",
+      "64 vs32+32 recovery",
+      "ABBAx2 Graph16 medians/four pairs",
+      "steady capture proof",
+      "seven own groups clean"
+    ],
+    "native_framework_imports": 0
+  },
+  "controls": {
+    "total": 471,
+    "passed": 468,
+    "skipped": 3,
+    "new": 5,
+    "framework_imports": 0
+  },
+  "validation": [
+    "Authenticated prefix report/request tamper rejected;source/checkpoint/engine changes rejected",
+    "Missing/failed prefix,bad rollback,changed full-state recovery,timing or unvalidated capture rejected",
+    "Retry parent launches exactly one partition32 child and reuses six result identities",
+    "Actual stdlib Executor third-capture fixture retains seven timings and underlying recompile_budget category after AccelerationRequired",
+    "Actual stdlib Executor NumericalMismatch retains exact structured failed field through downgrade",
+    "Failure report keeps both comparison and worker error;full original fake state/graph cleanup exact",
+    "Independent patch/rollback/reapply and before/after behavior executed;original plan validates"
+  ],
+  "package": {
+    "directory": ".runtime/key-bias-stability-fix-20261117",
+    "candidate": "candidate/",
+    "patch": "change.patch",
+    "verification": "verification.json",
+    "rollback": "rollback.py",
+    "files": 5,
+    "literal_commands": 15,
+    "patch_rollback_reapply_verified": true,
+    "baseline_behavior": {
+      "error_type": "AccelerationRequired",
+      "has_underlying_diagnostic": false,
+      "retained_timing_records": 0,
+      "rollback_exact": true
+    },
+    "modified_behavior": {
+      "error_type": "AccelerationRequired",
+      "has_underlying_diagnostic": true,
+      "retained_timing_records": 7,
+      "rollback_exact": true
+    },
+    "full_controls_record": ".runtime/key-bias-stability-fix-20261117/controls-final.log",
+    "corrected_trial": "Initial isolated copy lacked shared scripts dependency;corrected independent copy passed;first trial retained privately"
+  },
+  "candidate_admitted": false,
+  "formal_training_started": false,
+  "training_samples_committed": 0,
+  "limitations": [
+    "Graph32 underlying native rejection still unobserved;this fixes evidence loss and prefix reuse,not an asserted native numerical/compiler/memory repair",
+    "471 tests use stdlib/fakes only;no owner frameworks/models/GPU work or dependency installation",
+    "64step stability/exact recovery/Graph16 gain do not prove full convergence/held-out utility or formal migration readiness"
+  ],
+  "next_action": "Collaborator runs docs/baselines/attention-key-bias-stability-retry.md on idle GPU0 and paused original14268;review returned partition32 result or underlying rejection"
+}

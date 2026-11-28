@@ -1,0 +1,21 @@
+{
+  "schema": "qkan-mega-graph-repair-code.v1",
+  "date": "2026-11-27",
+  "native_status": "pending_collaborator_execution",
+  "routes": 6,
+  "max_disposable_updates": 66,
+  "formal_updates": 0,
+  "mutation": "Instance-only immutable EMA grid cache and last FFN graph wrapper",
+  "fixed_source": "https://github.com/facebookresearch/mega/blob/aeaa4b44592cd1d60a9a34554e359eda2a62b03b/fairseq/modules/exponential_moving_average.py",
+  "torch_api_source": "https://github.com/pytorch/pytorch/blob/v1.13.1/torch/cuda/graphs.py",
+  "owner_native_execution_or_install": false,
+  "focused_tests": 18,
+  "test_exit_status": 0,
+  "review": "No concrete blocking capture/control bug identified; partial Graph backend report corrected",
+  "limits": [
+    "CPU arange transfer identified from source; not proven sole cause of prior RuntimeError",
+    "Whole and partial Graph native success and error standards remain unverified",
+    "No formal strategy changes, no numerical admission"
+  ],
+  "package": ".runtime/mega-graph-repair-20261127"
+}

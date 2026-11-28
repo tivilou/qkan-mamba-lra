@@ -1,0 +1,148 @@
+{
+  "schema_version": "experiment-grounded-ideation.mechanism-recovery.v2",
+  "evidence_packet": {
+    "path": "docs/evidence/attention-bias-native-review-20261116.json",
+    "sha256": "8059d5fe17cc9b8f66848ff80922a05e7f6bf89b2170544b6c472c9471805fea",
+    "code_revision": "5a46374e7c4b01de8d1e40ea85e7c2c711ba4124",
+    "validity_status": "clean"
+  },
+  "causal_trace": {
+    "intervention_execution": {
+      "claim": "Existing BF16 efficient SDPA ran at original step14268; CPU analysis preserves full paired values and code identity.",
+      "evidence_refs": [
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-update-native-review-20261115.json"
+      ]
+    },
+    "intended_intermediate": {
+      "claim": "K512 bias elements carry98.3486876percent of global update error; raw K-gradient norm rises1418.48x versus nearly-zero FP32.",
+      "evidence_refs": [
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-update-native-review-20261115.json"
+      ]
+    },
+    "observable_output": {
+      "claim": "Saved moments explain actual K-update route difference with relative residual4.384e-7; global Adam delta21.0526percent exceeds unchanged20percent.",
+      "evidence_refs": [
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-update-native-review-20261115.json"
+      ]
+    },
+    "task_utility": {
+      "claim": "New consistency method has no measured numerical or speed result. Prior isolated BF16 attention gain is not complete-update gain.",
+      "evidence_refs": [
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-update-native-review-20261115.json"
+      ]
+    }
+  },
+  "failure_analysis": {
+    "primary_explanation": {
+      "statement": "Numerical residue in the exact K-bias null direction interacts with tiny Adam moments/denominators; the precise rounding origin remains unresolved.",
+      "confidence": "medium",
+      "evidence_refs": [
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-update-native-review-20261115.json"
+      ]
+    },
+    "alternative_explanations": [
+      {
+        "statement": "Finite-precision casts and SDPA backward can violate exact shift invariance. A zero-derivative surrogate changes that numerical program and could alter later trajectories despite a passing one-step gate.",
+        "confidence": "medium",
+        "evidence_refs": [
+          "docs/evidence/attention-bias-native-review-20261116.json",
+          "docs/evidence/attention-attribution-native-review-20261116.json",
+          "docs/evidence/attention-update-native-review-20261115.json"
+        ]
+      }
+    ],
+    "discriminating_measurement": {
+      "uncertainty": "Does the analytic K-bias derivative suppress the observed update error while retaining all parameters, original optimizer history and unchanged forward?",
+      "measurement": "Three same-state single updates:original FP32,FP32 analytic control,BF16 analytic candidate. Verify original against stored FP32,each analytic forward/non-K values against its stored unmodified route,32hook callbacks,zero K gradients,all53parameter metrics and exact rollback.",
+      "primary_outcome": "K gradient zero with Q/V exact and original Adam slots retained; both control/candidate pass fixed global gates.",
+      "alternative_outcome": "Reject numerical policy on parity/history/scope/global-gate failure; no exclusion or threshold changes."
+    },
+    "closed_family": {
+      "id": "unchanged-bf16-with-unconstrained-key-bias",
+      "rejected_variant_refs": [
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-update-native-review-20261115.json"
+      ],
+      "closure_evidence_refs": [
+        "docs/evidence/attention-bias-native-review-20261116.json",
+        "docs/evidence/attention-attribution-native-review-20261116.json",
+        "docs/evidence/attention-update-native-review-20261115.json"
+      ],
+      "forbidden_rescue_variants": [
+        "Repeat unchanged BF16 full update",
+        "Exclude K parameters from global metric",
+        "Reset Adam moments or steps",
+        "Tune epsilon or acceptance threshold after seeing results"
+      ]
+    }
+  },
+  "positive_carryovers": [
+    {
+      "id": "native-bf16-sdpa",
+      "mechanism": "Existing BF16 SDPA attention throughput benefit and identical forward implementation can be retained while studying a separate gradient policy.",
+      "evidence_refs": [
+        "docs/evidence/attention-precision-native-review-20261115.json",
+        "docs/evidence/attention-bias-native-review-20261116.json"
+      ],
+      "transport_constraint": "Isolated kernel gain and parameter diagnosis do not prove new-policy update gain or convergence."
+    }
+  ],
+  "recovery_outcome": {
+    "disposition": "candidate",
+    "selected_candidate": {
+      "id": "bf16-key-bias-analytic-zero-v1",
+      "title": "BF16 SDPA with analytic zero K-bias derivative and retained Adam history",
+      "positive_carryover_ids": [
+        "native-bf16-sdpa"
+      ],
+      "recovery_mode": "new_causal_path",
+      "causal_difference": "Change only the leaf K-bias gradient before accumulation/clipping; forward/parameters/optimizer histories remain original. This is explicitly a new gradient definition, not just a dtype fix.",
+      "changed_causal_links": [
+        "intended_intermediate",
+        "observable_output",
+        "task_utility"
+      ],
+      "discriminating_measurement": "Three same-state single updates:original FP32,FP32 analytic control,BF16 analytic candidate. Verify original against stored FP32,each analytic forward/non-K values against its stored unmodified route,32hook callbacks,zero K gradients,all53parameter metrics and exact rollback.",
+      "success_gate": "First numerical screen:FP32 control parity and unchanged full global gates. Subsequent fresh-process recovery/full sample-trace.v2/trajectory/matched timing required before any formal admission.",
+      "kill_condition": "Any scope/parity/nonfinite/history/rollback/global-gate failure. No positive complete-update gain or convergence evidence means no deployment claim.",
+      "authorization_boundary": "User started separate candidate design/implementation; deliver bounded collaborator numerical screen only. Owner stdlib/fakes; no formal run or junior SSH."
+    }
+  },
+  "trace_adequacy": {
+    "status": "partial",
+    "schema_version": "sample-trace.v2",
+    "artifact_refs": [
+      "docs/evidence/attention-bias-native-review-20261116.json",
+      "docs/evidence/attention-attribution-native-review-20261116.json",
+      "docs/evidence/attention-update-native-review-20261115.json"
+    ],
+    "selection_rule": "Complete original128 train rows at reviewed checkpoint; all4 packed biases. Future sample trace:first2 of those row IDs, fixed before outputs.",
+    "covered_stages": [
+      "parameter-level complete paired gradients/moments/deltas and authenticated scalar summaries"
+    ],
+    "missing_stages": [
+      "new-policy native execution",
+      "new-policy fresh-process recovery",
+      "new-policy per-sample producer lineage and replay",
+      "new-policy timing/convergence"
+    ],
+    "target_boundary": "Train only;labels consumed by original CE after logits;no validation/test or best-validation selection."
+  },
+  "limitations": [
+    "Analytic zero is the derivative of exact standard dot-product attention in the common K-bias direction, not the literal finite-precision forward map.",
+    "Adam exp_avg/exp_avg_sq/step and weight decay are retained. Zero gradient is not grad=None or frozen parameter; existing momentum continues to update it.",
+    "This delivery stops at a bounded numerical screen; full recovery/trace/trajectory/timing remain gated future work.",
+    "No Graph/formal integration or owner model/native execution."
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "qkan-experiment-entrypoints.v1",
+  "recommended": "scripts/experiment.py",
+  "operations": [
+    "start",
+    "resume",
+    "watch",
+    "upload",
+    "diagnose"
+  ],
+  "inventory_before": {
+    "total": 44,
+    "shell": 17,
+    "python": 27
+  },
+  "inventory_after": {
+    "total": 45,
+    "shell": 17,
+    "python": 28
+  },
+  "legacy_shell_groups": {
+    "training_readiness": [
+      "scripts/run_baselines.sh",
+      "scripts/run_formal_readiness.sh",
+      "scripts/run_adaptive_readiness.sh",
+      "scripts/continue_key_bias_training.sh"
+    ],
+    "migration_compatibility": [
+      "scripts/migrate_fixed_to_adaptive.sh",
+      "scripts/migrate_dynamic_logical.sh",
+      "scripts/migrate_performance.sh",
+      "scripts/migrate_torch_acceleration.sh",
+      "scripts/migrate_parallel_retrieval.sh"
+    ],
+    "explicit_diagnostics": [
+      "scripts/check_attention_update.sh",
+      "scripts/check_parallel_attention.sh",
+      "scripts/check_partitioned_attention.sh",
+      "scripts/collect_operator_profile.sh",
+      "scripts/profile_attention_precision.sh",
+      "scripts/profile_optional_padding.sh"
+    ],
+    "prepare_internal": [
+      "scripts/prepare_adaptive_checkout.sh"
+    ],
+    "legacy_development": [
+      "scripts/run_all.sh"
+    ]
+  },
+  "legacy_python_files": [
+    "scripts/audit_lra_data.py",
+    "scripts/audit_lra_relations.py",
+    "scripts/audit_pixel_source.py",
+    "scripts/baseline_diagnostic.py",
+    "scripts/collect_baseline_sources.py",
+    "scripts/convert_kaggle_lra.py",
+    "scripts/convert_lra_pickle_to_npz.py",
+    "scripts/convert_mega_lra.py",
+    "scripts/curate_lra_documents.py",
+    "scripts/curate_lra_pairs.py",
+    "scripts/download_lra.py",
+    "scripts/exchange_artifacts.py",
+    "scripts/fetch_mega_lra.py",
+    "scripts/formal_progress.py",
+    "scripts/prepare_lra_data.py",
+    "scripts/prepare_python_headers.py",
+    "scripts/prepare_strong_offline_mirror.py",
+    "scripts/publish_install_mirror.py",
+    "scripts/qualification_pilot.py",
+    "scripts/quick_train.py",
+    "scripts/rebuild_mega_lra.py",
+    "scripts/refresh_portal.py",
+    "scripts/run_admitted.py",
+    "scripts/run_data_qualification.py",
+    "scripts/run_qualification_preflight.py",
+    "scripts/serve_exchange.py",
+    "scripts/serve_portal.py"
+  ],
+  "policy": "All44 original scripts retain their bytes. User operations converge to one entry; historical compatibility and scientific bindings retained. No automatic diagnostic reruns, dependency installation or executor revision migration."
+}

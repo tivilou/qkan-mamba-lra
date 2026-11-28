@@ -1,0 +1,52 @@
+{
+  "schema_version": "qkan-scheduler-completion.v1",
+  "observed_at": "2026-10-28T08:15:09Z",
+  "task": "d18c07ab03a342f990d68730d8f5a208",
+  "attempt": "d6cbad6de2c148619908e9c114826185",
+  "node": "owner-recovery-3080ti",
+  "revision": "ac8e0d40d428b6e131905516e11a7a309995d170",
+  "state": "complete",
+  "returncode": 0,
+  "quiescent": true,
+  "finished_epoch_seconds": 1793175237.2979755,
+  "data_path": "/home/qkan-mamba-lra/data/versions/mega-independent-pairclean-v2",
+  "source_version_preserved": "mega-independent-v1",
+  "outputs_verified_against_worker_receipt": {
+    "build-manifest.json": {
+      "local_path": "docs/evidence/mega-independent-pairclean-v2-build.json",
+      "bytes": 11029,
+      "sha256": "d7dbda4c80510609e84a8b0f763767635e601bc8eafc6ba480a9989e1068cff0"
+    },
+    "pair-curation.json": {
+      "local_path": "docs/evidence/mega-independent-pairclean-v2-curation.json",
+      "bytes": 3419,
+      "sha256": "7b9f3329126ee63172c972abfa2192555c58374172e6c92b9ad1b002248d2e03"
+    },
+    "diagnostics.json": {
+      "local_path": "docs/evidence/mega-independent-pairclean-v2-diagnostics.json",
+      "bytes": 19697,
+      "sha256": "f76a82a7f86bb732a05f04f9fa3d2e97c538fee0405c6d48d5ed5cce7595636f"
+    },
+    "qualification-assessment.json": {
+      "local_path": "docs/evidence/mega-independent-pairclean-v2-qualification.json",
+      "bytes": 1347,
+      "sha256": "12e4acde944172b278e51441f04d20ba34993743345ef46e86625a05ff4b585d"
+    }
+  },
+  "acceptance": {
+    "five_tasks_and_fifteen_splits_present": true,
+    "all_split_hashes_match_build_manifest": true,
+    "four_untouched_tasks_match_source_v1_hashes": true,
+    "all_tasks_have_zero_exact_encoded_cross_split_overlaps": true,
+    "all_tasks_have_zero_conflicting_encoded_input_labels": true,
+    "structural_failures": 0,
+    "qualification_status": "insufficient",
+    "formal_baseline_allowed": false
+  },
+  "remaining_qualification_gates": [
+    "per-task data license and use boundary",
+    "Retrieval shared-document and near-duplicate boundary",
+    "frozen-transform learnability evidence"
+  ],
+  "supersedes_observation": "The queued task and memory admission block in scheduler-dispatch-20261028.json are historical and resolved. Task completion does not release formal baselines."
+}

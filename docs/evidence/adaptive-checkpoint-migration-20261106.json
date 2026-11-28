@@ -1,0 +1,52 @@
+{
+  "schema": "qkan-checkpoint-migration-implementation.v1",
+  "status": "implemented_pending_native_gpu_validation",
+  "source_revision": "31639c014a62504f6596e75cf56a1abd5068bce4",
+  "date": "2026-11-06",
+  "owner_validation": {
+    "stdlib_migration_tests": 14,
+    "adaptive_regression_tests": 28,
+    "passed": true,
+    "ast": true,
+    "readiness_help": true,
+    "framework_imports": false,
+    "model_execution": false,
+    "gpu_query": false
+  },
+  "contract": {
+    "source_checkpoint_unchanged": true,
+    "new_suite": true,
+    "new_admission": true,
+    "optimizer_steps_during_restore_check": 0,
+    "original_scientific_config_locked": true,
+    "preserve": [
+      "parameters",
+      "optimizer",
+      "scheduler",
+      "rng",
+      "epoch",
+      "cursor",
+      "permutation",
+      "history",
+      "best_weights",
+      "best_accuracy",
+      "training_seconds"
+    ],
+    "trajectory": "fixed prefix followed by adaptive continuation; no fixed-policy equivalence"
+  },
+  "limitations": [
+    "only admitted fixed31639c0 source supported",
+    "completed source jobs rejected",
+    "native Torch/JAX restore and Linux wrapper await executor run",
+    "no measured speedup"
+  ],
+  "source_sha256": {
+    "experiments/baseline_delivery/migration.py": "5b77a0fe6af9109034e1b22ed632e46b2e3c093f3a6a0f12e424648ff4dd01f8",
+    "experiments/baseline_delivery/readiness.py": "5cd253c441d0283b4f24cc7af95b7e72c856c6f44fd2c5fb3874f5650cb49425",
+    "experiments/baseline_delivery/worker.py": "b7ea9fe2883bf88130c231b5e5edcf3b2e4bd145175259f7ef95c642e6cafc8b",
+    "experiments/baseline_delivery/s5_worker.py": "22458cf3aefd0146c18254ccca4558ba090a11d0dca1ec4effe4f97a08e2659a",
+    "experiments/baseline_delivery/runner.py": "205ea215bc50580cabde634632f6887d103782dd100dad8b8ad42df8bf44d9e2",
+    "scripts/migrate_fixed_to_adaptive.sh": "399597e66f5d1aaa8195b5554fa7d4b8e6da19db895a29822e502a4b72f1db03",
+    "tests/test_baseline_migration.py": "f0a7769ab731b4c5959d42d64ef2f653387f2edc7cfe2330287a3278a178e331"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "qkan-mamba-projection-failure-review.v1",
+  "evidence": {
+    "report_sha256": "7d7a1519b8fd870903f0ec12a46d2df96089e69a6afdb1664baa5fd29b9505da",
+    "bytes": 75074,
+    "suite": "mamba-projection-2e3a7f239062",
+    "revision": "5fdbeba08593127dc889e1a593f2e6227708e2b8",
+    "source_checkpoint_sha256": "fc3ccbb796b26c1ee58ac516e5aaa274846066cea9b49660e09aa8c795c4d01b"
+  },
+  "findings": {
+    "fp32_prefixes_completed": 2,
+    "disposable_updates": 4,
+    "candidate_update_started": false,
+    "source_unchanged": true,
+    "all_process_groups_clean": true,
+    "owned_binaries_removed": true,
+    "failure": "ValueError at mamba_diagnostic.py:37; combined class/FP32/fast-path guard; individual failed predicate not returned",
+    "numeric_or_speed_result_available": false
+  },
+  "repair": "Keep source/class/FP32 checks; preserve full pinned original forward, replacing exactly one input-projection expression. Preserve both fused and original unfused branches without installing optional dependencies.",
+  "verification": {
+    "pinned_source_sha256": "a17e4c51b582dc0d4d690a649eba521cd0c1ee3dc8f0473a0967cdc9ec0874e3",
+    "expression_replacements": 1,
+    "source_ast_roundtrip_exact": true,
+    "owner_native_executed": false,
+    "formal_training_changed": false
+  },
+  "limits": [
+    "Actual selected native path awaits repaired diagnostic mechanism receipt.",
+    "Previous FP32 arrays were cleaned; matched arrays must be regenerated for numerical comparison.",
+    "No candidate speed, numerical acceptance or formal release claimed."
+  ]
+}

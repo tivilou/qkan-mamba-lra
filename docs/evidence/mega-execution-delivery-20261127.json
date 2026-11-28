@@ -1,0 +1,46 @@
+{
+  "schema": "qkan-mega-optional-execution-delivery.v1",
+  "date": "2026-11-27",
+  "plugin": "mega.fft_tail_bf16",
+  "version": 1,
+  "graph_default": false,
+  "registry": "experiments/baseline_delivery/execution_plugins.py",
+  "worker_hook": "existing Hooks.model_context; worker.run original code",
+  "native_qualification_pending": true,
+  "formal_queue_changed": false,
+  "quality_admitted": false,
+  "native_children": 7,
+  "temporary_updates": 40,
+  "formal_updates": 0,
+  "qualify_modes": [
+    "reference",
+    "eager",
+    "graph",
+    "interrupt",
+    "resume",
+    "graph-interrupt",
+    "graph-resume"
+  ],
+  "validation": {
+    "split": "val",
+    "first_rows": 256,
+    "route": "original FP32",
+    "test_access": false,
+    "selection": false
+  },
+  "batch_controls": "actual perupdate micro/logical checked; no throughput-driven tuning; retry tier change fails comparison",
+  "checks": {
+    "focused_stdlib": 24,
+    "exit_status": 0,
+    "worker_calculation_and_checkpoint_AST_unchanged": true
+  },
+  "owner_native_execution_or_install": false,
+  "review": "Bounded static review found actual OOM-tier metadata gap and environment precision contradiction; both fixed",
+  "limits": [
+    "No native qualification success claimed",
+    "No precision tolerance invented or loosened; actual validation quality review required before formal migration",
+    "No completed result rerun or old Suite rewrite"
+  ],
+  "guide": "docs/baselines/mega-execution.md",
+  "package": ".runtime/mega-execution-20261127"
+}

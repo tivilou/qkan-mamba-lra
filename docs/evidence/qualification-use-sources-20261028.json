@@ -1,0 +1,52 @@
+{
+  "schema": "qkan-primary-source-receipt.v1",
+  "sources": [
+    {
+      "id": "imdb-author-use-local-recovery",
+      "method": "GET",
+      "url": "https://ai.stanford.edu/~amaas/data/sentiment/",
+      "retrieved_at": "2026-10-28T10:36:54.580690+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1007)>"
+    },
+    {
+      "id": "pathfinder-generator-readme-pinned",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/drewlinsley/pathfinder/7b538865667dfe16f949ed3b7c8dc6a65ca87099/README.md",
+      "retrieved_at": "2026-10-28T10:36:55.157848+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "Remote end closed connection without response"
+    },
+    {
+      "id": "pathfinder-generator-license-pinned",
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/drewlinsley/pathfinder/7b538865667dfe16f949ed3b7c8dc6a65ca87099/LICENSE",
+      "retrieved_at": "2026-10-28T10:37:14.987432+00:00",
+      "access_mode": "public_http",
+      "browser_escalations": 0,
+      "status": "failed",
+      "http_status": null,
+      "failure_reason": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1007)>"
+    }
+  ],
+  "policy": {
+    "requests_max": 3,
+    "retries": 0,
+    "per_origin_concurrency": 1,
+    "minimum_delay_seconds": 1.5,
+    "browser_escalations": 0,
+    "purpose": "Recover dataset-use statements after connection refusal; pin generator terms",
+    "allowed_fields": [
+      "public dataset-use statements",
+      "README",
+      "license"
+    ],
+    "freshness": "fresh or explicitly unvalidated cache age"
+  }
+}

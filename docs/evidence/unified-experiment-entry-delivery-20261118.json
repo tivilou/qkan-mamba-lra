@@ -1,0 +1,68 @@
+{
+  "schema": "qkan-unified-experiment-delivery.v1",
+  "date": "2026-11-18",
+  "status": "unified_user_entry_delivered_control_verified",
+  "baseline_revision": "403d4c6bb4b78cbdc33ab4fd001a06f4408c9472",
+  "delivered_files": {
+    "scripts/experiment.py": "237ac5b35b888c85ba85d26b0607bebf0afc77a7c1a8afaa237b8b0632251a49",
+    "tests/test_baseline_experiment_entry.py": "26e9c8de2e9c0413158fa409379ad97dd2d18816d911d5fde5aa1358a67aa600",
+    "docs/baselines/experiment.md": "c14c7cfb0910a9260a54606bb43032cd8e1f2764ed81c1e040d6a0f9764c4f39",
+    "docs/baselines/experiment-entrypoints.json": "5675f162e7feabff8ff6d275d28f323fcaf348c74505e27ade699f25baaf5cb5",
+    "README.md": "e3f335c048c18881f91cf88e72d39337a6f5c2fe3fafe9e6b73f58a9d8fdc833",
+    "docs/baselines/one-click.md": "a2da1efb7424269cc02d7a3c471f3f7d92cc127719ab1329583d73d953a9a7a9",
+    "docs/baselines/consolidated-launch.md": "7d0b77aaaeaba9608dc767a4bd1d7d0f9ab5dd79e521c894ea21657a6d9ca737",
+    "docs/baselines/collaborator-beginner-guide.zh-CN.md": "a6c04739668d5e799785fe575cca89a26608dbaeae1274a9194f687b2fe2c887",
+    "docs/baselines/attention-key-bias-formal-continuation.md": "2b624b320432dc73ef32139e60934be672a19ca5dcec40a7dcbf5a4a6724253d"
+  },
+  "operations": [
+    "start",
+    "resume",
+    "watch",
+    "upload",
+    "diagnose"
+  ],
+  "inventory": {
+    "before": 44,
+    "after": 45,
+    "old_shells": 17,
+    "old_python": 27,
+    "new_python": 1,
+    "old_scripts_unchanged": 44,
+    "recommended_user_entries": 1
+  },
+  "tests": {
+    "total": 550,
+    "passed": 547,
+    "skipped": 3,
+    "new": 28,
+    "framework_imports": 0
+  },
+  "literal_command_records": 20,
+  "unchanged_native_bindings": 21,
+  "verification_sha256": "aac3a55c4899dafc86b04971e64f31307b7bf31ee43a0748050ca35582aa1486",
+  "package": {
+    "change.patch": {
+      "path": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\unified-experiment-20261118\\change.patch",
+      "sha256": "9a90123391af362738b5e5d3853b57da6062e6c9b1098f118edb2f531e22c7ed"
+    },
+    "rollback.py": {
+      "path": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\unified-experiment-20261118\\rollback.py",
+      "sha256": "94ae454ee8fb466d2c398df84b72270aac8f89e501af9d34ad6a34a99adb2f78"
+    },
+    "package.json": {
+      "path": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\unified-experiment-20261118\\package.json",
+      "sha256": "0f12012f188bbdd5900c556ea99d9fc85fc75bd9cefa8463cf203f20eebd4318"
+    },
+    "candidate": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\unified-experiment-20261118\\candidate",
+    "verification": "E:\\Claude.Code\\Paper.Writing\\QKAN-Mamba\\.runtime\\unified-experiment-20261118\\verification.json"
+  },
+  "rollback_verified": true,
+  "reapply_verified": true,
+  "fixture_suite_unchanged": true,
+  "current_suite": "key-bias-formal-20261117T141411Z-047505d9",
+  "current_executor": "a3569140d43b56cae30bd42db8e604db252f5e50",
+  "preservation": "Fetch only experiment.py and original UI into ignored .bootstrap; resume through original interpreter/module; native scientific bindings, configs, checkpoint and completed results remain owned by original executor",
+  "start": "Flatten historical migration wrapper flags; original readiness/zero-update prepare passes before same entry automatically resumes; prepare-only stops before training",
+  "resume": "No fresh start or repeated diagnostics; exact original revision and clean tracked files; supervisor/Suite locks; owned parent safe pause and original dashboard",
+  "claim_ceiling": "Control/packaging verification only. No collaborator GPU launch, stop, full convergence or new native receipt audit performed. Linux supervisor signals and native stages tested with fakes on owner Windows; real no-data CLI/read-only watch verified."
+}

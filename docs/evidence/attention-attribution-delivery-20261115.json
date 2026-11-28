@@ -1,0 +1,56 @@
+{
+  "schema": "qkan-attention-attribution-delivery.v1",
+  "date": "2026-11-15",
+  "status": "control_verified_collaborator_measurement_pending",
+  "baseline_revision": "934e7028cfb1ec8983a5741153593b2500c91ea7",
+  "purpose": "Only measure the existing rejected intervention; no new recovery candidate or training admission.",
+  "prior_evidence": "docs/evidence/attention-update-native-review-20261115.json",
+  "contract": "docs/baselines/attention-attribution-contract.json",
+  "handoff": "docs/baselines/attention-attribution-diagnostic.md",
+  "controls": {
+    "guarded_tests": 393,
+    "passed": 390,
+    "skipped": 3,
+    "new_tests": 12,
+    "native_imports": 0,
+    "protected_core_hashes": 8,
+    "patch_apply_rollback_replay": true
+  },
+  "modified_sha256": {
+    ".gitattributes": "ed75f6ce87f0530040224db1d14f462e1e1375a461c69f964b3aef8a0bec872c",
+    "experiments/baseline_delivery/attention_update_native.py": "ecd2f1835c5a5be7958f552585bf91b2d53478730a10636be8c18e312d5e19d4",
+    "experiments/baseline_delivery/attention_update_diagnostic.py": "6089c91a3ecd3a5679ffb70bde0071c1c3574a3346904c5b77da99a7907dc808",
+    "experiments/baseline_delivery/attention_attribution.py": "2f6856c8f667d62bcd1e256c6c981e945f9f9d18b3fcfeb86e1b2cef814dc870",
+    "tests/test_baseline_attention_attribution.py": "6d9a02aa0b49896ee28c7f331465be37dda9ba415dd6025b0bdf16a3ee2fe5c0",
+    "docs/baselines/attention-attribution-contract.json": "b26f56821ddaa512608784adad337aa57c06834e0a4d92f3c12aee862a013959",
+    "docs/baselines/attention-attribution-diagnostic.md": "bdefcb07898c7a1bebb8da045176323e074c5922b6be28ef69eda869d3698a60"
+  },
+  "package": {
+    "modified_artifacts": ".runtime/attention-attribution-20261115/candidate",
+    "patch": ".runtime/attention-attribution-20261115/change.patch",
+    "verification": ".runtime/attention-attribution-20261115/verification.json",
+    "rollback": ".runtime/attention-attribution-20261115/rollback.py"
+  },
+  "scope": {
+    "children": 1,
+    "updates_per_route": 1,
+    "routes": [
+      "fp32",
+      "bf16"
+    ],
+    "micro": 16,
+    "logical": 128,
+    "dropout": 0,
+    "checkpoint": "reviewed original b07 latest; refuse changed pointer/metadata",
+    "population": "same original128 train rows at cursor",
+    "auto_return": "compact attention-attribution.json only",
+    "private_paired_values_max_bytes": 134217728,
+    "native_raw_value_reopen_required": true
+  },
+  "native_acceptance": "pending collaborator; owner controls use injected tensors and optimizer only",
+  "limitations": [
+    "Per-parameter ranks describe squared-error contributions and do not establish causality.",
+    "This measurement does not change the20percent Adam gate or certify sample-trace.v2, speed, convergence, Graph, or formal training.",
+    "No recovery repeats, source-checkpoint copies, dataset caches or dependency installs."
+  ]
+}

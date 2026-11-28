@@ -1,0 +1,28 @@
+{
+  "schema": "qkan-trace-replay-fix.v1",
+  "source_revision": "96fcb666290d4aa9626c2749089659b21192afc0",
+  "collaborator_failure": {
+    "task": "retrieval",
+    "model": "transformer",
+    "stage": "trace capture pooled representation replay",
+    "mismatched_elements": 4,
+    "elements": 256,
+    "maximum_absolute_difference": 0.00000302314758,
+    "observation": "NumPy CPU per-sample pooling compared with Torch GPU batched pooling"
+  },
+  "fix": "Decode saved arrays, replay on producer device and dtype using original selected-sample batch shape; no tolerance changes",
+  "rtol": 0.00001,
+  "atol": 0.000001,
+  "scheduler_tasks": {
+    "unit": "4d6f70bf1ab6463fa8cac227d5b3d3be",
+    "cpu_fresh_process_recovery": "96ba0347c4724259b362a9bc0d99d08f"
+  },
+  "regression_tests_passed": 13,
+  "long_retrieval_replay_test": "batch=2, length=4000, width=128, FP32, variable padding; pooled and logits exactly match batched CPU producer",
+  "corruption_checks": "changed pooled values, nonzero padding and empty masks rejected",
+  "cpu_recovery_passed": true,
+  "cpu_recovery_updates": 6,
+  "cpu_recovery_trace_semantic_and_replay_passed": true,
+  "gpu_rerun_verified": false,
+  "formal": false
+}

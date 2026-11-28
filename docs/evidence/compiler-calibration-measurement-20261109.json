@@ -1,0 +1,94 @@
+{
+  "schema": "qkan-compiler-calibration-measurement.v1",
+  "date": "2026-11-09",
+  "status": "native_v4_graph_correct_no_gain_v5_measurement_mock_verified_native_pending",
+  "authentic_return": {
+    "namespace": "formal-readiness/failure-37b2622a59ef",
+    "sha256": "bf23d85bef0362f6777e75c12be6069b5e3de0ef7128b15b93089f5e662a1f72",
+    "source_revision": "d808f0a4dbc843301fc4849d8cbaa27de5ecc6e1",
+    "suite": "runs/adaptive-migrated-20261109T134728Z-225944",
+    "error_type": "AccelerationRequired",
+    "formal_training_started": false
+  },
+  "native_observation": {
+    "fx_synthetic_exact_recovery": true,
+    "fx_synthetic_replays": [
+      400,
+      448
+    ],
+    "fx_real_graph_replays": 80,
+    "fx_real_stage": "ready",
+    "fx_real_diagnostics": [],
+    "fx_real_eager_agreement": "passed_rtol1e-5_atol1e-6_rng_exact",
+    "benchmark": {
+      "eager_seconds": 8.780320465564728,
+      "graph_seconds": 8.801068268716335,
+      "measured_pairs": 2,
+      "slowdown_percent": 0.2362989281880834,
+      "reason": "benchmark_no_gain",
+      "interpretation": "Short bounded measurement has no positive gain; not a statistical or sustained-throughput finding"
+    },
+    "samples_committed": 0,
+    "optimizer_updates_committed": 0,
+    "rollback_exact": true,
+    "inductor": {
+      "exact_recovery_passed": false,
+      "model_mismatch_leaves": 53,
+      "model_max_abs": 7.572770118713379e-05,
+      "adam_mismatch_leaves": 106,
+      "adam_max_abs": 9.428986231796443e-07,
+      "rng_and_controls_exact": true
+    },
+    "aot": "Synthetic numerical/RNG mismatch, eager fallback,0/16replays; no real calibration"
+  },
+  "migration_source": {
+    "revision": "840430a414bcf8bd6eb7c4b9c105e689578b1780",
+    "suite": "runs/adaptive-migrated-20261109T045101Z-183941",
+    "restored_step": 12683,
+    "checkpoint_sha256": "95b8a45e0091d1e93596fc2ce00c4a925aa9b7a47c7a3664b0639e254a51a7f6",
+    "completed_jobs": [
+      "transformer-listops-s42",
+      "transformer-text-s42"
+    ],
+    "original_completion_revision": "9a147cd70cedf1511de89d0381dfbdabac3274f2",
+    "full_scientific_state_preserved": true
+  },
+  "code_observation": {
+    "previous_rollback": "Every restore cleared allocator cache and rebuilt optimizer state through CPU",
+    "previous_measurement": "Fixed eager-first ordering; queued restore work not explicitly synchronized before timer",
+    "attribution": "These can affect calibration cost and timing; they do not prove the cause of the observed0.236percent difference"
+  },
+  "implementation": {
+    "policy": "qkan-torch-acceleration.v5",
+    "rollback": "Preflight full optimizer structure, packed parameter order, tensor shapes/types; copy into live storage without snapshot aliases; detached-load and nativeOOM CPU fallback retained",
+    "timing": "One warmup, two measured pairs AB/BA, pre/post synchronization, raw durations and finite positive-gain requirement",
+    "no_gain_profile": "One additional full update per mode from same snapshot; host/stream phase durations and memory; diagnostic excluded from timing; exact zero-commit rollback",
+    "graph_execution": "Retain v4 document-partitioned native-autograd Graph, no new equations, precision or kernels",
+    "admission": "No weakened exact fresh-process recovery, real numerics/RNG, exact rollback, actual replay or positive complete-update benefit"
+  },
+  "validation": {
+    "standard_library_mock_checks": 215,
+    "new_calibration_checks": 11,
+    "framework_imported": false,
+    "gpu_queried": false,
+    "dependencies_installed": false,
+    "training_executed": false,
+    "thresholds_relaxed": false,
+    "v5_native_positive_gain_passed": false,
+    "sustained_speedup_established": false
+  },
+  "primary_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.7.1/torch/optim/optimizer.py",
+      "sha256": "2381e51f3e02b018a6f29bf811656d93cc980bbb387ba868706a16519ea2d906",
+      "finding": "Packed state values reference original optimizer state; packed group metadata is copied, so real param_groups are restored separately"
+    }
+  ],
+  "artifacts": {
+    "experiments/baseline_delivery/execution.py": "b18b95079a26d1fa42e42d529b197c51266324bd7f18f35157df28a86c55a0ea",
+    "experiments/baseline_delivery/worker.py": "ecd3d974db297f2f673a9e1d7880c1cfbed483e3084e834e130111285da55572",
+    "experiments/baseline_delivery/torch_acceleration.py": "60ea866fa189802edf4fa4aff2215583cdf1809eb1da9e5ee57b7943db7af177",
+    "tests/test_baseline_calibration_timing.py": "9835d32d2c082c74d60385a0e0a66f866aac40fb66b941adbc19dca287a29b13",
+    "docs/baselines/torch-acceleration.md": "16cc1e1d6a01eeb32b625fdcef5b8ea17a087533af3c2038dfb9d014db772dfe"
+  }
+}
