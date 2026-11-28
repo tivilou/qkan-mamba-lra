@@ -84,6 +84,7 @@ class Tests(unittest.TestCase):
         def launch(spec,log,env):
             out=self.suite/'jobs/s5-listops-s42';atomic_json(out/'checkpoints/latest.json',dict(step=186))
             self.assertEqual(env['PYTHONPATH'],'pinned-science');self.assertIn('old-release',env['QKAN_RUNTIME_RELEASE'])
+            self.assertEqual(env['QKAN_MEGA_SOURCE'],str(self.source.parent.parent/'.bootstrap/strong-upstream/mega'))
             return child
         spec=dict(argv=['python','-m','old-worker'],cwd='pinned-science',target='old-worker')
         with patch.object(r,'make_spec',return_value=spec),patch.object(r,'spawn',side_effect=launch), \

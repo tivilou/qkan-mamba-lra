@@ -1,4 +1,4 @@
-"""Two bounded ListOps worker probes; stdlib controller, original pinned workers."""
+"""Bounded baseline runtime probes; stdlib controller, original pinned workers."""
 import argparse
 from contextlib import ExitStack
 import datetime as dt
@@ -9,6 +9,7 @@ import signal
 import subprocess
 import sys
 import time
+from types import SimpleNamespace
 import uuid
 from .common import ROOT,atomic_json,digest,lock,read,revision,spawn,stop_child,worker_failure
 
@@ -29,6 +30,18 @@ def point(heartbeat,config):
         raise ValueError('Invalid worker progress')
     return dict(step=step,at=stamp,samples=samples,batch=batch,
         oom_retries=adaptive.get('oom_retries',0),event=adaptive.get('event'),epoch=heartbeat.get('epoch',0))
+
+
+def final_training_limit(rows,config):
+    """Allow epochs/validation in the disposable run, stop before final test.
+
+    Use the largest possible logical batch, hence a LOWER bound on steps in
+    epochs-1. It is not the old first-epoch cap and does not change config.
+    """
+    largest=max((config.get('adaptive_memory') or {}).get('logical_tiers',[config['batch_size']]))
+    limit=math.ceil(rows/largest)*(config['epochs']-1)
+    if limit<10:raise ValueError('Insufficient disposable training budget')
+    return limit
 
 
 class Windows:
@@ -73,8 +86,8 @@ class Windows:
                 observed_window_range_seconds=[n*epochs/max(rates),n*epochs/min(rates)])
         return dict(stable=stable,windows=windows,batch_resets=self.resets,samples_per_second=rate,
             relative_window_spread=spread,estimates=dict(full=estimate(rows),tenth=estimate(rows//10)),
-            estimate_scope='Training cadence including periodic saves that occur inside windows; '
-                'excludes startup, validation, test, final pause/save and return. '
+            estimate_scope='Training cadence including periodic saves and epoch validation that occur inside windows; '
+                'excludes startup, final validation/test, final pause/save and return. '
                 'Tenth is workload extrapolation, not measured subset training or accuracy. '
                 'Observed window range is not a confidence interval.')
 
@@ -117,17 +130,15 @@ def board(gpu):
 
 def probe(source,suite,model,args,rows,terminal,completed):
     from .diagnostic_watch import terminate
-    job=model+'-listops-s42';output=suite/'jobs'/job
+    job=getattr(args,'probe_job',model+'-listops-s42');output=suite/'jobs'/job
     config=read(source/'jobs'/job/'config.json');atomic_json(output/'config.json',config)
-    largest=max((config.get('adaptive_memory') or {}).get('logical_tiers',[config['batch_size']]))
-    # End strictly BEFORE the first validation/test pass, even at largest tier.
-    limit=(rows-1)//largest
-    if limit<10:raise ValueError('Insufficient first-epoch budget')
+    limit=final_training_limit(rows,config)
     spec=make_spec(source,suite,job,limit);atomic_json(output/'command.json',spec)
     controller=read(source/'mamba-input.json')
     env=dict(os.environ,CUDA_VISIBLE_DEVICES=args.gpu,CUBLAS_WORKSPACE_CONFIG=':4096:8',
         QKAN_RUNTIME_RELEASE=str(Path(controller['source_suite'])/'runtime-release.json'),
         PYTHONPATH=controller['original_root'],PYTHONDONTWRITEBYTECODE='1',PYTHONUNBUFFERED='1',
+        QKAN_MEGA_SOURCE=str(source.parent.parent/'.bootstrap/strong-upstream/mega'),
         QKAN_S5_SOURCE=str(source.parent.parent/'.bootstrap/strong-upstream/s5'))
     meter=Windows(config,args.warmup_seconds,args.window_seconds)
     started=time.monotonic();first_update=None;requested=False;reason='worker_exit';peak=0;next_frame=0
@@ -149,8 +160,8 @@ def probe(source,suite,model,args,rows,terminal,completed):
                     speed=meter.windows[-1]['samples_per_second'] if meter.windows else None
                     timing=(f'{speed:.2f} samples/s | 全量训练粗估 {rows*config["epochs"]/speed/3600:.2f}h（不含验证/测试）'
                         if speed else '速度 / 全量训练估时：待有效窗口')
-                    terminal.show('\n'.join(['ListOps 双模型短时测速（正式队列保持暂停）',
-                        f'模型 {model} | 已完成 {len(completed)}/2 | 阶段 {phase} | 耗时 {int(now-started)}s',
+                    terminal.show('\n'.join(['Baseline 队列短时测速（正式队列保持暂停）',
+                        f'任务 {job} | 已完成 {len(completed)}/{getattr(args,"probe_total",2)} | 阶段 {phase} | 耗时 {int(now-started)}s',
                         f'有效窗口 {len(meter.windows)}/3 | batch变化重置 {meter.resets} | GPU {args.gpu}',
                         f"Step {last.get('step','待测')} | 样本 {last.get('samples','待测')} | micro/逻辑batch {last.get('batch','待测')}",
                         timing,
@@ -175,8 +186,12 @@ def probe(source,suite,model,args,rows,terminal,completed):
         pause_save_cleanup_seconds=time.monotonic()-pause_started,
         memory_scope='Whole-board sampled peak every5s, not allocator high-water mark',
         final_progress=meter.last,config_sha256=digest(output/'config.json'),config=config,
+        measurement_scope='Real worker training cadence; epoch validation and periodic saves inside windows included. '
+            'Final validation/test/trace/return excluded. Other late-run costs may be unobserved.',
+        crossed_epoch=bool(meter.last and meter.last['epoch']>0),stop_step_safety=limit,
         temporary_updates=(finish or {}).get('optimizer_step',0),formal_updates=0,cleanup=cleanup)
-    record['passed']=code==75 and reason!='time_limit' and record['estimates'] is not None
+    record['measurement_complete']=len(meter.windows)>=3
+    record['passed']=code==75 and reason!='time_limit' and record['measurement_complete'] and record['estimates'] is not None
     if (output/'summary.json').exists():raise RuntimeError('Probe unexpectedly reached final evaluation')
     if (output/'worker-error.json').exists():record['failure']=read(output/'worker-error.json')
     # Only disposable files in this owned probe's checkpoint directory.
@@ -191,7 +206,88 @@ def probe(source,suite,model,args,rows,terminal,completed):
     return record
 
 
+def select_pending(source):
+    """Include every unfinished roster job; summary validation outranks stale status."""
+    from .migration import completed_files,verify_completed
+    manifest=read(source/'suite.json');states=read(source/'status.json')
+    chosen=[];done=[]
+    for job in manifest['jobs']:
+        name=job['id'];folder=source/'jobs'/name
+        if (folder/'summary.json').exists() or states[name]['state']=='computed':
+            if job.get('preserved_completion'):verify_completed(source,job)
+            else:completed_files(folder,read(folder/'config.json'))
+            done.append(name);continue
+        if states[name]['state'] not in ('pending','paused','failed'):
+            raise ValueError('Pause all source jobs first')
+        chosen.append(job)
+    return sorted(chosen,key=lambda j:'-retrieval-' in j['id']),done
+
+
+def remaining_estimate(result,source,job,rows,config):
+    heartbeat=peek(source/'jobs'/job/'heartbeat.json')
+    progress=None
+    if heartbeat:
+        if 'samples_seen' in heartbeat:progress=heartbeat['samples_seen']
+        elif 'next_row_cursor' in heartbeat:progress=heartbeat['epoch']*rows+heartbeat['next_row_cursor']
+    if progress is None and not (source/'jobs'/job/'checkpoints/latest.json').exists():progress=0
+    full=rows*config['epochs'];rate=result.get('samples_per_second')
+    result['remaining']=dict(samples=max(0,full-progress) if progress is not None else None,
+        seconds=max(0,full-progress)/rate if progress is not None and rate else None,
+        progress_source='last saved heartbeat (approximate, not checkpoint deserialization)' if heartbeat else
+            'not started' if progress==0 else 'unknown checkpoint progress; no guessed remainder')
+    return result
+
+
+def observed_source(source,name,rows,config):
+    """Reuse a started job's OWN execution history, not unfused fresh Mamba."""
+    folder=source/'jobs'/name;hb=peek(folder/'heartbeat.json')
+    if not hb or 'samples_seen' not in hb or 'run_samples_start' not in hb:return None
+    elapsed=hb['updated_at']-hb['run_started_at'];seen=hb['samples_seen']-hb['run_samples_start']
+    if elapsed<60 or seen<=0:return None
+    rate=seen/elapsed
+    proof=peek(folder/'mamba-fused-execution.json') if config['model']=='mamba1' else peek(folder/'mega-execution.json')
+    if config['model']=='mamba1' and (not proof or proof.get('observed_fused_calls',0)<=0):return None
+    estimate=lambda n:dict(training_samples=n,epochs=config['epochs'],seconds=n*config['epochs']/rate)
+    result=dict(passed=True,stable=False,provenance='existing same-job worker heartbeat; no new probe',
+        samples_per_second=rate,observed_seconds=elapsed,observed_samples=seen,job=name,
+        config_sha256=digest(folder/'config.json'),heartbeat_sha256=digest(folder/'heartbeat.json'),
+        execution_proof=proof,estimates=dict(full=estimate(rows),tenth=estimate(rows//10)),
+        formal_updates=0,limitation='Historical process average includes its startup/waits; stale relative to current hardware. '
+            'No claim of a new three-window benchmark or current checkpoint-exact progress.')
+    return remaining_estimate(result,source,name,rows,config)
+
+
+def totals(report):
+    values=list(report['results'].values())
+    remaining=[r.get('remaining',{}).get('seconds') for r in values]
+    full=[(r.get('estimates') or {}).get('full',{}).get('seconds') for r in values]
+    return dict(estimated_jobs=sum(bool(r.get('estimates')) for r in values),selected_jobs=len(report['selected_jobs']),
+        coverage_complete=len(values)==len(report['selected_jobs']) and all(v is not None for v in remaining)
+            and all(r.get('estimates') for r in values),
+        known_remaining_seconds=sum(v for v in remaining if v is not None),
+        known_full_from_scratch_seconds=sum(v for v in full if v is not None),
+        exclusions='Initialization, final evaluation/test/trace/return and unobserved validation overhead; '
+            'epoch validation/checkpoint costs inside measured windows are included. Not a guaranteed total wall time.')
+
+
 def summary(report):
+    if report.get('all_pending'):
+        lines=['# Unfinished baseline runtime estimates','',
+            '| Job | Source | 3-window stable | samples/s | Full from scratch(h) | Remaining(h) |',
+            '|---|---|---:|---:|---:|---:|']
+        for name,result in report['results'].items():
+            rate=result.get('samples_per_second');full=(result.get('estimates') or {}).get('full',{}).get('seconds')
+            left=result.get('remaining',{}).get('seconds')
+            fmt=lambda v:'unknown' if v is None else f'{v:.2f}'
+            lines.append('| '+' | '.join((name,result.get('provenance','fresh isolated worker'),str(result.get('stable',False)),
+                fmt(rate),fmt(full/3600 if full is not None else None),fmt(left/3600 if left is not None else None)))+' |')
+        total=totals(report)
+        lines+=['',f"Coverage {total['estimated_jobs']}/{total['selected_jobs']}; complete={total['coverage_complete']}",
+            f"Known remaining training cadence: {total['known_remaining_seconds']/3600:.2f} h",
+            f"Known full-from-scratch workload: {total['known_full_from_scratch_seconds']/3600:.2f} h",
+            total['exclusions'],'Failures/unestimated jobs are NOT counted as zero cost.',
+            'Original queue stays paused. Temporary probes are not formal training or accuracy evidence.']
+        return '\n'.join(lines)+'\n'
     lines=['# ListOps runtime estimate','', '| Model | Stable | samples/s | Full100epochs(h) | Tenth100epochs(h) |',
         '|---|---:|---:|---:|---:|']
     for model,result in report['results'].items():
@@ -199,11 +295,74 @@ def summary(report):
         values=(f"{result['samples_per_second']:.2f}",f"{estimates['full']['seconds']/3600:.2f}",
             f"{estimates['tenth']['seconds']/3600:.2f}") if estimates else ('unavailable',)*3
         lines.append('| '+' | '.join((model,str(result.get('stable',False)),*values))+' |')
-    lines+=['','Training-cadence extrapolation; periodic saves inside windows included. Startup, validation/test and final pause/return excluded.',
+    lines+=['','Training-cadence extrapolation; periodic saves/epoch validation inside windows included. Startup, final validation/test and final pause/return excluded.',
         'A tenth training subset was NOT trained. No accuracy or model-ranking conclusion.',
         'Fewer than3windows or >15% window spread: provisional estimate only.',
         'Formal queue remains paused; resume explicitly from its pinned policy controller.']
     return '\n'.join(lines)+'\n'
+
+
+def campaign_pending(args):
+    from .bootstrap import check_exchange
+    from .runner import discover_gpus
+    from .attention_diagnostic import gpu_preflight
+    from .return_artifacts import upload_declared
+    from scripts.experiment import validate_executor
+    from scripts.formal_progress import Terminal
+    require_linux();check_exchange();rev=revision();source=args.source_suite.resolve()
+    if validate_executor(source.parent.parent,source)!='mamba-fused':raise ValueError('Use pinned original Suite')
+    rows_by_task={t['task']:t['splits']['train']['arrays']['labels']['shape'][0]
+        for t in read(ROOT/'docs/evidence/mega-document-v3-build.json')['tasks']}
+    suite=ROOT/'runs'/('roster-speed-'+dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:8])
+    report=dict(schema='qkan-roster-speed.v2',all_pending=True,controller_revision=rev,source_suite=str(source),
+        results={},failures={},formal_updates=0,original_queue_resumed=False)
+    terminal=Terminal(args.display)
+    with ExitStack() as held:
+        names=[j['id'] for j in read(source/'suite.json')['jobs']]
+        for p in (source/'progress-supervisor.lock',source/'suite.lock',*[source/'jobs'/n/'worker.lock' for n in sorted(names)]):
+            held.enter_context(lock(p))
+        jobs,done=select_pending(source);report.update(selected_jobs=[j['id'] for j in jobs],completed_skipped=done)
+        if jobs:
+            gpus,inventory=discover_gpus(args.gpu)
+            if len(gpus)!=1 or not gpu_preflight(inventory[gpus[0]])['idle']:raise ValueError('One idle GPU required')
+        files=[source/n for n in ('suite.json','status.json','mamba-input.json')]
+        for name in names:
+            folder=source/'jobs'/name;files.extend(p for p in [folder/'config.json',folder/'summary.json',
+                folder/'checkpoints/latest.json',folder/'heartbeat.json'] if p.exists())
+        hashes={str(p):digest(p) for p in files};suite.mkdir(parents=True)
+        print('All pending runtime probe Suite: '+str(suite)+' | selected '+str(len(jobs)),flush=True)
+        try:
+            for job in jobs:
+                name=job['id'];config=read(source/'jobs'/name/'config.json');rows=rows_by_task[config['task']]
+                try:
+                    existing=observed_source(source,name,rows,config)
+                    if existing is not None:
+                        report['results'][name]=existing
+                    else:
+                        if config['model'] not in ('mega','s5','s4d_minimal'):
+                            raise ValueError('No matching execution observation for bound special worker; do not substitute an unfused worker')
+                        options=SimpleNamespace(**vars(args));options.probe_job=name;options.probe_total=len(jobs)
+                        value=probe(source,suite,config['model'],options,rows,terminal,report['results'])
+                        report['results'][name]=remaining_estimate(value,source,name,rows,config)
+                except KeyboardInterrupt:
+                    report['interrupted']=True;break
+                except Exception as error:
+                    worker_failure(suite,error);report['failures'][name]=read(suite/'worker-error.json')
+                    output=suite/'jobs'/name;proof=peek(output/'child-execution.json')
+                    if (output/'child-start.json').exists() and not (proof or {}).get('cleanup',{}).get('group_verified'):
+                        report['unsafe_remaining_processes']=True;break
+                if not gpu_preflight(inventory[gpus[0]])['idle']:
+                    report['unsafe_remaining_processes']=True;break
+                # Recoverable local snapshot; only one immutable final upload.
+                atomic_json(suite/'progress-report.json',report)
+        finally:
+            terminal.close();report['source_unchanged']=all(digest(p)==sha for p,sha in hashes.items())
+            report['source_files']=hashes;report['totals']=totals(report)
+            atomic_json(suite/'report.json',report);(suite/'summary.md').write_text(summary(report),encoding='utf8')
+            upload_declared(suite,'roster-speed',['report.json','summary.md'],run_id=suite.name)
+    print(summary(report),flush=True)
+    return 0 if (report['source_unchanged'] and report['totals']['coverage_complete'] and
+        not report.get('unsafe_remaining_processes') and all(r.get('passed') for r in report['results'].values())) else 2
 
 
 def campaign(args):
@@ -270,7 +429,8 @@ def main(argv=None):
     parser.add_argument('--gpu',default='0');parser.add_argument('--display',choices=('auto','inplace','append'),default='auto')
     parser.add_argument('--warmup-seconds',type=float,default=30)
     parser.add_argument('--window-seconds',type=float,default=60)
-    parser.add_argument('--timeout',type=float,default=1200,help='Per-model total wall cap, plus safe save/cleanup grace')
+    parser.add_argument('--timeout',type=float,default=2400,help='Per-job total wall cap, plus safe save/cleanup grace')
+    parser.add_argument('--all-pending',action='store_true',help='Inventory and estimate every unfinished job; preserve completed results')
     args=parser.parse_args(argv)
     if not all(math.isfinite(n) and n>0 for n in (args.warmup_seconds,args.window_seconds,args.timeout)):
         parser.error('Durations must be positive and finite')
@@ -285,7 +445,7 @@ def main(argv=None):
         for name in ('SIGINT','SIGTERM','SIGHUP'):
             if hasattr(signal,name):
                 sig=getattr(signal,name);previous[sig]=signal.signal(sig,pause)
-        return campaign(args)
+        return campaign_pending(args) if args.all_pending else campaign(args)
     finally:
         for sig,handler in previous.items():signal.signal(sig,handler)
 

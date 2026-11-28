@@ -1,0 +1,36 @@
+{
+  "schema": "qkan-all-pending-speed-delivery.v1",
+  "date": "2026-11-28",
+  "entry": "experiment.py diagnose roster-speed -- --all-pending",
+  "scope": "All unfinished roster jobs; completed artifacts validated/skipped; exact same-job historical rates explicitly labelled; fresh original MEGA/S5/S4D workers otherwise",
+  "cap_fix": {
+    "old": "floor((rows-1)/maxlogical), stop before first epoch validation",
+    "new": "ceil(rows/maxlogical)*(epochs-1), allow intermediate validation and stop before final test",
+    "listops_old": 749,
+    "listops_new": 74250,
+    "window_seconds": 300,
+    "windows": 3,
+    "timeout_seconds": 2400
+  },
+  "unchanged": [
+    "Formal scientific configuration",
+    "Stable workers/models/plugins",
+    "Source checkpoints and completed results",
+    "Original formal queue stays paused"
+  ],
+  "outputs": [
+    "Per-job full-from-scratch workload time",
+    "Per-job approximate remaining time",
+    "Known-task totals and explicit coverage",
+    "Fresh vs historical provenance; missing estimates not zero",
+    "One report.json + summary.md return"
+  ],
+  "checks": {
+    "stdlib_tests": 48,
+    "command": "python -B -m unittest tests.test_baseline_pending_speed tests.test_baseline_roster_speed tests.test_baseline_experiment_entry",
+    "native_execution": false,
+    "framework_install": false,
+    "review": "Bounded specialist final-test/isolation review; two launch/failure-return blockers fixed with regressions: explicit QKAN_MEGA_SOURCE and estimates=None handling."
+  },
+  "claim": "Delivery verified locally; collaborator all-task speed/complete-window confirmation pending; not a measured full training total or accuracy result"
+}
