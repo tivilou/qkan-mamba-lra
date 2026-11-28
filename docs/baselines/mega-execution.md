@@ -12,6 +12,30 @@
 
 ## 已审阅结果与正式策略切换（2026-11-27）
 
+### 2026-11-28：训练完成后的回传导入修复
+
+实机截图：MEGA Text已到epoch100/step15697，`summary.json`已写出，但`mega_formal.native`最后回传凭证时导入`return_artifacts`，其`from scripts.exchange_artifacts ...`报ModuleNotFoundError。原进程已退出。这是回传阶段包解析冲突，不是梯度更新报错；后续解释器关闭时的`official_source`生成器异常是次级清理现象，不作为主故障。结果完整性仍由原完成结果验证器核对，不只根据文件存在认定成功。
+
+新控制器仅用`scripts/pinned_mega_worker.py`在上游导入前按绝对文件路径预加载**原执行器自己的**`scripts.exchange_artifacts`子模块；不替换上游` scripts`父包、不改原worker文件或绑定，不调整精度或样本。新控制器从既有`mega-policy.json`读取原`code_root`的策略helper，继续验证该旧版本和原科学哈希，避免换了UI/回传修复checkout后错误要求迁移科学版本。`command.json`记录兼容包装器绝对路径和SHA。
+
+当前已退出、GPU空闲时执行整段恢复。不要重复`--mega-policy`激活、删除summary或回退旧step：
+
+```bash
+cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
+bash scripts/prepare_adaptive_checkout.sh &&
+MEGA_REPAIR_REV=$(git rev-parse FETCH_HEAD) &&
+MEGA_REPAIR_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${MEGA_REPAIR_REV:0:12}" &&
+cd "$MEGA_REPAIR_ROOT" &&
+.venv-baselines/bin/python -B scripts/experiment.py \
+  --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
+  --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
+  --task-order retrieval-last
+```
+
+该指令恢复正式队列并显示原看板。原worker读取最新完整state；若`training_complete=True`，跳过训练更新，只恢复既有最佳权重的最终评估/trace、保存结果、回传及原结果校验。当前错误不要求重训100epochs。完成后继续排队任务。若要先跑S5/S4D测速，则先保持队列暂停、执行`roster-speed`，不要同时占用GPU。
+
+代码回退只需使用此前原控制器入口（保留其回传冲突限制）；新包装器不会修改原科学文件或现有状态，不用修改/伪造旧绑定。传输仍沿用原凭证和自动回传清单。
+
 实际worker联合验证已通过：匹配8步、同一路线4＋新进程4步恢复状态哈希完全一致。FFT＋尾层BF16无Graph吞吐增加11.41%；加入局部Graph后增加11.20%，所以本次Graph关闭。固定验证集前256行从217行正确变为216行，尚未证明全量精度或收敛等价。用户已明确选择切换为这一精度变体，记录于 `mega-text-policy-switch-20261127.json`，不改写旧资格证或声称原FP32等价。
 
 仅切换 **MEGA Text**；其他模型及MEGA其他数据集继续原派发。原Suite、配置、完成结果及Retrieval最后的顺序保留。新控制器通过原派发函数的私有副本替换选定job的spec和结果检查，不替换模块全局。新worker复用已验证的稳定worker及Hooks；原代码单独验证旧certificate，新amendment记录新插件来源。激活前在Suite事件目录保存原始完整generation及指针；继续训练始终读取当时最新完整断点，不回到测速6016步。

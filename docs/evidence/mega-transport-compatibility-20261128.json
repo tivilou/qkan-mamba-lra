@@ -1,0 +1,37 @@
+{
+  "schema": "qkan-mega-transport-compatibility.v1",
+  "date": "2026-11-28",
+  "source": "User-provided screenshots; not a native result payload",
+  "observation": {
+    "pinned_executor": "5f96729752c8",
+    "job": "mega-text-s42",
+    "step": 15697,
+    "epoch": 100,
+    "summary_present": true,
+    "processes_exited": true,
+    "error": "ModuleNotFoundError: scripts.exchange_artifacts",
+    "phase": "mega_formal native finally -> return_artifacts import"
+  },
+  "diagnosis": "Pinned project exchange-client import is shadowed by an upstream top-level scripts namespace. Reproduced with a foreign scripts package; submodule-only exact-file preload succeeds without replacing parent.",
+  "fix": {
+    "scope": "Controller and transport import compatibility only",
+    "pinned_policy_helper": "Read existing record code_root; native still validates its original revision/binding",
+    "worker": "Identical pinned mega_formal target and worker args; wrapper SHA recorded in command.json",
+    "source_file_changes": false,
+    "science_binding_unchanged": {
+      "mega_qualification.py": "a2ab2629b53f3e15e15df290144235c55bccf6aa98455cca8cbd25bb69c08473",
+      "mega_execution.py": "2991d2c1281628c9486c1168944dc53db7485fd169f7cd375178434a6c4ae48a",
+      "mega_refinement.py": "86e0daa0db36bdaa9a03e68a654db71dfb9c5a952852b81c4454988f9ee070a2",
+      "mega_fft.py": "0b3215ef1ca0c14edd3013f798d6a52f5eeda145e8a74e9a9be0815be0e1cbbc",
+      "execution_plugins.py": "374ac2df1fb050cc3d76ff284765652d585057250cf12d47a1ab2b7a3c7d0d78",
+      "worker.py": "5d798cb23fa20dba055c7894f696fe62acfc2837da9a4e3d62a099659b29104e",
+      "models.py": "51c3e80a51f8b3c0fa30f5f5cab0b82840fcfae87f04603b3ecb08cc6bb50386"
+    }
+  },
+  "validation": {
+    "focused_stdlib_checks": 48,
+    "owner_framework_model_gpu_execution": false,
+    "real_collaborator_recovery": "pending"
+  },
+  "recovery": "Resume latest full state; if training_complete is true, original worker skips updates and repeats final evaluation/save/return. No fixed-step rewind or retraining request."
+}

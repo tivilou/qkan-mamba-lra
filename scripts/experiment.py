@@ -118,10 +118,26 @@ def private_function(function, **overrides):
     return result
 
 
-def mega_control():
+def mega_control(suite=None):
     # Load without importing the new experiments package into the pinned parent.
     path=Path(__file__).resolve().parents[1]/'experiments/baseline_delivery/mega_formal.py'
+    if suite is not None and (suite/'mega-policy.json').exists():
+        path=Path(read(suite/'mega-policy.json')['code_root'])/'experiments/baseline_delivery/mega_formal.py'
     return runpy.run_path(str(path))
+
+
+def transport_spec(builder):
+    """A private dispatch seam: run the same pinned worker with transport preload."""
+    def wrapped(suite,record,job):
+        spec=builder(suite,record,job)
+        if spec.get('target')!='experiments.baseline_delivery.mega_formal':return spec
+        argv=spec['argv'];index=argv.index('-m')
+        if argv[index+1]!=spec['target']:raise ValueError('Pinned worker target differs')
+        helper=Path(__file__).resolve().with_name('pinned_mega_worker.py')
+        return dict(spec,argv=[*argv[:index],str(helper),'--root',spec['cwd'],'--',*argv[index+2:]],
+            transport_wrapper=dict(path=str(helper),sha256=hashlib.sha256(helper.read_bytes()).hexdigest(),
+                scope='preload pinned exchange client; identical worker and science bindings'))
+    return wrapped
 
 
 def dispatch_queue(root, suite):
@@ -134,7 +150,8 @@ def dispatch_queue(root, suite):
     execute = private_function(target.execute, read=queue_read(suite, target.read))
     if (suite/'mega-policy.json').exists():
         if kind!='mamba-fused':raise ValueError('MEGA amendment requires the reviewed Mamba continuation Suite')
-        execute=mega_control()['attach'](target,root,suite,queue_read(suite,target.read))
+        execute=mega_control(suite)['attach'](target,root,suite,queue_read(suite,target.read))
+        execute=private_function(execute,job_spec=transport_spec(execute.__globals__['job_spec']))
     entry = private_function(target.main, execute=execute)
     previous = sys.argv
     try:
@@ -231,7 +248,7 @@ def supervise(root, suite, command, ui, interval=5, display='auto', after_prepar
             if mega_policy is not None:
                 validate_executor(root,suite)
                 with lock(suite/'suite.lock'),lock(suite/'jobs/mega-text-s42/worker.lock'):
-                    mega_control()['activate'](root,suite,mega_policy)
+                    mega_control(suite)['activate'](root,suite,mega_policy)
             with log.open('ab') as output:
                 offset = output.tell()
                 while True:
