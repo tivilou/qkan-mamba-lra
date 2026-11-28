@@ -35,6 +35,7 @@ DIAGNOSTICS = {
     'mamba-speed': 'mamba_diagnostic',
     'mega-fft': 'mega_diagnostic',
     'mega-qualify': 'mega_qualification',
+    'roster-speed': 'roster_speed',
     'mamba-validate': 'mamba_validation',
     'bf16-graph': 'bf16_graph_diagnostic',
 }
