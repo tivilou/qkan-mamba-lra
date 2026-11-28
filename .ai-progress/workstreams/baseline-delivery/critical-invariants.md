@@ -23,7 +23,7 @@ Put rationale and chronology in decisions/*.md instead.
 - User instruction (2026-11-03): future collaborator scripts must automatically return explicitly needed runtime artifacts to the designated project exchange directory, with verified receipts and retryable local retention; reuse existing authenticated return tooling.
 - User instruction (2026-11-04): assume the collaborator cannot access external internet. Runtime/install scripts use local prerequisites/data and authenticated exchange only; prepare source/dependency assets on our side, disable public-source fallbacks, and stop clearly if an asset is missing. No owner model tests, training or dependency installation.
 - User instruction (2026-11-18): one recommended experiment entry; train/resume and original progress dashboard in one terminal. Use explicit watch for read-only observation. Preserve existing Suite executor revision and scientific bindings; unified control scripts may live in ignored .bootstrap without replacing training code.
-- User instruction (2026-11-25): finish all baseline models on ListOps/Text/Image/Pathfinder before unfinished Retrieval jobs. Preserve completed results and latest Retrieval checkpoints; change scheduling only, not arithmetic or training budgets. Unified formal resume uses `--task-order retrieval-last`; explicit `manifest` restores historical order.
+- User instruction (2026-11-28, supersedes Nov25Retrieval-last priority): resume unfinished jobs shortest estimated remaining time first, using reviewed14job measurements. Use `--task-order fastest-first`; retain selection on later resume. Preserve completed results/latest checkpoints/scientific budgets. Explicit `retrieval-last` or `manifest` remains a scheduler-only rollback.
 
 ## Decision Index
 
@@ -34,6 +34,7 @@ Put rationale and chronology in decisions/*.md instead.
 - [ACTIVE] Assume collaborator has no external internet -> [detail](decisions/2026-11-04-offline-collaborator.md)
 - [ACTIVE] Unified experiment entry with pinned executors -> [detail](decisions/2026-11-18-unified-experiment-entry.md)
 - [ACTIVE] User-selected MEGA Text prospective precision amendment; other dispatch remains pinned -> [detail](decisions/2026-11-27-mega-text-execution-amendment.md)
+- [ACTIVE] Fastest remaining job first, supersedes Retrieval-last priority -> [detail](decisions/2026-11-28-fastest-first.md)
 
 ## Information Map
 

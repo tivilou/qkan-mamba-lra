@@ -202,6 +202,9 @@ class Dashboard:
         task_order=read(self.suite/'task-order.json',{}).get('policy')
         if task_order=='retrieval-last':
             jobs=sorted(jobs,key=lambda job:'-retrieval-s' in job['id'])
+        if task_order=='fastest-first':
+            remaining=read(self.suite/'task-order.json',{}).get('remaining_seconds',{})
+            jobs=sorted(jobs,key=lambda job:remaining.get(job['id'],0))
         names=[j['id'] for j in jobs]
         groups={name:[] for name in ('computed','running','pending','failed','paused')}
         for job in names:
@@ -213,6 +216,10 @@ class Dashboard:
                f"排队 {len(groups['pending'])} | 失败 {len(groups['failed'])} | 暂停 {len(groups['paused'])}"]
         if task_order=='retrieval-last':
             lines.append('训练顺序：先完成所有模型的 ListOps / Text / Image / Pathfinder，再续跑 Retrieval（保留断点）')
+        if task_order=='fastest-first':
+            lines.append('训练顺序：按已核验测速的预计剩余时间，从短到长（保留断点及已完成结果）')
+            lines.append('续跑次序：'+', '.join(name for name in names if states.get(name,{}).get('state')!='computed'
+                and name in remaining))
         preserved=[job['id'] for job in jobs if job.get('preserved_completion')]
         if preserved:
             lines.append('沿用已完成结果（保留原版本，不重跑）：'+', '.join(preserved))

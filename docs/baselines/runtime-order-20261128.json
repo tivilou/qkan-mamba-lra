@@ -1,0 +1,64 @@
+{
+  "schema": "qkan-reviewed-runtime-order.v1",
+  "policy": "fastest-first",
+  "report_sha256": "4201748c85d43fd8ae2eccc23306ef5d147e5eee448ba9c80f6b6b0076b6618f",
+  "manifest_sha256": "3a6e82abbc283eac4d2b0b9ac561a03356e36973cb532bfff3ed5e5d9b49ab12",
+  "jobs": {
+    "mega-image-s42": {
+      "remaining_seconds": 21002.647192717068,
+      "config_sha256": "443f114a5267fb8c4912aa6e95b972273e9e7e7dc2180a1c6fe5c0880d32af0a"
+    },
+    "mega-pathfinder-s42": {
+      "remaining_seconds": 75669.8338711848,
+      "config_sha256": "95554c44fb3747035a8b3e4263c6c732fd657122aa43094123347539d6e4507c"
+    },
+    "s5-listops-s42": {
+      "remaining_seconds": 141389.7115336962,
+      "config_sha256": "c4e4deb0000b04432e4d966e1a2fe6b6474dca378310d955b2526f80686b42f6"
+    },
+    "s5-text-s42": {
+      "remaining_seconds": 57679.44746050306,
+      "config_sha256": "689ab76e22429acb6ca80f470fc04ba3a7b05bcc74419f614b09cf68f812eef5"
+    },
+    "s5-image-s42": {
+      "remaining_seconds": 10667.017802569151,
+      "config_sha256": "cdd05e5cc31e6822756b1c55f3528b5d87c90fe1de04f0289437c8d4f24298bc"
+    },
+    "s5-pathfinder-s42": {
+      "remaining_seconds": 37004.996927120126,
+      "config_sha256": "7eb7d02b2aa482ea7cf61334750995457678cf835cbd0ca30e67bde96b162876"
+    },
+    "s4d_minimal-listops-s42": {
+      "remaining_seconds": 20349.21475516111,
+      "config_sha256": "4b6f97e64f5d87e152971e78060f842c01925eadc59019cd944a24eab9c75f5e"
+    },
+    "s4d_minimal-text-s42": {
+      "remaining_seconds": 9100.32324552536,
+      "config_sha256": "8842ad93b2121e935f63c5c5ee453155a575b074a5a83c8d5a04e80b06cc3741"
+    },
+    "s4d_minimal-image-s42": {
+      "remaining_seconds": 5137.120609113991,
+      "config_sha256": "1c25475de07a384fe4f330c9be13fb1eaf71eaa6632a62b36431c8f5a1ec6507"
+    },
+    "s4d_minimal-pathfinder-s42": {
+      "remaining_seconds": 18069.153469783432,
+      "config_sha256": "f39a82ccff8c4c56827bbacc98a27ef02a78bb2ff811fabd9f04de1619bc2799"
+    },
+    "mamba1-retrieval-s42": {
+      "remaining_seconds": 123895.38904044054,
+      "config_sha256": "d5cd47b4b259e42e5ced28cb518196e74cbbb266a1952eb6badad05eeeadbd55"
+    },
+    "mega-retrieval-s42": {
+      "remaining_seconds": 1023614.9131329616,
+      "config_sha256": "880558921ba96a8c82c8e6348031b632ec00afc08def1a53ff71ccf0ccdd8252"
+    },
+    "s5-retrieval-s42": {
+      "remaining_seconds": 639643.016258932,
+      "config_sha256": "8bfdaf0500b6b9b92474e2f5c4d82f314f426b70d4ec0a9cc356f53451162845"
+    },
+    "s4d_minimal-retrieval-s42": {
+      "remaining_seconds": 101785.37774962766,
+      "config_sha256": "a25a4140e675acdd57f0c51aa4f677f895bc1c5e4f9766ef05b5bb0a4a428c62"
+    }
+  }
+}

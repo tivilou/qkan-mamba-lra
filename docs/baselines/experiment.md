@@ -2,26 +2,31 @@
 
 日常只使用`scripts/experiment.py`。它负责路由、原美化看板、父进程监督和安全暂停；科学执行器仍由Suite绑定的原版本负责。不是把模型、准入、诊断和回传实现合成一个大脚本，也不改变已有实验轨迹。
 
-## 当前训练顺序：Retrieval 统一放最后（2026-11-25）
+## 当前训练顺序：预计剩余时间从短到长（2026-11-28）
 
-所有模型先完成 ListOps、Text、Image、Pathfinder，再处理未完成的 Retrieval。保持原模型顺序及其余数据集的相对顺序；已有结果直接沿用，暂停的 Retrieval 使用自己的最新完整断点。只改变派发顺序，不改变 BF16/Graph/融合策略、batch、学习率或训练预算。
+按已回传的14项剩余任务耗时升序续跑，取代Nov25的Retrieval最后优先级。只改变调度：原配置、100epochs预算、科学代码、BF16/Graph/融合策略及最新完整断点不变。完成结果经原校验器确认后跳过；包括MEGA Text已完成但回传失败留下的旧failed状态，不重复训练。
 
-如果原终端仍在训练，先按一次 Ctrl-C，等待保存并显示“实验入口已退出”，再执行以下整段；原本已暂停则直接执行。锁仍被占用时入口拒绝重复启动。
+原终端若仍有训练，先安全暂停并等保存退出；当前已暂停则直接执行整段，同步隔离checkout后训练与原美化看板一体恢复：
 
 ```bash
 cd /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 &&
-git fetch origin research/collaboration-foundation &&
-mkdir -p .bootstrap &&
-git show FETCH_HEAD:scripts/experiment.py > .bootstrap/experiment.py &&
-git show FETCH_HEAD:scripts/formal_progress.py > .bootstrap/formal_progress.py &&
-.venv-baselines/bin/python -B .bootstrap/experiment.py resume \
+bash scripts/prepare_adaptive_checkout.sh &&
+FAST_QUEUE_REV=$(git rev-parse FETCH_HEAD) &&
+FAST_QUEUE_ROOT="$(dirname "$PWD")/qkan-mamba-lra-adaptive-${FAST_QUEUE_REV:0:12}" &&
+cd "$FAST_QUEUE_ROOT" &&
+.venv-baselines/bin/python -B scripts/experiment.py \
+  --root /root/projects/qkan-mamba-lra-adaptive-89353fc83f89 resume \
   --suite runs/mamba-fused-formal-20261124T061405Z-b57105a1 \
-  --task-order retrieval-last
+  --task-order fastest-first
 ```
 
-仍是一个终端内训练并显示美化看板，不创建新 Suite。原执行 checkout 的受跟踪文件保持不变。控制层在持有锁时记录 `task-order.json`，绑定原清单哈希；只给派发函数提供排序视图，原校验函数继续读取原清单，未替换共享模块全局变量。正式续跑 Suite 默认采用该顺序；历史普通 admitted Suite 保持原行为。`watch` 只读取已记录顺序。
+预计顺序（小时，按剩余训练工作量）：S4D Image1.43 → S4D Text2.53 → S5 Image2.96 → S4D Pathfinder5.02 → S4D ListOps5.65 → MEGA Image5.83 → S5 Pathfinder10.28 → S5 Text16.02 → MEGA Pathfinder21.02 → S4D Retrieval28.27 → Mamba Retrieval34.42 → S5 ListOps39.27 → S5 Retrieval177.68 → MEGA Retrieval284.34。
 
-恢复原顺序：安全暂停后，将同一续跑指令末尾改为 `--task-order manifest`。该选项仅恢复清单派发顺序，不回退训练状态。改顺序不重复已通过的恢复诊断，也不重跑已完成任务。
+Mamba取自己历史融合运行的剩余估时，其余13项为三个五分钟窗口新测速；全部是大致时长。快任务先完成不会减少总计算量。已有完成结果不参与排队。
+
+`docs/baselines/runtime-order-20261128.json`绑定原清单及14个config字节哈希。持锁写`task-order.json`，记录同一估时文件SHA和成本；派发器私有排序视图与看板一致。原校验器继续读取原科学文件，未知且未完成的任务缺少估时则明确停止，不冒充零小时。调度顺序固定于本次核验估计，任务运行中不重新排序。普通resume沿用已记录的策略；无需每次指定。原Suite仍在89353fc，MEGA策略helper继续从既有记录code_root读取，无额外迁移或重新激活策略。
+
+调度回退：安全暂停后，把末尾参数改为`--task-order retrieval-last`或`--task-order manifest`，其它指令一致。只回退派发顺序，不回退训练进度。不要使用仅复制两个脚本到`.bootstrap`的旧指令，因为当前入口还依赖明确绑定的策略helper和transport兼容脚本。
 
 ## 当前速度优化版：一条命令续跑并显示
 

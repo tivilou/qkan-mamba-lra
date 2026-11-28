@@ -93,19 +93,47 @@ def module(name, *args):
 
 
 def queue_record(suite, task_order):
-    return dict(schema='qkan-task-order.v1', policy=task_order,
+    record=dict(schema='qkan-task-order.v1', policy=task_order,
         manifest_sha256=hashlib.sha256((suite/'suite.json').read_bytes()).hexdigest())
+    if task_order=='fastest-first':
+        path=Path(__file__).resolve().parents[1]/'docs/baselines/runtime-order-20261128.json'
+        evidence=read(path)
+        if evidence['manifest_sha256']!=record['manifest_sha256']:raise ValueError('Runtime estimates belong to a different Suite')
+        for job,entry in evidence['jobs'].items():
+            if hashlib.sha256((suite/'jobs'/job/'config.json').read_bytes()).hexdigest()!=entry['config_sha256']:
+                raise ValueError('Runtime estimate scientific configuration changed: '+job)
+        record.update(estimates_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+            remaining_seconds={name:v['remaining_seconds'] for name,v in evidence['jobs'].items()})
+    return record
 
 
 def queue_read(suite, original_read):
     """Private dispatcher view; validators continue reading the original bytes."""
     record = read(suite/'task-order.json')
-    if record != queue_record(suite, record['policy']) or record['policy'] not in ('manifest', 'retrieval-last'):
+    if record != queue_record(suite, record['policy']) or record['policy'] not in ('manifest', 'retrieval-last','fastest-first'):
         raise ValueError('Task order must match the original Suite manifest')
+    completed=set()
+    if record['policy']=='fastest-first':
+        from experiments.baseline_delivery.migration import completed_files,verify_completed
+        for job in original_read(suite/'suite.json')['jobs']:
+            folder=suite/'jobs'/job['id']
+            if (folder/'summary.json').exists():
+                if job.get('preserved_completion'):verify_completed(suite,job)
+                else:completed_files(folder,original_read(folder/'config.json'))
+                completed.add(job['id'])
+            elif job['id'] not in record['remaining_seconds']:
+                raise ValueError('Unfinished job has no reviewed time estimate: '+job['id'])
     def ordered(path):
         value = original_read(path)
         if Path(path).resolve() == (suite/'suite.json').resolve() and record['policy'] == 'retrieval-last':
             value = dict(value, jobs=sorted(value['jobs'], key=lambda job: '-retrieval-s' in job['id']))
+        if record['policy']=='fastest-first':
+            if Path(path).resolve()==(suite/'suite.json').resolve():
+                value=dict(value,jobs=sorted(value['jobs'],key=lambda j:0 if j['id'] in completed else record['remaining_seconds'][j['id']]))
+            elif Path(path).resolve()==(suite/'status.json').resolve():
+                # Result validation succeeded above; recover stale exit1 from a
+                # post-summary transport failure without launching its worker.
+                value={name:dict(state,**({'state':'computed'} if name in completed else {})) for name,state in value.items()}
         return value
     return ordered
 
@@ -315,8 +343,8 @@ def main(argv=None):
         sub = subs.add_parser(name)
         sub.add_argument('--suite', type=Path, required=True)
         if name == 'watch': sub.add_argument('--once', action='store_true')
-    subs.choices['resume'].add_argument('--task-order', choices=('manifest', 'retrieval-last'),
-        help='Formal continuation default: other four datasets before Retrieval; preserve checkpoints')
+    subs.choices['resume'].add_argument('--task-order', choices=('manifest', 'retrieval-last','fastest-first'),
+        help='Use manifest, Retrieval last, or reviewed fastest remaining first; retain recorded choice on resume')
     subs.choices['resume'].add_argument('--mega-policy',choices=('fft-tail-bf16','original'),
         help='Explicit prospective MEGA Text switch or rollback; latest checkpoint and same dashboard')
     dispatch = subs.add_parser('_dispatch-queue', help=argparse.SUPPRESS)
@@ -353,7 +381,7 @@ def main(argv=None):
         task_order = args.task_order if args.operation == 'resume' else None
         if args.operation == 'resume' and task_order is None and any(
                 (suite/name).is_file() for name in ('mamba-input.json', 'graph-input.json', 'formal-input.json')):
-            task_order = 'retrieval-last'
+            task_order = read(suite/'task-order.json')['policy'] if (suite/'task-order.json').exists() else 'retrieval-last'
         command = resume_command(root, suite, args.operation == 'upload', task_order=task_order)
         if args.operation == 'upload': return subprocess.call(command, cwd=root)
         return supervise(root, suite, command, display_module(), args.interval, args.display, task_order=task_order,
