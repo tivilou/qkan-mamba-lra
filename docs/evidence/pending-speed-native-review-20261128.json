@@ -1,0 +1,257 @@
+{
+  "schema": "qkan-all-pending-native-review.v1",
+  "date": "2026-11-28",
+  "run_id": "roster-speed-20261128T084622Z-49834a2b",
+  "controller_revision": "0852411936f210ae94d3220355aef98389ce926b",
+  "verified_report": {
+    "bytes": 113550,
+    "sha256": "4201748c85d43fd8ae2eccc23306ef5d147e5eee448ba9c80f6b6b0076b6618f"
+  },
+  "returned_at_utc": "2026-11-28T13:10:20Z",
+  "coverage": {
+    "selected": 14,
+    "estimated": 14,
+    "completed_skipped": 11,
+    "new_three_window_probes": 13,
+    "historical_same_job_estimates": 1,
+    "failures": 0
+  },
+  "source_unchanged": true,
+  "formal_updates": 0,
+  "original_queue_resumed": false,
+  "all13fresh_passed_stable_full300s_windows": true,
+  "all13groups_clean_and_owned_checkpoints_removed": true,
+  "crossed_epoch_jobs": [
+    "mega-image-s42",
+    "mega-pathfinder-s42",
+    "s5-text-s42",
+    "s5-image-s42",
+    "s5-pathfinder-s42",
+    "s4d_minimal-listops-s42",
+    "s4d_minimal-text-s42",
+    "s4d_minimal-image-s42",
+    "s4d_minimal-pathfinder-s42"
+  ],
+  "totals": {
+    "remaining_hours": 634.7244897359267,
+    "remaining_days": 26.446853738996946,
+    "nonretrieval_hours": 110.01929635204841,
+    "retrieval_hours": 524.7051933838783,
+    "retrieval_share": 0.8266660604228123,
+    "full_from_scratch_hours": 645.58199730902
+  },
+  "jobs": {
+    "mega-image-s42": {
+      "samples_per_second": 214.25870551977047,
+      "remaining_hours": 5.83406866464363,
+      "full_from_scratch_hours": 5.83406866464363,
+      "tenth_from_scratch_hours": 0.583406866464363,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        304.3939743041992,
+        304.8446009159088,
+        305.2446870803833
+      ],
+      "temporary_updates": 1893,
+      "crossed_epoch": true
+    },
+    "mega-pathfinder-s42": {
+      "samples_per_second": 211.44489397501937,
+      "remaining_hours": 21.019398297551334,
+      "full_from_scratch_hours": 21.019398297551334,
+      "tenth_from_scratch_hours": 2.1019398297551333,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        302.61290311813354,
+        301.1820249557495,
+        300.91360569000244
+      ],
+      "temporary_updates": 1844,
+      "crossed_epoch": true
+    },
+    "s5-listops-s42": {
+      "samples_per_second": 67.89744385122474,
+      "remaining_hours": 39.274919870471166,
+      "full_from_scratch_hours": 39.274919870471166,
+      "tenth_from_scratch_hours": 3.9274919870471163,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        301.3905875682831,
+        305.6664698123932,
+        305.37788105010986
+      ],
+      "temporary_updates": 794,
+      "crossed_epoch": false
+    },
+    "s5-text-s42": {
+      "samples_per_second": 34.46114842485462,
+      "remaining_hours": 16.02206873902863,
+      "full_from_scratch_hours": 16.02206873902863,
+      "tenth_from_scratch_hours": 1.601642631405639,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        302.8192584514618,
+        305.2725648880005,
+        305.92298579216003
+      ],
+      "temporary_updates": 550,
+      "crossed_epoch": true
+    },
+    "s5-image-s42": {
+      "samples_per_second": 421.8611127578858,
+      "remaining_hours": 2.9630605007136532,
+      "full_from_scratch_hours": 2.9630605007136532,
+      "tenth_from_scratch_hours": 0.2963060500713653,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        304.9004511833191,
+        302.601425409317,
+        305.04490327835083
+      ],
+      "temporary_updates": 3408,
+      "crossed_epoch": true
+    },
+    "s5-pathfinder-s42": {
+      "samples_per_second": 432.3740394171999,
+      "remaining_hours": 10.279165813088923,
+      "full_from_scratch_hours": 10.279165813088923,
+      "tenth_from_scratch_hours": 1.0279165813088924,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        303.78455424308777,
+        302.52699303627014,
+        303.27127718925476
+      ],
+      "temporary_updates": 4158,
+      "crossed_epoch": true
+    },
+    "s4d_minimal-listops-s42": {
+      "samples_per_second": 471.76267563666954,
+      "remaining_hours": 5.652559654211419,
+      "full_from_scratch_hours": 5.652559654211419,
+      "tenth_from_scratch_hours": 0.5652559654211419,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        304.6528697013855,
+        304.94219493865967,
+        305.16996932029724
+      ],
+      "temporary_updates": 3806,
+      "crossed_epoch": true
+    },
+    "s4d_minimal-text-s42": {
+      "samples_per_second": 218.42081279666132,
+      "remaining_hours": 2.527867568201489,
+      "full_from_scratch_hours": 2.527867568201489,
+      "tenth_from_scratch_hours": 0.2526977339647008,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        304.5428657531738,
+        302.63198828697205,
+        302.85747051239014
+      ],
+      "temporary_updates": 1918,
+      "crossed_epoch": true
+    },
+    "s4d_minimal-image-s42": {
+      "samples_per_second": 875.9770973678042,
+      "remaining_hours": 1.4269779469761086,
+      "full_from_scratch_hours": 1.4269779469761086,
+      "tenth_from_scratch_hours": 0.14269779469761087,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        301.7634904384613,
+        304.9998240470886,
+        303.22394704818726
+      ],
+      "temporary_updates": 6792,
+      "crossed_epoch": true
+    },
+    "s4d_minimal-pathfinder-s42": {
+      "samples_per_second": 885.4869724116504,
+      "remaining_hours": 5.019209297162065,
+      "full_from_scratch_hours": 5.019209297162065,
+      "tenth_from_scratch_hours": 0.5019209297162065,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        304.9617340564728,
+        304.78256154060364,
+        300.29054975509644
+      ],
+      "temporary_updates": 6856,
+      "crossed_epoch": true
+    },
+    "mamba1-retrieval-s42": {
+      "samples_per_second": 72.27160001150081,
+      "remaining_hours": 34.41538584456681,
+      "full_from_scratch_hours": 45.27289341766018,
+      "tenth_from_scratch_hours": 4.527289341766018,
+      "stable": false,
+      "provenance": "existing same-job worker heartbeat; no new probe",
+      "window_seconds": [],
+      "temporary_updates": 0,
+      "crossed_epoch": false
+    },
+    "mega-retrieval-s42": {
+      "samples_per_second": 11.507257122649968,
+      "remaining_hours": 284.3374758702671,
+      "full_from_scratch_hours": 284.3374758702671,
+      "tenth_from_scratch_hours": 28.43374758702671,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        300.23917508125305,
+        300.2976665496826,
+        300.4597980976105
+      ],
+      "temporary_updates": 190,
+      "crossed_epoch": false
+    },
+    "s5-retrieval-s42": {
+      "samples_per_second": 18.414959126563463,
+      "remaining_hours": 177.6786156274811,
+      "full_from_scratch_hours": 177.6786156274811,
+      "tenth_from_scratch_hours": 17.76786156274811,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        305.6418237686157,
+        305.7074074745178,
+        306.16570234298706
+      ],
+      "temporary_updates": 429,
+      "crossed_epoch": false
+    },
+    "s4d_minimal-retrieval-s42": {
+      "samples_per_second": 115.72389139208248,
+      "remaining_hours": 28.27371604156324,
+      "full_from_scratch_hours": 28.27371604156324,
+      "tenth_from_scratch_hours": 2.827371604156324,
+      "stable": true,
+      "provenance": "new original pinned worker probe",
+      "window_seconds": [
+        301.0817425251007,
+        301.2221710681915,
+        300.25819993019104
+      ],
+      "temporary_updates": 1924,
+      "crossed_epoch": false
+    }
+  },
+  "limits": [
+    "Single GPU serial workload extrapolation, not guaranteed completion wall time.",
+    "Startup/final eval-test-trace/return and unobserved validation overhead excluded; cadence includes costs inside windows.",
+    "Mamba Retrieval remaining34.42h uses older same-job fused heartbeat, not a new3window probe or checkpoint-exact remainder.",
+    "Tenth workload extrapolations are not trained subset accuracy or ranking evidence."
+  ]
+}
