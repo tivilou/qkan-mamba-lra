@@ -1,0 +1,69 @@
+{
+  "schema": "qkan-roster-speed-review.v1",
+  "date": "2026-11-28",
+  "run_id": "roster-speed-20261128T051225Z-9fe775d9",
+  "controller_revision": "cd47b7ce0097ca8f2101dab950e68bb1275ea673",
+  "verified_report": {
+    "bytes": 13844,
+    "sha256": "909787f44a38ec244f664bf8cb52cbbbc9abe85d6d2d59b40ce32fe150937913"
+  },
+  "verified_summary": {
+    "bytes": 573,
+    "sha256": "456aa93c7aeebb82842fd74a8eadf713411ec2fd07a7846ff0d5e8957367288f"
+  },
+  "source_unchanged": true,
+  "original_queue_resumed": false,
+  "formal_updates": 0,
+  "results": {
+    "s5": {
+      "passed": true,
+      "stable": false,
+      "samples_per_second": 67.40950199099294,
+      "window_seconds": [
+        302.89951062202454,
+        302.0248351097107,
+        230.56617617607117
+      ],
+      "relative_window_spread": 0.00654138889503475,
+      "first_heartbeat_seconds": 81.01743037998676,
+      "total_wall_seconds": 1261.3554364182055,
+      "full100_training_hours": 39.55921031760446,
+      "tenth100_training_hours": 3.955921031760446,
+      "peak_observed_board_mib": 18914,
+      "step": 749,
+      "samples": 70208,
+      "micro_batch": 128,
+      "logical_batch": 128,
+      "oom_retries": 0,
+      "group_clean": true,
+      "owned_checkpoints_removed": true
+    },
+    "s4d_minimal": {
+      "passed": true,
+      "stable": false,
+      "samples_per_second": 479.42404218421643,
+      "window_seconds": [
+        83.83392667770386
+      ],
+      "first_heartbeat_seconds": 8.131507940590382,
+      "total_wall_seconds": 169.34515510126948,
+      "full100_training_hours": 5.562229742416657,
+      "tenth100_training_hours": 0.5562229742416657,
+      "peak_observed_board_mib": 12854,
+      "step": 749,
+      "samples": 70208,
+      "micro_batch": 128,
+      "logical_batch": 128,
+      "oom_retries": 0,
+      "group_clean": true,
+      "owned_checkpoints_removed": true
+    }
+  },
+  "limitations": [
+    "Both workers stopped at conservative pre-validation step749; requested3x300second sampling was not completed, especially S4D84seconds. This is probe-cap design, not a model error.",
+    "S5 last3windows spread0.654percent, encouraging consistency but stable flag remainsfalse. S4D one window cannot assess between-window variation.",
+    "All estimates are training-cadence workload extrapolations, exclude startup/validation/test/finalpause/return; periodic saves inside windows included.",
+    "Tenth subset training/accuracy and other datasets were not measured.",
+    "Exit75 is deliberate checkpoint pause,749temporary updates each,0formal; no owner native run."
+  ]
+}
